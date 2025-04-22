@@ -1,0 +1,115 @@
+﻿@using BookLocal.Data.Data.PlatformaInternetowa
+@using System.Collections.Generic
+@using System.Linq
+
+@model BookLocal.Data.Data.PlatformaInternetowa.Usluga
+
+@{
+    ViewData["Title"] = Model.Nazwa;
+
+    List<IGrouping<Pracownik, SzczegolyUslugi>> grupyPracownikow =
+        Model.Szczegoly?
+            .Where(sz => sz.Pracownik != null && sz.Pracownik.CzyAktywny)
+            .GroupBy(sz => sz.Pracownik)
+            .OrderBy(g => g.Key.Nazwisko)
+            .ThenBy(g => g.Key.Imie)
+            .ToList()
+        ?? new List<IGrouping<Pracownik, SzczegolyUslugi>>();
+}
+
+<div class="container mt-4 mb-5 service-details-page">
+
+    <div class="row mb-4 align-items-center service-header">
+        <div class="col-md-3">
+            @if (!string.IsNullOrEmpty(Model.ZdjecieUrl))
+            {
+                <img src="@Url.Content(Model.ZdjecieUrl)" class="img-fluid rounded shadow-sm service-details-image" alt="@Model.Nazwa">
+            }
+            else
+            {
+                <div class="service-details-img-placeholder d-flex align-items-center justify-content-center h-100 rounded shadow-sm"><i class="fas fa-image fa-4x text-secondary opacity-50"></i></div>
+            }
+        </div>
+        <div class="col-md-9">
+            <h1 class="text-primary display-5 fw-bold service-title">@Model.Nazwa</h1>
+            <p class="text-secondary service-description lead">@Model.Opis</p>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <h3 class="text-secondary mb-4 fw-semibold">Wybierz Specjalistę i Wariant Usługi:</h3>
+
+    @if (!grupyPracownikow.Any())
+    {
+        <div class="alert alert-warning text-center">
+            <i class="fas fa-info-circle me-2"></i>Przepraszamy, obecnie żaden specjalista nie oferuje tej usługi. Sprawdź później!
+        </div>
+    }
+    else
+    {
+        <div class="specialists-list">
+            @foreach (var grupa in grupyPracownikow)
+            {
+                var pracownik = grupa.Key;
+                <div class="card shadow-sm mb-4 specialist-card">
+                    <div class="row g-0">
+                        <div class="col-lg-3 col-md-4 bg-light border-end d-flex flex-column align-items-center justify-content-center p-3 specialist-info-col">
+                            @if (!string.IsNullOrEmpty(pracownik.ZdjecieUrl))
+                            {
+                                <img src="@Url.Content(pracownik.ZdjecieUrl)" alt="@pracownik.Imie @pracownik.Nazwisko" class="rounded-circle mb-2 specialist-photo">
+                            }
+                            else
+                            {
+                                <span class="fa-stack fa-2x mb-2">
+                                    <i class="fas fa-circle fa-stack-2x text-secondary opacity-25"></i>
+                                    <i class="fas fa-user fa-stack-1x fa-inverse"></i>
+                                </span>
+                            }
+                            <h6 class="card-title text-primary text-center mb-1">@pracownik.Imie @pracownik.Nazwisko</h6>
+                            <p class="text-muted small text-center mb-0">@pracownik.Stanowisko</p>
+                        </div>
+
+                        <div class="col-lg-9 col-md-8">
+                            <div class="card-body p-3">
+                                <ul class="list-unstyled mb-0 service-variants-list-details">
+                                    @foreach (var detal in grupa.OrderBy(sz => sz.Cena))
+                                    {
+                                        <li class="d-flex flex-wrap justify-content-between align-items-center border-bottom py-2 variant-item">
+                                            <div class="variant-desc-time me-3">
+                                                <span class="variant-opis fw-semibold">@detal.Opis</span>
+                                                <small class="text-muted d-block"><i class="far fa-clock me-1"></i>@detal.CzasTrwaniaMinuty min</small>
+                                            </div>
+                                            <div class="variant-price-action d-flex align-items-center">
+                                                <span class="variant-cena fw-bold me-3">@detal.Cena.ToString("C")</span>
+                                                <a asp-controller="Rezerwacja" asp-action="Create"
+                                                   asp-route-szczegolyUslugiId="@detal.IdSzczegolowUslugi"
+                                                   asp-route-pracownikId="@detal.PracownikId"
+                                                   class="btn btn-success btn-sm book-button">
+                                                    <i class="fas fa-calendar-plus me-1"></i> Umów się
+                                                </a>
+                                            </div>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="mt-4">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Wróć do listy usług
+        </a>
+    </div>
+
+</div> 
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

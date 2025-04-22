@@ -1,0 +1,95 @@
+﻿@model IEnumerable<BookLocal.Data.Data.PlatformaInternetowa.TransakcjaRozliczeniowa>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Pracownik)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Rezerwacja)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.KwotaBrutto)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProwizjaPlatformy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProwizjaFirmy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.KwotaNettoDlaPracownika)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StatusRozliczenia)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataUtworzenia)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataOstatniejZmianyStatusu)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Uwagi)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ZatwierdzajacyPrzedsiębiorca)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Pracownik.Imie)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rezerwacja.Status)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.KwotaBrutto)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProwizjaPlatformy)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProwizjaFirmy)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.KwotaNettoDlaPracownika)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StatusRozliczenia)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DataUtworzenia)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DataOstatniejZmianyStatusu)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Uwagi)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ZatwierdzajacyPrzedsiębiorca.Email)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdTransakcji">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdTransakcji">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdTransakcji">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

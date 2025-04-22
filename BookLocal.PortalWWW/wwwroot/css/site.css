@@ -1,0 +1,69 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+:root {
+    --primary: #4F46E5;
+    --primary-dark: #4338CA;
+    --secondary: #6B7280;
+    --background: #F9FAFB;
+}
+
+.btn-primary-custom {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+    .btn-primary-custom:hover {
+        background-color: var(--primary-dark);
+        border-color: var(--primary-dark);
+    }
+
+.btn-outline-primary-custom {
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    background-color: transparent;
+}
+
+    .btn-outline-primary-custom:hover {
+        background-color: var(--primary);
+        color: white;
+    }
+
+.text-secondary-custom {
+    color: var(--secondary);
+}
+
+.section-bg {
+    background-color: var(--background);
+    padding: 60px 20px;
+}

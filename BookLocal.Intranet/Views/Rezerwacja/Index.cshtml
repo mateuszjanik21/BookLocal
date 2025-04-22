@@ -1,0 +1,193 @@
+﻿@model IEnumerable<BookLocal.Data.Data.PlatformaInternetowa.Rezerwacja>
+
+@{
+    ViewData["Title"] = "Rezerwacje";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <h1 class="text-primary mb-0 page-title"><i class="fas fa-calendar-check me-2"></i>@ViewData["Title"]</h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Dodaj nową rezerwację
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4 mb-lg-0">
+            <div class="card shadow-sm h-100">
+                <div class="card-header list-card-header">
+                    <i class="fas fa-calendar-alt me-2"></i>Kalendarz Rezerwacji
+                </div>
+                <div class="card-body p-2 p-lg-3">
+                    <div id='calendar'></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100 statistic-card">
+                <div class="card-header list-card-header">
+                    <i class="fas fa-chart-bar me-2"></i>Statystyki (Okres: Ost. 30 dni)
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Wszystkie rezerwacje:
+                            <span class="badge bg-primary rounded-pill">@((int?)ViewData["StatTotal"] ?? 0)</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Oczekujące:
+                            <span class="badge bg-warning text-dark rounded-pill">@((int?)ViewData["StatOczekujace"] ?? 0)</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Potwierdzone:
+                            <span class="badge bg-info rounded-pill">@((int?)ViewData["StatPotwierdzone"] ?? 0)</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Zakończone:
+                            <span class="badge bg-success rounded-pill">@((int?)ViewData["StatZakonczone"] ?? 0)</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Anulowane:
+                            <span class="badge bg-secondary rounded-pill">@((int?)ViewData["StatAnulowane"] ?? 0)</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info shadow-sm">
+            <i class="fas fa-info-circle me-2"></i> Brak rezerwacji do wyświetlenia w tabeli.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm list-card">
+            <div class="card-header list-card-header">
+                <i class="fas fa-list me-2"></i> Lista Rezerwacji (Najnowsze)
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mt-2 mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Klient</th>
+                                <th>Usługa (Wariant)</th>
+                                <th>Pracownik</th>
+                                <th>Data i Godzina</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end" style="width: 120px;">Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr class="align-middle">
+                                    <td class="fw-semibold">
+                                        @($"{item.ImieKlienta} {item.NazwiskoKlienta}") <small class="d-block text-muted">(@item.TelefonKlienta)</small>
+                                    </td>
+                                    <td>
+                                        @item.SzczegolyUslugi?.Usluga?.Nazwa
+                                        <small class="d-block text-muted">(@item.SzczegolyUslugi?.Opis)</small>
+                                    </td>
+                                    <td>
+                                        @(item.WykonujacyPracownik?.Imie) @(item.WykonujacyPracownik?.Nazwisko ?? "N/A")
+                                    </td>
+                                    <td>
+                                        @item.DataRezerwacji.ToString("yyyy-MM-dd HH:mm")
+                                    </td>
+                                    <td class="text-center">
+                                        @switch (item.Status?.ToLower())
+                                        {
+                                            case "oczekująca":
+                                                <span class="badge bg-warning text-dark rounded-pill status-badge">Oczekująca</span>
+                                                ; break;
+                                            case "potwierdzona":
+                                                <span class="badge bg-info rounded-pill status-badge">Potwierdzona</span>
+                                                ; break;
+                                            case "zakończona":
+                                                <span class="badge bg-success rounded-pill status-badge">Zakończona</span>
+                                                ; break;
+                                            case "anulowana":
+                                                <span class="badge bg-secondary rounded-pill status-badge">Anulowana</span>
+                                                ; break;
+                                            default:
+                                                <span class="badge bg-light text-dark border rounded-pill status-badge">@item.Status</span>
+                                                ; break;
+                                        }
+                                    </td>
+                                    <td class="text-end action-icons">
+                                        <a asp-action="Edit" asp-route-id="@item.IdRezerwacji" class="btn btn-warning btn-sm" title="Edytuj">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.IdRezerwacji" class="btn btn-danger btn-sm" title="Anuluj/Usuń">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          var calendarEl = document.getElementById('calendar');
+          if(calendarEl) {
+               var calendar = new FullCalendar.Calendar(calendarEl, {
+                    locale: 'pl',
+                    initialView: 'timeGridDay',
+                     slotMinTime: "08:00:00",
+                     slotMaxTime: "21:00:00",
+                     allDaySlot: false,
+                     headerToolbar: {
+                          left: 'prev,next today',
+                          center: 'title',
+                          right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                     },
+                    themeSystem: 'bootstrap5',
+                    navLinks: true,
+                    editable: false,
+                    selectable: true,
+                    dayMaxEvents: true,
+                     height: 'auto',
+
+                     events: '@Url.Action("GetBookingsForCalendar", "Rezerwacja")',
+
+                     loading: function(isLoading) { },
+                     eventDidMount: function(info) {
+                         if (info.event.extendedProps.description) {
+                             var tooltip = new bootstrap.Tooltip(info.el, {
+                                 title: info.event.extendedProps.description,
+                                 placement: 'top', trigger: 'hover', container: 'body'
+                             });
+                         }
+                     },
+                     eventClick: function(info) {
+                         window.location.href = '@Url.Action("Edit", "Rezerwacja")/' + info.event.id;
+                         info.jsEvent.preventDefault();
+                     },
+                     dateClick: function(info) {
+                          var dateStr = info.dateStr;
+                           window.location.href = '@Url.Action("Create", "Rezerwacja")?data=' + encodeURIComponent(dateStr);
+                     }
+               });
+               calendar.render();
+          } else {
+              console.error("Nie znaleziono elementu #calendar dla FullCalendar.");
+          }
+        });
+    </script>
+}

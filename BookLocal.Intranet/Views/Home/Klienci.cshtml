@@ -1,0 +1,185 @@
+﻿@{
+    ViewData["Title"] = "Klienci";
+}
+
+<style>
+    .text-primary {
+        color: #4F46E5; 
+        font-weight: bold;
+    }
+
+    .text-secondary {
+        color: #6B7280; 
+    }
+
+    .form-control {
+        border: 1px solid #E5E7EB; 
+        border-radius: 5px;
+    }
+
+    .btn-primary {
+        background-color: #4F46E5; 
+        border: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #3B3AB5; 
+    }
+
+    .card-body h2 {
+        font-size: 2rem;
+        margin: 0;
+    }
+
+    .table th {
+        text-align: center;
+        background-color: #E5E7EB;
+        color: #4F46E5;
+    }
+
+    .table td {
+        text-align: center;
+        color: #6B7280; 
+    }
+
+    .badge.bg-success {
+        background-color: #4F46E5; 
+    }
+
+    .badge.bg-secondary {
+        background-color: #6B7280;
+    }
+
+</style>
+
+<h1 class="text-center mb-4" style="color: #4F46E5;">
+    <i class="fas fa-users me-2"></i>Klienci
+</h1>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Wyszukiwarka -->
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-indigo">Wyszukiwarka klientów</h5>
+                    <form class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Imię lub nazwisko">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="email" class="form-control" placeholder="Adres email">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">Wyszukaj</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statystyki -->
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-indigo">Statystyki klientów</h5>
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <h2 class="text-primary">250</h2>
+                            <p class="text-secondary">Zarejestrowanych klientów</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h2 class="text-primary">180</h2>
+                            <p class="text-secondary">Aktywnych klientów</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h2 class="text-primary">70</h2>
+                            <p class="text-secondary">Nieaktywnych klientów</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela klientów -->
+        <div class="col-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-indigo">Lista klientów</h5>
+                    <table class="table table-striped table-bordered mt-3">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Imię</th>
+                                <th>Nazwisko</th>
+                                <th>Email</th>
+                                <th>Telefon</th>
+                                <th>Status</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Anna</td>
+                                <td>Kowalska</td>
+                                <td>anna.kowalska@example.com</td>
+                                <td>+48 123 456 789</td>
+                                <td><span class="badge bg-success">Aktywny</span></td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Edytuj</button>
+                                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Usuń</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Piotr</td>
+                                <td>Nowak</td>
+                                <td>piotr.nowak@example.com</td>
+                                <td>+48 987 654 321</td>
+                                <td><span class="badge bg-secondary">Nieaktywny</span></td>
+                                <td>
+                                    <button class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Edytuj</button>
+                                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Usuń</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formularz dodawania nowego klienta -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title text-indigo">Dodaj nowego klienta</h5>
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">Imię</label>
+                                <input type="text" class="form-control" id="firstName" placeholder="Wpisz imię">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Nazwisko</label>
+                                <input type="text" class="form-control" id="lastName" placeholder="Wpisz nazwisko">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" placeholder="Wpisz email">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Telefon</label>
+                                <input type="tel" class="form-control" id="phone" placeholder="Wpisz numer telefonu">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Dodaj klienta</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

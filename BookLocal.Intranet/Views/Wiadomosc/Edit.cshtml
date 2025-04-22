@@ -1,0 +1,64 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Wiadomosc
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Wiadomosc</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdWiadomosci" />
+            <div class="form-group">
+                <label asp-for="KonwersacjaId" class="control-label"></label>
+                <select asp-for="KonwersacjaId" class="form-control" asp-items="ViewBag.KonwersacjaId"></select>
+                <span asp-validation-for="KonwersacjaId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NadawcaUzytkownikId" class="control-label"></label>
+                <select asp-for="NadawcaUzytkownikId" class="form-control" asp-items="ViewBag.NadawcaUzytkownikId"></select>
+                <span asp-validation-for="NadawcaUzytkownikId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NadawcaPrzedsiębiorcaId" class="control-label"></label>
+                <select asp-for="NadawcaPrzedsiębiorcaId" class="form-control" asp-items="ViewBag.NadawcaPrzedsiębiorcaId"></select>
+                <span asp-validation-for="NadawcaPrzedsiębiorcaId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Tresc" class="control-label"></label>
+                <textarea asp-for="Tresc" class="form-control"></textarea>
+                <span asp-validation-for="Tresc" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DataWyslania" class="control-label"></label>
+                <input asp-for="DataWyslania" class="form-control" />
+                <span asp-validation-for="DataWyslania" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="CzyOdczytana" /> @Html.DisplayNameFor(model => model.CzyOdczytana)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="DataOdczytania" class="control-label"></label>
+                <input asp-for="DataOdczytania" class="form-control" />
+                <span asp-validation-for="DataOdczytania" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

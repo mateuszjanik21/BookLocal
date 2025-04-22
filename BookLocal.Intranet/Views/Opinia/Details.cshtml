@@ -1,0 +1,54 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Opinia
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Opinia</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Tresc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Tresc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Ocena)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Ocena)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Uzytkownik)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Uzytkownik.Email)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.OcenianyPracownik)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.OcenianyPracownik.Imie)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Rezerwacja)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Rezerwacja.Status)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DataDodania)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DataDodania)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.IdOpinii">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

@@ -1,0 +1,155 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Rezerwacja
+
+@{
+    ViewData["Title"] = "Edytuj rezerwację";
+}
+
+<h1 class="text-primary mb-4 page-title"><i class="fas fa-calendar-alt me-2"></i>@ViewData["Title"]</h1>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+        <div class="card shadow-sm mb-4 form-card">
+            <div class="card-header form-card-header">
+                 <i class="fas fa-pencil-alt me-2"></i> Modyfikuj dane rezerwacji
+            </div>
+            <div class="card-body px-4 py-4">
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2" role="alert"></div>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="IdRezerwacji" />
+                    <input type="hidden" asp-for="ImieKlienta" />
+                    <input type="hidden" asp-for="NazwiskoKlienta" />
+                    <input type="hidden" asp-for="TelefonKlienta" />
+
+                    <fieldset class="mb-4 form-section">
+                        <legend class="form-section-legend">Dane Klienta i Usługi (Podgląd)</legend>
+                         <dl class="row details-list small mb-0">
+                             <dt class="col-sm-4">Klient</dt>
+                             <dd class="col-sm-8 fw-semibold">
+                                 @if(Model.UzytkownikId.HasValue) { @(Model.Uzytkownik?.Imie) @(Model.Uzytkownik?.Nazwisko) }
+                                else
+                                {
+                                    @($"{Model.ImieKlienta} {Model.NazwiskoKlienta}")
+                                }
+                             </dd>
+                             <dt class="col-sm-4">Zarezerwowana Usługa</dt>
+                             <dd class="col-sm-8">
+                                 @Model.SzczegolyUslugi?.Usluga?.Nazwa (@Model.SzczegolyUslugi?.Opis) - @Model.SzczegolyUslugi?.Cena.ToString("C")
+                             </dd>
+                         </dl>
+                    </fieldset>
+
+                    <fieldset class="mb-4 form-section">
+                        <legend class="form-section-legend">Zmiana Terminu / Pracownika / Statusu</legend>
+                         <div class="mb-3">
+                            <label asp-for="WykonujacyPracownikId" class="form-label">Pracownik Wykonujący</label>
+                            <select asp-for="WykonujacyPracownikId" id="pracownikSelect" class="form-select form-select-sm" asp-items="ViewBag.WykonujacyPracownikId">
+                                <option value="">-- Wybierz pracownika --</option>
+                            </select>
+                            <span asp-validation-for="WykonujacyPracownikId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                             <label asp-for="SzczegolyUslugiId" class="form-label">Wariant Usługi / Cena</label>
+                             <select asp-for="SzczegolyUslugiId" id="szczegolySelect" class="form-select form-select-sm" asp-items="ViewBag.SzczegolyUslugiId">
+                                 <option value="">-- Wybierz wariant usługi --</option>
+                             </select>
+                             <span asp-validation-for="SzczegolyUslugiId" class="text-danger small"></span>
+                             <div class="form-text small">Lista wariantów załaduje się po wybraniu pracownika.</div>
+                        </div>
+
+                         <div class="row gx-3">
+                            <div class="col-md-6 mb-3">
+                                 <label asp-for="DataRezerwacji" class="form-label">Data rezerwacji</label>
+                                 <input asp-for="DataRezerwacji" type="datetime-local" class="form-control form-control-sm" />
+                                 <span asp-validation-for="DataRezerwacji" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                 <label asp-for="Status" class="form-label"></label>
+                                 <select asp-for="Status" class="form-select form-select-sm">
+                                      <option value="Oczekująca">Oczekująca</option>
+                                      <option value="Potwierdzona">Potwierdzona</option>
+                                      <option value="Zakończona">Zakończona</option>
+                                      <option value="Anulowana">Anulowana</option>
+                                 </select>
+                                 <span asp-validation-for="Status" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                    </fieldset>
+
+                    <div class="form-actions">
+                         <a asp-action="Index" class="btn btn-secondary btn-sm me-2">
+                           <i class="fas fa-arrow-left me-1"></i> Anuluj
+                        </a>
+                        <button type="submit" value="Save" class="btn btn-success btn-sm">
+                            <i class="fas fa-save me-1"></i> Zapisz zmiany
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {
+            var pracownikSelect = $('#pracownikSelect'); 
+            var szczegolySelect = $('#szczegolySelect'); 
+            var initialPracownikId = pracownikSelect.val(); // Odczytaj ID pracownika z modelu
+            var initialSzczegolyId = '@Model.SzczegolyUslugiId'; // Odczytaj ID szczegółu z modelu
+
+            function loadSzczegolyUslugi(selectedPracownikId, selectedSzczegolyId) {
+                szczegolySelect.empty();
+                szczegolySelect.prop('disabled', true);
+
+                if (selectedPracownikId && selectedPracownikId !== "") {
+                    szczegolySelect.append('<option value="">-- Ładowanie... --</option>');
+                    var url = '@Url.Action("GetSzczegolyUslugiForPracownik", "Rezerwacja")' + '?pracownikId=' + selectedPracownikId;
+
+                    $.ajax({
+                        url: url, type: 'GET',
+                        success: function (data) {
+                            szczegolySelect.empty();
+                            if (data && data.length > 0) {
+                                szczegolySelect.append('<option value="">-- Wybierz wariant --</option>');
+                                $.each(data, function (index, item) {
+                                    if (item.hasOwnProperty('value') && item.hasOwnProperty('text')) {
+                                        var option = $('<option>', { value: item.value, text: item.text });
+                                        // Zaznacz opcję, jeśli pasuje do początkowej wartości z modelu
+                                        if (item.value === selectedSzczegolyId) {
+                                            option.prop('selected', true);
+                                        }
+                                        szczegolySelect.append(option);
+                                    }
+                                });
+                                szczegolySelect.prop('disabled', false);
+                            } else {
+                                szczegolySelect.append('<option value="">-- Brak usług --</option>');
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Błąd ładowania usług: ", error);
+                            szczegolySelect.empty();
+                            szczegolySelect.append('<option value="">-- Błąd --</option>');
+                        }
+                    });
+                } else {
+                    szczegolySelect.append('<option value="">-- Wybierz pracownika --</option>');
+                }
+            }
+
+            pracownikSelect.on('change', function () {
+                loadSzczegolyUslugi($(this).val(), null); // Przy zmianie pracownika, nie ustawiamy usługi
+            });
+
+            // Załaduj usługi dla początkowo wybranego pracownika przy ładowaniu strony
+            if (initialPracownikId) {
+                loadSzczegolyUslugi(initialPracownikId, initialSzczegolyId);
+            }
+        });
+    </script>
+}

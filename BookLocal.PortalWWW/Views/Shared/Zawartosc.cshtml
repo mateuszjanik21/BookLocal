@@ -1,0 +1,8 @@
+﻿@model BookLocal.Data.Data.CMS.ZawartoscCms
+
+@if (!string.IsNullOrEmpty(Model.NazwaIkony))
+{
+    <i class="@Model.NazwaIkony" style="color: #4F46E5;"></i>
+}
+<h6 class="fw-bold mt-2">@Model.Sekcja</h6>
+<p class="text-secondary-custom">@Model.Tresc</p>

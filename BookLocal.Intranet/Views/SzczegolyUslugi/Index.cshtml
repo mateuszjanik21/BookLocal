@@ -1,0 +1,67 @@
+﻿@model IEnumerable<BookLocal.Data.Data.PlatformaInternetowa.SzczegolyUslugi>
+
+@{
+    ViewData["Title"] = "Usługi";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <h1 class="text-primary mb-0 page-title"><i class="fas fa-tasks me-2"></i>@ViewData["Title"]</h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Dodaj nowy wariant
+        </a>
+    </div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info shadow-sm">
+        <i class="fas fa-info-circle me-2"></i> Brak zdefiniowanych wariantów usług.
+    </div>
+}
+else
+{
+    @foreach (var grupaPoUsludze in Model.GroupBy(s => s.Usluga).OrderBy(g => g.Key.Nazwa))
+    {
+        <div class="card shadow-sm usluga-group-card">
+            <div class="card-header list-card-header">
+                <i class="fas fa-concierge-bell me-2"></i> Usługa: <strong>@grupaPoUsludze.Key.Nazwa</strong>
+            </div>
+            <div class="card-body py-2 px-3">
+                @foreach (var grupaPoPracowniku in grupaPoUsludze.GroupBy(s => s.Pracownik).OrderBy(g => g.Key.Nazwisko).ThenBy(g => g.Key.Imie))
+                {
+                    <h6 class="pracownik-group-header">
+                        <i class="fas fa-user-tie me-2 text-secondary"></i>
+                        @grupaPoPracowniku.Key.Imie @grupaPoPracowniku.Key.Nazwisko
+                    </h6>
+
+                    @foreach (var item in grupaPoPracowniku)
+                    {
+                        <div class="szczegoly-item">
+                            <div class="szczegoly-opis text-secondary">@Html.DisplayFor(modelItem => item.Opis)</div>
+                            <div class="szczegoly-czas"><i class="far fa-clock me-1"></i>@item.CzasTrwaniaMinuty min</div>
+                            <div class="szczegoly-cena">@item.Cena.ToString("C", new System.Globalization.CultureInfo("pl-PL"))</div>
+                            <div class="szczegoly-actions action-icons">
+                                <a asp-action="Edit" asp-route-id="@item.IdSzczegolowUslugi" class="btn btn-warning btn-sm" title="Edytuj">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a asp-action="Details" asp-route-id="@item.IdSzczegolowUslugi" class="btn btn-info btn-sm" title="Szczegóły">
+                                    <i class="fas fa-info-circle"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.IdSzczegolowUslugi" class="btn btn-danger btn-sm" title="Usuń">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    }
+}
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

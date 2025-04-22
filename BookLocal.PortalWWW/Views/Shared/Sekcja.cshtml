@@ -1,0 +1,23 @@
+﻿@model IEnumerable<BookLocal.Data.Data.CMS.SekcjaCms>
+
+@foreach (var item in Model)
+{
+    if (item.KluczSekcji != "Zaufali nam")
+    {
+        var columnClass1 = item.KluczSekcji == "Jak to działa?" ? "section-bg mt-5" : "my-5";
+
+        <div class="container @columnClass1">
+            <h2 class="text-center mb-5" style="color: #4F46E5;">@item.KluczSekcji</h2>
+            <div class="row text-center">
+                @foreach (var zawartosc in item.PowiazaneZawartosci.OrderBy(z => z.IdZawartosci))
+                {
+                    var columnClass = !string.IsNullOrEmpty(zawartosc.NazwaIkony) ? "col-md-3" : "col-md-4";
+
+                    <div class="@columnClass mb-3">
+                        @await Html.PartialAsync("Zawartosc", zawartosc)
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}

@@ -1,0 +1,44 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Usluga
+
+@{
+    ViewData["Title"] = "Szczegóły";
+}
+
+<h1 class="text-primary mb-4 page-title"><i class="fas fa-info-circle me-2"></i>@ViewData["Title"]: @Model.Nazwa</h1>
+
+<div class="row justify-content-center">
+     <div class="col-lg-10 col-xl-8"> 
+        <div class="card shadow-sm mb-4 display-card">
+            <div class="card-header display-card-header">
+                 <i class="fas fa-concierge-bell me-2"></i> Informacje o usłudze
+            </div>
+            <div class="card-body px-4 py-4">
+                 <dl class="row details-list"> 
+
+                    @if (!string.IsNullOrEmpty(Model.ZdjecieUrl))
+                    {
+                        <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.ZdjecieUrl)</dt>
+                        <dd class="col-sm-9 col-lg-10">
+                            <img src="@Url.Content(Model.ZdjecieUrl)" alt="Zdjęcie @Model.Nazwa" class="profile-image-details img-thumbnail mb-3" />
+                        </dd>
+                    }
+
+                    <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.Nazwa)</dt>
+                    <dd class="col-sm-9 col-lg-10">@Html.DisplayFor(model => model.Nazwa)</dd>
+
+                    <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.Opis)</dt>
+                    <dd class="col-sm-9 col-lg-10" style="white-space: pre-wrap;">@Html.DisplayFor(model => model.Opis)</dd>
+
+                 </dl>
+            </div> 
+             <div class="card-footer actions-footer"> 
+                <a asp-action="Edit" asp-route-id="@Model?.IdUslugi" class="btn btn-warning btn-sm me-2">
+                   <i class="fas fa-edit me-1"></i> Edytuj
+                </a> 
+                <a asp-action="Index" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Powrót do listy
+                </a>
+            </div>
+        </div> 
+    </div> 
+</div>

@@ -1,0 +1,145 @@
+﻿@model BookLocal.PortalWWW.Models.ViewModel.RezerwacjaCreateViewModel
+
+@{
+    ViewData["Title"] = "Umów wizytę";
+    string minDate = DateTime.Today.ToString("yyyy-MM-dd");
+}
+
+<div class="container mt-4 mb-5 reservation-create-page">
+    <h1 class="text-center mb-4 display-6 fw-bold text-primary">@ViewData["Title"]</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card shadow-sm mb-4 booking-summary">
+                <div class="card-header bg-light fw-semibold text-secondary">
+                    Podsumowanie Twojego Wyboru
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            @if (!string.IsNullOrEmpty(Model.ZdjeciePracownikaUrl))
+                            {
+                                <img src="@Url.Content(Model.ZdjeciePracownikaUrl)" alt="@Model.ImieNazwiskoPracownika" class="img-fluid rounded-circle mb-2 specialist-photo-small">
+                            }
+                            else
+                            {
+                                <span class="fa-stack fa-3x mb-2">
+                                    <i class="fas fa-circle fa-stack-2x text-secondary opacity-25"></i>
+                                    <i class="fas fa-user fa-stack-1x fa-inverse"></i>
+                                </span>
+                            }
+                            <h6 class="mb-0 text-primary small">@Model.ImieNazwiskoPracownika</h6>
+                            <p class="text-muted small mb-0">@Model.StanowiskoPracownika</p>
+                        </div>
+                        <div class="col-md-9">
+                            <h5 class="card-title service-name mb-1">@Model.NazwaUslugi</h5>
+                            <p class="card-text service-detail-desc small mb-2"><strong>Wybrany wariant:</strong> @Model.OpisSzczegolowUslugi</p>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span><i class="far fa-clock me-1"></i> Czas trwania: @Model.CzasTrwaniaMinuty min</span>
+                                <span class="fw-bold text-success"><i class="fas fa-tag me-1"></i> Cena: @Model.Cena.ToString("C")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="SzczegolyUslugiId" />
+                <input type="hidden" asp-for="PracownikId" />
+                <input type="hidden" asp-for="NazwaUslugi" />
+                <input type="hidden" asp-for="OpisSzczegolowUslugi" />
+                <input type="hidden" asp-for="Cena" />
+                <input type="hidden" asp-for="CzasTrwaniaMinuty" />
+                <input type="hidden" asp-for="ImieNazwiskoPracownika" />
+                <input type="hidden" asp-for="ZdjeciePracownikaUrl" />
+                <input type="hidden" asp-for="StanowiskoPracownika" />
+
+
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light fw-semibold text-secondary">
+                        Wybierz Termin i Podaj Dane Kontaktowe
+                    </div>
+                    <div class="card-body">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3 alert alert-danger p-2 small"></div> @* Zmieniono z All na ModelOnly, aby nie duplikować błędów pól *@
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="WybranaData" class="form-label small fw-semibold"></label>
+                                <input asp-for="WybranaData" type="date" class="form-control form-control-sm" min="@minDate" />
+                                <span asp-validation-for="WybranaData" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="WybranaGodzina" class="form-label small fw-semibold"></label>
+                                <input asp-for="WybranaGodzina" type="time" class="form-control form-control-sm" step="900"/> @* step="900" = co 15 minut *@
+                                <span asp-validation-for="WybranaGodzina" class="text-danger small"></span>
+                                <small class="form-text text-muted d-block mt-1">Godziny otwarcia: 8:00 - 18:00</small> @* Dostosuj lub usuń *@
+                            </div>
+                            <div class="col-12">
+                                <hr class="my-3">
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="ImieKlienta" class="form-label small fw-semibold"></label>
+                                <input asp-for="ImieKlienta" class="form-control form-control-sm" />
+                                <span asp-validation-for="ImieKlienta" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="NazwiskoKlienta" class="form-label small fw-semibold"></label>
+                                <input asp-for="NazwiskoKlienta" class="form-control form-control-sm" />
+                                <span asp-validation-for="NazwiskoKlienta" class="text-danger small"></span>
+                            </div>
+                            <div class="col-12">
+                                <label asp-for="TelefonKlienta" class="form-label small fw-semibold"></label>
+                                <input asp-for="TelefonKlienta" type="tel" class="form-control form-control-sm" />
+                                <span asp-validation-for="TelefonKlienta" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-calendar-check me-2"></i>Zarezerwuj Termin
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="mt-4 text-center">
+                @{
+                    var uslugaIdForLink = ViewBag.UslugaId; 
+                }
+                @if (uslugaIdForLink != null)
+                {
+                    <a asp-controller="Usluga" asp-action="Details" asp-route-id="@uslugaIdForLink" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Anuluj i wróć do szczegółów usługi
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Usluga" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Anuluj i wróć do listy usług
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var today = new Date().toISOString().split('T')[0];
+            var dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(function(input) {
+                if (!input.getAttribute('min')) {
+                    input.setAttribute('min', today);
+                }
+            });
+
+        });
+    </script>
+}

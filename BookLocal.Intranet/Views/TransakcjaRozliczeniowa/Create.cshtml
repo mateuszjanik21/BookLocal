@@ -1,0 +1,80 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.TransakcjaRozliczeniowa
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>TransakcjaRozliczeniowa</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="PracownikId" class="control-label"></label>
+                <select asp-for="PracownikId" class ="form-control" asp-items="ViewBag.PracownikId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="RezerwacjaId" class="control-label"></label>
+                <select asp-for="RezerwacjaId" class ="form-control" asp-items="ViewBag.RezerwacjaId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="KwotaBrutto" class="control-label"></label>
+                <input asp-for="KwotaBrutto" class="form-control" />
+                <span asp-validation-for="KwotaBrutto" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProwizjaPlatformy" class="control-label"></label>
+                <input asp-for="ProwizjaPlatformy" class="form-control" />
+                <span asp-validation-for="ProwizjaPlatformy" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ProwizjaFirmy" class="control-label"></label>
+                <input asp-for="ProwizjaFirmy" class="form-control" />
+                <span asp-validation-for="ProwizjaFirmy" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="KwotaNettoDlaPracownika" class="control-label"></label>
+                <input asp-for="KwotaNettoDlaPracownika" class="form-control" />
+                <span asp-validation-for="KwotaNettoDlaPracownika" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StatusRozliczenia" class="control-label"></label>
+                <input asp-for="StatusRozliczenia" class="form-control" />
+                <span asp-validation-for="StatusRozliczenia" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DataUtworzenia" class="control-label"></label>
+                <input asp-for="DataUtworzenia" class="form-control" />
+                <span asp-validation-for="DataUtworzenia" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DataOstatniejZmianyStatusu" class="control-label"></label>
+                <input asp-for="DataOstatniejZmianyStatusu" class="form-control" />
+                <span asp-validation-for="DataOstatniejZmianyStatusu" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Uwagi" class="control-label"></label>
+                <textarea asp-for="Uwagi" class="form-control"></textarea>
+                <span asp-validation-for="Uwagi" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ZatwierdzajacyPrzedsiębiorcaId" class="control-label"></label>
+                <select asp-for="ZatwierdzajacyPrzedsiębiorcaId" class ="form-control" asp-items="ViewBag.ZatwierdzajacyPrzedsiębiorcaId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

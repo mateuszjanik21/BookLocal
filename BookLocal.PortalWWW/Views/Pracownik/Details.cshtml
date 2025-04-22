@@ -1,0 +1,72 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Pracownik
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Pracownik</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Imie)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Imie)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Nazwisko)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Nazwisko)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Bio)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Bio)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ZdjecieUrl)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ZdjecieUrl)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Stanowisko)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Stanowisko)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.EmailKontaktowy)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.EmailKontaktowy)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.TelefonKontaktowy)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TelefonKontaktowy)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Firma)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Firma.Nazwa)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.CzyAktywny)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CzyAktywny)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.IdPracownika">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

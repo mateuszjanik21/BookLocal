@@ -1,0 +1,20 @@
+﻿@model IEnumerable<BookLocal.Data.Data.CMS.OdnosnikCms>
+
+<div class="collapse navbar-collapse" id="navbarLoggedInContent">
+    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        @if (Model != null)
+        {
+            @foreach (var item in Model)
+            {
+                <li class="nav-item">
+                    <a class="nav-link"
+                       asp-controller="@item.Odnosnik"
+                       asp-action="Index"
+                       title="@item.Nazwa">
+                        @item.Nazwa
+                    </a>
+                </li>
+            }
+        }
+    </ul>
+</div>

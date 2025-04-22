@@ -1,0 +1,91 @@
+﻿@model IEnumerable<BookLocal.Data.Data.PlatformaInternetowa.Pracownik>
+
+@{
+    ViewData["Title"] = "Zarządzanie Pracownikami";
+}
+
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-primary"><i class="fas fa-user-tie me-2"></i>Zarządzanie Pracownikami</h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Dodaj nowego pracownika
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Lista Pracowników</h5>
+            @if (!Model.Any())
+            {
+                <div class="alert alert-info">Brak dodanych pracowników.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mt-3">
+                        <thead>
+                            <tr>
+                                <th>Zdjęcie</th>
+                                <th>@Html.DisplayNameFor(model => model.Imie)</th>
+                                <th>@Html.DisplayNameFor(model => model.Nazwisko)</th>
+                                <th>@Html.DisplayNameFor(model => model.Stanowisko)</th>
+                                <th>@Html.DisplayNameFor(model => model.EmailKontaktowy)</th>
+                                <th>@Html.DisplayNameFor(model => model.TelefonKontaktowy)</th>
+                                <th>@Html.DisplayNameFor(model => model.CzyAktywny)</th>
+                                <th>Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.ZdjecieUrl))
+                                        {
+                                            <img src="@Url.Content(item.ZdjecieUrl)" alt="Zdjęcie @item.Imie @item.Nazwisko" class="rounded-circle" 
+                                            style="width: 30px; height: 30px; object-fit: cover; margin-left: 10px;" />
+                                        }
+                                        else
+                                        {
+                                            <span class="fa-stack fa-1x" style="vertical-align: middle;">
+                                                <i class="fas fa-circle fa-stack-2x text-secondary opacity-25"></i>
+                                                <i class="fas fa-user fa-stack-1x fa-inverse"></i>
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Imie)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.Nazwisko)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.Stanowisko)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.EmailKontaktowy)</td>
+                                    <td>@Html.DisplayFor(modelItem => item.TelefonKontaktowy)</td>
+                                    <td>
+                                        @if (item.CzyAktywny)
+                                        {
+                                            <span class="badge bg-success">Aktywny</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Nieaktywny</span>
+                                        }
+                                    </td>
+                                    <td class="action-icons">
+                                        <a asp-action="Edit" asp-route-id="@item.IdPracownika" class="btn btn-warning btn-sm" title="Edytuj">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.IdPracownika" class="btn btn-info btn-sm" title="Szczegóły">
+                                            <i class="fas fa-info-circle"></i> 
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.IdPracownika" class="btn btn-danger btn-sm" title="Usuń">
+                                            <i class="fas fa-trash"></i> 
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

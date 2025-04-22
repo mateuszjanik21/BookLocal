@@ -1,0 +1,110 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Pracownik
+
+@{
+    ViewData["Title"] = "Dodaj Nowego Pracownik";
+}
+
+<h1 class="text-primary mb-4 page-title"><i class="fas fa-user-plus me-2"></i>@ViewData["Title"]</h1>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+        <div class="card shadow-sm mb-4 form-card">
+            <div class="card-header form-card-header">
+                <i class="fas fa-info-circle me-2"></i> Wprowadź dane nowego pracownika
+            </div>
+            <div class="card-body px-4 py-4">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small p-2" role="alert"></div>
+                    @Html.AntiForgeryToken()
+
+                    <fieldset class="mb-4 form-section">
+                        <legend class="form-section-legend">Dane Podstawowe</legend>
+                        <div class="row gx-3">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Imie" class="form-label"></label>
+                                <input asp-for="Imie" class="form-control form-control-sm" placeholder="Imię pracownika" />
+                                <span asp-validation-for="Imie" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Nazwisko" class="form-label"></label>
+                                <input asp-for="Nazwisko" class="form-control form-control-sm" placeholder="Nazwisko pracownika" />
+                                <span asp-validation-for="Nazwisko" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Stanowisko" class="form-label"></label>
+                            <input asp-for="Stanowisko" class="form-control form-control-sm" placeholder="Np. Fryzjer, Kosmetyczka" />
+                            <span asp-validation-for="Stanowisko" class="text-danger small"></span>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="mb-4 form-section">
+                        <legend class="form-section-legend">Przypisanie do Firmy</legend>
+                        <div class="mb-3">
+                            <label asp-for="FirmaId" class="form-label">Firma</label> 
+                            <select asp-for="FirmaId" class="form-select form-select-sm" asp-items="ViewBag.FirmaId">
+                                <option value="">-- Wybierz firmę --</option>
+                            </select>
+                            <span asp-validation-for="FirmaId" class="text-danger small"></span>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="mb-4 form-section">
+                        <legend class="form-section-legend">Profil i Wygląd</legend>
+                        <div class="mb-3">
+                            <label asp-for="Bio" class="form-label"></label>
+                            <textarea asp-for="Bio" class="form-control form-control-sm" rows="4" placeholder="Opis doświadczenia, specjalności..."></textarea>
+                            <span asp-validation-for="Bio" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="ZdjecieUrl" class="form-label">Link URL do zdjęcia</label>
+                            <input asp-for="ZdjecieUrl" type="url" class="form-control form-control-sm" placeholder="https://... (link do obrazka online)" />
+                            <span asp-validation-for="ZdjecieUrl" class="text-danger small"></span>
+                            <div class="form-text small">Wklej publicznie dostępny URL do zdjęcia.</div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="mb-4 form-section">
+                        <legend class="form-section-legend">Dane Kontaktowe (Opcjonalne)</legend>
+                        <div class="row gx-3">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EmailKontaktowy" class="form-label">Email</label>
+                                <input asp-for="EmailKontaktowy" type="email" class="form-control form-control-sm" placeholder="email@przyklad.pl" />
+                                <span asp-validation-for="EmailKontaktowy" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="TelefonKontaktowy" class="form-label">Telefon</label>
+                                <input asp-for="TelefonKontaktowy" type="tel" class="form-control form-control-sm" placeholder="+48 123 456 789" />
+                                <span asp-validation-for="TelefonKontaktowy" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="form-section">
+                        <legend class="form-section-legend">Status</legend>
+                        <div class="mb-3 form-check form-switch">
+                            <input class="form-check-input" asp-for="CzyAktywny" type="checkbox" role="switch" id="czyAktywnySwitch" checked />
+                            <label class="form-check-label" for="czyAktywnySwitch">Nieaktywny/Aktywny</label>
+                            <span asp-validation-for="CzyAktywny" class="text-danger small d-block"></span>
+                        </div>
+                    </fieldset>
+
+                    <div class="form-actions">
+                        <a asp-action="Index" class="btn btn-secondary btn-sm me-2">
+                            <i class="fas fa-arrow-left me-1"></i> Powrót do listy
+                        </a>
+                        <button type="submit" value="Create" class="btn btn-success btn-sm">
+                            <i class="fas fa-save me-1"></i> Utwórz Pracownika
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

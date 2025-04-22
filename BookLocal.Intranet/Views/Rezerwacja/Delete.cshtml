@@ -1,0 +1,59 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Rezerwacja
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1 class="text-danger mb-4 page-title"><i class="fas fa-exclamation-triangle me-2"></i>@ViewData["Title"]</h1>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="card shadow-sm border-danger mb-4">
+             <div class="card-header bg-danger text-white">
+                 <i class="fas fa-trash me-2"></i> Czy na pewno chcesz usunąć/anulować tę rezerwację?
+            </div>
+            <div class="card-body">
+                <p>Zamierzasz trwale usunąć rezerwację:</p>
+                
+                <dl class="row delete-summary">
+                     <dt class="col-sm-4">Klient</dt>
+                     <dd class="col-sm-8 fw-semibold">
+                         @if(Model.UzytkownikId.HasValue) { @(Model.Uzytkownik?.Imie) @(Model.Uzytkownik?.Nazwisko) }
+                        else
+                        {
+                            @($"{Model.ImieKlienta} {Model.NazwiskoKlienta}")
+                        }
+                     </dd>
+
+                     <dt class="col-sm-4">Usługa</dt>
+                     <dd class="col-sm-8">@Model.SzczegolyUslugi?.Usluga?.Nazwa @Model.SzczegolyUslugi?.Opis</dd>
+
+                     <dt class="col-sm-4">Pracownik</dt>
+                     <dd class="col-sm-8">@Model.WykonujacyPracownik?.Imie @Model.WykonujacyPracownik?.Nazwisko</dd>
+
+                     <dt class="col-sm-4">Data</dt>
+                     <dd class="col-sm-8">@Model.DataRezerwacji.ToString("yyyy-MM-dd HH:mm")</dd>
+
+                     <dt class="col-sm-4">Status</dt>
+                     <dd class="col-sm-8">@Model.Status</dd>
+                </dl>
+                <hr>
+                <p class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i> Tej operacji nie można cofnąć!</p>
+
+                <form asp-action="Delete" method="post"> 
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="IdRezerwacji" /> 
+                    
+                    <div class="mt-4 delete-actions text-end">
+                         <a asp-action="Index" class="btn btn-secondary btn-sm me-2">
+                            <i class="fas fa-times me-1"></i> Nie, anuluj
+                         </a>
+                         <button type="submit" value="Delete" class="btn btn-danger btn-sm">
+                             <i class="fas fa-trash me-1"></i> Tak, usuń rezerwację
+                         </button>
+                    </div>
+                </form>
+            </div> 
+        </div> 
+    </div> 
+</div>

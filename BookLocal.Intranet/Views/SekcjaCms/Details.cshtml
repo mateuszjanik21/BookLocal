@@ -1,0 +1,42 @@
+﻿@model BookLocal.Data.Data.CMS.SekcjaCms
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>SekcjaCms</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.KluczSekcji)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.KluczSekcji)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Kolejnosc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Kolejnosc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.LastModifiedByPracownik)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.LastModifiedByPracownik.Imie)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.LastModifiedDate)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.LastModifiedDate)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.IdSekcji">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

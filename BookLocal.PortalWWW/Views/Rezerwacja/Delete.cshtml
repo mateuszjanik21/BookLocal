@@ -1,0 +1,60 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Rezerwacja
+
+@{
+    ViewData["Title"] = "Odwołaj Rezerwację";
+}
+
+<div class="container mt-4 mb-5 reservation-cancel-page">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Potwierdzenie Usunięcia</h4> @* Zmieniono nagłówek *@
+                </div>
+                <div class="card-body p-4">
+                    <h5 class="card-title text-center mb-3">Czy na pewno chcesz trwale USUNĄĆ tę rezerwację?</h5> @* Zmieniono pytanie *@
+
+                    <p class="text-center text-muted mb-4">Tej operacji nie będzie można cofnąć. Sprawdź szczegóły poniżej.</p>
+
+                    <div class="reservation-details-summary bg-light p-3 rounded border mb-4">
+                        <dl class="row small mb-0">
+                            <dt class="col-sm-4">Usługa:</dt>
+                            <dd class="col-sm-8">@Model.SzczegolyUslugi?.Usluga?.Nazwa</dd>
+
+                            <dt class="col-sm-4">Wariant:</dt>
+                            <dd class="col-sm-8">@Model.SzczegolyUslugi?.Opis</dd>
+
+                            <dt class="col-sm-4">Specjalista:</dt>
+                            <dd class="col-sm-8">@Model.WykonujacyPracownik?.Imie @Model.WykonujacyPracownik?.Nazwisko</dd>
+
+                            <dt class="col-sm-4">Termin:</dt>
+                            <dd class="col-sm-8 fw-semibold">@Model.DataRezerwacji.ToString("dddd, dd.MM.yyyy 'o' HH:mm")</dd>
+
+                            <dt class="col-sm-4">Status:</dt>
+                            <dd class="col-sm-8">@Model.Status</dd>
+                            @if (!string.IsNullOrEmpty(Model.ImieKlienta))
+                            {
+                                <dt class="col-sm-4 pt-2 border-top mt-2">Klient:</dt>
+                                <dd class="col-sm-8 pt-2 border-top mt-2">@Model.ImieKlienta @Model.NazwiskoKlienta</dd>
+                            }
+                        </dl>
+                    </div>
+
+                    <form asp-action="Delete" method="post" class="text-center">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="IdRezerwacji" />
+
+                        <button type="submit" class="btn btn-danger btn-lg me-2">
+                            <i class="fas fa-trash-alt me-1"></i> Tak, usuń trwale
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary btn-lg">
+                            Nie, wróć do listy
+                        </a>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

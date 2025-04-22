@@ -1,0 +1,49 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Pracownik
+
+@{
+    ViewData["Title"] = "Usuń pracownika";
+}
+
+<h1 class="text-danger mb-4 page-title"><i class="fas fa-exclamation-triangle me-2"></i>@ViewData["Title"]</h1>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+        <div class="card shadow-sm border-danger mb-4">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-trash me-2"></i> Czy na pewno chcesz usunąć tego pracownika?
+            </div>
+            <div class="card-body">
+                <p class="lead">Zamierzasz trwale usunąć pracownika:</p>
+                <h4 class="text-danger mb-3">@Model.Imie @Model.Nazwisko</h4>
+
+                <p><strong>Podsumowanie danych do usunięcia:</strong></p>
+                <dl class="row delete-summary small">
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Stanowisko)</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.Stanowisko)</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Firma)</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.Firma.Nazwa)</dd>
+
+                    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.EmailKontaktowy)</dt>
+                    <dd class="col-sm-8">@Html.DisplayFor(model => model.EmailKontaktowy)</dd>
+                </dl>
+                <hr>
+                <p class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i> Tej operacji nie można cofnąć!</p>
+
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="IdPracownika" /> 
+
+                    <div class="mt-4 text-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-sm me-2">
+                            <i class="fas fa-times me-1"></i> Anuluj
+                        </a>
+                        <button type="submit" value="Delete" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash me-1"></i> Tak, usuń pracownika
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div> 
+    </div> 
+</div>

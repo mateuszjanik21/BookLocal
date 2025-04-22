@@ -1,0 +1,7 @@
+﻿@model IEnumerable<BookLocal.Data.Data.CMS.NaglowekCms>
+
+@foreach (var item in Model)
+{
+    <h1 class="display-4 fw-bold" style="color: #4F46E5;">@item.Naglowek</h1>
+    <p class="lead text-secondary-custom">@item.Tresc</p>
+}

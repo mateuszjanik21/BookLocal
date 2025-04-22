@@ -1,0 +1,36 @@
+﻿.statistic-card .list-group-item {
+    border: none;
+    padding: 0.6rem 0;
+    background-color: transparent;
+    font-size: 0.9rem;
+}
+
+.statistic-card .badge {
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-width: 40px;
+    text-align: center;
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    padding: 0.3em 0.6em;
+    font-weight: 600;
+}
+
+#calendar {
+    min-height: 500px; 
+}
+
+.fc table {
+    background-color: #FFFFFF; 
+}
+
+.fc .fc-button {
+    font-size: 0.85rem; 
+    padding: 0.3rem 0.7rem;
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.25rem; 
+}

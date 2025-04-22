@@ -1,0 +1,84 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Pensja
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Pensja</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdPensjii" />
+            <div class="form-group">
+                <label asp-for="PracownikId" class="control-label"></label>
+                <select asp-for="PracownikId" class="form-control" asp-items="ViewBag.PracownikId"></select>
+                <span asp-validation-for="PracownikId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="KwotaPodstawowa" class="control-label"></label>
+                <input asp-for="KwotaPodstawowa" class="form-control" />
+                <span asp-validation-for="KwotaPodstawowa" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Premia" class="control-label"></label>
+                <input asp-for="Premia" class="form-control" />
+                <span asp-validation-for="Premia" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Potracenia" class="control-label"></label>
+                <input asp-for="Potracenia" class="form-control" />
+                <span asp-validation-for="Potracenia" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="OkresOd" class="control-label"></label>
+                <input asp-for="OkresOd" class="form-control" />
+                <span asp-validation-for="OkresOd" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="OkresDo" class="control-label"></label>
+                <input asp-for="OkresDo" class="form-control" />
+                <span asp-validation-for="OkresDo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StatusWyplaty" class="control-label"></label>
+                <input asp-for="StatusWyplaty" class="form-control" />
+                <span asp-validation-for="StatusWyplaty" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DataWyplaty" class="control-label"></label>
+                <input asp-for="DataWyplaty" class="form-control" />
+                <span asp-validation-for="DataWyplaty" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Uwagi" class="control-label"></label>
+                <textarea asp-for="Uwagi" class="form-control"></textarea>
+                <span asp-validation-for="Uwagi" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DataUtworzeniaZapisu" class="control-label"></label>
+                <input asp-for="DataUtworzeniaZapisu" class="form-control" />
+                <span asp-validation-for="DataUtworzeniaZapisu" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ZarzadzajacyPrzedsiębiorcaId" class="control-label"></label>
+                <select asp-for="ZarzadzajacyPrzedsiębiorcaId" class="form-control" asp-items="ViewBag.ZarzadzajacyPrzedsiębiorcaId"></select>
+                <span asp-validation-for="ZarzadzajacyPrzedsiębiorcaId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

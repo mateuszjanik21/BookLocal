@@ -1,0 +1,49 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Usluga
+
+@{
+    ViewData["Title"] = "Usuń";
+}
+
+<h1 class="text-danger mb-4 page-title"><i class="fas fa-exclamation-triangle me-2"></i>@ViewData["Title"]</h1>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6"> 
+        <div class="card shadow-sm border-danger mb-4"> 
+             <div class="card-header bg-danger text-white"> 
+                 <i class="fas fa-trash me-2"></i> Czy na pewno chcesz usunąć tę usługę?
+            </div>
+            <div class="card-body">
+                <p class="lead">Zamierzasz trwale usunąć usługę:</p>
+                <h4 class="text-danger mb-3">@Model.Nazwa</h4>
+                
+                <p><strong>Podsumowanie danych do usunięcia:</strong></p>
+                <dl class="row delete-summary small"> 
+                    <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Nazwa)</dt>
+                    <dd class="col-sm-9">@Html.DisplayFor(model => model.Nazwa)</dd>
+                    <dt class="col-sm-3">Fragment Opisu</dt>
+                    <dd class="col-sm-9">
+                         @if (!string.IsNullOrEmpty(Model.Opis) && Model.Opis.Length > 50)
+                         { @(Model.Opis.Substring(0, 50) + "...") }
+                         else { @Html.DisplayFor(model => model.Opis) }
+                    </dd>
+                </dl>
+                <hr>
+                <p class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i> Tej operacji nie można cofnąć! Usunięcie usługi może wpłynąć na powiązane rezerwacje i inne dane.</p>
+
+                <form asp-action="Delete" method="post"> 
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="IdUslugi" /> 
+                    
+                    <div class="mt-4 delete-actions text-end">
+                         <a asp-action="Index" class="btn btn-secondary btn-sm me-2">
+                            <i class="fas fa-times me-1"></i> Anuluj
+                         </a>
+                         <button type="submit" value="Delete" class="btn btn-danger btn-sm">
+                             <i class="fas fa-trash me-1"></i> Tak, usuń usługę
+                         </button>
+                    </div>
+                </form>
+            </div> 
+        </div> 
+    </div> 
+</div>

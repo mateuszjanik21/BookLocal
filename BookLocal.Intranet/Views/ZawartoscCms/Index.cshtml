@@ -1,0 +1,73 @@
+﻿@model IEnumerable<BookLocal.Data.Data.CMS.ZawartoscCms>
+
+@{
+    ViewData["Title"] = "Zawartość CMS";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-success btn-sm"><i class="fas fa-plus me-1"></i> Dodaj Nową Treść</a>
+</p>
+<table class="table table-striped table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Sekcja)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Tresc)
+            </th>
+            <th>
+                Autor Mod.
+            </th>
+            <th>
+                Powiązana Sekcja (Klucz)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataModyfikacji)
+            </th>
+            <th class="text-end">Akcje</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderBy(z => z.Sekcja).ThenByDescending(z => z.DataModyfikacji))
+        {
+            <tr class="align-middle">
+                <td class="fw-semibold">
+                    @Html.DisplayFor(modelItem => item.Sekcja)
+                </td>
+                <td class="small">
+                    @if (!string.IsNullOrEmpty(item.Tresc) && item.Tresc.Length > 100)
+                    {
+                        @(item.Tresc.Substring(0, 100) + "...")
+                    }
+                    else
+                    {
+                        @Html.Raw(item.Tresc)
+                    }
+                </td>
+                <td class="small text-muted">
+                    @(item.Autor?.Imie) @(item.Autor?.Nazwisko ?? "N/A")
+                </td>
+                <td class="small text-muted">
+                    @(item.SekcjaPowiazana?.KluczSekcji ?? "-")
+                </td>
+                <td class="small">
+                    @item.DataModyfikacji.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                </td>
+                <td class="text-end action-icons">
+                    <a asp-action="Edit" asp-route-id="@item.IdZawartosci" class="btn btn-warning btn-sm" title="Edytuj">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a asp-action="Details" asp-route-id="@item.IdZawartosci" class="btn btn-info btn-sm" title="Szczegóły">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.IdZawartosci" class="btn btn-danger btn-sm" title="Usuń">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,52 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Rezerwacja
+
+@{
+    ViewData["Title"] = "Potwierdzenie Rezerwacji";
+}
+
+<div class="container mt-5 mb-5 text-center confirmation-page">
+    <div class="card shadow-sm border-success mx-auto" style="max-width: 600px;">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i>@ViewData["Title"]</h4>
+        </div>
+        <div class="card-body p-4">
+            <p class="lead">Dziękujemy, Twoja rezerwacja została pomyślnie utworzona!</p>
+            <p>Status Twojej rezerwacji to: <strong class="badge bg-warning text-dark">@Model.Status</strong></p>
+            <p>Niedługo skontaktujemy się z Tobą w celu potwierdzenia lub otrzymasz powiadomienie.</p>
+
+            <hr class="my-4">
+
+            <h5 class="text-primary mb-3">Szczegóły rezerwacji:</h5>
+            <dl class="row text-start small">
+                <dt class="col-sm-4">Usługa:</dt>
+                <dd class="col-sm-8">@Model.SzczegolyUslugi?.Usluga?.Nazwa</dd>
+
+                <dt class="col-sm-4">Wariant:</dt>
+                <dd class="col-sm-8">@Model.SzczegolyUslugi?.Opis</dd>
+
+                <dt class="col-sm-4">Specjalista:</dt>
+                <dd class="col-sm-8">@Model.WykonujacyPracownik?.Imie @Model.WykonujacyPracownik?.Nazwisko</dd>
+
+                <dt class="col-sm-4">Data i godzina:</dt>
+                <dd class="col-sm-8 fw-bold">@Model.DataRezerwacji.ToString("dddd, dd MMMM yyyy 'o' HH:mm")</dd>
+
+                <dt class="col-sm-4">Czas trwania:</dt>
+                <dd class="col-sm-8">@Model.SzczegolyUslugi?.CzasTrwaniaMinuty min</dd>
+
+                <dt class="col-sm-4">Cena:</dt>
+                <dd class="col-sm-8">@Model.SzczegolyUslugi?.Cena.ToString("C")</dd>
+
+                <dt class="col-sm-4">Twoje dane:</dt>
+                <dd class="col-sm-8">@Model.ImieKlienta @Model.NazwiskoKlienta, Tel: @Model.TelefonKlienta</dd>
+
+                <dt class="col-sm-4">Numer rezerwacji:</dt>
+                <dd class="col-sm-8">@Model.IdRezerwacji</dd>
+            </dl>
+
+            <div class="mt-4">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary me-2">
+                    <i class="fas fa-home me-1"></i> Wróć na stronę główną</a>
+            </div>
+        </div>
+    </div>
+</div>

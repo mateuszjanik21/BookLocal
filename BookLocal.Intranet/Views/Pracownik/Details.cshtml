@@ -1,0 +1,89 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Pracownik
+
+@{
+    ViewData["Title"] = "Szczegóły";
+}
+
+<h1 class="text-primary mb-4 page-title"><i class="fas fa-user-tag me-2"></i>
+    @ViewData["Title"]: @Model.Imie @Model.Nazwisko</h1>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <i class="fas fa-info-circle me-2"></i> Informacje o pracowniku
+            </div>
+            <div class="card-body px-4 py-4">
+                <dl class="row details-list">
+                    @if (!string.IsNullOrEmpty(Model.ZdjecieUrl))
+                    {
+                        <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.ZdjecieUrl)</dt>
+                        <dd class="col-sm-9 col-lg-10">
+                            <img src="@Url.Content(Model.ZdjecieUrl)" alt="Zdjęcie @Model.Imie @Model.Nazwisko" class="profile-image-details img-thumbnail" />
+                        </dd>
+                    }
+
+                    <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.Imie)</dt>
+                    <dd class="col-sm-9 col-lg-10">@Html.DisplayFor(model => model.Imie)</dd>
+
+                    <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.Nazwisko)</dt>
+                    <dd class="col-sm-9 col-lg-10">@Html.DisplayFor(model => model.Nazwisko)</dd>
+
+                    <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.Stanowisko)</dt>
+                    <dd class="col-sm-9 col-lg-10">@Html.DisplayFor(model => model.Stanowisko)</dd>
+
+                    <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.Bio)</dt>
+                    <dd class="col-sm-9 col-lg-10">@Html.DisplayFor(model => model.Bio)</dd>
+
+
+                    <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.EmailKontaktowy)</dt>
+                    <dd class="col-sm-9 col-lg-10">
+                        @if (!string.IsNullOrEmpty(Model.EmailKontaktowy))
+                        {
+                            <a href="mailto:@Model.EmailKontaktowy">@Model.EmailKontaktowy</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">Brak</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.TelefonKontaktowy)</dt>
+                    <dd class="col-sm-9 col-lg-10">
+                        @if (!string.IsNullOrEmpty(Model.TelefonKontaktowy))
+                        {
+                            <a href="tel:@Model.TelefonKontaktowy.Replace(" ","").Replace("-","")">@Model.TelefonKontaktowy</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">Brak</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.Firma)</dt>
+                    <dd class="col-sm-9 col-lg-10">@Html.DisplayFor(model => model.Firma.Nazwa)</dd>
+
+                    <dt class="col-sm-3 col-lg-2">@Html.DisplayNameFor(model => model.CzyAktywny)</dt>
+                    <dd class="col-sm-9 col-lg-10">
+                        @if (Model.CzyAktywny)
+                        {
+                            <span class="badge bg-success rounded-pill px-2">Aktywny</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary rounded-pill px-2">Nieaktywny</span>
+                        }
+                    </dd>
+                </dl>
+            </div>
+            <div class="card-footer bg-light text-end">
+                <a asp-action="Edit" asp-route-id="@Model?.IdPracownika" class="btn btn-warning btn-sm me-2">
+                    <i class="fas fa-edit me-1"></i> Edytuj
+                </a>
+                <a asp-action="Index" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Powrót do listy
+                </a>
+            </div>
+        </div>
+    </div>
+</div> 

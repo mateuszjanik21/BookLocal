@@ -1,0 +1,77 @@
+﻿@model IEnumerable<BookLocal.Data.Data.PlatformaInternetowa.SzczegolyUslugi>
+
+@{
+    ViewData["Title"] = "Usługi";
+
+    var uslugi = ViewBag.ModelUslugi as List<BookLocal.Data.Data.PlatformaInternetowa.Usluga>
+    ?? new List<BookLocal.Data.Data.PlatformaInternetowa.Usluga>();
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <h1 class="text-primary mb-0 page-title"><i class="fas fa-tasks me-2"></i>@ViewData["Title"]</h1>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info shadow-sm">
+            <i class="fas fa-info-circle me-2"></i> Brak zdefiniowanych wariantów usług. Kliknij przycisk powyżej, aby dodać pierwszy.
+        </div>
+    }
+    else
+    {
+        <div class="list-cards-container">
+            @foreach (var item in Model.OrderBy(s => s.Usluga.Nazwa).ThenBy(s => s.Pracownik.Nazwisko).ThenBy(p => p.Pracownik.Imie).ThenBy(s => s.Cena))
+            {
+                <div class="card shadow-sm mb-3 list-card service-details-card">
+                    <div class="row g-0">
+                        <div class="col-md-2 col-lg-1 d-none d-md-flex align-items-center justify-content-center bg-light border-end">
+                            @if (!string.IsNullOrEmpty(item.Usluga?.ZdjecieUrl))
+                            {
+                                <img src="@Url.Content(item.Usluga.ZdjecieUrl)" class="service-details-card-img" alt="@item.Usluga.Nazwa">
+                            }
+                            else
+                            {
+                                <i class="fas fa-concierge-bell fa-2x text-secondary opacity-50"></i>
+                            }
+                        </div>
+                        <div class="col-md-7 col-lg-8">
+                            <div class="card-body py-2 px-3">
+                                <h6 class="card-title text-primary mb-1">@Html.DisplayFor(modelItem => item.Usluga.Nazwa)</h6>
+                                <p class="card-text mb-1">@Html.DisplayFor(modelItem => item.Opis)</p>
+                                <p class="card-text small text-muted mb-0">
+                                    <i class="fas fa-user-tie me-1" title="Pracownik"></i> @(item.Pracownik?.Imie) @(item.Pracownik?.Nazwisko ?? "N/A")
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-lg-3 border-start-md-1">
+                            <div class="card-body py-2 px-3 d-flex flex-column justify-content-between h-100">
+                                <div class="text-md-end mb-2 mb-md-0">
+                                    <span class="fw-bold fs-5 me-2">@item.Cena.ToString("C", new System.Globalization.CultureInfo("pl-PL"))</span>
+                                    <span class="text-muted small"><i class="far fa-clock me-1"></i>@item.CzasTrwaniaMinuty min</span>
+                                </div>
+                                <div class="text-md-end action-icons">
+                                    <a asp-action="Edit" asp-route-id="@item.IdSzczegolowUslugi" class="btn btn-warning btn-sm" title="Edytuj">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="Details" asp-route-id="@item.IdSzczegolowUslugi" class="btn btn-info btn-sm" title="Szczegóły">
+                                        <i class="fas fa-info-circle"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@item.IdSzczegolowUslugi" class="btn btn-danger btn-sm" title="Usuń">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

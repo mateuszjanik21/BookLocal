@@ -1,0 +1,95 @@
+﻿@{
+    ViewData["Title"] = "Mój Profil";
+}
+
+<style>
+.text-primary {
+    color: #4F46E5;
+}
+
+.text-secondary {
+    color: #6B7280; 
+}
+
+.text-indigo {
+    color: #4F46E5; 
+}
+/
+.list-group-item {
+    background-color: #F9FAFB; 
+    color: #6B7280;
+    border: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.list-group-item:hover {
+    background-color: #E5E7EB; 
+    color: #4F46E5; 
+}
+
+.list-group-item.active {
+    background-color: #4F46E5; 
+    color: #F9FAFB; 
+    font-weight: bold;
+}
+
+.card {
+    background-color: #F9FAFB; 
+    border: 1px solid #E5E7EB;
+    margin-top: 1rem;
+    padding: 1rem;
+}
+
+.card-title {
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: #4F46E5;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #3B3AB5; 
+}
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Panel boczny -->
+        <div class="col-md-3">
+            <div class="list-group shadow-sm">
+                <a href="#" class="list-group-item list-group-item-action active">
+                    <i class="fas fa-user me-2"></i> Edycja profilu
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="fas fa-info-circle me-2"></i> Zamieść informacje
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="fas fa-cog me-2"></i> Ustawienia
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="fas fa-key me-2"></i> Zmień hasło
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="fas fa-bell me-2"></i> Powiadomienia
+                </a>
+            </div>
+        </div>
+
+        <!-- Główna zawartość -->
+        <div class="col-md-9">
+            <h1 class="text-center mb-4" style="color: #4F46E5;">Witaj, Mateusz!</h1>
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-indigo">Twoje dane</h5>
+                    <p class="card-text text-secondary"><strong>Imię:</strong> Mateusz</p>
+                    <p class="card-text text-secondary"><strong>Email:</strong> mateusz@example.com</p>
+                    <p class="card-text text-secondary"><strong>Telefon:</strong> +48 123 456 789</p>
+                    <a href="#" class="btn btn-primary">Edytuj dane</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

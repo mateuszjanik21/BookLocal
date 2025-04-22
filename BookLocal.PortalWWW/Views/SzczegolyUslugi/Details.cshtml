@@ -1,0 +1,48 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.SzczegolyUslugi
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>SzczegolyUslugi</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Opis)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Opis)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Cena)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Cena)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.CzasTrwaniaMinuty)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CzasTrwaniaMinuty)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Usluga)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Usluga.Nazwa)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Pracownik)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Pracownik.Imie)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.IdSzczegolowUslugi">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

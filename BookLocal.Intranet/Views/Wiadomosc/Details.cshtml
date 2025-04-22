@@ -1,0 +1,60 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Wiadomosc
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Wiadomosc</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Konwersacja)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Konwersacja.IdKonwersacji)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.NadawcaUzytkownik)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NadawcaUzytkownik.Email)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.NadawcaPrzedsiębiorca)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NadawcaPrzedsiębiorca.Email)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Tresc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Tresc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DataWyslania)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DataWyslania)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.CzyOdczytana)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CzyOdczytana)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DataOdczytania)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DataOdczytania)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.IdWiadomosci">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

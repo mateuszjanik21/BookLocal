@@ -1,0 +1,59 @@
+﻿@model IEnumerable<BookLocal.Data.Data.PlatformaInternetowa.Konwersacja>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Uzytkownik)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Pracownik)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Temat)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataUtworzenia)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataOstatniejWiadomosci)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Uzytkownik.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Pracownik.Imie)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Temat)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DataUtworzenia)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DataOstatniejWiadomosci)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdKonwersacji">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdKonwersacji">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdKonwersacji">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

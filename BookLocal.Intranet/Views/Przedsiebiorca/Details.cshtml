@@ -1,0 +1,54 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Przedsiebiorca
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Przedsiebiorca</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Login)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Login)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.HasloHash)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.HasloHash)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Imie)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Imie)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Nazwisko)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Nazwisko)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.CzyAktywny)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.CzyAktywny)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.IdPrzedsiebiorcy">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

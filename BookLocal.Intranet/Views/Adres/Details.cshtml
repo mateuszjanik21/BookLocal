@@ -1,0 +1,90 @@
+﻿@model BookLocal.Data.Data.PlatformaInternetowa.Adres
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Adres</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Ulica)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Ulica)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.NrDomu)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NrDomu)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.NrLokalu)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.NrLokalu)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.KodPocztowy)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.KodPocztowy)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Miejscowosc)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Miejscowosc)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Gmina)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Gmina)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Powiat)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Powiat)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Wojewodztwo)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Wojewodztwo)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Kraj)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Kraj)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Poczta)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Poczta)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Uzytkownik)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Uzytkownik.Email)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Pracownik)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Pracownik.Imie)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.IdAdresu">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

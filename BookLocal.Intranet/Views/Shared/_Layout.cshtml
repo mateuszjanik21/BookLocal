@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Panel Administracyjny BookLocal</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link href="~/lib/fullcalendar/main.min.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/css/Pracownik/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Pracownik/CRUD.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Rezerwacje/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Rezerwacje/CRUD.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/SzczegolyUslug/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/SzczegolyUslug/CRUD.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Uslugi/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Uslugi/CRUD.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/intranet-layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/BookLocal.Data.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="d-flex" id="wrapper">
+
+        <div class="bg-dark border-right" id="sidebar-wrapper">
+            <div class="sidebar-heading text-white">
+                <i class="fas fa-cogs me-2"></i>BookLocal Intranet
+            </div>
+            <div class="list-group list-group-flush">
+                <a asp-controller="Home" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-tachometer-alt me-2"></i>Panel Główny
+                </a>
+
+                <hr class="sidebar-divider text-white-50"> <div class="sidebar-heading-small text-white-50 ps-3 mb-1">Zarządzanie</div>
+
+                <a asp-controller="Pracownik" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-user-tie me-2"></i>Specjaliści
+                </a>
+                <a asp-controller="Usluga" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-tags me-2"></i>Kategoie usług
+                </a>
+                <a asp-controller="SzczegolyUslugi" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-tasks me-2"></i>Usługi
+                </a>
+                <a asp-controller="Rezerwacja" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-calendar-check me-2"></i>Rezerwacje
+                </a>
+                <a asp-controller="Home" asp-action="Klienci" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-users me-2"></i>Klienci
+                </a>
+                <a asp-controller="Home" asp-action="Opinie" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-star me-2"></i>Opinie
+                </a>
+                <a asp-controller="Home" asp-action="Lokalizacje" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-map-marker-alt me-2"></i>Lokalizacje
+                </a> <hr class="sidebar-divider text-white-50">
+                <div class="sidebar-heading-small text-white-50 ps-3 mb-1">Portal Klienta</div>
+
+                <a asp-controller="ZawartoscCms" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-quote-right me-2"></i>Teksty Ogólne
+                </a>
+                <a asp-controller="SekcjaCms" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-puzzle-piece me-2"></i>Elementy Sekcji
+                </a>
+                <a asp-controller="NaglowekCms" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-heading me-2"></i>Nagłówek Powitalny
+                </a>
+                <a asp-controller="OdnosnikCms" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-external-link-alt me-2"></i>Odnosniki
+                </a>
+
+                <hr class="sidebar-divider text-white-50">
+                <div class="sidebar-heading-small text-white-50 ps-3 mb-1">System</div>
+
+                <a asp-controller="Firma" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-user-shield me-2"></i>Firma
+                </a>
+                <a asp-controller="Przedsiebiorca" asp-action="Index" class="list-group-item list-group-item-action bg-dark text-white">
+                    <i class="fas fa-user-shield me-2"></i>Moje konto
+                </a>
+            </div>
+        </div>
+        <div id="page-content-wrapper">
+
+            <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+                <div class="container-fluid">
+                    <button class="btn btn-primary d-md-none" id="menu-toggle"><i class="fas fa-bars"></i></button>
+
+                    <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user me-1"></i> Zalogowany Pracownik
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="#">Profil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Wyloguj</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-4">
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Panel Główny</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+                    </ol>
+                </nav>
+
+                <main role="main">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+    </div>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/intranet-layout.js" asp-append-version="true"></script>
+    <script src="~/lib/fullcalendar/index.global.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

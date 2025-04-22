@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BookLocal</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/BookLocal.PortalWWW.styles.css" asp-append-version="true" />
+
+    <link href="~/lib/fullcalendar/main.min.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="~/css/Pracownik/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Pracownik/CRUD.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Rezerwacje/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Rezerwacje/CRUD.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/SzczegolyUslug/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/SzczegolyUslug/CRUD.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Uslugi/Index.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Uslugi/CRUD.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Uslugi.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Rezerwacje.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/intranet-layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/BookLocal.Data.styles.css" asp-append-version="true" />
+    <style>
+        .navbar-nav .nav-link.active {
+            color: #4F46E5; 
+            font-weight: bold;
+            font-size: 1.1rem; 
+            transition: all 0.3s ease; 
+        }
+
+        .navbar-nav .nav-link {
+            transition: all 0.3s ease; 
+        }
+
+        .navbar-nav .dropdown-menu {
+            position: absolute; 
+        }
+
+        .navbar-brand span {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4F46E5;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/content/logo.png" alt="BookLocal" width="50" height="50" class="me-2" />
+                    <span>BookLocal</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarLoggedInContent"
+                        aria-controls="navbarLoggedInContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                @await Html.PartialAsync("Odnosnik",
+                         (IEnumerable<BookLocal.Data.Data.CMS.OdnosnikCms>)ViewBag.ModelOdnosnika)
+
+                <div class="collapse navbar-collapse" id="navbarLoggedInContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle active" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Home" asp-action="Profil"><i class="fas fa-user me-2"></i>Profil</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="Settings"><i class="fas fa-cog me-2"></i>Ustawienia</a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="d-inline">
+                                        <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Wyloguj się</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+    <div class="container mt-4">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <main role="main" class="pb-4">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="bg-light border-top py-3 mt-auto">
+        <div class="container text-center">
+            <span class="text-muted">&copy; @DateTime.Now.Year - BookLocal. Wszelkie prawa zastrzeżone.</span>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+            document.addEventListener("DOMContentLoaded", function () {
+            var navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+            if (currentPath === "/" || currentPath === "/Home/Index") {
+                navLinks.forEach(function (link) {
+                    link.classList.remove('active');
+                });
+            } else {
+                navLinks.forEach(function (link) {
+                    if (link.href.includes(currentPath)) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+
+            var userDropdown = document.getElementById("userDropdown");
+            if (userDropdown) {
+                userDropdown.classList.add("active");
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html> 

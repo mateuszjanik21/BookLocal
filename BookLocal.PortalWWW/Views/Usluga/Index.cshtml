@@ -1,0 +1,102 @@
+﻿@model IEnumerable<BookLocal.Data.Data.PlatformaInternetowa.Usluga>
+
+@{
+    ViewData["Title"] = "Usługi";
+}
+
+<div class="container mt-5 mb-5">
+    <h1 class="text-center mb-5 display-5 fw-bold text-primary">@ViewData["Title"]</h1>
+
+    <div class="card shadow-sm mb-4 search-card">
+        <div class="card-body">
+            <form asp-action="Index" asp-controller="Usluga" method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="searchServiceDetails" class="form-label">Szukaj w szczegółach usługi:</label>
+                    <input type="text" name="searchServiceDetails" id="searchServiceDetails" class="form-control form-control-sm" value="@ViewData["CurrentFilterDetails"]" placeholder="Wpisz opis...">
+                </div>
+                <div class="col-md-auto search-buttons">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-search me-1"></i> Szukaj
+                    </button>
+                    <a asp-action="Index" asp-controller="Usluga" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i> Wyczyść
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-secondary text-center">Przepraszamy, obecnie nie oferujemy żadnych usług. Zapraszamy wkrótce!</div>
+    }
+    else
+    {
+        @foreach (var usluga in Model)
+        {
+            <div class="card shadow-sm service-list-card-horizontal mb-4">
+                <div class="row g-0">
+                    <div class="col-md-3 col-lg-2 service-list-img-col">
+                        @if (!string.IsNullOrEmpty(usluga.ZdjecieUrl))
+                        {
+                            <img src="@Url.Content(usluga.ZdjecieUrl)" class="img-fluid rounded-start" alt="@usluga.Nazwa">
+                        }
+                        else
+                        {
+                            <div class="service-list-img-placeholder d-flex align-items-center justify-content-center h-100 rounded-start">
+                                <i class="fas fa-image fa-3x text-secondary opacity-50"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-9 col-lg-10">
+                        <div class="card-body d-flex flex-column h-100">
+                            <h4 class="card-title text-primary mb-2">@usluga.Nazwa</h4>
+                            <p class="card-text small text-secondary mb-3">
+                                @if (!string.IsNullOrEmpty(usluga.Opis) && usluga.Opis.Length > 100)
+                                {
+                                    @(usluga.Opis.Substring(0, 100) + "...")
+                                }
+                                else
+                                {
+                                    @usluga.Opis
+                                }
+                            </p>
+
+                            <div class="service-variants-list mt-auto pt-2">
+                                <h6 class="text-secondary fw-semibold small mb-1">Dostępne opcje:</h6>
+                                @if (usluga.Szczegoly != null && usluga.Szczegoly.Any())
+                                {
+                                    <ul class="list-unstyled mb-2 small">
+                                        @foreach (var detal in usluga.Szczegoly.OrderBy(sz => sz.Cena))
+                                        {
+                                            <li class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="variant-opis">@detal.Opis</span>
+                                                <span class="variant-cena fw-bold ms-2">@detal.Cena.ToString("C")</span>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p class="small text-muted fst-italic">Brak zdefiniowanych opcji.</p>
+                                }
+                            </div>
+
+                            <div class="mt-2 text-end">
+                                <a asp-controller="Usluga" asp-action="Details" asp-route-id="@usluga.IdUslugi" 
+                                class="btn btn-primary btn-sm">Więcej informacji<i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

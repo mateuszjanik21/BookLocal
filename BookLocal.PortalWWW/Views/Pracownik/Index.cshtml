@@ -1,0 +1,87 @@
+﻿@model IEnumerable<BookLocal.Data.Data.PlatformaInternetowa.Pracownik>
+
+@{
+    ViewData["Title"] = "Specjaliści";
+}
+
+<div class="container mt-5 mb-5">
+    <h1 class="text-center mb-5 display-5 fw-bold text-primary">@ViewData["Title"]</h1>
+
+    <div class="card shadow-sm mb-4 search-card">
+        <div class="card-body">
+            <form asp-action="Index" asp-controller="Pracownik" method="get" class="row g-3 align-items-end">
+                <div class="col-md">
+                    <label for="searchName" class="form-label">Szukaj po imieniu lub nazwisku:</label>
+                    <input type="text" name="searchName" id="searchName" class="form-control form-control-sm" value="@ViewData["CurrentFilterName"]" placeholder="Wpisz frazę...">
+                </div>
+                <div class="col-md">
+                    <label for="searchServiceId" class="form-label">Filtruj po usłudze:</label>
+                    <select name="searchServiceId" id="searchServiceId" class="form-select form-select-sm" asp-items="ViewBag.UslugaList">
+                        <option value="">-- Wszystkie usługi --</option>
+                    </select>
+                </div>
+                <div class="col-md-auto search-buttons">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-search me-1"></i> Szukaj
+                    </button>
+                    <a asp-action="Index" asp-controller="Pracownik" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i> Wyczyść
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-secondary text-center">Aktualnie brak dostępnych specjalistów.</div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
+            @foreach (var pracownik in Model)
+            {
+                <div class="col">
+                    <div class="card shadow-sm h-100 specialist-card-portal">
+                        @if (!string.IsNullOrEmpty(pracownik.ZdjecieUrl))
+                        {
+                            <img src="@Url.Content(pracownik.ZdjecieUrl)" class="card-img-top specialist-card-img" alt="@pracownik.Imie @pracownik.Nazwisko">
+                        }
+                        else
+                        {
+                            <div class="card-img-top specialist-card-img-placeholder d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user-tie fa-4x text-secondary opacity-50"></i>
+                            </div>
+                        }
+                        <div class="card-body d-flex flex-column pb-2">
+                            <h5 class="card-title text-primary text-center mb-1">@pracownik.Imie @pracownik.Nazwisko</h5>
+                            <p class="text-center text-muted small fw-semibold mb-2">@pracownik.Stanowisko</p>
+                            <p class="card-text small text-secondary flex-grow-1 specialist-bio">
+                                @if (!string.IsNullOrEmpty(pracownik.Bio) && pracownik.Bio.Length > 100)
+                                {
+                                    @(pracownik.Bio.Substring(0, 100) + "...")
+                                }
+                                else
+                                {
+                                    @pracownik.Bio
+                                }
+                            </p>
+                            @* Można tu dodać np. średnią ocenę z opinii, jeśli jest obliczana *@
+                        </div>
+                        <div class="card-footer text-center specialist-card-footer">
+                            <a asp-controller="Pracownik" asp-action="Details" asp-route-id="@pracownik.IdPracownika" class="btn btn-primary btn-sm profile-button">
+                                Zobacz profil i usługi <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

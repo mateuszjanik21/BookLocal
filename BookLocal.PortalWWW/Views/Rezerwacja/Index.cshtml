@@ -1,0 +1,97 @@
+﻿@model IEnumerable<BookLocal.Data.Data.PlatformaInternetowa.Rezerwacja>
+
+@{
+    ViewData["Title"] = "Wszystkie Rezerwacje";
+
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Potwierdzona" => "bg-success text-white",
+            "Oczekująca" => "bg-warning text-dark",
+            "Zakończona" => "bg-secondary text-white",
+            "Anulowana" => "bg-danger text-white",
+            "Nieodbyta" => "bg-dark text-white",
+            _ => "bg-light text-dark",
+        };
+    }
+}
+
+<div class="container mt-4 mb-5 reservations-index-page">
+    <h1 class="text-center display-5 fw-bold text-primary mb-4">@ViewData["Title"]</h1>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-secondary text-center shadow-sm">
+            <i class="fas fa-info-circle me-2"></i> Brak zarejestrowanych rezerwacji w systemie.
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-lg-2 g-4">
+            @foreach (var item in Model.OrderByDescending(r => r.DataRezerwacji))
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm reservation-index-card">
+                        <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                            <span class="fw-semibold text-primary">
+                                <i class="fas fa-calendar-day me-1"></i> @item.DataRezerwacji.ToString("dd.MM.yyyy HH:mm")
+                            </span>
+                            <span class="badge rounded-pill @GetStatusBadgeClass(item.Status)">
+                                @item.Status
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title service-title mb-2">
+                                <i class="fas fa-cut me-1 text-secondary" aria-hidden="true"></i> @item.SzczegolyUslugi?.Usluga?.Nazwa
+                            </h5>
+                            <p class="card-text small mb-1">
+                                <span class="text-muted">Wariant:</span> @item.SzczegolyUslugi?.Opis
+                            </p>
+                            <p class="card-text small mb-1">
+                                <span class="text-muted"><i class="fas fa-user-tie me-1"></i> Specjalista:</span> @item.WykonujacyPracownik?.Imie @item.WykonujacyPracownik?.Nazwisko
+                            </p>
+                            <p class="card-text small mb-3">
+                                <span class="text-muted"><i class="fas fa-user me-1"></i> Klient:</span>
+                                @if (item.Uzytkownik != null)
+                                {
+                                    <span class="fst-italic">@item.Uzytkownik?.Email (@item.ImieKlienta @item.NazwiskoKlienta)</span>
+                                }
+                                else if (!string.IsNullOrEmpty(item.ImieKlienta))
+                                {
+                                    <span class="fst-italic">@item.ImieKlienta @item.NazwiskoKlienta (@item.TelefonKlienta)</span>
+                                }
+                                else
+                                {
+                                    <span class="fst-italic text-muted">(brak danych)</span>
+                                }
+                            </p>
+
+                            <div class="d-flex justify-content-between small border-top pt-2">
+                                <span class="price text-success fw-semibold">
+                                    <i class="fas fa-tag me-1"></i> @item.SzczegolyUslugi?.Cena.ToString("C")
+                                </span>
+                                <span class="duration text-muted">
+                                    <i class="far fa-clock me-1"></i> @item.SzczegolyUslugi?.CzasTrwaniaMinuty min
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white text-end">
+                            <a asp-action="Edit" asp-route-id="@item.IdRezerwacji" class="btn btn-sm btn-outline-primary me-1" title="Edytuj">
+                                <i class="fas fa-edit"></i> Przełóż
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@item.IdRezerwacji" class="btn btn-sm btn-outline-danger" title="Usuń">
+                                <i class="fas fa-trash-alt"></i> Odwołaj
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+
+ @section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
