@@ -10,7 +10,7 @@
 
 * **Backend:** C#, ASP.NET Core MVC (.NET 9)
 * **Dostęp do danych:** Entity Framework Core 9
-* **Baza Danych:** SQL Server LocalDB (skonfigurowana domyślnie dla środowiska deweloperskiego)
+* **Baza Danych:** SQL Server LocalDB
 * **Frontend:** HTML5, CSS3, JavaScript, Bootstrap 5, jQuery
 * **Biblioteki JS:** FullCalendar.io (dla kalendarza rezerwacji), Font Awesome (dla ikon)
 * **Architektura:** Podejście MVC, podział na projekty (PortalWWW, Intranet, Data)
@@ -62,7 +62,7 @@
 
 Projekt składa się z kilku części:
 
-* **BookLocal.Data:** Biblioteka klas zawierająca modele danych (encja bazodanowe), definicję `DbContext` oraz Migracje EF Core.
+* **BookLocal.Data:** Biblioteka klas zawierająca modele danych, definicję `DbContext` oraz Migracje EF Core.
 * **BookLocal.Intranet:** Aplikacja webowa ASP.NET Core MVC - panel administracyjny dla przedsiębiorców.
 * **BookLocal.PortalWWW:** Aplikacja webowa ASP.NET Core MVC - strona publiczna dla klientów.
 
@@ -70,7 +70,7 @@ Projekt składa się z kilku części:
 
 ### Wymagania Wstępne
 
-* Zainstalowany .NET SDK (wersja 9.0 lub zgodna z użytą w projekcie).
+* Zainstalowany .NET SDK (wersja 9.0).
 * Visual Studio 2022 (lub nowszy) z zainstalowanym workloadem "ASP.NET and web development".
 * SQL Server LocalDB.
 
