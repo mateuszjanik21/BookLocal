@@ -42,6 +42,20 @@ namespace BookLocal.API
 
             builder.Services.AddScoped<TokenService>();
 
+            var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy(name: MyAllowSpecificOrigins,
+                                  policy =>
+                                  {
+                                      policy.WithOrigins("http://localhost:4200")
+                                            .AllowAnyHeader()
+                                            .AllowAnyMethod();
+                                  });
+            });
+
+
             builder.Services.AddControllers();
 
             builder.Services.AddEndpointsApiExplorer();
@@ -88,6 +102,8 @@ namespace BookLocal.API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseAuthentication();
             app.UseAuthorization();
