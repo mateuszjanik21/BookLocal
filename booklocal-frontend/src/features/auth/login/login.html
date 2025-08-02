@@ -1,0 +1,39 @@
+<div class="hero min-h-screen bg-base-200">
+  <div class="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="card-body">
+      <h1 class="text-3xl font-bold text-center">Zaloguj się</h1>
+      
+      <div class="form-control">
+        <label class="label"><span class="label-text">Email</span></label>
+        <input 
+          type="email" 
+          placeholder="Email" 
+          class="input input-bordered" 
+          formControlName="email"
+          [class.input-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" />
+        
+        @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+          <span class="label-text-alt text-error mt-1">Wprowadź poprawny adres email.</span>
+        }
+      </div>
+      
+      <div class="form-control">
+        <label class="label"><span class="label-text">Hasło</span></label>
+        <input 
+          type="password" 
+          placeholder="Hasło" 
+          class="input input-bordered" 
+          formControlName="password"
+          [class.input-error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" />
+
+        @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+          <span class="label-text-alt text-error mt-1">Hasło jest wymagane.</span>
+        }
+      </div>
+
+      <div class="form-control mt-6">
+        <button class="btn btn-primary" type="submit" [disabled]="loginForm.invalid">Zaloguj</button>
+      </div>
+    </form>
+  </div>
+</div>

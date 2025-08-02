@@ -1,0 +1,20 @@
+<div class="container p-8 mx-auto">
+  <h2 class="text-3xl font-bold mb-6 text-center">Znajdź usługę w Twojej okolicy</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    @for (business of businesses; track business.businessId) {
+      <div class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+        <div class="card-body">
+          <h3 class="card-title text-primary">{{ business.name }}</h3>
+          <p class="text-base-content/70">{{ business.description }}</p>
+          <div class="card-actions justify-end mt-4">
+            <span class="badge badge-outline">{{ business.city }}</span>
+            <button class="btn btn-primary btn-sm">Zobacz ofertę</button>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <p class="col-span-full text-center text-lg text-base-content/50">Ładowanie firm...</p>
+    }
+  </div>
+</div>

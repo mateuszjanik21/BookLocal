@@ -1,0 +1,65 @@
+<div class="hero min-h-screen bg-base-200">
+  <div class="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="card-body">
+      <h1 class="text-3xl font-bold text-center">Zarejestruj się</h1>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text">Imię</span></label>
+        <input type="text" placeholder="Imię" class="input input-bordered" formControlName="firstName" />
+        
+        @if (registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched) {
+          <div class="label">
+            <span class="label-text-alt text-error">Imię jest wymagane.</span>
+          </div>
+        }
+      </div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text">Nazwisko</span></label>
+        <input type="text" placeholder="Nazwisko" class="input input-bordered" formControlName="lastName" />
+
+        @if (registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched) {
+          <div class="label">
+            <span class="label-text-alt text-error">Nazwisko jest wymagane.</span>
+          </div>
+        }
+      </div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text">Email</span></label>
+        <input type="email" placeholder="Email" class="input input-bordered" formControlName="email" />
+
+        @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+          <div class="label">
+            @if (registerForm.get('email')?.hasError('required')) {
+              <span class="label-text-alt text-error">Email jest wymagany.</span>
+            }
+            @if (registerForm.get('email')?.hasError('email')) {
+              <span class="label-text-alt text-error">Wprowadź poprawny adres email.</span>
+            }
+          </div>
+        }
+      </div>
+      
+      <div class="form-control">
+        <label class="label"><span class="label-text">Hasło</span></label>
+        <input type="password" placeholder="Hasło" class="input input-bordered" formControlName="password" />
+
+        @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+          <div class="label">
+            @if (registerForm.get('password')?.hasError('required')) {
+              <span class="label-text-alt text-error">Hasło jest wymagane.</span>
+            }
+            @if (registerForm.get('password')?.hasError('minlength')) {
+              <span class="label-text-alt text-error">Hasło musi mieć co najmniej 6 znaków.</span>
+            }
+          </div>
+        }
+      </div>
+      
+      <div class="form-control mt-6">
+        <button class="btn btn-primary" type="submit" [disabled]="registerForm.invalid">Zarejestruj się</button>
+      </div>
+    </form>
+  </div>
+</div>

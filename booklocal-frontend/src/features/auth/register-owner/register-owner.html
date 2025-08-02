@@ -1,0 +1,80 @@
+<div class="hero min-h-screen bg-base-200">
+  <div class="card shrink-0 w-full max-w-lg shadow-2xl bg-base-100">
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="card-body">
+      <h1 class="text-3xl font-bold text-center">Zarejestruj swoją firmę</h1>
+      <div class="divider">Dane Właściciela</div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Imię</span></label>
+          <input type="text" placeholder="Imię" class="input input-bordered" formControlName="firstName" 
+                 [class.input-error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched"/>
+          @if (registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched) {
+            <span class="label-text-alt text-error mt-1">Imię jest wymagane.</span>
+          }
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Nazwisko</span></label>
+          <input type="text" placeholder="Nazwisko" class="input input-bordered" formControlName="lastName" 
+                 [class.input-error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched"/>
+          @if (registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched) {
+            <span class="label-text-alt text-error mt-1">Nazwisko jest wymagane.</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text">Email</span></label>
+        <input type="email" placeholder="Email" class="input input-bordered" formControlName="email"
+               [class.input-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" />
+        @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+          <span class="label-text-alt text-error mt-1">Wprowadź poprawny adres email.</span>
+        }
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Hasło</span></label>
+        <input type="password" placeholder="Hasło" class="input input-bordered" formControlName="password"
+               [class.input-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" />
+        @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+          <span class="label-text-alt text-error mt-1">Hasło musi mieć min. 6 znaków.</span>
+        }
+      </div>
+
+      <div class="divider">Dane Firmy</div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text">Nazwa firmy</span></label>
+        <input type="text" placeholder="Nazwa firmy" class="input input-bordered" formControlName="businessName"
+               [class.input-error]="registerForm.get('businessName')?.invalid && registerForm.get('businessName')?.touched" />
+        @if (registerForm.get('businessName')?.invalid && registerForm.get('businessName')?.touched) {
+          <span class="label-text-alt text-error mt-1">Nazwa firmy jest wymagana.</span>
+        }
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">NIP</span></label>
+        <input type="text" placeholder="NIP" class="input input-bordered" formControlName="nip"
+               [class.input-error]="registerForm.get('nip')?.invalid && registerForm.get('nip')?.touched" />
+        @if (registerForm.get('nip')?.invalid && registerForm.get('nip')?.touched) {
+          <span class="label-text-alt text-error mt-1">NIP jest wymagany.</span>
+        }
+      </div>
+      
+      <div class="form-control">
+        <label class="label"><span class="label-text">Adres</span></label>
+        <input type="text" placeholder="Adres" class="input input-bordered" formControlName="address" />
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Miasto</span></label>
+        <input type="text" placeholder="Miasto" class="input input-bordered" formControlName="city" />
+      </div>
+      <div class="form-control">
+        <label class="label"><span class="label-text">Opis</span></label>
+        <textarea class="textarea textarea-bordered" placeholder="Krótki opis działalności" formControlName="description"></textarea>
+      </div>
+      
+      <div class="form-control mt-6">
+        <button class="btn btn-primary" type="submit" [disabled]="registerForm.invalid">Zarejestruj firmę</button>
+      </div>
+    </form>
+  </div>
+</div>
