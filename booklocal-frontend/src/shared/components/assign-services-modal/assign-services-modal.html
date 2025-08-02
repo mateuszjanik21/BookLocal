@@ -1,0 +1,22 @@
+<dialog #dialog id="assign_services_modal" class="modal">
+  <div class="modal-box">
+    @if (employee) {
+      <h3 class="font-bold text-lg">Zarządzaj usługami dla: {{ employee.firstName }} {{ employee.lastName }}</h3>
+
+      <form [formGroup]="servicesForm" (ngSubmit)="onSubmit()">
+        <div class="form-control mt-4">
+          @for (service of allServices; track service.id; let i = $index) {
+            <label class="label cursor-pointer">
+              <span class="label-text">{{ service.name }}</span> 
+              <input type="checkbox" class="checkbox" [formControlName]="i" />
+            </label>
+          }
+        </div>
+        <div class="modal-action">
+          <button type="submit" class="btn btn-primary">Zapisz</button>
+          <form method="dialog"><button class="btn">Anuluj</button></form>
+        </div>
+      </form>
+    }
+  </div>
+</dialog>

@@ -102,4 +102,44 @@ public class EmployeesController : ControllerBase
         await _context.SaveChangesAsync();
         return Ok(new { Message = "Usługi pracownika zostały zaktualizowane." });
     }
+
+    [HttpGet("/api/businesses/{businessId}/services/{serviceId}/employees")]
+    [AllowAnonymous]
+    public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployeesForService(int businessId, int serviceId)
+    {
+        var employees = await _context.EmployeeServices
+            .Where(es => es.Service.BusinessId == businessId && es.ServiceId == serviceId)
+            .Select(es => es.Employee)
+            .Select(e => new EmployeeDto
+            {
+                Id = e.EmployeeId,
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                Position = e.Position
+            })
+            .ToListAsync();
+
+        return Ok(employees);
+    }
+
+    [HttpGet("{employeeId}/services")]
+    [Authorize(Roles = "owner")]
+    public async Task<ActionResult<IEnumerable<int>>> GetAssignedServiceIdsForEmployee(int businessId, int employeeId)
+    {
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isEmployeeInBusiness = await _context.Employees
+            .AnyAsync(e => e.EmployeeId == employeeId && e.Business.OwnerId == ownerId && e.BusinessId == businessId);
+
+        if (!isEmployeeInBusiness)
+        {
+            return Forbid();
+        }
+
+        var serviceIds = await _context.EmployeeServices
+            .Where(es => es.EmployeeId == employeeId)
+            .Select(es => es.ServiceId)
+            .ToListAsync();
+
+        return Ok(serviceIds);
+    }
 }

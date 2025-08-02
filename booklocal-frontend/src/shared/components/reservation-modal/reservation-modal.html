@@ -1,0 +1,32 @@
+<dialog #dialog id="reservation_modal" class="modal">
+  <div class="modal-box">
+    @if (service) {
+      <h3 class="font-bold text-lg">Rezerwacja usługi: {{ service.name }}</h3>
+      <p class="py-4">Wybierz pracownika oraz datę i godzinę wizyty.</p>
+
+      <form [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
+        <div class="form-control w-full">
+          <label class="label"><span class="label-text">Wybierz pracownika</span></label>
+          <select class="select select-bordered" formControlName="employeeId">
+            <option disabled [ngValue]="null">Wybierz...</option>
+            @for (employee of employees; track employee.id) {
+              <option [value]="employee.id">{{ employee.firstName }} {{ employee.lastName }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-control w-full mt-4">
+          <label class="label"><span class="label-text">Data i godzina</span></label>
+          <input type="datetime-local" class="input input-bordered" formControlName="startTime" />
+        </div>
+
+        <div class="modal-action">
+          <button type="submit" class="btn btn-primary" [disabled]="reservationForm.invalid">Zatwierdź rezerwację</button>
+          <form method="dialog">
+            <button class="btn">Anuluj</button>
+          </form>
+        </div>
+      </form>
+    }
+  </div>
+</dialog>

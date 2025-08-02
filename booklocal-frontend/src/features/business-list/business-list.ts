@@ -2,11 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BusinessService } from '../../core/services/business-service';
 import { Business } from '../../types/business.model';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-business-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './business-list.html',
   styleUrl: './business-list.css'
 })

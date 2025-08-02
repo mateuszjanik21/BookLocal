@@ -1,0 +1,25 @@
+<div class="navbar bg-base-100 shadow-md">
+  <div class="flex-1">
+    <a routerLink="/" class="btn btn-ghost text-xl">BookLocal</a>
+  </div>
+  <div class="flex-none">
+    <ul class="menu menu-horizontal px-1">
+      <li><a routerLink="/businesses">Przeglądaj firmy</a></li>
+
+      @if (authService.currentUser$ | async; as user) {
+        <li>
+          <details>
+            <summary>{{ user.email }}</summary>
+            <ul class="p-2 bg-base-100 rounded-t-none">
+              <li><a>Profil</a></li>
+              <li><button (click)="authService.logout()">Wyloguj</button></li>
+            </ul>
+          </details>
+        </li>
+      } @else {
+        <li><a routerLink="/login">Zaloguj</a></li>
+        <li><a routerLink="/register">Zarejestruj się</a></li>
+      }
+    </ul>
+  </div>
+</div>

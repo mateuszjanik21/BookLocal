@@ -12,7 +12,7 @@ export interface LoginPayload {
 
 export interface AuthResponse {
   token: string;
-  user: any;
+  user: UserDto;
 }
 
 export interface EntrepreneurRegisterPayload {
@@ -25,4 +25,12 @@ export interface EntrepreneurRegisterPayload {
   address: string;
   city: string;
   description: string;
+}
+
+export interface UserDto {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roles: string[];
 }

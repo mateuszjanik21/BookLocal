@@ -1,0 +1,76 @@
+@if (business) {
+  <div class="container p-8 mx-auto">
+    <h1 class="text-3xl font-bold">Panel Zarządzania: {{ business.name }}</h1>
+    <p class="text-base-content/70">Witaj w swoim centrum dowodzenia. Stąd możesz zarządzać pracownikami i usługami.</p>
+
+    <div class="divider my-8">Twoi Pracownicy</div>
+    <div class="text-right mb-4">
+      <button class="btn btn-primary" onclick="add_employee_modal.showModal()">+ Dodaj Pracownika</button>
+    </div>
+    <div class="overflow-x-auto bg-base-100 rounded-lg shadow">
+      <table class="table w-full">
+        <thead>
+          <tr>
+            <th>Imię i Nazwisko</th>
+            <th>Stanowisko</th>
+            <th class="text-right">Akcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (employee of business.employees; track employee.id) {
+            <tr>
+              <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+              <td>{{ employee.position }}</td>
+              <td class="text-right">
+                <button class="btn btn-sm btn-outline btn-primary" (click)="openAssignModal(employee, assign_services_modal)">
+                  Zarządzaj usługami
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="3" class="text-center">Nie dodałeś jeszcze żadnych pracowników.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="divider my-8">Twoje Usługi</div>
+    <div class="overflow-x-auto bg-base-100 rounded-lg shadow">
+      <table class="table w-full">
+        <thead>
+          <tr>
+            <th>Nazwa Usługi</th>
+            <th>Cena</th>
+            <th>Czas trwania</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (service of business.services; track service.id) {
+            <tr>
+              <td>{{ service.name }}</td>
+              <td>{{ service.price }} zł</td>
+              <td>{{ service.durationMinutes }} min</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="3" class="text-center">Nie dodałeś jeszcze żadnych usług.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+} @else {
+  <p class="text-center p-8 text-lg">Ładowanie danych Twojej firmy...</p>
+}
+
+<app-add-employee-modal 
+  [businessId]="business?.id || null"
+  (employeeAdded)="loadBusinessData()">
+</app-add-employee-modal>
+
+<app-assign-services-modal 
+  #assign_services_modal 
+  [employee]="selectedEmployee" 
+  [allServices]="business?.services || []"
+  [businessId]="business?.id || null">
+</app-assign-services-modal>
