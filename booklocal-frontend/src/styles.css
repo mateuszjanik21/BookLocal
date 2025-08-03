@@ -1,3 +1,28 @@
 @import "tailwindcss";
 @plugin "daisyui";
 @import 'ngx-toastr/toastr';
+
+@plugin "daisyui/theme" {
+  name: "booklocal_theme";
+  default: true;
+  --color-primary: #16a34a;
+  --color-primary-content: #ffffff;
+
+  --color-secondary: #15803d;
+  --color-secondary-content: #ffffff;
+
+  --color-accent: #4ade80;
+  --color-accent-content: #1c1917;
+
+  --color-neutral: #1c1917;
+  --color-neutral-content: #ffffff;
+
+  --color-base-100: #ffffff;
+  --color-base-200: #f8fafc;
+  --color-base-300: #e5e7eb;
+  --color-base-content: #1c1917;
+
+  --color-success: #36d399;
+  --color-warning: #fbbd23;
+  --color-error: #f87272;
+}
