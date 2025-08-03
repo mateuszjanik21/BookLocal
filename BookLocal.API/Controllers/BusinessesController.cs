@@ -22,10 +22,21 @@ public class BusinessesController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<object>>> GetAllBusinesses()
+    public async Task<ActionResult<IEnumerable<object>>> GetAllBusinesses([FromQuery] string? searchQuery)
     {
-        var businesses = await _context.Businesses
-            .Select(b => new 
+        var query = _context.Businesses.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var searchTerm = searchQuery.ToLower();
+            query = query.Where(b =>
+                b.Name.ToLower().Contains(searchTerm) ||
+                (b.City != null && b.City.ToLower().Contains(searchTerm))
+            );
+        }
+
+        var businesses = await query
+            .Select(b => new
             {
                 Id = b.BusinessId,
                 b.Name,
@@ -34,7 +45,7 @@ public class BusinessesController : ControllerBase
                 b.Description
             })
             .ToListAsync();
-            
+
         return Ok(businesses);
     }
 

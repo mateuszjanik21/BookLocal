@@ -24,3 +24,10 @@ export interface BusinessDetail extends Business {
   services: Service[];
   employees: Employee[];
 }
+
+export interface ServicePayload {
+  name: string;
+  description?: string;
+  price: number;
+  durationMinutes: number;
+}

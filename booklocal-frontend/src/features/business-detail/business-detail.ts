@@ -19,14 +19,21 @@ export class BusinessDetailComponent implements OnInit {
   filteredEmployees: Employee[] = [];
 
   business: BusinessDetail | null = null;
+  isLoading = true;
 
   ngOnInit(): void {
     const businessId = this.route.snapshot.paramMap.get('id');
 
     if (businessId) {
       this.businessService.getBusinessById(+businessId).subscribe({
-        next: (data) => this.business = data,
-        error: (err) => console.error('Błąd pobierania szczegółów firmy:', err)
+        next: (data) => {
+          this.business = data;
+          this.isLoading = false; 
+        },
+        error: (err) => {
+          console.error('Błąd pobierania szczegółów firmy:', err);
+          this.isLoading = false; 
+        }
       });
     }
   }

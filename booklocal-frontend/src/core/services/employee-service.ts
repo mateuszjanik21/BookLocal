@@ -23,4 +23,12 @@ export class EmployeeService {
   addEmployee(businessId: number, payload: EmployeePayload) {
     return this.http.post<Employee>(`${this.apiUrl}/businesses/${businessId}/employees`, payload);
   }
+
+  updateEmployee(businessId: number, employeeId: number, payload: EmployeePayload) {
+    return this.http.put(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}`, payload);
+  }
+
+  deleteEmployee(businessId: number, employeeId: number) {
+    return this.http.delete(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}`);
+  }
 }

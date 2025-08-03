@@ -76,14 +76,14 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "owner")]
     public async Task<IActionResult> UpdateService(int businessId, int serviceId, ServiceUpsertDto serviceDto)
     {
-        var business = await _context.Businesses.FindAsync(businessId);
-        if (business == null) return NotFound("Firma nie istnieje.");
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var service = await _context.Services
+            .FirstOrDefaultAsync(s => s.ServiceId == serviceId && s.BusinessId == businessId && s.Business.OwnerId == ownerId);
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (business.OwnerId != userId) return Forbid();
-
-        var service = await _context.Services.FirstOrDefaultAsync(s => s.ServiceId == serviceId && s.BusinessId == businessId);
-        if (service == null) return NotFound("Usługa nie istnieje w tej firmie.");
+        if (service == null)
+        {
+            return NotFound("Usługa nie została znaleziona lub nie masz do niej dostępu.");
+        }
 
         service.Name = serviceDto.Name;
         service.Description = serviceDto.Description;
@@ -98,17 +98,24 @@ public class ServicesController : ControllerBase
     [Authorize(Roles = "owner")]
     public async Task<IActionResult> DeleteService(int businessId, int serviceId)
     {
-        var business = await _context.Businesses.FindAsync(businessId);
-        if (business == null) return NotFound("Firma nie istnieje.");
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var service = await _context.Services
+            .FirstOrDefaultAsync(s => s.ServiceId == serviceId && s.BusinessId == businessId && s.Business.OwnerId == ownerId);
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (business.OwnerId != userId) return Forbid();
+        if (service == null)
+        {
+            return NotFound("Usługa nie została znaleziona lub nie masz do niej dostępu.");
+        }
 
-        var service = await _context.Services.FirstOrDefaultAsync(s => s.ServiceId == serviceId && s.BusinessId == businessId);
-        if (service == null) return NotFound("Usługa nie istnieje w tej firmie.");
-
-        _context.Services.Remove(service);
-        await _context.SaveChangesAsync();
+        try
+        {
+            _context.Services.Remove(service);
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            return Conflict(new { title = "Nie można usunąć usługi, ponieważ jest ona w użyciu (np. w rezerwacji lub jest przypisana do pracownika)." });
+        }
 
         return NoContent();
     }

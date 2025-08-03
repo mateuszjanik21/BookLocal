@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Business, BusinessDetail, Employee } from '../../types/business.model';
@@ -11,8 +11,13 @@ export class BusinessService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  getBusinesses(): Observable<Business[]> {
-    return this.http.get<Business[]>(`${this.apiUrl}/businesses`);
+  getBusinesses(searchQuery?: string): Observable<Business[]> {
+    let params = new HttpParams();
+    if (searchQuery) {
+      params = params.append('searchQuery', searchQuery);
+    }
+    
+    return this.http.get<Business[]>(`${this.apiUrl}/businesses`, { params });
   }
 
   getBusinessById(id: number): Observable<BusinessDetail> {

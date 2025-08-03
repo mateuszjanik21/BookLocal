@@ -1,0 +1,30 @@
+<div class="container p-8 mx-auto">
+  <h1 class="text-3xl font-bold mb-6">Moje Rezerwacje</h1>
+
+  @if (reservations.length > 0) {
+    <div class="overflow-x-auto">
+      <table class="table w-full">
+        <thead>
+          <tr>
+            <th>Data i Godzina</th>
+            <th>Usługa</th>
+            <th>Pracownik</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (res of reservations; track res.reservationId) {
+            <tr>
+              <td>{{ res.startTime | date:'dd.MM.yyyy HH:mm' }}</td>
+              <td>{{ res.serviceName }}</td>
+              <td>{{ res.employeeFullName }}</td>
+              <td><span class="badge badge-primary">{{ res.status }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <p class="text-center p-8">Nie masz jeszcze żadnych rezerwacji.</p>
+  }
+</div>

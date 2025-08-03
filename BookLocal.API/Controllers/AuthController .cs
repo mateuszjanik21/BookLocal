@@ -156,4 +156,24 @@ public class AuthController : ControllerBase
             Roles = roles
         };
     }
+
+    [HttpPost("change-password")]
+    [Authorize] 
+    public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors);
+        }
+
+        return Ok(new { Message = "Hasło zostało pomyślnie zmienione." });
+    }
 }

@@ -1,19 +1,33 @@
 <div class="container p-8 mx-auto">
   <h2 class="text-3xl font-bold mb-6 text-center">Znajdź usługę w Twojej okolicy</h2>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    @for (business of businesses; track business.id) {
-      <a [routerLink]="['/business', business.id]" class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
-        <div class="card-body">
-          <h3 class="card-title text-primary">{{ business.name }}</h3>
-          <p class="text-base-content/70">{{ business.description }}</p>
-          <div class="card-actions justify-end mt-4">
-            <span class="badge badge-outline">{{ business.city }}</span>
-          </div>
-        </div>
-      </a>
-    } @empty {
-      <p class="col-span-full text-center text-lg text-base-content/50">Ładowanie firm...</p>
-    }
+  <div class="form-control mb-8 max-w-lg mx-auto">
+    <input 
+      type="text" 
+      placeholder="Wpisz nazwę firmy lub miasto..." 
+      class="input input-bordered w-full"
+      (input)="onSearch($event)" />
   </div>
+
+  @if (isLoading) {
+    <div class="flex justify-center items-center p-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (business of businesses; track business.id) {
+        <a [routerLink]="['/business', business.id]" class="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
+          <div class="card-body">
+            <h3 class="card-title text-primary">{{ business.name }}</h3>
+            <p class="text-base-content/70">{{ business.description }}</p>
+            <div class="card-actions justify-end mt-4">
+              <span class="badge badge-outline">{{ business.city }}</span>
+            </div>
+          </div>
+        </a>
+      } @empty {
+        <p class="col-span-full text-center text-lg text-base-content/50">Nie znaleziono żadnych firm.</p>
+      }
+    </div>
+  }
 </div>

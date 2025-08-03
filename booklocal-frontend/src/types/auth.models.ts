@@ -34,3 +34,8 @@ export interface UserDto {
   lastName: string;
   roles: string[];
 }
+
+export interface ChangePasswordPayload {
+  currentPassword:  string;
+  newPassword: string;
+}

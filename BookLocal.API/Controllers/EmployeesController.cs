@@ -142,4 +142,44 @@ public class EmployeesController : ControllerBase
 
         return Ok(serviceIds);
     }
+
+    [HttpPut("{employeeId}")]
+    [Authorize(Roles = "owner")]
+    public async Task<IActionResult> UpdateEmployee(int businessId, int employeeId, EmployeeUpsertDto employeeDto)
+    {
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var employee = await _context.Employees
+            .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.BusinessId == businessId && e.Business.OwnerId == ownerId);
+
+        if (employee == null)
+        {
+            return NotFound("Pracownik nie został znaleziony lub nie masz do niego dostępu.");
+        }
+
+        employee.FirstName = employeeDto.FirstName;
+        employee.LastName = employeeDto.LastName;
+        employee.Position = employeeDto.Position;
+
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpDelete("{employeeId}")]
+    [Authorize(Roles = "owner")]
+    public async Task<IActionResult> DeleteEmployee(int businessId, int employeeId)
+    {
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var employee = await _context.Employees
+            .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.BusinessId == businessId && e.Business.OwnerId == ownerId);
+
+        if (employee == null)
+        {
+            return NotFound("Pracownik nie został znaleziony lub nie masz do niego dostępu.");
+        }
+
+        _context.Employees.Remove(employee);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
+
 }

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { AuthResponse, LoginPayload, RegisterPayload, EntrepreneurRegisterPayload, UserDto } from '../../types/auth.models';
+import { AuthResponse, LoginPayload, RegisterPayload, EntrepreneurRegisterPayload, UserDto, ChangePasswordPayload } from '../../types/auth.models';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 
@@ -65,5 +65,9 @@ export class AuthService {
         localStorage.removeItem('authToken');
       }
     }
+  }
+
+  changePassword(payload: ChangePasswordPayload) {
+    return this.http.post(`${this.apiUrl}/auth/change-password`, payload);
   }
 }

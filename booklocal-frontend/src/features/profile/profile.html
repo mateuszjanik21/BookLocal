@@ -1,0 +1,34 @@
+<div class="container p-8 mx-auto">
+  @if (user$ | async; as user) {
+    <h1 class="text-3xl font-bold">Witaj, {{ user.firstName }}!</h1>
+    <p class="text-base-content/70">Oto szczegóły Twojego konta.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+      <div class="card bg-base-100 shadow-lg">
+        <div class="card-body">
+          <h2 class="card-title">Twoje Dane</h2>
+          <p><strong>Imię i Nazwisko:</strong> {{ user.firstName }} {{ user.lastName }}</p>
+          <p><strong>Email:</strong> {{ user.email }}</p>
+          <p><strong>Role:</strong> {{ user.roles.join(', ') }}</p>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-lg">
+        <form [formGroup]="passwordForm" (ngSubmit)="onSubmit()" class="card-body">
+          <h2 class="card-title">Zmień hasło</h2>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Obecne hasło</span></label>
+            <input type="password" class="input input-bordered" formControlName="currentPassword" />
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Nowe hasło</span></label>
+            <input type="password" class="input input-bordered" formControlName="newPassword" />
+          </div>
+          <div class="card-actions justify-end mt-4">
+            <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid">Zmień hasło</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

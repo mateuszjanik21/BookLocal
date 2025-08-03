@@ -1,17 +1,19 @@
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EmployeeService } from '../../../core/services/employee-service';
+import { Employee } from '../../../types/business.model';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
-  selector: 'app-add-employee-modal',
+  selector: 'app-edit-employee-modal',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './add-employee-modal.html',
+  templateUrl: './edit-employee-modal.html',
 })
-export class AddEmployeeModalComponent {
-  @Input() businessId: number | null = null;
+export class EditEmployeeModalComponent implements OnChanges {
+  @Input() employee: Employee | null = null;
+  businessId = input.required<number>();
   @Output() closed = new EventEmitter<void>();
 
   private fb = inject(FormBuilder);
@@ -23,14 +25,20 @@ export class AddEmployeeModalComponent {
     lastName: ['', Validators.required],
     position: ['']
   });
+  
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['employee'] && this.employee) {
+      this.employeeForm.patchValue(this.employee);
+    }
+  }
 
   onSubmit() {
-    if (this.employeeForm.invalid || !this.businessId) return;
+    if (this.employeeForm.invalid || !this.businessId() || !this.employee) return;
 
-    this.employeeService.addEmployee(this.businessId, this.employeeForm.value as any)
+    this.employeeService.updateEmployee(this.businessId(), this.employee.id, this.employeeForm.value as any)
       .subscribe({
         next: () => {
-          this.toastr.success('Pracownik dodany pomyślnie!');
+          this.toastr.success('Dane pracownika zaktualizowane!');
           this.closed.emit();
         },
         error: (err) => this.toastr.error(`Błąd: ${err.error.title || 'Sprawdź dane.'}`)

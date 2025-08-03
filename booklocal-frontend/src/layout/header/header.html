@@ -5,13 +5,17 @@
   <div class="flex-none">
     <ul class="menu menu-horizontal px-1">
       <li><a routerLink="/businesses">Przeglądaj firmy</a></li>
-
+      
       @if (authService.currentUser$ | async; as user) {
         <li>
           <details>
             <summary>{{ user.email }}</summary>
-            <ul class="p-2 bg-base-100 rounded-t-none">
-              <li><a>Profil</a></li>
+            <ul class="p-2 bg-base-100 rounded-t-none z-10">
+              <li><a routerLink="/profile">Profil</a></li> 
+              <li><a routerLink="/my-reservations">Moje Rezerwacje</a></li>
+              @if (user.roles.includes('owner')) {
+                <li><a routerLink="/dashboard">Panel Firmy</a></li>
+              }
               <li><button (click)="authService.logout()">Wyloguj</button></li>
             </ul>
           </details>
