@@ -1,7 +1,7 @@
-<div class="container p-4 md:p-8 mx-auto max-w-7xl">
+<div class="container p-4 md:p-8 mx-auto max-w-700">
   <div class="flex border rounded-2xl shadow-2xl h-[80vh] bg-base-100 overflow-hidden">
 
-    <div class="w-full md:w-1/3 border-r bg-base-200 flex flex-col">
+    <div class="w-full md:w-1/5 border-r bg-base-200 flex flex-col">
       <div class="p-4 font-bold text-lg border-b">Konwersacje</div>
       <div class="overflow-y-auto">
         @for(convo of conversations; track convo.conversationId){
@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <div class="w-full md:w-2/3 flex flex-col">
+    <div class="w-full md:w-4/5 flex flex-col">
       @if(activeConversationId && (chatService.messageThread$ | async); as messages) {
 
       <div class="p-4 border-b font-bold text-lg bg-base-200">
