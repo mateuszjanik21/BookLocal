@@ -1,14 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { environment } from '../../environments/environment';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
+import { Conversation } from '../../types/conversation.model';
 
 @Injectable({ providedIn: 'root' })
 export class PresenceService {
   private hubConnection?: HubConnection;
   private onlineUsersSource = new BehaviorSubject<string[]>([]);
   onlineUsers$ = this.onlineUsersSource.asObservable();
+  private conversationUpdatedSource = new Subject<Conversation>();
+  conversationUpdated$ = this.conversationUpdatedSource.asObservable();
 
   constructor(private toastr: ToastrService) { }
 
@@ -40,6 +43,10 @@ export class PresenceService {
       console.log('PRESENCE SERVICE: Użytkownik wyszedł:', userId);
       const currentUsers = this.onlineUsersSource.getValue();
       this.onlineUsersSource.next(currentUsers.filter(x => x !== userId));
+    });
+
+    this.hubConnection.on('UpdateConversation', (updatedConvo: Conversation) => {
+      this.conversationUpdatedSource.next(updatedConvo);
     });
   }
 

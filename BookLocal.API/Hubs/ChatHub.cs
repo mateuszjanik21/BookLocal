@@ -14,11 +14,13 @@ namespace BookLocal.API.Hubs
     {
         private readonly AppDbContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly IHubContext<PresenceHub> _presenceHub;
 
-        public ChatHub(AppDbContext context, UserManager<User> userManager)
+        public ChatHub(AppDbContext context, UserManager<User> userManager, IHubContext<PresenceHub> presenceHub)
         {
             _context = context;
             _userManager = userManager;
+            _presenceHub = presenceHub;
         }
 
         public async Task SendMessage(int conversationId, string messageContent)
@@ -26,12 +28,11 @@ namespace BookLocal.API.Hubs
             var senderId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var conversation = await _context.Conversations
                 .Include(c => c.Business)
+                .Include(c => c.Customer)
+                .ThenInclude(cust => cust.Messages)
                 .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
 
-            if (conversation == null || (conversation.CustomerId != senderId && conversation.Business.OwnerId != senderId))
-            {
-                return;
-            }
+            if (conversation == null || (conversation.CustomerId != senderId && conversation.Business.OwnerId != senderId)) return;
 
             var sender = await _userManager.FindByIdAsync(senderId);
             if (sender == null) return;
@@ -63,6 +64,20 @@ namespace BookLocal.API.Hubs
             };
 
             await Clients.Group(conversationId.ToString()).SendAsync("ReceiveMessage", messageDto);
+
+            var recipientId = senderId == conversation.CustomerId ? conversation.Business.OwnerId : conversation.CustomerId;
+
+            var updatedConvoForRecipient = new ConversationDto
+            {
+                ConversationId = conversation.ConversationId,
+                ParticipantId = senderId,
+                ParticipantName = sender.FirstName + " " + sender.LastName,
+                LastMessage = message.Content,
+                LastMessageAt = message.SentAt,
+                UnreadCount = conversation.Customer.Messages.Count(m => m.SenderId != recipientId && !m.IsRead)
+            };
+
+            await _presenceHub.Clients.User(recipientId).SendAsync("UpdateConversation", updatedConvoForRecipient);
         }
 
         public async Task JoinConversation(int conversationId)

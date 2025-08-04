@@ -5,6 +5,7 @@ import { filter } from 'rxjs';
 import { HeaderComponent } from '../layout/header/header';
 import { AuthService } from '../core/services/auth-service';
 import { PresenceService } from '../core/services/presence-service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +18,7 @@ export class App {
   router = inject(Router);
   authService = inject(AuthService);
   presenceService = inject(PresenceService);
-
+  toastr = inject(ToastrService);
   showMainHeader = true;
 
   constructor() {
@@ -32,6 +33,19 @@ export class App {
         this.presenceService.createHubConnection();
       } else {
         this.presenceService.stopHubConnection();
+      }
+    });
+
+    this.presenceService.conversationUpdated$.subscribe(updatedConvo => {
+      if (!this.router.url.includes('/chat')) {
+        this.toastr.info(
+          updatedConvo.lastMessage,
+          `Nowa wiadomość od: ${updatedConvo.participantName}`,
+          { 
+            toastClass: 'alert alert-info cursor-pointer',
+            timeOut: 8000,
+          }
+        ).onTap.subscribe(() => this.router.navigate(['/chat']));
       }
     });
   }

@@ -72,6 +72,7 @@ namespace BookLocal.API.Controllers
                     ParticipantName = userRoles.Contains("owner") ? (c.Customer.FirstName + " " + c.Customer.LastName) : c.Business.Name,
                     LastMessage = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault() != null ? c.Messages.OrderByDescending(m => m.SentAt).First().Content : "Brak wiadomości",
                     LastMessageAt = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault() != null ? c.Messages.OrderByDescending(m => m.SentAt).First().SentAt : DateTime.MinValue,
+                    UnreadCount = c.Messages.Count(m => m.SenderId != userId && !m.IsRead)
                 })
                 .OrderByDescending(c => c.LastMessageAt)
                 .ToListAsync();

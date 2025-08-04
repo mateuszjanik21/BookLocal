@@ -43,7 +43,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.needsScroll = true;
     });
 
-    this.subscriptions.push(userSub, convoSub, newMsgSub);
+    const convoUpdateSub = this.presenceService.conversationUpdated$.subscribe(updatedConvo => {
+      const index = this.conversations.findIndex(c => c.conversationId === updatedConvo.conversationId);
+      if (index !== -1) {
+        this.conversations[index] = updatedConvo;
+      } else {
+        this.conversations.unshift(updatedConvo);
+      }
+    });
+
+    this.subscriptions.push(userSub, convoSub, newMsgSub, convoUpdateSub);
   }
 
   ngAfterViewChecked(): void {
@@ -57,6 +66,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.activeConversationId = id;
     this.activeParticipantName = this.conversations.find(c => c.conversationId === id)?.participantName || null;
     
+    const selectedConvo = this.conversations.find(c => c.conversationId === id);
+    if (selectedConvo) {
+      selectedConvo.unreadCount = 0;
+    }
+
     try {
       await this.chatService.createHubConnection(id);
       

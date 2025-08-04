@@ -12,7 +12,8 @@
           <div class="indicator">
 
             @if ((presenceService.onlineUsers$ | async)?.includes(convo.participantId)) {
-            <span class="indicator-item indicator-bottom indicator-end status status-success status-lg mr-2 mb-2"></span>
+            <span
+              class="indicator-item indicator-bottom indicator-end status status-success status-lg mr-2 mb-2"></span>
             } @else {
             <span class="indicator-item indicator-bottom indicator-end status status-error status-lg mr-2 mb-2"></span>
             }
@@ -28,8 +29,17 @@
             </div>
           </div>
           <div class="flex-1 min-w-0">
-            <div class="font-bold truncate">{{ convo.participantName }}</div>
-            <div class="text-sm text-base-content/60 truncate">{{ convo.lastMessage }}</div>
+            <div class="flex justify-between items-center">
+              <div class="font-bold truncate" [class.font-extrabold]="convo.unreadCount > 0">
+                {{ convo.participantName }}
+              </div>
+              @if (convo.unreadCount > 0) {
+              <span class="badge badge-primary badge-sm">{{ convo.unreadCount }}</span>
+              }
+            </div>
+            <div class="text-sm text-base-content/60 truncate" [class.font-bold]="convo.unreadCount > 0">
+              {{ convo.lastMessage }}
+            </div>
           </div>
         </div>
         } @empty {

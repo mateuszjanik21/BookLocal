@@ -4,4 +4,5 @@ export interface Conversation {
   participantName: string;
   lastMessage: string;
   lastMessageAt: string;
+  unreadCount: number;
 }
