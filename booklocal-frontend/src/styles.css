@@ -26,3 +26,27 @@
   --color-warning: #fbbd23;
   --color-error: #f87272;
 }
+@plugin "daisyui/theme" {
+  name: "purple_night";
+  default: true;
+  --color-primary: #8b5cf6;            /* Główny Fiolet */
+  --color-primary-content: #ffffff;   /* Biały tekst na fiolecie */
+
+  --color-secondary: #7c3aed;          /* Ciemniejszy fiolet */
+  --color-secondary-content: #ffffff;
+
+  --color-accent: #c4b5fd;             /* Jasny, lawendowy akcent */
+  --color-accent-content: #1f2937;    /* Ciemny tekst na akcencie */
+
+  --color-neutral: #374151;            /* Neutralny (szary) */
+  --color-neutral-content: #d1d5db;   /* Jasny tekst na neutralnym */
+
+  --color-base-100: #1f2937;           /* Główne tło (Ciemnoszary) */
+  --color-base-200: #374151;           /* Tło dla menu, kart (trochę jaśniejszy szary) */
+  --color-base-300: #4b5563;           /* Tło po najechaniu */
+  --color-base-content: #d1d5db;      /* Domyślny kolor tekstu (Jasnoszary) */
+
+  --color-success: #36d399;
+  --color-warning: #fbbd23;
+  --color-error: #f87272;
+}

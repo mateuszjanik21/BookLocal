@@ -5,7 +5,7 @@
   <div class="flex-none">
     <ul class="menu menu-horizontal px-1">
       <li><a routerLink="/businesses">Przeglądaj firmy</a></li>
-      
+      <li><a routerLink="/chat">Wiadomości</a></li>
       @if (authService.currentUser$ | async; as user) {
         <li>
           <details>

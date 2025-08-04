@@ -3,6 +3,7 @@ using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -13,11 +14,13 @@ public class ReservationsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly UserManager<User> _userManager;
+    private readonly IHubContext<NotificationHub> _hubContext;
 
-    public ReservationsController(AppDbContext context, UserManager<User> userManager)
+    public ReservationsController(AppDbContext context, UserManager<User> userManager, IHubContext<NotificationHub> hubContext)
     {
         _context = context;
         _userManager = userManager;
+        _hubContext = hubContext;
     }
 
     [HttpPost]
@@ -61,6 +64,16 @@ public class ReservationsController : ControllerBase
         _context.Reservations.Add(reservation);
         await _context.SaveChangesAsync();
 
+        var customer = await _userManager.FindByIdAsync(userId);
+        var notificationPayload = new
+        {
+            Message = $"Nowa rezerwacja od {customer.FirstName} na usługę '{service.Name}'.",
+            reservation.ReservationId
+        };
+
+        await _hubContext.Clients.Group(service.BusinessId.ToString())
+            .SendAsync("NewReservationNotification", notificationPayload);
+
         return Ok(new { Message = "Rezerwacja została pomyślnie utworzona." });
     }
 
@@ -101,5 +114,46 @@ public class ReservationsController : ControllerBase
             .ToListAsync();
 
         return Ok(reservations);
+    }
+
+    [HttpGet("{id}")]
+    [Authorize]
+    public async Task<ActionResult<ReservationDto>> GetReservationById(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userRoles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
+
+        var reservation = await _context.Reservations
+            .Include(r => r.Service)
+            .Include(r => r.Employee)
+            .Include(r => r.Customer)
+            .Select(r => new ReservationDto
+            {
+                ReservationId = r.ReservationId,
+                StartTime = r.StartTime,
+                EndTime = r.EndTime,
+                Status = r.Status.ToString(),
+                ServiceId = r.ServiceId,
+                ServiceName = r.Service.Name,
+                EmployeeId = r.EmployeeId,
+                EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
+                CustomerId = r.CustomerId,
+                CustomerFullName = $"{r.Customer.FirstName} {r.Customer.LastName}"
+            })
+            .FirstOrDefaultAsync(r => r.ReservationId == id);
+
+        if (reservation == null)
+        {
+            return NotFound();
+        }
+
+        var isOwner = userRoles.Contains("owner") && await _context.Businesses.AnyAsync(b => b.OwnerId == userId && b.Services.Any(s => s.ServiceId == reservation.ServiceId));
+
+        if (reservation.CustomerId != userId && !isOwner)
+        {
+            return Forbid();
+        }
+
+        return Ok(reservation);
     }
 }

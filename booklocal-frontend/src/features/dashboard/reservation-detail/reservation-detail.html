@@ -1,0 +1,20 @@
+@if(isLoading) {
+  <div class="flex justify-center items-center p-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+} @else {
+  @if(reservation) {
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Szczegóły Rezerwacji #{{ reservation.reservationId }}</h2>
+        <p><strong>Klient:</strong> {{ reservation.customerFullName }}</p>
+        <p><strong>Usługa:</strong> {{ reservation.serviceName }}</p>
+        <p><strong>Pracownik:</strong> {{ reservation.employeeFullName }}</p>
+        <p><strong>Termin:</strong> {{ reservation.startTime | date:'full' }}</p>
+        <p><strong>Status:</strong> <span class="badge badge-primary">{{ reservation.status }}</span></p>
+      </div>
+    </div>
+  } @else {
+    <p>Nie znaleziono rezerwacji.</p>
+  }
+}

@@ -1,3 +1,4 @@
+using BookLocal.API.Hubs;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -13,6 +14,9 @@ namespace BookLocal.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddSignalR();
+            builder.Services.AddSingleton<PresenceTracker>();
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -35,6 +39,20 @@ namespace BookLocal.API
             })
             .AddJwtBearer(options =>
             {
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            (path.StartsWithSegments("/api/notificationHub") || path.StartsWithSegments("/api/chatHub") || path.StartsWithSegments("/api/presenceHub")))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -58,7 +76,8 @@ namespace BookLocal.API
                                   {
                                       policy.WithOrigins("http://localhost:4200")
                                             .AllowAnyHeader()
-                                            .AllowAnyMethod();
+                                            .AllowAnyMethod()
+                                            .AllowCredentials();
                                   });
             });
 
@@ -116,6 +135,10 @@ namespace BookLocal.API
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.MapHub<NotificationHub>("/api/notificationHub");
+            app.MapHub<ChatHub>("/api/chatHub");
+            app.MapHub<PresenceHub>("/api/presenceHub");
 
             app.Run();
         }

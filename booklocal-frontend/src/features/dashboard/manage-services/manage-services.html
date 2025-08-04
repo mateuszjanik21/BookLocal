@@ -1,0 +1,58 @@
+@if (isLoading) {
+  <div class="flex justify-center items-center p-16">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
+} @else {
+  @if (business) {
+    <div>
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">Zarządzaj Usługami</h1>
+        <button class="btn btn-primary" (click)="isAddServiceModalVisible = true">+ Dodaj Nową Usługę</button>
+      </div>
+
+      <div class="overflow-x-auto bg-base-100 rounded-lg shadow">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>Nazwa Usługi</th>
+              <th>Cena</th>
+              <th>Czas trwania</th>
+              <th class="text-right">Akcje</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (service of business.services; track service.id) {
+              <tr>
+                <td>{{ service.name }}</td>
+                <td>{{ service.price }} zł</td>
+                <td>{{ service.durationMinutes }} min</td>
+                <td class="text-right space-x-2">
+                  <button class="btn btn-sm btn-outline" (click)="onEditService(service)">Edytuj</button>
+                  <button class="btn btn-sm btn-outline btn-error" (click)="onDeleteService(service)">Usuń</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="4" class="text-center">Nie dodałeś jeszcze żadnych usług.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <p>Błąd ładowania danych firmy.</p>
+  }
+}
+
+@if (isAddServiceModalVisible) {
+  <app-add-service-modal
+    [businessId]="business!.id"
+    (closed)="closeModalAndRefresh()">
+  </app-add-service-modal>
+}
+@if (serviceToEdit) {
+  <app-edit-service-modal
+    [businessId]="business!.id"
+    [service]="serviceToEdit"
+    (closed)="closeModalAndRefresh()">
+  </app-edit-service-modal>
+}

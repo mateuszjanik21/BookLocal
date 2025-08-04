@@ -12,10 +12,12 @@ import { Reservation } from '../../types/reservation.model';
 export class MyReservationsComponent implements OnInit {
   private reservationService = inject(ReservationService);
   reservations: Reservation[] = [];
+  isLoading = true;
 
   ngOnInit(): void {
     this.reservationService.getMyReservations().subscribe(data => {
       this.reservations = data;
+      this.isLoading = false;
     });
   }
 }

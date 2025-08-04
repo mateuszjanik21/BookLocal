@@ -1,0 +1,66 @@
+@if (isLoading) {
+  <div class="flex justify-center items-center p-16">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
+} @else {
+  @if (business) {
+    <div>
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">Zarządzaj Pracownikami</h1>
+        <button class="btn btn-primary" (click)="isAddEmployeeModalVisible = true">+ Dodaj Pracownika</button>
+      </div>
+      <div class="overflow-x-auto bg-base-100 rounded-lg shadow">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>Imię i Nazwisko</th>
+              <th>Stanowisko</th>
+              <th class="text-right">Akcje</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (employee of business.employees; track employee.id) {
+              <tr>
+                <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+                <td>{{ employee.position }}</td>
+                <td class="text-right space-x-2">
+                  <button class="btn btn-sm btn-outline" (click)="onEditEmployee(employee)">Edytuj</button>
+                  <button class="btn btn-sm btn-outline btn-error" (click)="onDeleteEmployee(employee)">Usuń</button>
+                  <button class="btn btn-sm btn-outline btn-primary" (click)="onAssignServices(employee)">
+                    Usługi
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="3" class="text-center">Nie dodałeś jeszcze żadnych pracowników.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <p>Błąd ładowania danych firmy.</p>
+  }
+}
+
+@if (isAddEmployeeModalVisible) {
+  <app-add-employee-modal 
+    [businessId]="business!.id"
+    (closed)="closeModalAndRefresh()">
+  </app-add-employee-modal>
+}
+@if (employeeToEdit) {
+  <app-edit-employee-modal 
+    [businessId]="business!.id"
+    [employee]="employeeToEdit"
+    (closed)="closeModalAndRefresh()">
+  </app-edit-employee-modal>
+}
+@if (employeeToAssignServices) {
+  <app-assign-services-modal 
+    [employee]="employeeToAssignServices" 
+    [allServices]="business!.services"
+    [businessId]="business!.id"
+    (closed)="closeModalAndRefresh()">
+  </app-assign-services-modal>
+}

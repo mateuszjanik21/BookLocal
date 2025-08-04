@@ -16,6 +16,9 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(ReactiveFormsModule),
 
     provideAnimations(),
-    provideToastr(),
+    provideToastr({
+      positionClass: 'toast-bottom-right',
+      preventDuplicates: true,
+    }),
   ]
 };
