@@ -63,7 +63,7 @@
             {{ message.senderFullName }}
             <time class="text-xs opacity-50 ml-2">{{ message.sentAt | date:'HH:mm' }}</time>
           </div>
-          <div class="chat-bubble" [class.chat-bubble-primary]="message.senderId === currentUser?.id">
+          <div class="chat-bubble rounded-2xl max-w-lg break-words" [class.chat-bubble-primary]="message.senderId === currentUser?.id">
             {{ message.content }}
           </div>
 
