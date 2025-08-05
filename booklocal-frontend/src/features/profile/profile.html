@@ -5,30 +5,36 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
       <div class="card bg-base-100 shadow-lg">
-        <div class="card-body">
+        <div class="card-body items-center text-center">
           <h2 class="card-title">Twoje Dane</h2>
-          <p><strong>Imię i Nazwisko:</strong> {{ user.firstName }} {{ user.lastName }}</p>
+          
+          <app-image-upload 
+            [currentImageUrl]="user.photoUrl"
+            [isLoading]="isUploading"
+            (imageSelected)="onPhotoSelected($event)">
+          </app-image-upload>
+
+          <p class="mt-4"><strong>Imię i Nazwisko:</strong> {{ user.firstName }} {{ user.lastName }}</p>
           <p><strong>Email:</strong> {{ user.email }}</p>
-          <p><strong>Role:</strong> {{ user.roles.join(', ') }}</p>
         </div>
       </div>
 
       <div class="card bg-base-100 shadow-lg">
-        <form [formGroup]="passwordForm" (ngSubmit)="onSubmit()" class="card-body">
-          <h2 class="card-title">Zmień hasło</h2>
-          <div class="form-control">
-            <label class="label"><span class="label-text">Obecne hasło</span></label>
-            <input type="password" class="input input-bordered" formControlName="currentPassword" />
-          </div>
-          <div class="form-control">
-            <label class="label"><span class="label-text">Nowe hasło</span></label>
-            <input type="password" class="input input-bordered" formControlName="newPassword" />
-          </div>
-          <div class="card-actions justify-end mt-4">
-            <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid">Zmień hasło</button>
-          </div>
-        </form>
-      </div>
+      <form [formGroup]="passwordForm" (ngSubmit)="onSubmit()" class="card-body">
+        <h2 class="card-title">Zmień hasło</h2>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Obecne hasło</span></label>
+          <input type="password" class="input input-bordered" formControlName="currentPassword" />
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Nowe hasło</span></label>
+          <input type="password" class="input input-bordered" formControlName="newPassword" />
+        </div>
+        <div class="card-actions justify-end mt-4">
+          <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid">Zmień hasło</button>
+        </div>
+      </form>
     </div>
+  </div>
   }
 </div>

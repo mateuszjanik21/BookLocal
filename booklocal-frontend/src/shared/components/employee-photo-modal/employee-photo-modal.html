@@ -1,0 +1,18 @@
+<div class="modal modal-open">
+  <div class="modal-box">
+    @if (employee) {
+      <h3 class="font-bold text-lg">Zmień zdjęcie dla: {{ employee.firstName }} {{ employee.lastName }}</h3>
+
+      <div class="py-4">
+        <app-image-upload 
+          [currentImageUrl]="employee.photoUrl"
+          [isLoading]="isLoading"
+          (imageSelected)="onPhotoSelected($event)">
+        </app-image-upload>
+      </div>
+    }
+    <div class="modal-action">
+      <button type="button" class="btn" (click)="closed.emit()">Zamknij</button>
+    </div>
+  </div>
+</div>

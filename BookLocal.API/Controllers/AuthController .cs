@@ -3,7 +3,6 @@ using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -36,21 +35,7 @@ public class AuthController : ControllerBase
         var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
         if (!result.Succeeded) return Unauthorized("Nieprawidłowy email lub hasło.");
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var userDto = new UserDto
-        {
-            Id = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Roles = roles
-        };
-
-        return Ok(new AuthResponseDto
-        {
-            Token = await _tokenService.GenerateToken(user),
-            User = userDto
-        });
+        return await CreateAuthResponse(user);
     }
 
     [HttpPost("register-customer")]
@@ -58,23 +43,21 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> RegisterCustomer(RegisterDto registerDto)
     {
         if (await _userManager.FindByEmailAsync(registerDto.Email) != null)
-        {
-            return BadRequest("Użytkownik o podanym adresie email już istnieje.");
-        }
+            return BadRequest(new { title = "Użytkownik o podanym adresie email już istnieje." });
 
         var user = new User
         {
             UserName = registerDto.Email,
             Email = registerDto.Email,
             FirstName = registerDto.FirstName,
-            LastName = registerDto.LastName
+            LastName = registerDto.LastName,
+            PhotoUrl = "https://api.dicebear.com/8.x/initials/svg?seed=" + registerDto.FirstName + " " + registerDto.LastName
         };
 
         var result = await _userManager.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded) return BadRequest(result.Errors);
 
         await _userManager.AddToRoleAsync(user, "customer");
-
         return Ok(new { Message = "Rejestracja klienta pomyślna." });
     }
 
@@ -83,16 +66,15 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<AuthResponseDto>> RegisterOwner([FromBody] EntrepreneurRegisterDto dto)
     {
         if (await _userManager.FindByEmailAsync(dto.Email) != null)
-        {
-            return BadRequest("Użytkownik o podanym adresie email już istnieje.");
-        }
+            return BadRequest(new { title = "Użytkownik o podanym adresie email już istnieje." });
 
         var user = new User
         {
             UserName = dto.Email,
             Email = dto.Email,
             FirstName = dto.FirstName,
-            LastName = dto.LastName
+            LastName = dto.LastName,
+            PhotoUrl = "https://api.dicebear.com/8.x/initials/svg?seed=" + dto.FirstName + " " + dto.LastName
         };
 
         var result = await _userManager.CreateAsync(user, dto.Password);
@@ -107,7 +89,7 @@ public class AuthController : ControllerBase
             Address = dto.Address,
             City = dto.City,
             Description = dto.Description,
-            OwnerId = user.Id
+            Owner = user
         };
         _context.Businesses.Add(business);
 
@@ -122,29 +104,52 @@ public class AuthController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        var roles = await _userManager.GetRolesAsync(user);
-        var userDto = new UserDto
-        {
-            Id = user.Id,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Roles = roles
-        };
-
-        return Ok(new AuthResponseDto
-        {
-            Token = await _tokenService.GenerateToken(user),
-            User = userDto
-        });
+        return await CreateAuthResponse(user);
     }
 
+    [HttpPost("create-user")]
+    [Authorize(Roles = "owner")]
+    public async Task<IActionResult> CreateUserByOwner(RegisterDto registerDto)
+    {
+        if (await _userManager.FindByEmailAsync(registerDto.Email) != null)
+            return BadRequest("Użytkownik o podanym adresie email już istnieje.");
+
+        var user = new User
+        {
+            UserName = registerDto.Email,
+            Email = registerDto.Email,
+            FirstName = registerDto.FirstName,
+            LastName = registerDto.LastName,
+            PhotoUrl = "https://api.dicebear.com/8.x/initials/svg?seed=" + registerDto.FirstName + " " + registerDto.LastName
+        };
+
+        var result = await _userManager.CreateAsync(user, registerDto.Password);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        await _userManager.AddToRoleAsync(user, "customer");
+
+        return Ok(new { user.Id, user.Email });
+    }
+
+    [HttpPost("change-password")]
     [Authorize]
+    public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+
+        return Ok(new { Message = "Hasło zostało pomyślnie zmienione." });
+    }
+
     [HttpGet("currentuser")]
+    [Authorize]
     public async Task<ActionResult<UserDto>> GetCurrentUser()
     {
-        var email = User.FindFirstValue(ClaimTypes.Email);
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
         var roles = await _userManager.GetRolesAsync(user);
 
         return new UserDto
@@ -153,27 +158,28 @@ public class AuthController : ControllerBase
             Email = user.Email,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Roles = roles
+            PhotoUrl = user.PhotoUrl,
+            Roles = (List<string>)roles
         };
     }
 
-    [HttpPost("change-password")]
-    [Authorize] 
-    public async Task<IActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+    private async Task<AuthResponseDto> CreateAuthResponse(User user)
     {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null)
+        var roles = await _userManager.GetRolesAsync(user);
+        var userDto = new UserDto
         {
-            return Unauthorized();
-        }
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            PhotoUrl = user.PhotoUrl,
+            Roles = (List<string>)roles
+        };
 
-        var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
-
-        if (!result.Succeeded)
+        return new AuthResponseDto
         {
-            return BadRequest(result.Errors);
-        }
-
-        return Ok(new { Message = "Hasło zostało pomyślnie zmienione." });
+            Token = await _tokenService.GenerateToken(user),
+            User = userDto
+        };
     }
 }

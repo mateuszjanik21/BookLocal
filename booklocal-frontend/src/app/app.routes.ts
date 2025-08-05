@@ -15,6 +15,7 @@ import { ManageEmployeesComponent } from '../features/dashboard/manage-employees
 import { ManageReservationsComponent } from '../features/dashboard/manage-reservations/manage-reservations';
 import { ReservationDetailComponent } from '../features/dashboard/reservation-detail/reservation-detail';
 import { ChatComponent } from '../features/chat/chat';
+import { ManageProfileComponent } from '../features/dashboard/manage-profile/manage-profile';
 
 export const routes: Routes = [
     { path: 'businesses', component: BusinessListComponent },
@@ -36,6 +37,7 @@ export const routes: Routes = [
       { path: 'reservations', component: ManageReservationsComponent },
       { path: 'reservations/:id', component: ReservationDetailComponent },
       { path: 'chat', component: ChatComponent },
+      { path: 'profile', component: ManageProfileComponent },
     ]
   },
 

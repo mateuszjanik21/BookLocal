@@ -7,5 +7,6 @@ namespace BookLocal.Data.Models
         public required string FirstName { get; set; }
         public required string LastName { get; set; }
         public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
+        public string? PhotoUrl { get; set; }
     }
 }

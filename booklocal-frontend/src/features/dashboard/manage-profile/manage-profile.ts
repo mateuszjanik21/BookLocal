@@ -1,0 +1,76 @@
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../../core/services/auth-service';
+import { PhotoService } from '../../../core/services/photo';
+import { BusinessService } from '../../../core/services/business-service';
+import { UserDto } from '../../../types/auth.models';
+import { BusinessDetail, Employee } from '../../../types/business.model';
+import { ToastrService } from 'ngx-toastr';
+import { Observable } from 'rxjs';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload';
+
+@Component({
+  selector: 'app-manage-profile',
+  standalone: true,
+  imports: [CommonModule, ImageUploadComponent],
+  templateUrl: './manage-profile.html',
+})
+export class ManageProfileComponent implements OnInit {
+  authService = inject(AuthService);
+  photoService = inject(PhotoService);
+  businessService = inject(BusinessService);
+  toastr = inject(ToastrService);
+
+  user$: Observable<UserDto | null> = this.authService.currentUser$;
+  business: BusinessDetail | null = null;
+  ownerAsEmployee: Employee | null = null;
+
+  isUploadingProfilePhoto = false;
+  isUploadingBusinessPhoto = false;
+
+  ngOnInit(): void {
+    this.businessService.getMyBusiness().subscribe(data => {
+      this.business = data;
+      const user = this.authService.currentUserValue;
+      
+      if (user && data.employees) {
+        this.ownerAsEmployee = data.employees.find(e => e.position === "Właściciel") || null;
+      }
+    });
+  }
+
+  onProfilePhotoSelected(file: File): void {
+    this.isUploadingProfilePhoto = true;
+    this.photoService.uploadUserProfilePhoto(file).subscribe({
+      next: (response) => {
+        this.toastr.success('Zdjęcie profilowe zaktualizowane!');
+        this.authService.updateUserProfilePhoto(response.photoUrl);
+        if(this.ownerAsEmployee) {
+          this.ownerAsEmployee.photoUrl = response.photoUrl;
+        }
+        this.isUploadingProfilePhoto = false;
+      },
+      error: () => {
+        this.toastr.error('Błąd podczas wgrywania zdjęcia.');
+        this.isUploadingProfilePhoto = false;
+      }
+    });
+  }
+
+  onBusinessPhotoSelected(file: File): void {
+    this.isUploadingBusinessPhoto = true;
+    this.photoService.uploadBusinessPhoto(file).subscribe({
+      next: (response) => {
+        this.toastr.success('Zdjęcie firmy zaktualizowane!');
+        if (this.business) {
+          this.business.photoUrl = response.photoUrl;
+        }
+        this.isUploadingBusinessPhoto = false;
+      },
+      error: () => {
+        this.toastr.error('Błąd podczas wgrywania zdjęcia.');
+        this.isUploadingBusinessPhoto = false;
+      }
+    });
+  }
+}

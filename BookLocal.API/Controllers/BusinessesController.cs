@@ -42,7 +42,8 @@ public class BusinessesController : ControllerBase
                 b.Name,
                 b.NIP,
                 b.City,
-                b.Description
+                b.Description,
+                b.PhotoUrl
             })
             .ToListAsync();
 
@@ -64,6 +65,7 @@ public class BusinessesController : ControllerBase
         {
             Id = business.BusinessId,
             Name = business.Name,
+            PhotoUrl = business.PhotoUrl,
             NIP = business.NIP,
             Address = business.Address,
             City = business.City,
@@ -80,7 +82,8 @@ public class BusinessesController : ControllerBase
                 Id = e.EmployeeId,
                 FirstName = e.FirstName,
                 LastName = e.LastName,
-                Position = e.Position
+                Position = e.Position,
+                PhotoUrl = e.PhotoUrl
             }).ToList()
         };
 
@@ -106,6 +109,7 @@ public class BusinessesController : ControllerBase
         {
             Id = business.BusinessId,
             Name = business.Name,
+            PhotoUrl = business.PhotoUrl,
             NIP = business.NIP,
             Address = business.Address,
             City = business.City,
@@ -122,7 +126,8 @@ public class BusinessesController : ControllerBase
                 Id = e.EmployeeId,
                 FirstName = e.FirstName,
                 LastName = e.LastName,
-                Position = e.Position
+                Position = e.Position,
+                PhotoUrl = e.PhotoUrl
             }).ToList()
         };
 
@@ -142,6 +147,7 @@ public class BusinessesController : ControllerBase
         if (business.OwnerId != userId) return Forbid();
 
         business.Name = businessDto.Name;
+        business.PhotoUrl = business.PhotoUrl;
         business.NIP = businessDto.NIP;
         business.Address = businessDto.Address;
         business.City = businessDto.City;

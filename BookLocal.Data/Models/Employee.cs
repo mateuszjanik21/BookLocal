@@ -19,6 +19,7 @@ public class Employee
 
     [MaxLength(100)]
     public string? Position { get; set; }
+    public string? PhotoUrl { get; set; }
 
     public virtual Business Business { get; set; }
     public virtual ICollection<EmployeeService> EmployeeServices { get; set; } = new List<EmployeeService>();

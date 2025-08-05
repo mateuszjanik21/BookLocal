@@ -33,6 +33,7 @@ export interface UserDto {
   firstName: string;
   lastName: string;
   roles: string[];
+  photoUrl?: string;
 }
 
 export interface ChangePasswordPayload {

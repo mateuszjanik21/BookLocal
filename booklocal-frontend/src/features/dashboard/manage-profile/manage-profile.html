@@ -1,0 +1,43 @@
+@if ((user$ | async); as user) {
+  <div class="p-4 md:p-8">
+    <h1 class="text-3xl font-bold">Zarządzaj Profilem i Firmą</h1>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+
+      <div class="card bg-base-200 shadow-lg">
+        <div class="card-body items-center text-center">
+          <h2 class="card-title">Twoje Zdjęcie Profilowe</h2>
+          <p class="text-xs opacity-60">To zdjęcie będzie widoczne dla klientów na liście personelu.</p>
+          
+          <div class="mt-4">
+            <app-image-upload 
+              [currentImageUrl]="ownerAsEmployee?.photoUrl"
+              [isLoading]="isUploadingProfilePhoto"
+              (imageSelected)="onProfilePhotoSelected($event)">
+            </app-image-upload>
+          </div>
+        </div>
+      </div>
+
+      @if(business){
+        <div class="card bg-base-200 shadow-lg">
+          <div class="card-body items-center text-center">
+            <h2 class="card-title">Zdjęcie Firmy</h2>
+            <p class="text-xs opacity-60">To zdjęcie będzie widoczne na liście firm.</p>
+            <div class="mt-4">
+              <app-image-upload 
+                [currentImageUrl]="business.photoUrl"
+                [isLoading]="isUploadingBusinessPhoto"
+                (imageSelected)="onBusinessPhotoSelected($event)">
+              </app-image-upload>
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+} @else {
+  <div class="flex justify-center items-center p-16">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
+}

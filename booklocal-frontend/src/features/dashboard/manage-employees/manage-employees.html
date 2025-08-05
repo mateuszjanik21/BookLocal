@@ -13,6 +13,7 @@
         <table class="table w-full">
           <thead>
             <tr>
+              <th>Zdjęcie</th>
               <th>Imię i Nazwisko</th>
               <th>Stanowisko</th>
               <th class="text-right">Akcje</th>
@@ -21,6 +22,17 @@
           <tbody>
             @for (employee of business.employees; track employee.id) {
               <tr>
+                <td>
+                  <div class="avatar">
+                    <div class="mask mask-squircle w-12 h-12">
+                      <img 
+                        [src]="employee.photoUrl || 'assets/placeholder.svg'" 
+                        alt="Zdjęcie pracownika" 
+                        class="cursor-pointer hover:opacity-80 transition-opacity"
+                        (click)="openPhotoModal(employee)" />
+                    </div>
+                  </div>
+                </td>
                 <td>{{ employee.firstName }} {{ employee.lastName }}</td>
                 <td>{{ employee.position }}</td>
                 <td class="text-right space-x-2">
@@ -32,7 +44,7 @@
                 </td>
               </tr>
             } @empty {
-              <tr><td colspan="3" class="text-center">Nie dodałeś jeszcze żadnych pracowników.</td></tr>
+              <tr><td colspan="4" class="text-center">Nie dodałeś jeszcze żadnych pracowników.</td></tr>
             }
           </tbody>
         </table>
@@ -43,12 +55,20 @@
   }
 }
 
+@if(employeeForPhoto) {
+  <app-employee-photo-modal
+    [employee]="employeeForPhoto"
+    (closed)="closePhotoModalAndRefresh($event)"> 
+  </app-employee-photo-modal>
+}
+
 @if (isAddEmployeeModalVisible) {
   <app-add-employee-modal 
     [businessId]="business!.id"
     (closed)="closeModalAndRefresh()">
   </app-add-employee-modal>
 }
+
 @if (employeeToEdit) {
   <app-edit-employee-modal 
     [businessId]="business!.id"
@@ -56,6 +76,7 @@
     (closed)="closeModalAndRefresh()">
   </app-edit-employee-modal>
 }
+
 @if (employeeToAssignServices) {
   <app-assign-services-modal 
     [employee]="employeeToAssignServices" 

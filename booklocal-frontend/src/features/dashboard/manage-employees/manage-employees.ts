@@ -8,6 +8,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AssignServicesModalComponent } from '../../../shared/components/assign-services-modal/assign-services-modal';
 import { AddEmployeeModalComponent } from '../../../shared/components/add-employee-modal/add-employee-modal';
 import { EditEmployeeModalComponent } from '../../../shared/components/edit-employee-modal/edit-employee-modal';
+import { EmployeePhotoModalComponent } from '../../../shared/components/employee-photo-modal/employee-photo-modal';
 
 @Component({
   selector: 'app-manage-employees',
@@ -17,7 +18,8 @@ import { EditEmployeeModalComponent } from '../../../shared/components/edit-empl
     RouterModule,
     AssignServicesModalComponent,
     AddEmployeeModalComponent,
-    EditEmployeeModalComponent
+    EditEmployeeModalComponent,
+    EmployeePhotoModalComponent
   ],
   templateUrl: './manage-employees.html',
 })
@@ -29,6 +31,7 @@ export class ManageEmployeesComponent implements OnInit {
   isLoading = true;
   business: BusinessDetail | null = null;
   employeeToEdit: Employee | null = null;
+  employeeForPhoto: Employee | null = null;
   employeeToAssignServices: Employee | null = null;
   isAddEmployeeModalVisible = false;
 
@@ -70,6 +73,20 @@ export class ManageEmployeesComponent implements OnInit {
         });
       }
     }
+  }
+
+  openPhotoModal(employee: Employee) {
+    this.employeeForPhoto = employee;
+  }
+
+  closePhotoModalAndRefresh(newPhotoUrl?: string | void) {
+    if (typeof newPhotoUrl === 'string' && this.employeeForPhoto) {
+      const employeeInList = this.business?.employees.find(e => e.id === this.employeeForPhoto?.id);
+      if (employeeInList) {
+        employeeInList.photoUrl = newPhotoUrl;
+      }
+    }
+    this.employeeForPhoto = null;
   }
 
   closeModalAndRefresh() {

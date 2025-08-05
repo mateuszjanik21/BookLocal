@@ -29,6 +29,7 @@ namespace BookLocal.Data.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public virtual User Owner { get; set; }
+        public string? PhotoUrl { get; set; }
 
         public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
         public virtual ICollection<Service> Services { get; set; } = new List<Service>();

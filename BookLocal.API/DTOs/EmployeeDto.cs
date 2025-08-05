@@ -13,5 +13,6 @@
         public required string FirstName { get; set; }
         public required string LastName { get; set; }
         public string? Position { get; set; }
+        public string? PhotoUrl { get; set; }
     }
 }

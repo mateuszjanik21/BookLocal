@@ -1,3 +1,4 @@
+using BookLocal.API.Configuration;
 using BookLocal.API.Hubs;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,11 +16,15 @@ namespace BookLocal.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddSignalR();
-            builder.Services.AddSingleton<PresenceTracker>();
-
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    sqlServerOptionsAction: sqlOptions =>
+                    {
+                        sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    }
+                )
+            );
 
             builder.Services.AddIdentity<User, IdentityRole>(options =>
             {
@@ -81,6 +86,13 @@ namespace BookLocal.API
                                   });
             });
 
+
+
+            builder.Services.AddSingleton<PresenceTracker>();
+            builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+            builder.Services.AddScoped<IPhotoService, PhotoService>();
+
+            builder.Services.AddSignalR();
 
             builder.Services.AddControllers();
 

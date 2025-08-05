@@ -4,6 +4,7 @@ export interface Business {
   nip: string;
   city: string | null;
   description: string | null;
+  photoUrl?: string;
 }
 
 export interface Service {
@@ -18,6 +19,7 @@ export interface Employee {
   firstName: string;
   lastName: string;
   position: string | null;
+  photoUrl?: string;
 }
 
 export interface BusinessDetail extends Business {
