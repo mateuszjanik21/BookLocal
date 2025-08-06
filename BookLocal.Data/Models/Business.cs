@@ -31,7 +31,8 @@ namespace BookLocal.Data.Models
         public virtual User Owner { get; set; }
         public string? PhotoUrl { get; set; }
 
+        public virtual ICollection<ServiceCategory> Categories { get; set; } = new List<ServiceCategory>();
         public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
-        public virtual ICollection<Service> Services { get; set; } = new List<Service>();
+        public virtual ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
     }
 }

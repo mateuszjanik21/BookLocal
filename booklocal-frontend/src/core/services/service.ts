@@ -10,7 +10,7 @@ export class ServiceService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  addService(businessId: number, payload: ServicePayload) {
+  addService(businessId: number, payload: ServicePayload & { serviceCategoryId: number }) {
     return this.http.post(`${this.apiUrl}/businesses/${businessId}/services`, payload);
   }
 

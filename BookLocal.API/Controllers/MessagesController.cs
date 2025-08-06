@@ -70,6 +70,7 @@ namespace BookLocal.API.Controllers
                     ConversationId = c.ConversationId,
                     ParticipantId = userRoles.Contains("owner") ? c.CustomerId : c.Business.OwnerId,
                     ParticipantName = userRoles.Contains("owner") ? (c.Customer.FirstName + " " + c.Customer.LastName) : c.Business.Name,
+                    ParticipantPhotoUrl = userRoles.Contains("owner") ? c.Customer.PhotoUrl : c.Business.PhotoUrl,
                     LastMessage = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault() != null ? c.Messages.OrderByDescending(m => m.SentAt).First().Content : "Brak wiadomości",
                     LastMessageAt = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault() != null ? c.Messages.OrderByDescending(m => m.SentAt).First().SentAt : DateTime.MinValue,
                     UnreadCount = c.Messages.Count(m => m.SenderId != userId && !m.IsRead)
@@ -103,11 +104,12 @@ namespace BookLocal.API.Controllers
                     MessageId = m.MessageId,
                     ConversationId = m.ConversationId,
                     Content = m.Content,
-                    SentAt = m.SentAt,
+                    SentAt = DateTime.SpecifyKind(m.SentAt, DateTimeKind.Utc),
                     SenderId = m.SenderId,
                     SenderFullName = m.SenderId == conversation.Business.OwnerId
                         ? conversation.Business.Name
                         : m.Sender.FirstName + " " + m.Sender.LastName,
+                    SenderPhotoUrl = m.Sender.PhotoUrl,
                     IsRead = m.IsRead
                 })
                 .ToListAsync();

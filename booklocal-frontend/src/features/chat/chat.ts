@@ -35,24 +35,33 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   ngOnInit(): void {
     const userSub = this.authService.currentUser$.subscribe(user => this.currentUser = user);
     const convoSub = this.chatService.getMyConversations().subscribe(convos => this.conversations = convos);
-    const newMsgSub = this.chatService.newMessages$.subscribe(newMessage => {
-      if (newMessage.conversationId !== this.activeConversationId) {
-        this.toastr.info(newMessage.content, `Nowa wiadomość od: ${newMessage.senderFullName}`);
-      }
-      this.chatService.getMyConversations().subscribe(convos => this.conversations = convos);
-      this.needsScroll = true;
-    });
-
     const convoUpdateSub = this.presenceService.conversationUpdated$.subscribe(updatedConvo => {
-      const index = this.conversations.findIndex(c => c.conversationId === updatedConvo.conversationId);
-      if (index !== -1) {
-        this.conversations[index] = updatedConvo;
-      } else {
-        this.conversations.unshift(updatedConvo);
+      const filteredConversations = this.conversations.filter(c => c.conversationId !== updatedConvo.conversationId);
+      this.conversations = [updatedConvo, ...filteredConversations];
+    });
+    const messageThreadSub = this.chatService.messageThread$.subscribe(messages => {
+      if (messages && messages.length > 0) {
+        this.scrollToBottom();
       }
     });
+    this.subscriptions.push(userSub, convoSub, convoUpdateSub, messageThreadSub);
+  }
 
-    this.subscriptions.push(userSub, convoSub, newMsgSub, convoUpdateSub);
+  sendMessage(): void {
+    if (this.activeConversationId && this.messageContent.trim() !== '') {
+      this.chatService.sendMessage(this.activeConversationId, this.messageContent)
+        .then(() => {
+          this.messageContent = '';
+          this.needsScroll = true;
+          this.refreshConversations();
+        });
+    }
+  }
+
+  private refreshConversations(): void {
+    this.chatService.getMyConversations().subscribe(convos => {
+      this.conversations = convos;
+    });
   }
 
   ngAfterViewChecked(): void {
@@ -89,16 +98,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       });
     } catch (error) {
       console.error("Nie udało się nawiązać połączenia z czatem:", error);
-    }
-  }
-
-  sendMessage(): void {
-    if (this.activeConversationId && this.messageContent.trim() !== '') {
-      this.chatService.sendMessage(this.activeConversationId, this.messageContent)
-        .then(() => {
-          this.messageContent = '';
-          this.needsScroll = true;
-        });
     }
   }
 

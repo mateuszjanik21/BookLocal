@@ -29,24 +29,62 @@
 @plugin "daisyui/theme" {
   name: "purple_night";
   default: true;
-  --color-primary: #8b5cf6;            /* Główny Fiolet */
-  --color-primary-content: #ffffff;   /* Biały tekst na fiolecie */
+  --color-primary: #8b5cf6;
+  --color-primary-content: #ffffff;
 
-  --color-secondary: #7c3aed;          /* Ciemniejszy fiolet */
+  --color-secondary: #7c3aed;
   --color-secondary-content: #ffffff;
 
-  --color-accent: #c4b5fd;             /* Jasny, lawendowy akcent */
-  --color-accent-content: #1f2937;    /* Ciemny tekst na akcencie */
+  --color-accent: #c4b5fd;
+  --color-accent-content: #1f2937;
 
-  --color-neutral: #374151;            /* Neutralny (szary) */
-  --color-neutral-content: #d1d5db;   /* Jasny tekst na neutralnym */
+  --color-neutral: #374151;
+  --color-neutral-content: #d1d5db;
 
-  --color-base-100: #1f2937;           /* Główne tło (Ciemnoszary) */
-  --color-base-200: #374151;           /* Tło dla menu, kart (trochę jaśniejszy szary) */
-  --color-base-300: #4b5563;           /* Tło po najechaniu */
-  --color-base-content: #d1d5db;      /* Domyślny kolor tekstu (Jasnoszary) */
+  --color-base-100: #1f2937;
+  --color-base-200: #374151;
+  --color-base-300: #4b5563;
+  --color-base-content: #d1d5db;
 
   --color-success: #36d399;
   --color-warning: #fbbd23;
   --color-error: #f87272;
+}
+
+
+.toast-container .ngx-toastr {
+  @apply w-auto max-w-sm cursor-pointer rounded-lg bg-gray-200 text-base-content shadow-lg border-l-4;
+  padding: 1rem !important;
+}
+
+.ngx-toastr .toast-title {
+  @apply mb-1 font-bold pl-7;
+}
+
+.ngx-toastr .toast-message {
+  @apply pl-7;
+}
+
+.toast-progress {
+  @apply bg-primary opacity-70;
+}
+
+.toast-close-button {
+  @apply hidden;
+}
+
+.toast-success {
+  border-left-color: oklch(var(--su));
+}
+
+.toast-error {
+  border-left-color: oklch(var(--er));
+}
+
+.toast-warning {
+  border-left-color: oklch(var(--wa));
+}
+
+.toast-info {
+  border-left-color: oklch(var(--in));
 }

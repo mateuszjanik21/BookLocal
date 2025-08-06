@@ -76,31 +76,32 @@ public class EmployeesController : ControllerBase
     [Authorize(Roles = "owner")]
     public async Task<IActionResult> AssignServicesToEmployee(int businessId, int employeeId, AssignServicesDto assignDto)
     {
-        var business = await _context.Businesses.FindAsync(businessId);
-        if (business == null) return NotFound("Firma nie istnieje.");
-
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (business.OwnerId != userId) return Forbid();
-
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var employee = await _context.Employees
-            .Include(e => e.EmployeeServices)
-            .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.BusinessId == businessId);
+            .Include(e => e.Business)
+            .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.BusinessId == businessId && e.Business.OwnerId == ownerId);
 
-        if (employee == null) return NotFound("Pracownik nie istnieje w tej firmie.");
-
-        employee.EmployeeServices.Clear();
-
-        foreach (var serviceId in assignDto.ServiceIds)
+        if (employee == null)
         {
-            var serviceExists = await _context.Services.AnyAsync(s => s.ServiceId == serviceId && s.BusinessId == businessId);
-            if (serviceExists)
-            {
-                employee.EmployeeServices.Add(new EmployeeService { ServiceId = serviceId });
-            }
+            return Forbid();
         }
 
+        var currentServices = await _context.EmployeeServices
+            .Where(es => es.EmployeeId == employeeId)
+            .ToListAsync();
+
+        _context.EmployeeServices.RemoveRange(currentServices);
+
+        var newServices = assignDto.ServiceIds.Select(serviceId => new EmployeeService
+        {
+            EmployeeId = employeeId,
+            ServiceId = serviceId
+        }).ToList();
+
+        await _context.EmployeeServices.AddRangeAsync(newServices);
         await _context.SaveChangesAsync();
-        return Ok(new { Message = "Usługi pracownika zostały zaktualizowane." });
+
+        return Ok(new { Message = "Usługi pracownika zostały pomyślnie zaktualizowane." });
     }
 
     [HttpGet("/api/businesses/{businessId}/services/{serviceId}/employees")]

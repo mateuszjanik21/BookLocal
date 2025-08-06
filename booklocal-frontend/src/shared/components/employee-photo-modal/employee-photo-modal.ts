@@ -20,8 +20,8 @@ export class EmployeePhotoModalComponent {
 
   isLoading = false;
 
-  onPhotoSelected(file: File): void {
-    if (!this.employee) return;
+  onPhotoSelected(file: File | null): void {
+    if (!file || !this.employee) return;
 
     this.isLoading = true;
     this.photoService.uploadEmployeePhoto(this.employee.id, file).subscribe({

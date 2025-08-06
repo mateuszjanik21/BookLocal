@@ -10,8 +10,11 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class ImageUploadComponent {
   @Input() currentImageUrl: string | null | undefined = null;
-  @Output() imageSelected = new EventEmitter<File>();
   @Input() isLoading = false;
+  @Input() showUploadButton: boolean = true;
+  @Input() displayStyle: 'circle' | 'rectangle' = 'circle';
+  
+  @Output() imageSelected = new EventEmitter<File | null>();
 
   previewUrl: string | ArrayBuffer | null = null;
   selectedFile: File | null = null;
@@ -37,6 +40,10 @@ export class ImageUploadComponent {
       const reader = new FileReader();
       reader.onload = () => this.previewUrl = reader.result;
       reader.readAsDataURL(file);
+      
+      if (!this.showUploadButton) {
+        this.imageSelected.emit(this.selectedFile);
+      }
     }
   }
 

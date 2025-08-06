@@ -1,58 +1,126 @@
-@if (isLoading) {
-  <div class="flex justify-center items-center p-16">
-    <span class="loading loading-spinner loading-lg text-primary"></span>
-  </div>
-} @else {
-  @if (business) {
+<div class="p-4 sm:p-6 lg:p-8 bg-base-200/30 min-h-screen">
+
+  @if (isLoading) {
     <div>
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Zarządzaj Usługami</h1>
-        <button class="btn btn-primary" (click)="isAddServiceModalVisible = true">+ Dodaj Nową Usługę</button>
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
+        <div class="space-y-2">
+          <div class="skeleton h-10 w-64"></div>
+          <div class="skeleton h-4 w-96"></div>
+        </div>
+        <div class="skeleton h-12 w-full sm:w-48"></div>
       </div>
 
-      <div class="overflow-x-auto bg-base-100 rounded-lg shadow">
-        <table class="table w-full">
-          <thead>
-            <tr>
-              <th>Nazwa Usługi</th>
-              <th>Cena</th>
-              <th>Czas trwania</th>
-              <th class="text-right">Akcje</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (service of business.services; track service.id) {
-              <tr>
-                <td>{{ service.name }}</td>
-                <td>{{ service.price }} zł</td>
-                <td>{{ service.durationMinutes }} min</td>
-                <td class="text-right space-x-2">
-                  <button class="btn btn-sm btn-outline" (click)="onEditService(service)">Edytuj</button>
-                  <button class="btn btn-sm btn-outline btn-error" (click)="onDeleteService(service)">Usuń</button>
-                </td>
-              </tr>
-            } @empty {
-              <tr><td colspan="4" class="text-center">Nie dodałeś jeszcze żadnych usług.</td></tr>
-            }
-          </tbody>
-        </table>
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        @for (_ of [0, 1, 2, 3]; track $index) {
+          <div class="skeleton h-60 w-full"></div>
+        }
       </div>
     </div>
   } @else {
-    <p>Błąd ładowania danych firmy.</p>
+    @if (business) {
+      <div>
+        <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-8">
+          <div>
+            <h1 class="text-3xl font-bold text-base-content">Zarządzaj Usługami</h1>
+            <p class="mt-1 text-base-content/70">Zarządzaj kategoriami i usługami, które oferujesz swoim klientom.</p>
+          </div>
+          <button class="btn btn-primary w-full sm:w-auto shadow-md hover:shadow-lg transition-shadow" (click)="openCategoryModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
+            Dodaj Kategorię
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          @for(category of business.categories; track category.serviceCategoryId) {
+            <div class="card bg-base-100 shadow-lg border border-base-200/50 transition-all duration-300 hover:shadow-2xl hover:border-primary">
+              <div class="card-body p-5">
+                <div class="flex items-center gap-4">
+                  <div class="avatar">
+                    <div class="w-32 rounded-full ring-2 ring-primary ring-offset-base-100 ring-offset-2">
+                      <img [src]="category.photoUrl || 'assets/placeholder.svg'" alt="Zdjęcie {{ category.name }}" />
+                    </div>
+                  </div>
+                  <h2 class="flex-grow text-xl font-bold text-base-content">{{ category.name }}</h2>
+                  <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="btn btn-ghost btn-circle btn-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" /></svg>
+                    </label>
+                    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-200 rounded-box w-52 z-10 border border-base-300">
+                      <li><button (click)="openCategoryModal(category)">Edytuj kategorię</button></li>
+                      <li><button class="text-error" (click)="onDeleteCategory(category)">Usuń kategorię</button></li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="mt-4 space-y-2">
+                  @for(service of category.services; track service.id) {
+                    <div class="flex items-center justify-between gap-4 p-3 rounded-lg hover:bg-base-200/60 transition-colors">
+                      <span class="font-medium text-base-content">{{ service.name }}</span>
+                      <div class="flex items-center gap-4 flex-shrink-0">
+                        <span class="font-mono text-sm text-base-content/80">{{ service.price }} zł</span>
+                        <span class="font-mono text-sm text-base-content/60 hidden sm:inline">{{ service.durationMinutes }} min</span>
+                        <button class="btn btn-ghost btn-square btn-sm" (click)="openEditServiceModal(service, category)">
+                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" /></svg>
+                        </button>
+                      </div>
+                    </div>
+                  } @empty {
+                    <div class="text-center py-8 px-4 border-2 border-dashed border-base-300 rounded-lg mt-4">
+                      <p class="font-semibold text-base-content/80">Brak usług w tej kategorii</p>
+                      <button class="btn btn-primary btn-sm mt-3" (click)="openAddServiceModal(category)">+ Dodaj pierwszą usługę</button>
+                    </div>
+                  }
+                </div>
+
+                @if (category.services.length > 0) {
+                  <div class="card-actions justify-end mt-4">
+                     <button class="btn btn-primary btn-sm" (click)="openAddServiceModal(category)">+ Dodaj usługę</button>
+                  </div>
+                }
+              </div>
+            </div>
+          } @empty {
+            <div class="col-span-full mt-12 flex flex-col items-center justify-center text-center bg-base-100 rounded-xl p-10 shadow-md border border-base-200/50">
+               <div class="p-5 bg-primary/10 rounded-full">
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 text-primary"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" /></svg>
+               </div>
+               <h3 class="text-xl font-semibold mt-6">Stwórz swoją pierwszą kategorię usług</h3>
+               <p class="text-base-content/70 mt-2 max-w-sm">Kategorie pomagają w organizacji oferty. Kliknij przycisk poniżej, aby dodać nową kategorię i przypisać do niej usługi.</p>
+               <button class="btn btn-primary mt-6" (click)="openCategoryModal()">
+                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
+                 Dodaj Kategorię
+               </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
   }
+
+</div>
+
+
+@if(isCategoryModalVisible) {
+  <app-category-modal
+    [category]="categoryToEdit"
+    [businessId]="business!.id"
+    (closed)="closeCategoryModal()"
+    (save)="onSaveCategory($event)">
+  </app-category-modal>
 }
 
-@if (isAddServiceModalVisible) {
+@if(isAddServiceModalVisible) {
   <app-add-service-modal
     [businessId]="business!.id"
-    (closed)="closeModalAndRefresh()">
+    [categoryId]="activeCategoryForService!.serviceCategoryId"
+    (closed)="closeServiceModalAndRefresh()">
   </app-add-service-modal>
 }
-@if (serviceToEdit) {
+
+@if(serviceToEdit) {
   <app-edit-service-modal
     [businessId]="business!.id"
     [service]="serviceToEdit"
-    (closed)="closeModalAndRefresh()">
+    (closed)="closeServiceModalAndRefresh()">
   </app-edit-service-modal>
 }

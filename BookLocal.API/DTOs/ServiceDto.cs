@@ -1,4 +1,6 @@
-﻿namespace BookLocal.API.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BookLocal.API.DTOs
 {
     public class ServiceUpsertDto
     {
@@ -6,6 +8,8 @@
         public string? Description { get; set; }
         public required decimal Price { get; set; }
         public required int DurationMinutes { get; set; }
+        [Required]
+        public int ServiceCategoryId { get; set; }
     }
 
     public class ServiceDto

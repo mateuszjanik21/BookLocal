@@ -39,7 +39,9 @@ export class ManageProfileComponent implements OnInit {
     });
   }
 
-  onProfilePhotoSelected(file: File): void {
+  onProfilePhotoSelected(file: File | null): void {
+    if (!file) return;
+
     this.isUploadingProfilePhoto = true;
     this.photoService.uploadUserProfilePhoto(file).subscribe({
       next: (response) => {
@@ -57,7 +59,9 @@ export class ManageProfileComponent implements OnInit {
     });
   }
 
-  onBusinessPhotoSelected(file: File): void {
+  onBusinessPhotoSelected(file: File | null): void {
+    if (!file) return;
+
     this.isUploadingBusinessPhoto = true;
     this.photoService.uploadBusinessPhoto(file).subscribe({
       next: (response) => {

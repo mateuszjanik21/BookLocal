@@ -20,7 +20,7 @@
         public string? Address { get; set; }
         public string? City { get; set; }
         public string? Description { get; set; }
-        public List<ServiceDto> Services { get; set; } = new();
+        public List<ServiceCategoryDto> Categories { get; set; } = new();
         public List<EmployeeDto> Employees { get; set; } = new();
     }
 }

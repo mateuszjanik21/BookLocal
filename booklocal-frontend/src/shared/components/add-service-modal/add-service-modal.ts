@@ -12,6 +12,7 @@ import { ToastrService } from 'ngx-toastr';
 })
 export class AddServiceModalComponent {
   @Input() businessId: number | null = null;
+  @Input() categoryId: number | null = null;
   @Output() closed = new EventEmitter<void>();
 
   private fb = inject(FormBuilder);
@@ -26,9 +27,13 @@ export class AddServiceModalComponent {
   });
 
   onSubmit() {
-    if (this.serviceForm.invalid || !this.businessId) return;
+    if (this.serviceForm.invalid || !this.businessId || !this.categoryId) return;
+    const payload = {
+      ...this.serviceForm.value,
+      serviceCategoryId: this.categoryId
+    }
 
-    this.serviceService.addService(this.businessId, this.serviceForm.value as any)
+    this.serviceService.addService(this.businessId, payload as any)
       .subscribe({
         next: () => {
           this.toastr.success('Usługa dodana pomyślnie!');

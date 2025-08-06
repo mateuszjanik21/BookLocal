@@ -14,6 +14,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<EmployeeService> EmployeeServices { get; set; }
     public DbSet<Conversation> Conversations { get; set; }
     public DbSet<Message> Messages { get; set; }
+    public DbSet<ServiceCategory> ServiceCategories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

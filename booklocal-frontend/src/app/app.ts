@@ -35,18 +35,5 @@ export class App {
         this.presenceService.stopHubConnection();
       }
     });
-
-    this.presenceService.conversationUpdated$.subscribe(updatedConvo => {
-      if (!this.router.url.includes('/chat')) {
-        this.toastr.info(
-          updatedConvo.lastMessage,
-          `Nowa wiadomość od: ${updatedConvo.participantName}`,
-          { 
-            toastClass: 'alert alert-info cursor-pointer',
-            timeOut: 8000,
-          }
-        ).onTap.subscribe(() => this.router.navigate(['/chat']));
-      }
-    });
   }
 }

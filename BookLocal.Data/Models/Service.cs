@@ -8,6 +8,11 @@ public class Service
     public int ServiceId { get; set; }
 
     [Required]
+    public int ServiceCategoryId { get; set; }
+    [ForeignKey("ServiceCategoryId")]
+    public virtual ServiceCategory ServiceCategory { get; set; }
+
+    [Required]
     public int BusinessId { get; set; }
 
     [Required]

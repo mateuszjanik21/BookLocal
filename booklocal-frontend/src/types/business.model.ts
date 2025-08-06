@@ -12,6 +12,14 @@ export interface Service {
   name: string;
   price: number;
   durationMinutes: number;
+  serviceCategoryId: number; 
+}
+
+export interface ServiceCategory {
+  serviceCategoryId: number;
+  name: string;
+  photoUrl?: string;
+  services: Service[];
 }
 
 export interface Employee {
@@ -25,6 +33,7 @@ export interface Employee {
 export interface BusinessDetail extends Business {
   services: Service[];
   employees: Employee[];
+  categories: ServiceCategory[];
 }
 
 export interface ServicePayload {
@@ -32,4 +41,5 @@ export interface ServicePayload {
   description?: string;
   price: number;
   durationMinutes: number;
+  serviceCategoryId: number;
 }

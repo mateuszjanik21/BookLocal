@@ -5,5 +5,6 @@ export interface Message {
   sentAt: string;
   senderId: string;
   senderFullName: string;
+  senderPhotoUrl?: string;
   isRead: boolean;
 }

@@ -1,7 +1,7 @@
 ﻿using BookLocal.API.DTOs;
+using BookLocal.Data;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -11,12 +11,10 @@ using System.Security.Claims;
 public class BusinessesController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly UserManager<User> _userManager;
 
-    public BusinessesController(AppDbContext context, UserManager<User> userManager)
+    public BusinessesController(AppDbContext context)
     {
         _context = context;
-        _userManager = userManager;
     }
 
 
@@ -55,7 +53,8 @@ public class BusinessesController : ControllerBase
     public async Task<ActionResult<BusinessDetailDto>> GetBusiness(int id)
     {
         var business = await _context.Businesses
-            .Include(b => b.Services)
+            .Include(b => b.Categories)
+                .ThenInclude(c => c.Services)
             .Include(b => b.Employees)
             .FirstOrDefaultAsync(b => b.BusinessId == id);
 
@@ -65,17 +64,23 @@ public class BusinessesController : ControllerBase
         {
             Id = business.BusinessId,
             Name = business.Name,
-            PhotoUrl = business.PhotoUrl,
             NIP = business.NIP,
             Address = business.Address,
             City = business.City,
             Description = business.Description,
-            Services = business.Services.Select(s => new ServiceDto
+            PhotoUrl = business.PhotoUrl,
+            Categories = business.Categories.Select(c => new ServiceCategoryDto
             {
-                Id = s.ServiceId,
-                Name = s.Name,
-                Price = s.Price,
-                DurationMinutes = s.DurationMinutes
+                ServiceCategoryId = c.ServiceCategoryId,
+                Name = c.Name,
+                PhotoUrl = c.PhotoUrl,
+                Services = c.Services.Select(s => new ServiceDto
+                {
+                    Id = s.ServiceId,
+                    Name = s.Name,
+                    Price = s.Price,
+                    DurationMinutes = s.DurationMinutes
+                }).ToList()
             }).ToList(),
             Employees = business.Employees.Select(e => new EmployeeDto
             {
@@ -96,30 +101,37 @@ public class BusinessesController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var business = await _context.Businesses
-            .Include(b => b.Services)
+            .Include(b => b.Categories)
+                .ThenInclude(c => c.Services)
             .Include(b => b.Employees)
             .FirstOrDefaultAsync(b => b.OwnerId == userId);
 
-        if (business == null) 
+        if (business == null)
         {
             return NotFound("Nie znaleziono firmy dla tego właściciela.");
         }
-    
+
         var businessDto = new BusinessDetailDto
         {
             Id = business.BusinessId,
             Name = business.Name,
-            PhotoUrl = business.PhotoUrl,
             NIP = business.NIP,
             Address = business.Address,
             City = business.City,
             Description = business.Description,
-            Services = business.Services.Select(s => new ServiceDto
+            PhotoUrl = business.PhotoUrl,
+            Categories = business.Categories.Select(c => new ServiceCategoryDto
             {
-                Id = s.ServiceId,
-                Name = s.Name,
-                Price = s.Price,
-                DurationMinutes = s.DurationMinutes
+                ServiceCategoryId = c.ServiceCategoryId,
+                Name = c.Name,
+                PhotoUrl = c.PhotoUrl,
+                Services = c.Services.Select(s => new ServiceDto
+                {
+                    Id = s.ServiceId,
+                    Name = s.Name,
+                    Price = s.Price,
+                    DurationMinutes = s.DurationMinutes
+                }).ToList()
             }).ToList(),
             Employees = business.Employees.Select(e => new EmployeeDto
             {
@@ -147,7 +159,6 @@ public class BusinessesController : ControllerBase
         if (business.OwnerId != userId) return Forbid();
 
         business.Name = businessDto.Name;
-        business.PhotoUrl = business.PhotoUrl;
         business.NIP = businessDto.NIP;
         business.Address = businessDto.Address;
         business.City = businessDto.City;
@@ -156,6 +167,7 @@ public class BusinessesController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "owner")]

@@ -1,4 +1,5 @@
 ﻿using BookLocal.API.DTOs;
+using BookLocal.Data;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -68,7 +69,7 @@ public class ReservationsController : ControllerBase
         var notificationPayload = new
         {
             Message = $"Nowa rezerwacja od {customer.FirstName} na usługę '{service.Name}'.",
-            reservation.ReservationId
+            ReservationId = reservation.ReservationId
         };
 
         await _hubContext.Clients.Group(service.BusinessId.ToString())
@@ -86,7 +87,7 @@ public class ReservationsController : ControllerBase
 
         if (User.IsInRole("owner"))
         {
-            query = query.Where(r => r.Service.Business.OwnerId == userId);
+            query = query.Where(r => r.Service.ServiceCategory.Business.OwnerId == userId);
         }
         else
         {
@@ -147,7 +148,8 @@ public class ReservationsController : ControllerBase
             return NotFound();
         }
 
-        var isOwner = userRoles.Contains("owner") && await _context.Businesses.AnyAsync(b => b.OwnerId == userId && b.Services.Any(s => s.ServiceId == reservation.ServiceId));
+        var isOwner = userRoles.Contains("owner") && await _context.Businesses
+            .AnyAsync(b => b.OwnerId == userId && b.Categories.Any(c => c.Services.Any(s => s.ServiceId == reservation.ServiceId)));
 
         if (reservation.CustomerId != userId && !isOwner)
         {

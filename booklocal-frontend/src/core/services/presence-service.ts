@@ -1,9 +1,11 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { Conversation } from '../../types/conversation.model';
+import { NotificationService } from './notification';
+import { Router } from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class PresenceService {
@@ -13,7 +15,8 @@ export class PresenceService {
   private conversationUpdatedSource = new Subject<Conversation>();
   conversationUpdated$ = this.conversationUpdatedSource.asObservable();
 
-  constructor(private toastr: ToastrService) { }
+  private toastr = inject(ToastrService);
+  private router = inject(Router);
 
   createHubConnection() {
     const token = localStorage.getItem('authToken');
@@ -47,6 +50,18 @@ export class PresenceService {
 
     this.hubConnection.on('UpdateConversation', (updatedConvo: Conversation) => {
       this.conversationUpdatedSource.next(updatedConvo);
+      if (!this.router.url.includes('/chat')) {
+        const fullMessage = updatedConvo.lastMessage;
+        const maxLength = 25;
+        const toastMessage = fullMessage.length > maxLength 
+        ? fullMessage.substring(0, maxLength) + '...' 
+        : fullMessage;
+        const toastTitle = `Nowa wiadomość od: ${updatedConvo.participantName}`;
+        this.toastr.info(toastMessage, toastTitle, { 
+          timeOut: 8000 
+        })
+          .onTap.subscribe(() => this.router.navigate(['/chat']));
+      }
     });
   }
 

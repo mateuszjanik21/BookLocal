@@ -1,100 +1,92 @@
-<div class="container p-4 md:p-8 mx-auto max-w-700">
+<div class="container p-4 md:p-8 mx-auto max-w-350">
   <div class="flex border rounded-2xl shadow-2xl h-[80vh] bg-base-100 overflow-hidden">
 
     <div class="w-full md:w-1/5 border-r bg-base-200 flex flex-col">
       <div class="p-4 font-bold text-lg border-b">Konwersacje</div>
       <div class="overflow-y-auto">
         @for(convo of conversations; track convo.conversationId){
-        <div class="flex items-center gap-4 p-4 cursor-pointer hover:bg-base-300"
-          (click)="selectConversation(convo.conversationId)"
-          [class.bg-base-300]="convo.conversationId === activeConversationId">
-
-          <div class="indicator">
-
-            @if ((presenceService.onlineUsers$ | async)?.includes(convo.participantId)) {
-            <span
-              class="indicator-item indicator-bottom indicator-end badge badge-success badge-xs mr-2 mb-2"></span>
-            } @else {
-            <span class="indicator-item indicator-bottom indicator-end badge badge-error badge-xs mr-2 mb-2"></span>
-            }
-
-            <div class="avatar">
-              <div class="w-12 h-12 rounded-full bg-base-300 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-12">
-                  <path fill-rule="evenodd"
-                    d="M18.685 19.097A9.723 9.723 0 0 0 21.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 0 0 3.065 7.097A9.716 9.716 0 0 0 12 21.75a9.716 9.716 0 0 0 6.685-2.653Zm-12.54-1.285A7.486 7.486 0 0 1 12 15a7.486 7.486 0 0 1 5.855 2.812A8.224 8.224 0 0 1 12 20.25a8.224 8.224 0 0 1-5.855-2.438ZM15.75 9a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
-                    clip-rule="evenodd" />
-                </svg>
-              </div>
-            </div>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex justify-between items-center">
-              <div class="font-bold truncate" [class.font-extrabold]="convo.unreadCount > 0">
-                {{ convo.participantName }}
-              </div>
-              @if (convo.unreadCount > 0) {
-              <span class="badge badge-primary badge-sm">{{ convo.unreadCount }}</span>
+          <div 
+            class="flex items-center gap-4 p-4 cursor-pointer hover:bg-base-300"
+            (click)="selectConversation(convo.conversationId)" 
+            [class.bg-base-300]="convo.conversationId === activeConversationId">
+            
+            <div class="indicator">
+              @if ((presenceService.onlineUsers$ | async)?.includes(convo.participantId)) {
+                <span class="indicator-item badge badge-success badge-xs indicator-bottom indicator-end mr-2 mb-2"></span>
+              } @else {
+                <span class="indicator-item badge badge-error badge-xs indicator-bottom indicator-end mr-2 mb-2"></span>
               }
+              <div class="avatar">
+                <div class="w-12 h-12 rounded-full bg-base-300 flex items-center justify-center">
+                  <img [src]="convo.participantPhotoUrl || 'assets/placeholder.svg'" alt="Avatar rozmówcy" />
+                </div>
+              </div>
             </div>
-            <div class="text-sm text-base-content/60 truncate" [class.font-bold]="convo.unreadCount > 0">
-              {{ convo.lastMessage }}
+            
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-center">
+                <div class="font-bold truncate" [class.font-extrabold]="convo.unreadCount > 0">
+                  {{ convo.participantName }}
+                </div> 
+                @if (convo.unreadCount > 0) {
+                  <span class="badge badge-primary badge-sm">{{ convo.unreadCount }}</span>
+                }
+              </div>
+              <div class="text-sm text-base-content/60 truncate" [class.font-bold]="convo.unreadCount > 0">
+                {{ convo.lastMessage }}
+              </div>
             </div>
           </div>
-        </div>
         } @empty {
-        <p class="p-4 text-sm text-base-content/70">Brak konwersacji.</p>
+          <p class="p-4 text-sm text-base-content/70">Brak konwersacji.</p>
         }
       </div>
     </div>
 
     <div class="w-full md:w-4/5 flex flex-col">
       @if(activeConversationId && (chatService.messageThread$ | async); as messages) {
-
-      <div class="p-4 border-b font-bold text-lg bg-base-200">
-        <span>Rozmowa z: {{ activeParticipantName }}</span>
-      </div>
-
-      <div #messageContainer class="flex-1 p-4 overflow-y-auto">
-        @for(message of messages; track message.messageId; let isLast = $last) {
-        <div class="chat" [class.chat-end]="message.senderId === currentUser?.id"
-          [class.chat-start]="message.senderId !== currentUser?.id">
-          <div class="chat-header">
-            {{ message.senderFullName }}
-            <time class="text-xs opacity-50 ml-2">{{ message.sentAt | date:'HH:mm' }}</time>
-          </div>
-          <div class="chat-bubble rounded-2xl max-w-lg break-words" [class.chat-bubble-primary]="message.senderId === currentUser?.id">
-            {{ message.content }}
-          </div>
-
-          @if (isLast && message.senderId === currentUser?.id) {
-          <div class="chat-footer opacity-50">
-            @if (message.isRead) {
-            <span>Przeczytano</span>
-            } @else {
-            <span>Wysłano</span>
-            }
-          </div>
+        <div class="p-4 border-b font-bold text-lg bg-base-200">
+          <span>Rozmowa z: {{ activeParticipantName }}</span>
+        </div>
+        <div #messageContainer class="flex-1 p-4 overflow-y-auto">
+          @for(message of messages; track message.messageId; let isLast = $last) {
+            <div class="chat" [class.chat-end]="message.senderId === currentUser?.id" [class.chat-start]="message.senderId !== currentUser?.id">
+              <div class="chat-image avatar">
+                <div class="w-10 rounded-full">
+                  <img alt="Avatar nadawcy" [src]="message.senderPhotoUrl || 'assets/placeholder.svg'" />
+                </div>
+              </div>
+              <div class="chat-header">
+                {{ message.senderFullName }}
+                <time class="text-xs opacity-50 ml-2">{{ message.sentAt | date:'HH:mm' }}</time>
+              </div>
+              
+              <div class="chat-bubble rounded-2xl max-w-lg break-words" 
+                [class.chat-bubble-primary]="message.senderId === currentUser?.id">
+                {{ message.content }}
+              </div>
+              @if (isLast && message.senderId === currentUser?.id) {
+                <div class="chat-footer opacity-50">
+                  @if (message.isRead) { <span>Przeczytano</span> } @else { <span>Wysłano</span> }
+                </div>
+              }
+            </div>
           }
         </div>
-        }
-      </div>
-      <div class="p-4 border-t bg-base-200">
-        <div class="flex items-center gap-2">
-          <textarea [(ngModel)]="messageContent" (keydown.enter)="sendMessage(); $event.preventDefault()"
-            class="textarea textarea-bordered w-full resize-none" placeholder="Napisz wiadomość..." rows="1"></textarea>
-          <button (click)="sendMessage()" class="btn btn-primary btn-square" [disabled]="!messageContent.trim()">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
-              <path
-                d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
-            </svg>
-          </button>
+        <div class="p-4 border-t bg-base-200">
+          <div class="flex items-center gap-2">
+            <textarea [(ngModel)]="messageContent" (keydown.enter)="sendMessage(); $event.preventDefault()" class="textarea textarea-bordered w-full resize-none" placeholder="Napisz wiadomość..." rows="1"></textarea>
+            <button (click)="sendMessage()" class="btn btn-primary btn-square" [disabled]="!messageContent.trim()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
       } @else {
-      <div class="flex items-center justify-center h-full">
-        <p class="text-lg text-base-content/60">Wybierz konwersację, aby rozpocząć.</p>
-      </div>
+        <div class="flex items-center justify-center h-full">
+          <p class="text-lg text-base-content/60">Wybierz konwersację, aby rozpocząć.</p>
+        </div>
       }
     </div>
   </div>

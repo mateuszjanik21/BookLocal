@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BusinessService } from '../../../core/services/business-service';
 import { EmployeeService } from '../../../core/services/employee-service';
-import { BusinessDetail, Employee } from '../../../types/business.model';
+import { BusinessDetail, Employee, Service } from '../../../types/business.model';
 import { ToastrService } from 'ngx-toastr';
 import { AssignServicesModalComponent } from '../../../shared/components/assign-services-modal/assign-services-modal';
 import { AddEmployeeModalComponent } from '../../../shared/components/add-employee-modal/add-employee-modal';
@@ -34,6 +34,13 @@ export class ManageEmployeesComponent implements OnInit {
   employeeForPhoto: Employee | null = null;
   employeeToAssignServices: Employee | null = null;
   isAddEmployeeModalVisible = false;
+
+  get allBusinessServices(): Service[] {
+    if (!this.business?.categories) {
+      return [];
+    }
+    return this.business.categories.flatMap(category => category.services);
+  }
 
   ngOnInit(): void {
     this.loadBusinessData();

@@ -7,6 +7,7 @@ namespace BookLocal.API.DTOs
         public int ConversationId { get; set; }
         public required string ParticipantId { get; set; }
         public required string ParticipantName { get; set; }
+        public string? ParticipantPhotoUrl { get; set; }
         public required string LastMessage { get; set; }
         public DateTime LastMessageAt { get; set; }
         public int UnreadCount { get; set; }

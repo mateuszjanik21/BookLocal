@@ -3,10 +3,12 @@
     @if (employee) {
       <h3 class="font-bold text-lg">Zmień zdjęcie dla: {{ employee.firstName }} {{ employee.lastName }}</h3>
 
-      <div class="py-4">
-        <app-image-upload 
+      <div class="py-4 flex justify-center">
+        <app-image-upload
           [currentImageUrl]="employee.photoUrl"
           [isLoading]="isLoading"
+          [showUploadButton]="false"
+          displayStyle="circle"
           (imageSelected)="onPhotoSelected($event)">
         </app-image-upload>
       </div>

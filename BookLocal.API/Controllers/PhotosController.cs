@@ -87,4 +87,27 @@ public class PhotosController : ControllerBase
 
         return Ok(new { photoUrl = employee.PhotoUrl });
     }
+
+    [HttpPost("category/{categoryId}")]
+    [Authorize(Roles = "owner")]
+    public async Task<ActionResult<object>> UploadCategoryPhoto(int categoryId, IFormFile file)
+    {
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var category = await _context.ServiceCategories
+            .Include(sc => sc.Business)
+            .FirstOrDefaultAsync(sc => sc.ServiceCategoryId == categoryId && sc.Business.OwnerId == ownerId);
+
+        if (category == null)
+        {
+            return Forbid();
+        }
+
+        var uploadResult = await _photoService.UploadPhotoAsync(file);
+        if (uploadResult.Error != null) return BadRequest(uploadResult.Error.Message);
+
+        category.PhotoUrl = uploadResult.SecureUrl.AbsoluteUri;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { photoUrl = category.PhotoUrl });
+    }
 }

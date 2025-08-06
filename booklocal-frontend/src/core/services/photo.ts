@@ -25,7 +25,12 @@ export class PhotoService {
   uploadEmployeePhoto(employeeId: number, file: File) {
     const formData = new FormData();
     formData.append('file', file);
-
     return this.http.post<{ photoUrl: string }>(`${this.apiUrl}/photos/employee/${employeeId}`, formData);
+  }
+
+  uploadCategoryPhoto(categoryId: number, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ photoUrl: string }>(`${this.apiUrl}/photos/category/${categoryId}`, formData);
   }
 }

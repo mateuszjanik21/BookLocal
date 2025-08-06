@@ -37,15 +37,15 @@ public class ServicesController : ControllerBase
 
     [HttpPost]
     [Authorize(Roles = "owner")]
-    public async Task<IActionResult> AddService(int businessId, ServiceUpsertDto serviceDto)
+    public async Task<ActionResult<ServiceDto>> AddService(int businessId, ServiceUpsertDto serviceDto)
     {
-        var business = await _context.Businesses.FindAsync(businessId);
-        if (business == null) return NotFound("Firma nie istnieje.");
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var categoryExists = await _context.ServiceCategories
+            .AnyAsync(sc => sc.ServiceCategoryId == serviceDto.ServiceCategoryId && sc.BusinessId == businessId && sc.Business.OwnerId == ownerId);
 
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (business.OwnerId != userId)
+        if (!categoryExists)
         {
-            return Forbid("Nie masz uprawnień do dodawania usług w tej firmie.");
+            return Forbid();
         }
 
         var service = new Service
@@ -54,6 +54,7 @@ public class ServicesController : ControllerBase
             Description = serviceDto.Description,
             Price = serviceDto.Price,
             DurationMinutes = serviceDto.DurationMinutes,
+            ServiceCategoryId = serviceDto.ServiceCategoryId,
             BusinessId = businessId
         };
 

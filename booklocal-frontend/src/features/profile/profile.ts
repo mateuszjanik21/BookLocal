@@ -42,7 +42,9 @@ export class ProfileComponent {
     });
   }
 
-  onPhotoSelected(file: File): void {
+  onPhotoSelected(file: File | null): void {
+    if (!file) return;
+
     this.isUploading = true;
     this.photoService.uploadUserProfilePhoto(file).subscribe({
       next: (response) => {

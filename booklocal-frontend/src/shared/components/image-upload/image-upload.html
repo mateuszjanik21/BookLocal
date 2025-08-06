@@ -1,23 +1,42 @@
 <div class="flex flex-col items-center gap-4">
-  <div class="indicator">
+  <div class="indicator" [class.w-full]="displayStyle === 'rectangle'" [class.max-w-md]="displayStyle === 'rectangle'">
     @if(isLoading){
-      <span class="indicator-item indicator-center indicator-middle badge badge-lg bg-base-100/80">
-        <span class="loading loading-spinner text-primary"></span>
-      </span>
+    <span class="indicator-item indicator-center indicator-middle badge badge-lg bg-base-100/80 z-10">
+      <span class="loading loading-spinner text-primary"></span>
+    </span>
     }
+
+    @if (displayStyle === 'rectangle') {
+    <div class="w-full aspect-video rounded-lg bg-base-200 flex items-center justify-center border-2 border-dashed">
+      @if(previewUrl || currentImageUrl) {
+      <img [src]="previewUrl || currentImageUrl" class="object-cover w-full h-full rounded-md" alt="Podgląd zdjęcia" />
+      } @else {
+      <div class="text-center text-base-content/50 p-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-10 w-10" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+        </svg>
+        <p class="mt-2 text-sm font-semibold">Podgląd zdjęcia</p>
+      </div>
+      }
+    </div>
+    } @else {
     <div class="avatar">
       <div class="w-32 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-        <img [src]="previewUrl || currentImageUrl || 'assets/placeholder.svg'" />
+        <img [src]="previewUrl || currentImageUrl || 'assets/placeholder.svg'" alt="Podgląd zdjęcia profilowego" />
       </div>
     </div>
+    }
   </div>
+
   <div class="flex items-center gap-2">
-    <label class="btn btn-outline btn-primary" [class.invisible]="isLoading">
-      <span>Zmień zdjęcie</span>
+    <label class="btn btn-primary" [class.btn-outline]="previewUrl || currentImageUrl" [class.invisible]="isLoading">
+      <span>{{ (previewUrl || currentImageUrl) ? 'Zmień zdjęcie' : 'Wybierz zdjęcie' }}</span>
       <input type="file" class="hidden" accept="image/*" (change)="onFileChange($event)" />
     </label>
-    @if(selectedFile && !isLoading){
-      <button class="btn btn-primary" (click)="onUpload()">Zapisz</button>
+    @if(selectedFile && !isLoading && showUploadButton){
+    <button class="btn btn-primary" (click)="onUpload()">Zapisz</button>
     }
   </div>
 </div>

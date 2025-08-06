@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookLocal.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250806122000_AddServiceCategories")]
+    partial class AddServiceCategories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -502,7 +505,7 @@ namespace BookLocal.Data.Migrations
             modelBuilder.Entity("BookLocal.Data.Models.Conversation", b =>
                 {
                     b.HasOne("BookLocal.Data.Models.Business", "Business")
-                        .WithMany("Conversations")
+                        .WithMany()
                         .HasForeignKey("BusinessId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -540,7 +543,7 @@ namespace BookLocal.Data.Migrations
             modelBuilder.Entity("BookLocal.Data.Models.ServiceCategory", b =>
                 {
                     b.HasOne("BookLocal.Data.Models.Business", "Business")
-                        .WithMany("Categories")
+                        .WithMany()
                         .HasForeignKey("BusinessId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -659,7 +662,7 @@ namespace BookLocal.Data.Migrations
             modelBuilder.Entity("Service", b =>
                 {
                     b.HasOne("BookLocal.Data.Models.Business", "Business")
-                        .WithMany()
+                        .WithMany("Services")
                         .HasForeignKey("BusinessId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -677,11 +680,9 @@ namespace BookLocal.Data.Migrations
 
             modelBuilder.Entity("BookLocal.Data.Models.Business", b =>
                 {
-                    b.Navigation("Categories");
-
-                    b.Navigation("Conversations");
-
                     b.Navigation("Employees");
+
+                    b.Navigation("Services");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Conversation", b =>
