@@ -23,7 +23,7 @@ export class CategoryModalComponent implements OnInit {
   selectedFile: File | null = null;
   isEditMode = false;
   
-  isLoading = false;
+  @Input() isLoading = false;
 
   ngOnInit(): void {
     if (this.category) {

@@ -7,14 +7,14 @@ import { ToastrService } from 'ngx-toastr';
 import { CategoryModalComponent } from '../../../shared/components/category-modal/category-modal';
 import { AddServiceModalComponent } from '../../../shared/components/add-service-modal/add-service-modal';
 import { EditServiceModalComponent } from '../../../shared/components/edit-service-modal/edit-service-modal';
-import { of, switchMap } from 'rxjs';
+import { of, switchMap, finalize } from 'rxjs';
 import { PhotoService } from '../../../core/services/photo';
 
 @Component({
   selector: 'app-manage-services',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     CategoryModalComponent,
     AddServiceModalComponent,
     EditServiceModalComponent
@@ -22,14 +22,20 @@ import { PhotoService } from '../../../core/services/photo';
   templateUrl: './manage-services.html',
 })
 export class ManageServicesComponent implements OnInit {
+  // Wstrzyknięte serwisy
   private businessService = inject(BusinessService);
   private categoryService = inject(CategoryService);
   private photoService = inject(PhotoService);
   private toastr = inject(ToastrService);
 
+  // Stan komponentu
   isLoading = true;
+  isSavingCategory = false;
+
+  // Dane biznesowe
   business: BusinessDetail | null = null;
   
+  // Stan dla okien modalnych
   isCategoryModalVisible = false;
   categoryToEdit: ServiceCategory | null = null;
   
@@ -37,15 +43,23 @@ export class ManageServicesComponent implements OnInit {
   serviceToEdit: Service | null = null;
   activeCategoryForService: ServiceCategory | null = null;
 
-  ngOnInit(): void { this.loadData(); }
+  ngOnInit(): void {
+    this.loadData();
+  }
 
   loadData(): void {
     this.isLoading = true;
-    this.businessService.getMyBusiness().subscribe(data => {
-      this.business = data;
-      this.isLoading = false;
+    this.businessService.getMyBusiness().pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe({
+      next: (data) => {
+        this.business = data;
+      },
+      error: () => this.toastr.error('Wystąpił błąd podczas ładowania danych firmy.')
     });
   }
+
+  // --- Logika dla modala kategorii ---
 
   openCategoryModal(category: ServiceCategory | null = null): void {
     this.categoryToEdit = category;
@@ -60,42 +74,42 @@ export class ManageServicesComponent implements OnInit {
   onSaveCategory(event: { payload: { name: string }, file: File | null }): void {
     if (!this.business) return;
 
-    if (this.categoryToEdit) {
-      this.categoryService.updateCategory(this.business.id, this.categoryToEdit.serviceCategoryId, event.payload)
-        .pipe(
+    this.isSavingCategory = true;
+
+    const saveOperation$ = this.categoryToEdit
+      // Logika edycji
+      ? this.categoryService.updateCategory(this.business.id, this.categoryToEdit.serviceCategoryId, event.payload).pipe(
           switchMap(() => {
             if (event.file) {
               return this.photoService.uploadCategoryPhoto(this.categoryToEdit!.serviceCategoryId, event.file);
             }
             return of(null);
           })
-        ).subscribe({
-          next: () => {
-            this.toastr.success('Kategoria zaktualizowana!');
-            this.closeCategoryModal();
-            this.loadData();
-          },
-          error: () => this.toastr.error('Wystąpił błąd podczas aktualizacji.')
-        });
-    } 
-    else {
-      this.categoryService.addCategory(this.business.id, event.payload)
-        .pipe(
+        )
+      // Logika dodawania
+      : this.categoryService.addCategory(this.business.id, event.payload).pipe(
           switchMap(newCategory => {
             if (event.file) {
               return this.photoService.uploadCategoryPhoto(newCategory.serviceCategoryId, event.file);
             }
             return of(null);
           })
-        ).subscribe({
-          next: () => {
-            this.toastr.success('Kategoria dodana!');
-            this.closeCategoryModal();
-            this.loadData();
-          },
-          error: () => this.toastr.error('Wystąpił błąd podczas tworzenia kategorii.')
-        });
-    }
+        );
+
+    saveOperation$.pipe(
+      finalize(() => this.isSavingCategory = false)
+    ).subscribe({
+      next: () => {
+        const message = this.categoryToEdit ? 'Kategoria zaktualizowana!' : 'Kategoria dodana!';
+        this.toastr.success(message);
+        this.closeCategoryModal();
+        this.loadData();
+      },
+      error: () => {
+        const message = this.categoryToEdit ? 'Wystąpił błąd podczas aktualizacji.' : 'Wystąpił błąd podczas tworzenia kategorii.';
+        this.toastr.error(message);
+      }
+    });
   }
 
   onDeleteCategory(category: ServiceCategory): void {
@@ -109,6 +123,8 @@ export class ManageServicesComponent implements OnInit {
       });
     }
   }
+
+  // --- Logika dla modali usług ---
 
   openAddServiceModal(category: ServiceCategory): void {
     this.activeCategoryForService = category;
