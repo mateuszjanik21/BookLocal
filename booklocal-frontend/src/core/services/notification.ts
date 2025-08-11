@@ -15,7 +15,7 @@ export class NotificationService {
 
   public startConnection(businessId: number): void {
     const token = localStorage.getItem('authToken');
-    if (!token) return;
+    if (!token || this.hubConnection) return; 
 
     this.hubConnection = new signalR.HubConnectionBuilder()
       .withUrl(`${environment.apiUrl}/notificationHub`, {
@@ -37,11 +37,18 @@ export class NotificationService {
   }
 
   public stopConnection(): void {
-    this.hubConnection?.stop().then(() => console.log('Połączenie SignalR zakończone.'));
+    this.hubConnection?.stop().then(() => {
+        console.log('Połączenie SignalR zakończone.');
+        this.hubConnection = undefined;
+    });
   }
 
   private listenForNotifications(): void {
     this.hubConnection?.on('NewReservationNotification', (payload: NotificationPayload) => {
+      this.notificationSubject.next(payload);
+    });
+
+    this.hubConnection?.on('ReservationCancelledNotification', (payload: NotificationPayload) => {
       this.notificationSubject.next(payload);
     });
   }

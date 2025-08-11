@@ -25,6 +25,12 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
       this.notifications.unshift(payload);
       this.unreadCount++;
       this.toastr.info(payload.message, 'Nowa Rezerwacja!');
+
+      if (payload.message.toLowerCase().includes('anulował')) {
+        this.toastr.warning(payload.message, 'Rezerwacja Anulowana!');
+      } else {
+        this.toastr.info(payload.message, 'Nowa Rezerwacja!');
+      }
     });
   }
 

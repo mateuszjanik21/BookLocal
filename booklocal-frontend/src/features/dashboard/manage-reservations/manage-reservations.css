@@ -1,0 +1,75 @@
+.cal-month-view, .cal-week-view, .cal-day-view {
+  background-color: hsl(var(--b1)); 
+  color: hsl(var(--bc)); 
+  border: 1px solid hsl(var(--b3));
+  border-radius: var(--rounded-box, 1rem);
+}
+
+.cal-header {
+  background-color: hsl(var(--b2));
+  color: hsl(var(--bc) / 0.7);
+  font-weight: 600;
+  border-bottom: 1px solid hsl(var(--b3));
+}
+.cal-header .cal-cell {
+  padding: 8px 4px;
+}
+
+.cal-cell-row, .cal-hour-segment {
+  border-color: hsl(var(--b3) / 0.3); 
+}
+
+.cal-day-cell:hover, .cal-hour-segment:hover {
+  background-color: hsl(var(--b2));
+  transition: background-color 0.2s ease;
+}
+
+.cal-day-cell.cal-today {
+  background-color: hsl(var(--p) / 0.1); 
+}
+.cal-day-cell.cal-today .cal-day-number {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: hsl(var(--p));
+}
+
+.cal-day-number {
+  color: hsl(var(--bc));
+  opacity: 0.7;
+}
+
+.cal-day-cell.cal-out-month .cal-day-number {
+  opacity: 0.2;
+}
+
+.cal-event-title, .cal-event-title a {
+  color: hsl(var(--pc, var(--bc))); 
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.cal-event {
+  border-radius: var(--rounded-btn, 0.5rem);
+  padding: 4px 10px;
+  font-weight: 500;
+  box-shadow: none;
+  border: 1px solid hsla(var(--bc) / 0.1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-day-headers .cal-header:not(:last-child),
+.cal-day-column {
+  border-right: 1px solid hsl(var(--b3) / 0.3);
+}
+.cal-hour-odd {
+  background-color: hsl(var(--b1));
+}
+
+.cal-day-hour-text {
+    color: hsl(var(--bc) / 0.5);
+}
+
+.cal-current-time-marker {
+  background-color: hsl(var(--a));
+  height: 2px;
+}

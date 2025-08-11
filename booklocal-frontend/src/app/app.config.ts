@@ -6,6 +6,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { tokenInterceptor } from '../core/interceptors/token-interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
+import { CalendarModule, DateAdapter } from 'angular-calendar';
+import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,5 +23,10 @@ export const appConfig: ApplicationConfig = {
       preventDuplicates: true,
       progressBar: true,
     }),
+
+    importProvidersFrom(CalendarModule.forRoot({
+      provide: DateAdapter,
+      useFactory: adapterFactory
+    }))
   ]
 };

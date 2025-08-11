@@ -1,46 +1,52 @@
-<div>
-  <h1 class="text-3xl font-bold mb-6">Wszystkie Rezerwacje</h1>
-
-  @if (isLoading) {
-  <div class="flex justify-center items-center p-16">
-    <span class="loading loading-spinner loading-lg text-primary"></span>
-  </div>
-  } @else {
-  @if (reservations.length > 0) {
-  <div class="overflow-x-auto bg-base-100 rounded-lg shadow">
-    <table class="table w-full">
-      <thead>
-        <tr>
-          <th>Data i Godzina</th>
-          <th>Klient</th>
-          <th>Usługa</th>
-          <th>Pracownik</th>
-          <th>Status</th>
-          <th>Akcje</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (res of reservations; track res.reservationId) {
-        <tr>
-          <td>{{ res.startTime | date:'dd.MM.yyyy HH:mm' }}</td>
-          <td>{{ res.customerFullName }}</td>
-          <td>{{ res.serviceName }}</td>
-          <td>{{ res.employeeFullName }}</td>
-          <td><span class="badge badge-primary">{{ res.status }}</span></td>
-          <td>
-            <button class="btn btn-sm btn-outline" (click)="startChat(res.customerId)">
-              Czat
+<div class="calendar-container">
+  <div class="p-4 sm:p-6 lg:p-8">
+    @if (isLoading) {
+    <div class="flex justify-center items-center p-16">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+    } @else {
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 p-4">
+          <div class="join">
+            <button class="join-item btn btn-ghost" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">
+              Poprzedni
             </button>
-          </td>
-        </tr>
-        }
-      </tbody>
-    </table>
+            <button class="join-item btn btn-ghost" mwlCalendarToday [(viewDate)]="viewDate">
+              Dzisiaj
+            </button>
+            <button class="join-item btn btn-ghost" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
+              Następny
+            </button>
+          </div>
+
+          <h2 class="text-xl font-bold">{{ viewDate | date: 'LLLL yyyy' }}</h2>
+
+          <div class="join">
+            <button class="join-item btn" [class.btn-primary]="view === CalendarView.Month"
+              (click)="setView(CalendarView.Month)">Miesiąc</button>
+            <button class="join-item btn" [class.btn-primary]="view === CalendarView.Week"
+              (click)="setView(CalendarView.Week)">Tydzień</button>
+            <button class="join-item btn" [class.btn-primary]="view === CalendarView.Day"
+              (click)="setView(CalendarView.Day)">Dzień</button>
+          </div>
+        </div>
+
+        <div [ngSwitch]="view" class="p-4">
+          <mwl-calendar-month-view *ngSwitchCase="CalendarView.Month" [viewDate]="viewDate" [events]="events"
+            (eventClicked)="eventClicked($event)">
+          </mwl-calendar-month-view>
+
+          <mwl-calendar-week-view *ngSwitchCase="CalendarView.Week" [viewDate]="viewDate" [events]="events"
+            (eventClicked)="eventClicked($event)">
+          </mwl-calendar-week-view>
+
+          <mwl-calendar-day-view *ngSwitchCase="CalendarView.Day" [viewDate]="viewDate" [events]="events"
+            (eventClicked)="eventClicked($event)">
+          </mwl-calendar-day-view>
+        </div>
+      </div>
+    </div>
+    }
   </div>
-  } @else {
-  <div class="text-center p-8 bg-base-200 rounded-lg">
-    <p>W Twojej firmie nie ma jeszcze żadnych rezerwacji.</p>
-  </div>
-  }
-  }
 </div>

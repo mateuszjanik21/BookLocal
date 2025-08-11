@@ -29,4 +29,12 @@ export class ReservationService {
   getReservationById(id: number): Observable<Reservation> {
     return this.http.get<Reservation>(`${this.apiUrl}/reservations/${id}`);
   }
+
+  updateReservationStatus(id: number, status: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/reservations/${id}/status`, { status });
+  }
+
+  cancelReservation(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/reservations/my-reservations/${id}/cancel`, {});
+  }
 }

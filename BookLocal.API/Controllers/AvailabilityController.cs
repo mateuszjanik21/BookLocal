@@ -38,9 +38,16 @@ public class AvailabilityController : ControllerBase
 
         var dayStart = date.Date + workSchedule.StartTime.Value;
         var dayEnd = date.Date + workSchedule.EndTime.Value;
+        var now = DateTime.Now;
+        var firstPossibleMoment = (date.Date == now.Date && now > dayStart) ? now : dayStart;
 
         for (var potentialStart = dayStart; potentialStart < dayEnd; potentialStart = potentialStart.AddMinutes(bookingInterval))
         {
+            if (potentialStart < firstPossibleMoment)
+            {
+                continue;
+            }
+
             var potentialEnd = potentialStart.AddMinutes(service.DurationMinutes);
 
             if (potentialEnd > dayEnd)

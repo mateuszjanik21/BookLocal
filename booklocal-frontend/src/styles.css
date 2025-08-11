@@ -18,7 +18,7 @@
   --color-neutral-content: #ffffff;
 
   --color-base-100: #ffffff;
-  --color-base-200: #f8fafc;
+  --color-base-200: #f8fafc; /* Very light gray */
   --color-base-300: #e5e7eb;
   --color-base-content: #1c1917;
 
@@ -87,4 +87,13 @@
 
 .toast-info {
   border-left-color: oklch(var(--in));
+}
+
+.cal-week-view .cal-hour-segment, .cal-day-view .cal-hour-segment {
+  @apply border-none bg-base-100;
+}
+
+.cal-week-view .cal-hour:nth-child(odd) .cal-hour-segment, 
+.cal-day-view .cal-hour:nth-child(odd) .cal-hour-segment {
+  @apply bg-base-200/60;
 }

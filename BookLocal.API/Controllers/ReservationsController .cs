@@ -83,16 +83,32 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<IEnumerable<ReservationDto>>> GetMyReservations()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
 
+        var userRoles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
         IQueryable<Reservation> query = _context.Reservations;
 
-        if (User.IsInRole("owner"))
+        if (userRoles.Contains("owner"))
         {
-            query = query.Where(r => r.Service.ServiceCategory.Business.OwnerId == userId);
+            query = query.Where(r => r.Business.OwnerId == userId);
         }
         else
         {
             query = query.Where(r => r.CustomerId == userId);
+        }
+
+        var now = DateTime.UtcNow;
+        var reservationsToUpdate = await query
+            .Where(r => r.Status == ReservationStatus.Confirmed && r.EndTime < now)
+            .ToListAsync();
+
+        if (reservationsToUpdate.Any())
+        {
+            foreach (var res in reservationsToUpdate)
+            {
+                res.Status = ReservationStatus.Completed;
+            }
+            await _context.SaveChangesAsync();
         }
 
         var reservations = await query
@@ -107,12 +123,9 @@ public class ReservationsController : ControllerBase
                 StartTime = r.StartTime,
                 EndTime = r.EndTime,
                 Status = r.Status.ToString(),
-                ServiceId = r.ServiceId,
                 ServiceName = r.Service.Name,
                 BusinessName = r.Business.Name,
-                EmployeeId = r.EmployeeId,
                 EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
-                CustomerId = r.CustomerId,
                 CustomerFullName = $"{r.Customer.FirstName} {r.Customer.LastName}"
             })
             .ToListAsync();
@@ -162,5 +175,79 @@ public class ReservationsController : ControllerBase
         }
 
         return Ok(reservation);
+    }
+
+    [HttpPatch("{id}/status")]
+    [Authorize(Roles = "owner")]
+    public async Task<IActionResult> UpdateReservationStatus(int id, [FromBody] UpdateReservationStatusDto statusDto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var reservation = await _context.Reservations
+            .Include(r => r.Service)
+            .ThenInclude(s => s.ServiceCategory)
+            .ThenInclude(sc => sc.Business)
+            .FirstOrDefaultAsync(r => r.ReservationId == id);
+
+        if (reservation == null)
+        {
+            return NotFound();
+        }
+
+        if (reservation.Service.ServiceCategory.Business.OwnerId != userId)
+        {
+            return Forbid();
+        }
+
+        if (Enum.TryParse<ReservationStatus>(statusDto.Status, true, out var newStatus))
+        {
+            reservation.Status = newStatus;
+            await _context.SaveChangesAsync();
+            return Ok(new { Message = "Status rezerwacji został zaktualizowany." });
+        }
+
+        return BadRequest("Nieprawidłowy status.");
+    }
+
+    [HttpPatch("my-reservations/{id}/cancel")]
+    [Authorize(Roles = "customer")]
+    public async Task<IActionResult> CancelReservation(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId == null) return Unauthorized();
+
+        var reservation = await _context.Reservations
+            .Include(r => r.Customer)
+            .Include(r => r.Service)
+            .FirstOrDefaultAsync(r => r.ReservationId == id && r.CustomerId == userId);
+
+        if (reservation == null)
+        {
+            return NotFound("Nie znaleziono rezerwacji lub nie masz do niej dostępu.");
+        }
+
+        if (reservation.StartTime < DateTime.Now)
+        {
+            return BadRequest("Nie można anulować przeszłych rezerwacji.");
+        }
+
+        if (reservation.Status == ReservationStatus.Cancelled)
+        {
+            return BadRequest("Ta rezerwacja została już anulowana.");
+        }
+
+        reservation.Status = ReservationStatus.Cancelled;
+        await _context.SaveChangesAsync();
+
+        var notificationPayload = new
+        {
+            Message = $"Klient {reservation.Customer.FirstName} anulował wizytę na usługę '{reservation.Service.Name}'.",
+            ReservationId = reservation.ReservationId,
+            Status = reservation.Status.ToString()
+        };
+
+        await _hubContext.Clients.Group(reservation.BusinessId.ToString())
+            .SendAsync("ReservationCancelledNotification", notificationPayload);
+
+        return Ok(new { Message = "Rezerwacja została pomyślnie anulowana." });
     }
 }

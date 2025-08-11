@@ -1,4 +1,6 @@
-﻿namespace BookLocal.API.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BookLocal.API.DTOs
 {
     public class ReservationCreateDto
     {
@@ -20,5 +22,11 @@
         public string EmployeeFullName { get; set; }
         public string CustomerId { get; set; }
         public string CustomerFullName { get; set; }
+    }
+
+    public class UpdateReservationStatusDto
+    {
+        [Required]
+        public string Status { get; set; }
     }
 }

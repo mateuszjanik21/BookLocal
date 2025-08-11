@@ -17,7 +17,7 @@
               <th>Pracownik</th>
               <th>Firma</th>
               <th>Status</th>
-            </tr>
+              <th>Akcje</th> </tr>
           </thead>
           <tbody>
             @for (res of upcomingReservations; track res.reservationId) {
@@ -26,7 +26,20 @@
                 <td>{{ res.serviceName }}</td>
                 <td>{{ res.employeeFullName }}</td>
                 <td>{{ res.businessName }}</td>
-                <td><span class="badge badge-success">{{ res.status }}</span></td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'badge-success': res.status.toLowerCase() === 'confirmed',
+                    'badge-error': res.status.toLowerCase() === 'cancelled',
+                    'badge-info': res.status.toLowerCase() === 'completed'
+                  }">{{ res.status | reservationStatus }}</span>
+                </td>
+                <td>
+                  @if (res.status.toLowerCase() === 'confirmed') {
+                    <button class="btn btn-error btn-xs btn-outline" (click)="onCancelReservation(res.reservationId)">
+                      Anuluj
+                    </button>
+                  }
+                </td>
               </tr>
             }
           </tbody>
@@ -59,7 +72,13 @@
                 <td>{{ res.serviceName }}</td>
                 <td>{{ res.employeeFullName }}</td>
                 <td>{{ res.businessName }}</td>
-                <td><span class="badge badge-ghost">{{ res.status }}</span></td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'badge-success': res.status.toLowerCase() === 'confirmed',
+                    'badge-error': res.status.toLowerCase() === 'cancelled',
+                    'badge-info': res.status.toLowerCase() === 'completed'
+                  }">{{ res.status | reservationStatus }}</span>
+                </td>
               </tr>
             }
           </tbody>
