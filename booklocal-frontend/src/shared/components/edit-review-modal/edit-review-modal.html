@@ -1,0 +1,54 @@
+<div class="modal modal-open">
+  <div class="modal-box">
+    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" (click)="closed.emit(false)">✕</button>
+    
+    <h3 class="font-bold text-xl">Edytuj swoją opinię</h3>
+    <p class="py-2 text-sm text-base-content/70">Twoja opinia pomoże innym klientom w podjęciu decyzji.</p>
+    
+    <div class="divider my-4"></div>
+    
+    <form [formGroup]="reviewForm" (ngSubmit)="onSubmit()">
+      
+      <div class="form-control items-center">
+        <label class="label">
+          <span class="label-text font-semibold text-base">Twoja ocena ogólna</span>
+        </label>
+        
+        <div class="rating rating-lg" (mouseleave)="hoveredRating = 0">
+          @for (star of [1, 2, 3, 4, 5]; track star) {
+            <input 
+              type="radio" 
+              name="rating-10" 
+              class="mask mask-star-2 cursor-pointer"
+              [checked]="reviewForm.value.rating === star"
+              
+              [class.bg-yellow-400]="(hoveredRating || reviewForm.value.rating || 0) >= star"
+              [class.bg-base-300]="(hoveredRating || reviewForm.value.rating || 0) < star"
+              
+              (mouseover)="hoveredRating = star"
+              (click)="setRating(star)"/>
+          }
+        </div>
+
+        <div class="h-6 mt-2 flex items-center">
+          <span class="font-semibold text-primary transition-opacity duration-200">
+            {{ currentRatingLabel }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-control mt-4">
+        <label class="label"><span class="label-text font-semibold">Komentarz (opcjonalnie)</span></label>
+        <textarea class="textarea textarea-bordered h-24" placeholder="Opisz swoje wrażenia..." formControlName="comment"></textarea>
+      </div>
+
+      <div class="modal-action mt-6">
+        <button type="button" class="btn btn-ghost" (click)="closed.emit(false)">Anuluj</button>
+        <button type="submit" class="btn btn-primary" [disabled]="reviewForm.invalid || isSaving">
+          @if(isSaving) { <span class="loading loading-spinner"></span> }
+          Zapisz zmiany
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -3,6 +3,7 @@ export interface Business {
   name: string;
   nip: string;
   city: string | null;
+  address: string | null;
   description: string | null;
   photoUrl?: string;
 }
@@ -34,6 +35,18 @@ export interface BusinessDetail extends Business {
   services: Service[];
   employees: Employee[];
   categories: ServiceCategory[];
+  averageRating: number;
+  reviewCount: number;
+}
+
+export interface ServiceCategoryFeed {
+  serviceCategoryId: number;
+  name: string;
+  photoUrl?: string;
+  services: Service[];
+  businessId: number;
+  businessName: string;
+  businessCity: string | null;
 }
 
 export interface ServicePayload {

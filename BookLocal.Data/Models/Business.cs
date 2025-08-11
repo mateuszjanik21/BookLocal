@@ -34,5 +34,6 @@ namespace BookLocal.Data.Models
         public virtual ICollection<ServiceCategory> Categories { get; set; } = new List<ServiceCategory>();
         public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
         public virtual ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }

@@ -9,6 +9,7 @@ import { AssignServicesModalComponent } from '../../../shared/components/assign-
 import { AddEmployeeModalComponent } from '../../../shared/components/add-employee-modal/add-employee-modal';
 import { EditEmployeeModalComponent } from '../../../shared/components/edit-employee-modal/edit-employee-modal';
 import { EmployeePhotoModalComponent } from '../../../shared/components/employee-photo-modal/employee-photo-modal';
+import { ScheduleModalComponent } from '../../../shared/components/schedule-modal/schedule-modal';
 
 @Component({
   selector: 'app-manage-employees',
@@ -19,7 +20,8 @@ import { EmployeePhotoModalComponent } from '../../../shared/components/employee
     AssignServicesModalComponent,
     AddEmployeeModalComponent,
     EditEmployeeModalComponent,
-    EmployeePhotoModalComponent
+    EmployeePhotoModalComponent,
+    ScheduleModalComponent
   ],
   templateUrl: './manage-employees.html',
 })
@@ -34,6 +36,16 @@ export class ManageEmployeesComponent implements OnInit {
   employeeForPhoto: Employee | null = null;
   employeeToAssignServices: Employee | null = null;
   isAddEmployeeModalVisible = false;
+
+  employeeForSchedule: Employee | null = null;
+
+  onManageSchedule(employee: Employee) {
+    this.employeeForSchedule = employee;
+  }
+
+  closeScheduleModal() {
+    this.employeeForSchedule = null;
+  }
 
   get allBusinessServices(): Service[] {
     if (!this.business?.categories) {

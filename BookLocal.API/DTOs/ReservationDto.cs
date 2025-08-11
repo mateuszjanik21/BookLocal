@@ -14,6 +14,7 @@
         public DateTime EndTime { get; set; }
         public string Status { get; set; }
         public int ServiceId { get; set; }
+        public string BusinessName { get; set; }
         public string ServiceName { get; set; }
         public int EmployeeId { get; set; }
         public string EmployeeFullName { get; set; }

@@ -22,5 +22,7 @@
         public string? Description { get; set; }
         public List<ServiceCategoryDto> Categories { get; set; } = new();
         public List<EmployeeDto> Employees { get; set; } = new();
+        public double AverageRating { get; set; }
+        public int ReviewCount { get; set; }
     }
 }

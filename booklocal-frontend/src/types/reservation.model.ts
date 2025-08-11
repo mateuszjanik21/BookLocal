@@ -7,4 +7,11 @@ export interface Reservation {
   serviceName: string;
   employeeFullName: string;
   customerFullName: string;
+  businessName: string;
+}
+
+export interface CreateReservationPayload {
+  serviceId: number;
+  employeeId: number;
+  startTime: string; 
 }

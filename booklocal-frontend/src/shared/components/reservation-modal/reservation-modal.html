@@ -1,32 +1,67 @@
-<dialog #dialog id="reservation_modal" class="modal">
+<dialog #reservationDialog class="modal">
   <div class="modal-box">
-    @if (service) {
-      <h3 class="font-bold text-lg">Rezerwacja usługi: {{ service.name }}</h3>
-      <p class="py-4">Wybierz pracownika oraz datę i godzinę wizyty.</p>
+    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" (click)="closeModal()">✕</button>
+    <h3 class="font-bold text-lg">Zarezerwuj wizytę</h3>
+    <p class="text-base-content/70">Usługa: <span class="font-semibold">{{ service?.name }}</span></p>
 
-      <form [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
-        <div class="form-control w-full">
-          <label class="label"><span class="label-text">Wybierz pracownika</span></label>
-          <select class="select select-bordered" formControlName="employeeId">
-            <option disabled [ngValue]="null">Wybierz...</option>
-            @for (employee of employees; track employee.id) {
-              <option [value]="employee.id">{{ employee.firstName }} {{ employee.lastName }}</option>
+    <form [formGroup]="reservationForm" (ngSubmit)="onSubmit()">
+      <ul class="steps w-full mt-4">
+        <li class="step" [class.step-primary]="currentStep >= 1">Wybierz pracownika</li>
+        <li class="step" [class.step-primary]="currentStep >= 2">Wybierz datę</li>
+        <li class="step" [class.step-primary]="currentStep === 3">Wybierz godzinę</li>
+      </ul>
+
+      <div class="py-4 min-h-64">
+        @if(currentStep === 1) {
+          <div class="form-control animate-fade-in">
+            <label class="label"><span class="label-text">Dostępni pracownicy</span></label>
+            <select class="select select-bordered" formControlName="employeeId" (change)="nextStep()">
+              <option disabled selected value="">Wybierz...</option>
+              @for(employee of employees; track employee.id) {
+                <option [value]="employee.id">{{ employee.firstName }} {{ employee.lastName }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        @if(currentStep === 2) {
+          <div class="form-control animate-fade-in">
+            <label class="label"><span class="label-text">Wybierz dzień wizyty</span></label>
+            <input type="date" class="input input-bordered" formControlName="date" [min]="minDate" (change)="onDateChange(); nextStep()" />
+          </div>
+        }
+
+        @if(currentStep === 3) {
+          <div class="animate-fade-in">
+            @if(isLoadingSlots) {
+              <div class="flex justify-center items-center h-48"><span class="loading loading-spinner"></span></div>
+            } @else {
+              <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                @for(slot of availableSlots; track slot) {
+                  <label class="btn btn-outline has-[:checked]:btn-primary">
+                    <input type="radio" name="startTime" [value]="slot" formControlName="startTime" class="hidden" />
+                    {{ slot | date: 'HH:mm' }}
+                  </label>
+                } @empty {
+                  <p class="col-span-full text-center p-8">Brak dostępnych terminów w tym dniu. Spróbuj wybrać inną datę.</p>
+                }
+              </div>
             }
-          </select>
-        </div>
+          </div>
+        }
+      </div>
 
-        <div class="form-control w-full mt-4">
-          <label class="label"><span class="label-text">Data i godzina</span></label>
-          <input type="datetime-local" class="input input-bordered" formControlName="startTime" />
-        </div>
-
-        <div class="modal-action">
-          <button type="submit" class="btn btn-primary" [disabled]="reservationForm.invalid">Zatwierdź rezerwację</button>
-          <form method="dialog">
-            <button class="btn">Anuluj</button>
-          </form>
-        </div>
-      </form>
-    }
+      <div class="modal-action">
+        @if(currentStep > 1 && currentStep <= 3) {
+          <button type="button" class="btn btn-ghost" (click)="prevStep()">Wstecz</button>
+        }
+        @if(currentStep === 3) {
+          <button type="submit" class="btn btn-primary" [disabled]="!reservationForm.valid || isReserving">
+             @if(isReserving) { <span class="loading loading-spinner"></span> }
+            Zatwierdź rezerwację
+          </button>
+        }
+      </div>
+    </form>
   </div>
 </dialog>

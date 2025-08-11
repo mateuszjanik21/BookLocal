@@ -1,39 +1,72 @@
-<div class="container p-8 mx-auto">
-  <h1 class="text-3xl font-bold mb-6">Moje Rezerwacje</h1>
+<div class="container p-4 md:p-8 mx-auto">
+  <h1 class="text-3xl font-bold mb-8">Moje Rezerwacje</h1>
 
   @if (isLoading) {
     <div class="flex justify-center items-center p-16">
       <span class="loading loading-spinner loading-lg text-primary"></span>
     </div>
   } @else {
-    @if (reservations.length > 0) {
-      <div class="overflow-x-auto bg-base-100 rounded-lg shadow">
+    <h2 class="text-2xl font-semibold mb-4">Nadchodzące</h2>
+    @if (upcomingReservations.length > 0) {
+      <div class="overflow-x-auto bg-base-100 rounded-lg shadow mb-8">
         <table class="table w-full">
           <thead>
             <tr>
               <th>Data i Godzina</th>
               <th>Usługa</th>
               <th>Pracownik</th>
+              <th>Firma</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            @for (res of reservations; track res.reservationId) {
+            @for (res of upcomingReservations; track res.reservationId) {
               <tr>
-                <td>{{ res.startTime | date:'dd.MM.yyyy HH:mm' }}</td>
+                <td>{{ res.startTime | date:'fullDate' }} o {{ res.startTime | date:'HH:mm' }}</td>
                 <td>{{ res.serviceName }}</td>
                 <td>{{ res.employeeFullName }}</td>
-                <td><span class="badge badge-primary">{{ res.status }}</span></td>
+                <td>{{ res.businessName }}</td>
+                <td><span class="badge badge-success">{{ res.status }}</span></td>
               </tr>
             }
           </tbody>
         </table>
       </div>
     } @else {
-      <div class="text-center p-8 bg-base-200 rounded-lg">
-        <p>Nie masz jeszcze żadnych rezerwacji.</p>
-        <a routerLink="/businesses" class="btn btn-primary mt-4">Znajdź usługę</a>
+      <div class="text-center p-8 bg-base-200 rounded-lg mb-8">
+        <p>Nie masz żadnych nadchodzących rezerwacji.</p>
+        <a routerLink="/" class="btn btn-primary mt-4">Znajdź usługę</a>
       </div>
+    }
+
+    <h2 class="text-2xl font-semibold mb-4">Przeszłe</h2>
+     @if (pastReservations.length > 0) {
+      <div class="overflow-x-auto bg-base-100 rounded-lg shadow opacity-70">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>Data i Godzina</th>
+              <th>Usługa</th>
+              <th>Pracownik</th>
+               <th>Firma</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (res of pastReservations; track res.reservationId) {
+              <tr>
+                <td>{{ res.startTime | date:'dd.MM.yyyy HH:mm' }}</td>
+                <td>{{ res.serviceName }}</td>
+                <td>{{ res.employeeFullName }}</td>
+                <td>{{ res.businessName }}</td>
+                <td><span class="badge badge-ghost">{{ res.status }}</span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="text-base-content/60">Brak historii rezerwacji.</p>
     }
   }
 </div>

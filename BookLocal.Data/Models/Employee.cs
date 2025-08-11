@@ -24,4 +24,5 @@ public class Employee
     public virtual Business Business { get; set; }
     public virtual ICollection<EmployeeService> EmployeeServices { get; set; } = new List<EmployeeService>();
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+    public virtual ICollection<WorkSchedule> WorkSchedules { get; set; } = new List<WorkSchedule>();
 }

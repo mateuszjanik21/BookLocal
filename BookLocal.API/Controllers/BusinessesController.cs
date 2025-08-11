@@ -53,6 +53,7 @@ public class BusinessesController : ControllerBase
     public async Task<ActionResult<BusinessDetailDto>> GetBusiness(int id)
     {
         var business = await _context.Businesses
+            .Include(b => b.Reviews)
             .Include(b => b.Categories)
                 .ThenInclude(c => c.Services)
             .Include(b => b.Employees)
@@ -69,6 +70,8 @@ public class BusinessesController : ControllerBase
             City = business.City,
             Description = business.Description,
             PhotoUrl = business.PhotoUrl,
+            AverageRating = business.Reviews.Any() ? business.Reviews.Average(r => r.Rating) : 0,
+            ReviewCount = business.Reviews.Count,
             Categories = business.Categories.Select(c => new ServiceCategoryDto
             {
                 ServiceCategoryId = c.ServiceCategoryId,
@@ -101,6 +104,7 @@ public class BusinessesController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var business = await _context.Businesses
+            .Include(b => b.Reviews) 
             .Include(b => b.Categories)
                 .ThenInclude(c => c.Services)
             .Include(b => b.Employees)
@@ -120,6 +124,8 @@ public class BusinessesController : ControllerBase
             City = business.City,
             Description = business.Description,
             PhotoUrl = business.PhotoUrl,
+            AverageRating = business.Reviews.Any() ? business.Reviews.Average(r => r.Rating) : 0,
+            ReviewCount = business.Reviews.Count,
             Categories = business.Categories.Select(c => new ServiceCategoryDto
             {
                 ServiceCategoryId = c.ServiceCategoryId,

@@ -53,7 +53,7 @@
 
 
 .toast-container .ngx-toastr {
-  @apply w-auto max-w-sm cursor-pointer rounded-lg bg-gray-200 text-base-content shadow-lg border-l-4;
+  @apply w-auto max-w-sm cursor-pointer rounded-lg bg-gray-100 text-base-content shadow-lg border-l-4;
   padding: 1rem !important;
 }
 

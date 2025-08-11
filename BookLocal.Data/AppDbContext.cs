@@ -15,6 +15,8 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<Conversation> Conversations { get; set; }
     public DbSet<Message> Messages { get; set; }
     public DbSet<ServiceCategory> ServiceCategories { get; set; }
+    public DbSet<Review> Reviews { get; set; }
+    public DbSet<WorkSchedule> WorkSchedules { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,5 +36,13 @@ public class AppDbContext : IdentityDbContext<User>
         {
             fk.DeleteBehavior = DeleteBehavior.Restrict;
         }
+
+        modelBuilder.Entity<Reservation>()
+            .Property(r => r.Status)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<WorkSchedule>()
+            .Property(ws => ws.DayOfWeek)
+            .HasConversion<string>();
     }
 }

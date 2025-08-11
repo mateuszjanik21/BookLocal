@@ -54,12 +54,13 @@ public class ReservationsController : ControllerBase
 
         var reservation = new Reservation
         {
+            BusinessId = service.BusinessId,
             CustomerId = userId,
             ServiceId = reservationDto.ServiceId,
             EmployeeId = reservationDto.EmployeeId,
             StartTime = reservationDto.StartTime,
             EndTime = proposedEndTime,
-            Status = ReservationStatus.confirmed
+            Status = ReservationStatus.Confirmed
         };
 
         _context.Reservations.Add(reservation);
@@ -98,6 +99,7 @@ public class ReservationsController : ControllerBase
             .Include(r => r.Service)
             .Include(r => r.Employee)
             .Include(r => r.Customer)
+            .Include(r => r.Business)
             .OrderByDescending(r => r.StartTime)
             .Select(r => new ReservationDto
             {
@@ -107,6 +109,7 @@ public class ReservationsController : ControllerBase
                 Status = r.Status.ToString(),
                 ServiceId = r.ServiceId,
                 ServiceName = r.Service.Name,
+                BusinessName = r.Business.Name,
                 EmployeeId = r.EmployeeId,
                 EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
                 CustomerId = r.CustomerId,
@@ -128,6 +131,7 @@ public class ReservationsController : ControllerBase
             .Include(r => r.Service)
             .Include(r => r.Employee)
             .Include(r => r.Customer)
+            .Include(r => r.Business)
             .Select(r => new ReservationDto
             {
                 ReservationId = r.ReservationId,
@@ -136,6 +140,7 @@ public class ReservationsController : ControllerBase
                 Status = r.Status.ToString(),
                 ServiceId = r.ServiceId,
                 ServiceName = r.Service.Name,
+                BusinessName = r.Business.Name,
                 EmployeeId = r.EmployeeId,
                 EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
                 CustomerId = r.CustomerId,

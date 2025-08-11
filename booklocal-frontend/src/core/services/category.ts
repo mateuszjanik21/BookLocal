@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { ServiceCategory } from '../../types/business.model';
+import { ServiceCategory, ServiceCategoryFeed } from '../../types/business.model';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -10,6 +10,10 @@ import { Observable } from 'rxjs';
 export class CategoryService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
+
+  getCategoryFeed(): Observable<ServiceCategoryFeed[]> {
+    return this.http.get<ServiceCategoryFeed[]>(`${this.apiUrl}/categories/feed`);
+  }
 
   getCategories(businessId: number) {
     return this.http.get<ServiceCategory[]>(`${this.apiUrl}/businesses/${businessId}/categories`);

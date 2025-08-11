@@ -1,0 +1,38 @@
+<div class="modal modal-open">
+  <div class="modal-box w-11/12 max-w-2xl">
+    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" (click)="closed.emit()">✕</button>
+    <h3 class="font-bold text-xl">Zarządzaj grafikiem dla: {{ employee.firstName }} {{ employee.lastName }}</h3>
+    
+    @if(isLoading) {
+      <div class="flex justify-center p-16"><span class="loading loading-spinner loading-lg"></span></div>
+    } @else {
+      <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="mt-6">
+        <div formArrayName="days" class="space-y-4">
+          @for(dayGroup of dayForms.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="grid grid-cols-4 items-center gap-4 p-3 rounded-lg bg-base-200">
+              <label class="font-semibold col-span-1">{{ dayGroup.value.dayOfWeek }}</label>
+              <div class="col-span-2 flex items-center gap-2">
+                <input type="time" class="input input-sm input-bordered w-full" formControlName="startTime" />
+                <span>-</span>
+                <input type="time" class="input input-sm input-bordered w-full" formControlName="endTime" />
+              </div>
+              <div class="form-control col-span-1">
+                <label class="label cursor-pointer justify-end gap-2">
+                  <span class="label-text">Wolne</span> 
+                  <input type="checkbox" class="toggle toggle-primary" formControlName="isDayOff" />
+                </label>
+              </div>
+            </div>
+          }
+        </div>
+        <div class="modal-action mt-8">
+          <button type="button" class="btn btn-ghost" (click)="closed.emit()">Anuluj</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+             @if(isSaving) { <span class="loading loading-spinner"></span> }
+            Zapisz zmiany
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>

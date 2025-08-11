@@ -16,8 +16,10 @@ import { ManageReservationsComponent } from '../features/dashboard/manage-reserv
 import { ReservationDetailComponent } from '../features/dashboard/reservation-detail/reservation-detail';
 import { ChatComponent } from '../features/chat/chat';
 import { ManageProfileComponent } from '../features/dashboard/manage-profile/manage-profile';
+import { HomeComponent } from '../features/home/home';
 
 export const routes: Routes = [
+    { path: '', component: HomeComponent },
     { path: 'businesses', component: BusinessListComponent },
     { path: 'business/:id', component: BusinessDetailComponent },
     { path: 'register', component: RegisterComponent },
@@ -40,6 +42,4 @@ export const routes: Routes = [
       { path: 'profile', component: ManageProfileComponent },
     ]
   },
-
-    { path: '', redirectTo: '/businesses', pathMatch: 'full' }
 ];

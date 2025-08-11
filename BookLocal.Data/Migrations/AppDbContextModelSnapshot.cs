@@ -124,6 +124,43 @@ namespace BookLocal.Data.Migrations
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.Review", b =>
+                {
+                    b.Property<int>("ReviewId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReviewId"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReviewerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ReviewId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reviews");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.ServiceCategory", b =>
                 {
                     b.Property<int>("ServiceCategoryId")
@@ -224,6 +261,37 @@ namespace BookLocal.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.WorkSchedule", b =>
+                {
+                    b.Property<int>("WorkScheduleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WorkScheduleId"));
+
+                    b.Property<string>("DayOfWeek")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan?>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("IsDayOff")
+                        .HasColumnType("bit");
+
+                    b.Property<TimeSpan?>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("WorkScheduleId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("WorkSchedules");
                 });
 
             modelBuilder.Entity("Employee", b =>
@@ -417,6 +485,9 @@ namespace BookLocal.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReservationId"));
 
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -441,6 +512,8 @@ namespace BookLocal.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ReservationId");
+
+                    b.HasIndex("BusinessId");
 
                     b.HasIndex("CustomerId");
 
@@ -537,6 +610,25 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("Sender");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.Review", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany("Reviews")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookLocal.Data.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.ServiceCategory", b =>
                 {
                     b.HasOne("BookLocal.Data.Models.Business", "Business")
@@ -546,6 +638,17 @@ namespace BookLocal.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.WorkSchedule", b =>
+                {
+                    b.HasOne("Employee", "Employee")
+                        .WithMany("WorkSchedules")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("Employee", b =>
@@ -631,6 +734,12 @@ namespace BookLocal.Data.Migrations
 
             modelBuilder.Entity("Reservation", b =>
                 {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("BookLocal.Data.Models.User", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
@@ -648,6 +757,8 @@ namespace BookLocal.Data.Migrations
                         .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Business");
 
                     b.Navigation("Customer");
 
@@ -682,6 +793,8 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("Conversations");
 
                     b.Navigation("Employees");
+
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Conversation", b =>
@@ -704,6 +817,8 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("EmployeeServices");
 
                     b.Navigation("Reservations");
+
+                    b.Navigation("WorkSchedules");
                 });
 
             modelBuilder.Entity("Service", b =>

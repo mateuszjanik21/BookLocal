@@ -1,17 +1,23 @@
 ﻿using BookLocal.Data.Models;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 public enum ReservationStatus
 {
-    confirmed,
-    cancelled,
-    completed
+    Confirmed,
+    Cancelled,
+    Completed
 }
 
 public class Reservation
 {
     [Key]
     public int ReservationId { get; set; }
+
+    [Required]
+    public int BusinessId { get; set; }
+    [ForeignKey("BusinessId")]
+    public virtual Business Business { get; set; } = null!;
 
     [Required]
     public string CustomerId { get; set; }
@@ -29,7 +35,7 @@ public class Reservation
     public DateTime EndTime { get; set; }
 
     [Required]
-    public ReservationStatus Status { get; set; } = ReservationStatus.confirmed;
+    public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

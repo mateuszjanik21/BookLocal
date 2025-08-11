@@ -77,7 +77,6 @@ export class ManageServicesComponent implements OnInit {
     this.isSavingCategory = true;
 
     const saveOperation$ = this.categoryToEdit
-      // Logika edycji
       ? this.categoryService.updateCategory(this.business.id, this.categoryToEdit.serviceCategoryId, event.payload).pipe(
           switchMap(() => {
             if (event.file) {
@@ -85,9 +84,7 @@ export class ManageServicesComponent implements OnInit {
             }
             return of(null);
           })
-        )
-      // Logika dodawania
-      : this.categoryService.addCategory(this.business.id, event.payload).pipe(
+        ) : this.categoryService.addCategory(this.business.id, event.payload).pipe(
           switchMap(newCategory => {
             if (event.file) {
               return this.photoService.uploadCategoryPhoto(newCategory.serviceCategoryId, event.file);
@@ -124,7 +121,6 @@ export class ManageServicesComponent implements OnInit {
     }
   }
 
-  // --- Logika dla modali usług ---
 
   openAddServiceModal(category: ServiceCategory): void {
     this.activeCategoryForService = category;

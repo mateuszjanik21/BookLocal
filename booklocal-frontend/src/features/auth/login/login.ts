@@ -31,7 +31,7 @@ export class LoginComponent {
         if (response.user.roles.includes('owner')) {
           this.router.navigate(['/dashboard']);
         } else {
-          this.router.navigate(['/businesses']);
+          this.router.navigate(['/']);
         }
       },
       error: (err) => {
