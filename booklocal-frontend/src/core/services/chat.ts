@@ -20,9 +20,16 @@ export class ChatService {
   public messageThread$ = this.messageThreadSource.asObservable();
   public newMessages$ = new Subject<Message>();
 
-  startConversation(businessId: number) {
-    return this.http.post<{ conversationId: number }>(`${this.apiUrl}/messages/start`, { businessId });
-  }
+  private conversationToOpen = new BehaviorSubject<number | null>(null);
+  public conversationToOpen$ = this.conversationToOpen.asObservable();
+
+  startConversation(businessId: number): Observable<Conversation> {
+  return this.http.post<Conversation>(`${this.apiUrl}/messages/start`, { businessId }).pipe(
+    tap(conversation => {
+      this.conversationToOpen.next(conversation.conversationId);
+    })
+  );
+}
 
   getMyConversations(): Observable<Conversation[]> {
     return this.http.get<Conversation[]>(`${this.apiUrl}/messages/my-conversations`);
@@ -39,8 +46,16 @@ export class ChatService {
       .catch(error => console.error("Błąd podczas wysyłania wiadomości:", error));
   }
 
-  startConversationAsOwner(customerId: string) {
-    return this.http.post<{ conversationId: number }>(`${this.apiUrl}/messages/start-as-owner`, { customerId });
+  startConversationAsOwner(customerId: string): Observable<Conversation> {
+    return this.http.post<Conversation>(`${this.apiUrl}/messages/start-as-owner`, { customerId }).pipe(
+      tap(conversation => {
+        this.conversationToOpen.next(conversation.conversationId);
+      })
+    );
+  }
+
+  clearConversationToOpen(): void {
+    this.conversationToOpen.next(null);
   }
 
   async markMessagesAsRead(conversationId: number) {

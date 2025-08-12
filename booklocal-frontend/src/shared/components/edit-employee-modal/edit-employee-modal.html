@@ -1,25 +1,55 @@
 <div class="modal modal-open">
-  <div class="modal-box">
-    <h3 class="font-bold text-lg">Edytuj Dane Pracownika</h3>
+  <div class="modal-box max-w-lg">
+
+    <div class="text-center mb-2">
+      <h3 class="text-2xl font-bold">Edytuj Dane Pracownika</h3>
+      <p class="text-base-content/60 text-sm">Zaktualizuj informacje o członku zespołu.</p>
+    </div>
+    <div class="divider my-4"></div>
+
     @if(employee){
-      <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
-        <div class="form-control mt-4">
-          <label class="label"><span class="label-text">Imię</span></label>
-          <input type="text" class="input input-bordered" formControlName="firstName" />
-        </div>
-        <div class="form-control">
-          <label class="label"><span class="label-text">Nazwisko</span></label>
-          <input type="text" class="input input-bordered" formControlName="lastName" />
-        </div>
-        <div class="form-control">
-          <label class="label"><span class="label-text">Stanowisko</span></label>
-          <input type="text" class="input input-bordered" formControlName="position" />
-        </div>
-        <div class="modal-action">
-          <button type="submit" class="btn btn-primary" [disabled]="employeeForm.invalid">Zapisz zmiany</button>
-          <button type="button" class="btn" (click)="closed.emit()">Anuluj</button>
-        </div>
-      </form>
+    <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" class="space-y-6">
+
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-semibold">Imię</span>
+        </label>
+        <label class="input-group">
+          <span class="bg-base-200">
+          </span>
+          <input type="text" class="input input-bordered w-full" formControlName="firstName" />
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-semibold">Nazwisko</span>
+        </label>
+        <label class="input-group">
+          <span class="bg-base-200">
+          </span>
+          <input type="text" class="input input-bordered w-full" formControlName="lastName" />
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-semibold">Stanowisko</span>
+        </label>
+        <label class="input-group">
+          <span class="bg-base-200">
+          </span>
+          <input type="text" class="input input-bordered w-full" formControlName="position" />
+        </label>
+      </div>
+
+      <div class="modal-action mt-8">
+        <button type="button" class="btn btn-ghost" (click)="closed.emit()">Anuluj</button>
+        <button type="submit" class="btn btn-primary" [disabled]="employeeForm.invalid">
+          Zapisz zmiany
+        </button>
+      </div>
+    </form>
     }
   </div>
 </div>

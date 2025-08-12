@@ -15,8 +15,8 @@ export class ReviewService {
     return this.http.get<Review[]>(`${this.apiUrl}/businesses/${businessId}/reviews`);
   }
 
-  postReview(businessId: number, payload: CreateReviewPayload): Observable<Review> {
-    return this.http.post<Review>(`${this.apiUrl}/businesses/${businessId}/reviews`, payload);
+  postReviewForReservation(reservationId: number, payload: CreateReviewPayload): Observable<Review> {
+    return this.http.post<Review>(`${this.apiUrl}/reservations/${reservationId}/reviews`, payload);
   }
 
   canUserReview(businessId: number): Observable<{ canReview: boolean }> {

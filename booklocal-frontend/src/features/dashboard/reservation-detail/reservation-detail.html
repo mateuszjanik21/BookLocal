@@ -26,7 +26,12 @@
               </p>
             </div>
             <div class="flex gap-2">
-              <button class="btn btn-primary" (click)="startChat(reservation.customerId)">
+              <button 
+                class="btn btn-primary" 
+                (click)="startChat(reservation.customerId)"
+                [disabled]="!reservation.customerId"
+                [class.btn-disabled]="!reservation.customerId"
+                [title]="!reservation.customerId ? 'Klient nie ma konta w serwisie' : 'Napisz do klienta'">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M10 2c-4.42 0-8 3.134-8 7 0 2.454 1.32 4.613 3.33 5.885v2.813a.5.5 0 00.854.354L8.4 15.556A8.003 8.003 0 0010 16c4.42 0 8-3.134 8-7s-3.58-7-8-7zm0 12a6.003 6.003 0 01-1.8-.29l-2.12.955a.5.5 0 01-.65-.65l.59-1.965A5.968 5.968 0 014 9c0-3.033 2.686-5.5 6-5.5s6 2.467 6 5.5-2.686 5.5-6 5.5z" clip-rule="evenodd" /></svg>
                 Napisz do klienta
               </button>
@@ -43,7 +48,7 @@
             </div>
             <div>
               <h3 class="font-semibold text-lg mb-2">Informacje o Kliencie</h3>
-              <p><strong>Imię i nazwisko:</strong> {{ reservation.customerFullName }}</p>
+              <p><strong>Imię i nazwisko:</strong> {{ reservation.customerFullName || reservation.guestName }}</p>
               </div>
           </div>
         </div>

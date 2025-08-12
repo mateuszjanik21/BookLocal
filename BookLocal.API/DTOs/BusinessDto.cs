@@ -24,5 +24,10 @@
         public List<EmployeeDto> Employees { get; set; } = new();
         public double AverageRating { get; set; }
         public int ReviewCount { get; set; }
+        public OwnerDto Owner { get; set; }
+    }
+    public class OwnerDto
+    {
+        public string? FirstName { get; set; }
     }
 }

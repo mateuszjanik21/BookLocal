@@ -21,7 +21,9 @@ namespace BookLocal.API.DTOs
         public int EmployeeId { get; set; }
         public string EmployeeFullName { get; set; }
         public string CustomerId { get; set; }
-        public string CustomerFullName { get; set; }
+        public string? CustomerFullName { get; set; }
+        public string? GuestName { get; set; }
+        public bool HasReview { get; set; }
     }
 
     public class UpdateReservationStatusDto

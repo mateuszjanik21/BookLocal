@@ -22,5 +22,7 @@ namespace BookLocal.Data.Models
         [Required]
         public string UserId { get; set; } = string.Empty;
         public User User { get; set; } = null!;
+        public int? ReservationId { get; set; }
+        public Reservation? Reservation { get; set; }
     }
 }

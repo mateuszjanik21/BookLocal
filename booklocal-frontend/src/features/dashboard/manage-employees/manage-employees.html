@@ -46,21 +46,25 @@
               <div class="card-body items-center text-center p-6">
                 <div class="avatar cursor-pointer" (click)="openPhotoModal(employee)">
                   <div class="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                    <img [src]="employee.photoUrl || 'assets/placeholder.svg'" 
+                    <img [src]="employee.photoUrl || 'assets/placeholder.svg'"
                          alt="Zdjęcie pracownika {{ employee.firstName }}" />
                   </div>
                 </div>
                 <h2 class="card-title mt-4 text-lg">{{ employee.firstName }} {{ employee.lastName }}</h2>
                 <p class="text-base-content/60">{{ employee.position || 'Brak stanowiska' }}</p>
-                
+
                 <div class="divider my-2"></div>
 
                 <div class="card-actions justify-center w-full flex flex-col gap-2">
+                   <a [routerLink]="['/dashboard/employees', employee.id]" class="btn btn-sm btn-primary w-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Szczegóły
+                  </a>
                    <button class="btn btn-sm btn-outline w-full" (click)="onManageSchedule(employee)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                     Grafik pracy
                   </button>
-                  <button class="btn btn-sm btn-outline btn-primary w-full" (click)="onAssignServices(employee)">
+                  <button class="btn btn-sm btn-outline w-full" (click)="onAssignServices(employee)">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
                     Usługi
                   </button>
@@ -102,31 +106,30 @@
 @if(employeeForPhoto) {
   <app-employee-photo-modal
     [employee]="employeeForPhoto"
-    (closed)="closePhotoModalAndRefresh($event)"> 
+    (closed)="closePhotoModalAndRefresh($event)">
   </app-employee-photo-modal>
 }
 
 @if (isAddEmployeeModalVisible) {
-  <app-add-employee-modal 
+  <app-add-employee-modal
     [businessId]="business!.id"
     (closed)="closeModalAndRefresh()">
   </app-add-employee-modal>
 }
 
 @if (employeeToEdit) {
-  <app-edit-employee-modal 
+  <app-edit-employee-modal
     [businessId]="business!.id"
     [employee]="employeeToEdit"
     (closed)="closeModalAndRefresh()">
   </app-edit-employee-modal>
 }
 
-@if (employeeToAssignServices) {
+@if (employeeToAssignServices && business) {
   <app-assign-services-modal 
     [employee]="employeeToAssignServices" 
-    [allServices]="allBusinessServices"
-    [businessId]="business!.id"
-    (closed)="closeModalAndRefresh()">
+    [categories]="business.categories"
+    [businessId]="business.id" (closed)="closeModalAndRefresh()">
   </app-assign-services-modal>
 }
 

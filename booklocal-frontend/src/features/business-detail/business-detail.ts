@@ -1,21 +1,15 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-
-// Services
 import { BusinessService } from '../../core/services/business-service';
 import { AuthService } from '../../core/services/auth-service';
 import { ReviewService } from '../../core/services/review';
 import { ToastrService } from 'ngx-toastr';
-
-// Types
 import { BusinessDetail, Employee, Service } from '../../types/business.model';
 import { Review } from '../../types/review.model';
-
-// Components
 import { ReservationModalComponent } from '../../shared/components/reservation-modal/reservation-modal';
-import { AddReviewModalComponent } from '../../shared/components/add-review-modal/add-review-modal';
 import { EditReviewModalComponent } from '../../shared/components/edit-review-modal/edit-review-modal';
+import { ChatService } from '../../core/services/chat';
 
 @Component({
   selector: 'app-business-detail',
@@ -23,13 +17,14 @@ import { EditReviewModalComponent } from '../../shared/components/edit-review-mo
   imports: [
     CommonModule, 
     RouterModule, 
-    ReservationModalComponent, 
-    AddReviewModalComponent, 
+    ReservationModalComponent,
     EditReviewModalComponent
   ],
   templateUrl: './business-detail.html',
 })
 export class BusinessDetailComponent implements OnInit {
+  private router = inject(Router); 
+  private chatService = inject(ChatService);
   private route = inject(ActivatedRoute);
   private businessService = inject(BusinessService);
   private reviewService = inject(ReviewService);
@@ -44,10 +39,8 @@ export class BusinessDetailComponent implements OnInit {
   filteredEmployees: Employee[] = [];
   selectedService: Service | null = null;
 
-  isReviewModalVisible = false;
   isEditReviewModalVisible = false;
   reviewToEdit: Review | null = null;
-  canUserPostReview = false;
 
   ngOnInit(): void {
     const businessId = this.route.snapshot.paramMap.get('id');
@@ -58,7 +51,6 @@ export class BusinessDetailComponent implements OnInit {
           this.business = data;
           this.isLoading = false; 
           this.loadReviews(+businessId);
-          this.checkIfUserCanReview(+businessId);
         },
         error: (err) => {
           console.error('Błąd pobierania szczegółów firmy:', err);
@@ -74,28 +66,6 @@ export class BusinessDetailComponent implements OnInit {
       this.reviews = data;
       this.isReviewsLoading = false;
     });
-  }
-
-  checkIfUserCanReview(businessId: number): void {
-    const currentUser = this.authService.currentUserValue;
-    if (currentUser && currentUser.roles.includes('customer')) {
-      this.reviewService.canUserReview(businessId).subscribe(result => {
-        this.canUserPostReview = result.canReview;
-      });
-    }
-  }
-
-
-  openReviewModal(): void {
-    this.isReviewModalVisible = true;
-  }
-
-  closeReviewModal(reviewAdded: boolean): void {
-    this.isReviewModalVisible = false;
-    if (reviewAdded && this.business) {
-      this.loadReviews(this.business.id);
-      this.canUserPostReview = false; 
-    }
   }
 
   openEditReviewModal(review: Review): void {
@@ -117,13 +87,11 @@ export class BusinessDetailComponent implements OnInit {
         next: () => {
           this.toastr.success('Opinia została usunięta.');
           this.loadReviews(this.business!.id);
-          this.checkIfUserCanReview(this.business!.id);
         },
         error: () => this.toastr.error('Nie udało się usunąć opinii.')
       });
     }
   }
-
 
   openReservationModal(service: Service, modal: any): void {
     this.selectedService = service;
@@ -149,5 +117,19 @@ export class BusinessDetailComponent implements OnInit {
     const firstNameInitial = names[0] ? names[0][0] : '';
     const lastNameInitial = names.length > 1 ? names[names.length - 1][0] : '';
     return `${firstNameInitial}${lastNameInitial}`.toUpperCase();
+  }
+
+  startChatWithBusiness(): void {
+    if (!this.business) return;
+
+    this.chatService.startConversation(this.business.id).subscribe({
+      next: () => {
+        this.router.navigate(['/chat']);
+      },
+      error: (err) => {
+        this.toastr.error('Nie udało się rozpocząć konwersacji. Spróbuj ponownie.');
+        console.error(err);
+      }
+    });
   }
 }

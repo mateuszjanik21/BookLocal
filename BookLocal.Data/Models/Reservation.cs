@@ -19,8 +19,11 @@ public class Reservation
     [ForeignKey("BusinessId")]
     public virtual Business Business { get; set; } = null!;
 
-    [Required]
-    public string CustomerId { get; set; }
+    public string? CustomerId { get; set; }
+    public virtual User? Customer { get; set; }
+
+    public string? GuestName { get; set; }
+    public string? GuestPhoneNumber { get; set; }
 
     [Required]
     public int ServiceId { get; set; }
@@ -39,7 +42,7 @@ public class Reservation
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public virtual User Customer { get; set; }
     public virtual Service Service { get; set; }
     public virtual Employee Employee { get; set; }
+    public virtual Review? Review { get; set; }
 }

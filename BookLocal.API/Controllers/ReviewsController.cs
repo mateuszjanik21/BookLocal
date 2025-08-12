@@ -24,8 +24,12 @@ public class ReviewsController : ControllerBase
             return NotFound("Firma nie istnieje.");
 
         var reviews = await _context.Reviews
-            .Include(r => r.User)
             .Where(r => r.BusinessId == businessId)
+            .Include(r => r.User)
+            .Include(r => r.Reservation)
+                .ThenInclude(res => res.Service)
+            .Include(r => r.Reservation)
+                .ThenInclude(res => res.Employee)
             .OrderByDescending(r => r.CreatedAt)
             .Select(r => new ReviewDto
             {
@@ -35,7 +39,9 @@ public class ReviewsController : ControllerBase
                 ReviewerName = r.ReviewerName,
                 CreatedAt = r.CreatedAt,
                 UserId = r.UserId,
-                ReviewerPhotoUrl = r.User.PhotoUrl
+                ReviewerPhotoUrl = r.User.PhotoUrl,
+                ServiceName = r.Reservation != null ? r.Reservation.Service.Name : null,
+                EmployeeFullName = r.Reservation != null ? $"{r.Reservation.Employee.FirstName} {r.Reservation.Employee.LastName}" : null
             })
             .ToListAsync();
 
@@ -78,30 +84,31 @@ public class ReviewsController : ControllerBase
     }
 
 
-    [HttpPost]
+    [HttpPost("/api/reservations/{reservationId}/reviews")]
     [Authorize(Roles = "customer")]
-    public async Task<ActionResult<ReviewDto>> PostReview(int businessId, CreateReviewDto createReviewDto)
+    public async Task<ActionResult<ReviewDto>> PostReviewForReservation(int reservationId, CreateReviewDto createReviewDto)
     {
-        if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId))
-            return NotFound("Firma nie istnieje.");
-
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return Unauthorized();
 
-        var existingReview = await _context.Reviews
-            .AnyAsync(r => r.BusinessId == businessId && r.UserId == userId);
+        var reservation = await _context.Reservations
+            .Include(r => r.Service) 
+            .FirstOrDefaultAsync(r => r.ReservationId == reservationId);
 
-        if (existingReview)
-        {
-            return Conflict("You have already submitted a review for this business.");
-        }
+        if (reservation == null) return NotFound("Rezerwacja nie istnieje.");
+        if (reservation.CustomerId != userId) return Forbid("To nie jest Twoja rezerwacja.");
+        if (reservation.Status != ReservationStatus.Completed) return BadRequest("Możesz ocenić tylko zakończone wizyty.");
+
+        var existingReview = await _context.Reviews.AnyAsync(r => r.ReservationId == reservationId);
+        if (existingReview) return Conflict("Ta wizyta została już oceniona.");
 
         var user = await _context.Users.FindAsync(userId);
         if (user == null) return Unauthorized();
 
         var newReview = new Review
         {
-            BusinessId = businessId,
+            BusinessId = reservation.Service.BusinessId,
+            ReservationId = reservationId,
             Rating = createReviewDto.Rating,
             Comment = createReviewDto.Comment,
             UserId = userId,
@@ -121,7 +128,7 @@ public class ReviewsController : ControllerBase
             ReviewerPhotoUrl = user.PhotoUrl
         };
 
-        return CreatedAtAction(nameof(GetReviews), new { businessId = businessId }, reviewToReturn);
+        return CreatedAtAction(nameof(GetReviews), new { businessId = newReview.BusinessId }, reviewToReturn);
     }
 
     [HttpGet("can-review")]

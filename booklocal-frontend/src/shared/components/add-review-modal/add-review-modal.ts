@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { ReviewService } from '../../../core/services/review';
+import { Reservation } from '../../../types/reservation.model'; // Upewnij się, że ten import jest poprawny
 
 @Component({
   selector: 'app-add-review-modal',
@@ -11,8 +12,8 @@ import { ReviewService } from '../../../core/services/review';
   templateUrl: './add-review-modal.html',
 })
 export class AddReviewModalComponent {
-  @Input() businessId: number | null = null;
-  @Output() closed = new EventEmitter<boolean>(); 
+  @Input() reservation!: Reservation;
+  @Output() closed = new EventEmitter<boolean>();
 
   private fb = inject(FormBuilder);
   private reviewService = inject(ReviewService);
@@ -32,28 +33,30 @@ export class AddReviewModalComponent {
     const rating = this.hoveredRating || this.reviewForm.controls.rating.value || 0;
     return rating > 0 ? this.ratingLabels[rating - 1] : 'Wybierz ocenę';
   }
-
+  
   setRating(rating: number): void {
     this.reviewForm.controls.rating.setValue(rating);
   }
 
   onSubmit(): void {
-    if (this.reviewForm.invalid || !this.businessId) {
+    if (this.reviewForm.invalid || !this.reservation) {
       this.toastr.error('Wybierz ocenę w gwiazdkach, aby dodać opinię.');
       return;
     }
     this.isSaving = true;
-    this.reviewService.postReview(this.businessId, this.reviewForm.value as any).subscribe({
-      next: () => {
-        this.toastr.success('Dziękujemy za Twoją opinię!');
-        this.isSaving = false;
-        this.closed.emit(true); 
-      },
-      error: (err) => {
-        this.toastr.error('Wystąpił błąd podczas dodawania opinii.');
-        this.isSaving = false;
-        this.closed.emit(false);
-      }
+
+    this.reviewService.postReviewForReservation(this.reservation.reservationId, this.reviewForm.value as any)
+      .subscribe({
+        next: () => {
+          this.toastr.success('Dziękujemy za Twoją opinię!');
+          this.isSaving = false;
+          this.closed.emit(true);
+        },
+        error: (err) => {
+          this.toastr.error(err.error || 'Wystąpił błąd podczas dodawania opinii.');
+          this.isSaving = false;
+          this.closed.emit(false);
+        }
     });
   }
 }

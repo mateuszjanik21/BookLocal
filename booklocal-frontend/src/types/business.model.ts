@@ -14,6 +14,7 @@ export interface Service {
   price: number;
   durationMinutes: number;
   serviceCategoryId: number; 
+  businessId: number;
 }
 
 export interface ServiceCategory {
@@ -37,6 +38,7 @@ export interface BusinessDetail extends Business {
   categories: ServiceCategory[];
   averageRating: number;
   reviewCount: number;
+  owner: Owner;
 }
 
 export interface ServiceCategoryFeed {
@@ -55,4 +57,8 @@ export interface ServicePayload {
   price: number;
   durationMinutes: number;
   serviceCategoryId: number;
+}
+
+export interface Owner {
+  firstName: string;
 }

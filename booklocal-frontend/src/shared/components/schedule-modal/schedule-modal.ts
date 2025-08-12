@@ -24,7 +24,7 @@ export class ScheduleModalComponent implements OnInit, OnDestroy {
   private valueChangesSub = new Subscription();
 
   scheduleForm!: FormGroup;
-  daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  daysOfWeek = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
   isLoading = true;
   isSaving = false;
 

@@ -108,6 +108,7 @@ public class BusinessesController : ControllerBase
             .Include(b => b.Categories)
                 .ThenInclude(c => c.Services)
             .Include(b => b.Employees)
+            .Include(b => b.Owner)
             .FirstOrDefaultAsync(b => b.OwnerId == userId);
 
         if (business == null)
@@ -126,6 +127,7 @@ public class BusinessesController : ControllerBase
             PhotoUrl = business.PhotoUrl,
             AverageRating = business.Reviews.Any() ? business.Reviews.Average(r => r.Rating) : 0,
             ReviewCount = business.Reviews.Count,
+            Owner = new OwnerDto { FirstName = business.Owner.FirstName },
             Categories = business.Categories.Select(c => new ServiceCategoryDto
             {
                 ServiceCategoryId = c.ServiceCategoryId,

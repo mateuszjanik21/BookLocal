@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { Reservation } from '../../types/reservation.model'; 
+import { OwnerCreateReservationPayload, Reservation } from '../../types/reservation.model'; 
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -36,5 +36,9 @@ export class ReservationService {
 
   cancelReservation(id: number): Observable<any> {
     return this.http.patch(`${this.apiUrl}/reservations/my-reservations/${id}/cancel`, {});
+  }
+
+  createReservationAsOwner(payload: OwnerCreateReservationPayload): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reservations/dashboard/reservations`, payload);
   }
 }

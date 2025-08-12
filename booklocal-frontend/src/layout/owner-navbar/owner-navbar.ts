@@ -1,9 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth-service';
-import { BusinessService } from '../../core/services/business-service';
-import { Observable, map } from 'rxjs';
 import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell';
 
 @Component({
@@ -14,9 +12,5 @@ import { NotificationBellComponent } from '../../shared/components/notification-
 })
 export class OwnerNavbarComponent {
   authService = inject(AuthService);
-  businessService = inject(BusinessService);
-
-  businessId$: Observable<number | null> = this.businessService.getMyBusiness().pipe(
-    map(business => business ? business.id : null)
-  );
+  @Input() businessId: number | null = null;
 }

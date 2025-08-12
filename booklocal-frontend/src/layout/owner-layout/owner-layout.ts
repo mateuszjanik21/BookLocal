@@ -15,10 +15,15 @@ export class OwnerLayoutComponent implements OnInit, OnDestroy {
   private notificationService = inject(NotificationService);
   private businessService = inject(BusinessService);
 
+  public businessName: string | null = null;
+  public businessId: number | null = null;
+
   ngOnInit(): void {
     this.businessService.getMyBusiness().pipe(take(1)).subscribe(business => {
       if (business) {
         this.notificationService.startConnection(business.id);
+        this.businessName = business.name;
+        this.businessId = business.id;
       }
     });
   }

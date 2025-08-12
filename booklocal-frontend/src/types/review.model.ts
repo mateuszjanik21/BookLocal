@@ -6,6 +6,8 @@ export interface Review {
   createdAt: string;
   userId: string;
   reviewerPhotoUrl?: string;
+  serviceName?: string;
+  employeeFullName?: string;
 }
 
 export interface CreateReviewPayload {

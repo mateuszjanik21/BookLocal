@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookLocal.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250812060805_LinkReviewToReservation")]
+    partial class LinkReviewToReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -499,6 +502,7 @@ namespace BookLocal.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CustomerId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("EmployeeId")
@@ -506,12 +510,6 @@ namespace BookLocal.Data.Migrations
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("GuestName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("GuestPhoneNumber")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
@@ -760,7 +758,9 @@ namespace BookLocal.Data.Migrations
 
                     b.HasOne("BookLocal.Data.Models.User", "Customer")
                         .WithMany()
-                        .HasForeignKey("CustomerId");
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Employee", "Employee")
                         .WithMany("Reservations")

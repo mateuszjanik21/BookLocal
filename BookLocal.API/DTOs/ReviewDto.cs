@@ -11,6 +11,8 @@ namespace BookLocal.API.DTOs
         public DateTime CreatedAt { get; set; }
         public string UserId { get; set; } = string.Empty;
         public string? ReviewerPhotoUrl { get; set; }
+        public string? ServiceName { get; set; }
+        public string? EmployeeFullName { get; set; }
     }
 
     public class CreateReviewDto

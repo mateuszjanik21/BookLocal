@@ -1,0 +1,65 @@
+<div class="modal modal-open">
+  <div class="modal-box">
+    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" (click)="closed.emit(false)">✕</button>
+    <h3 class="font-bold text-lg">Dodaj Nową Rezerwację</h3>
+    
+    @if (isLoading) {
+      <div class="flex justify-center p-8"><span class="loading loading-spinner"></span></div>
+    } @else {
+      <form [formGroup]="reservationForm" (ngSubmit)="onSubmit()" class="space-y-4 mt-4">
+        
+        <div class="p-4 bg-base-200 rounded-lg">
+            <h4 class="font-semibold mb-2">Dane Klienta</h4>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Imię i Nazwisko</span></label>
+                <input type="text" placeholder="Jan Kowalski" class="input input-bordered" formControlName="guestName" />
+            </div>
+            <div class="form-control mt-2">
+                <label class="label"><span class="label-text">Numer telefonu (opcjonalnie)</span></label>
+                <input type="tel" placeholder="123 456 789" class="input input-bordered" formControlName="guestPhoneNumber" />
+            </div>
+        </div>
+
+        <div class="p-4 bg-base-200 rounded-lg">
+            <h4 class="font-semibold mb-2">Szczegóły Wizyty</h4>
+            <div class="form-control">
+                <label class="label"><span class="label-text">Usługa</span></label>
+                <select class="select select-bordered" formControlName="serviceId">
+                    <option disabled selected value="">Wybierz usługę...</option>
+                    @for (service of services; track service.id) {
+                        <option [value]="service.id">{{ service.name }} ({{ service.durationMinutes }} min)</option>
+                    }
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mt-2">
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Data</span></label>
+                    <input type="date" class="input input-bordered" formControlName="date" />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Godzina</span></label>
+                    <input type="time" class="input input-bordered" formControlName="startTime" />
+                </div>
+            </div>
+            <div class="form-control mt-2">
+                <label class="label"><span class="label-text">Pracownik</span></label>
+                <select class="select select-bordered" formControlName="employeeId">
+                    <option disabled selected value="">Wybierz...</option>
+                    @for (employee of employees; track employee.id) {
+                        <option [value]="employee.id">{{ employee.firstName }} {{ employee.lastName }}</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="modal-action">
+          <button type="button" class="btn btn-ghost" (click)="closed.emit(false)">Anuluj</button>
+          <button type="submit" class="btn btn-primary" [disabled]="reservationForm.invalid || isSaving">
+            @if(isSaving) { <span class="loading loading-spinner"></span> }
+            Zapisz rezerwację
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>

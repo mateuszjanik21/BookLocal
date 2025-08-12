@@ -1,0 +1,73 @@
+@if (isLoading) {
+  <div class="flex justify-center items-center p-16">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
+} @else {
+  @if (employee) {
+    <div class="p-4 sm:p-6 lg:p-8 space-y-8">
+      <div class="card lg:card-side bg-base-100 shadow-xl">
+        <figure class="p-8">
+          <div class="avatar">
+            <div class="w-40 rounded-full ring ring-primary ring-offset-base-100 ring-offset-4">
+              <img [src]="employee.photoUrl || 'assets/placeholder.svg'" alt="Zdjęcie {{ employee.firstName }}" />
+            </div>
+          </div>
+        </figure>
+        <div class="card-body">
+          <h1 class="card-title text-4xl font-bold">{{ employee.firstName }} {{ employee.lastName }}</h1>
+          <p class="text-xl text-base-content/70">{{ employee.position }}</p>
+          <div class="stats shadow mt-4 bg-primary text-primary-content">
+            <div class="stat">
+              <div class="stat-title">Szacowany przychód</div>
+              <div class="stat-value">{{ employee.estimatedRevenue | currency:'PLN' }}</div>
+              <div class="stat-desc">Na podstawie ukończonych rezerwacji</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1 card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title">Grafik Pracy</h2>
+            <div class="divider"></div>
+            <ul class="space-y-2">
+              @for(day of employee.workSchedules; track day.dayOfWeek) {
+                <li class="flex justify-between items-center p-2 rounded-lg" [class.bg-base-200]="!day.isDayOff">
+                  <span class="font-bold">{{ dayOfWeekTranslations[day.dayOfWeek] }}</span>
+                  @if (day.isDayOff) {
+                    <span class="badge badge-error badge-outline">Wolne</span>
+                  } @else {
+                    <span class="font-mono">{{ day.startTime }} - {{ day.endTime }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2 card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title">Wykonywane Usługi</h2>
+            <div class="divider"></div>
+            <div class="space-y-3">
+              @for (service of employee.assignedServices; track service.id) {
+                <div class="flex justify-between items-center p-3 rounded-lg hover:bg-base-200/50">
+                  <div>
+                    <p class="font-semibold">{{ service.name }}</p>
+                    <p class="text-sm text-base-content/60">{{ service.durationMinutes }} min</p>
+                  </div>
+                  <span class="font-mono font-semibold">{{ service.price | currency:'PLN' }}</span>
+                </div>
+              } @empty {
+                <p class="text-center p-4">Ten pracownik nie ma jeszcze przypisanych żadnych usług.</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="alert alert-error">Nie znaleziono danych pracownika.</div>
+  }
+}

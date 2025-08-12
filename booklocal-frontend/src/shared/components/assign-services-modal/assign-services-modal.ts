@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Service, Employee } from '../../../types/business.model';
+import { Service, Employee, ServiceCategory } from '../../../types/business.model';
 import { EmployeeService } from '../../../core/services/employee-service';
 import { ToastrService } from 'ngx-toastr';
 
@@ -12,8 +12,8 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './assign-services-modal.html',
 })
 export class AssignServicesModalComponent implements OnChanges {
+  @Input() categories: ServiceCategory[] = [];
   @Input() employee: Employee | null = null;
-  @Input() allServices: Service[] = [];
   @Input() businessId: number | null = null;
   @Output() closed = new EventEmitter<void>();
   
@@ -21,8 +21,11 @@ export class AssignServicesModalComponent implements OnChanges {
   private employeeService = inject(EmployeeService);
   private toastr = inject(ToastrService);
 
-  isFormReady = false;
+  public activeCategoryId: number | null = null;
 
+  private allServices: Service[] = [];
+
+  isFormReady = false;
   public servicesForm: FormGroup<{
     services: FormArray<FormControl<boolean | null>>;
   }>;
@@ -34,28 +37,31 @@ export class AssignServicesModalComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // POPRAWKA: Sprawdzamy, czy `@Input() employee` faktycznie się zmienił i ma nową wartość.
-    // To zapobiega ponownemu uruchomieniu logiki przy każdym cyklu detekcji zmian w Angularze.
-    if (changes['employee'] && changes['employee'].currentValue) {
+    if (changes['employee'] && changes['employee'].currentValue && this.businessId && this.categories.length > 0) {
+      this.isFormReady = false;
+
+      this.allServices = this.categories.flatMap(category => category.services);
       
-      // Dodatkowo upewniamy się, że pozostałe dane są dostępne
-      if (this.businessId && this.allServices.length > 0) {
-        
-        this.isFormReady = false;
+      this.employeeService.getAssignedServiceIds(this.businessId, this.employee!.id).subscribe(assignedIds => {
+        const servicesFormArray = this.servicesForm.get('services') as FormArray;
+        servicesFormArray.clear();
 
-        this.employeeService.getAssignedServiceIds(this.businessId, this.employee!.id).subscribe(assignedIds => {
-          const servicesFormArray = this.servicesForm.get('services') as FormArray;
-          servicesFormArray.clear();
-
-          this.allServices.forEach(service => {
-            const isAssigned = assignedIds.includes(service.id);
-            servicesFormArray.push(new FormControl(isAssigned));
-          });
-
-          this.isFormReady = true;
+        this.allServices.forEach(service => {
+          const isAssigned = assignedIds.includes(service.id);
+          servicesFormArray.push(new FormControl(isAssigned));
         });
-      }
+
+        this.isFormReady = true;
+      });
     }
+  }
+  
+  selectCategory(categoryId: number | null): void {
+    this.activeCategoryId = categoryId;
+  }
+
+  getFormControlIndex(serviceId: number): number {
+    return this.allServices.findIndex(s => s.id === serviceId);
   }
 
   onSubmit() {

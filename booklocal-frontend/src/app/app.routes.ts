@@ -17,6 +17,7 @@ import { ReservationDetailComponent } from '../features/dashboard/reservation-de
 import { ChatComponent } from '../features/chat/chat';
 import { ManageProfileComponent } from '../features/dashboard/manage-profile/manage-profile';
 import { HomeComponent } from '../features/home/home';
+import { EmployeeDetailComponent } from '../features/dashboard/employee-detail/employee-detail';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -40,6 +41,7 @@ export const routes: Routes = [
       { path: 'reservations/:id', component: ReservationDetailComponent },
       { path: 'chat', component: ChatComponent },
       { path: 'profile', component: ManageProfileComponent },
+      { path: 'employees/:id', component: EmployeeDetailComponent },
     ]
   },
 ];

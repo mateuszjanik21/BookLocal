@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
-import { EmployeePayload } from '../../types/employee.models';
+import { EmployeeDetail, EmployeePayload } from '../../types/employee.models';
 import { Employee } from '../../types/business.model';
 
 @Injectable({
@@ -30,5 +30,9 @@ export class EmployeeService {
 
   deleteEmployee(businessId: number, employeeId: number) {
     return this.http.delete(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}`);
+  }
+
+  getEmployeeDetails(businessId: number, employeeId: number): Observable<EmployeeDetail> {
+    return this.http.get<EmployeeDetail>(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}/details`);
   }
 }

@@ -1,75 +1,84 @@
-.cal-month-view, .cal-week-view, .cal-day-view {
+.calendar-container .cal-month-view,
+.calendar-container .cal-week-view,
+.calendar-container .cal-day-view {
   background-color: hsl(var(--b1)); 
   color: hsl(var(--bc)); 
   border: 1px solid hsl(var(--b3));
   border-radius: var(--rounded-box, 1rem);
+  overflow: hidden;
 }
 
-.cal-header {
+.calendar-container .cal-header {
   background-color: hsl(var(--b2));
-  color: hsl(var(--bc) / 0.7);
+  color: hsl(var(--bc) / 0.8);
   font-weight: 600;
   border-bottom: 1px solid hsl(var(--b3));
 }
-.cal-header .cal-cell {
-  padding: 8px 4px;
+.calendar-container .cal-header .cal-cell {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+}
+.calendar-container .cal-day-hour-text {
+  color: hsl(var(--bc) / 0.5);
+  font-weight: 500;
 }
 
-.cal-cell-row, .cal-hour-segment {
-  border-color: hsl(var(--b3) / 0.3); 
+.calendar-container .cal-cell-row, .calendar-container .cal-hour-segment {
+  border-color: hsl(var(--b3) / 0.5); 
+}
+.calendar-container .cal-day-cell:hover, .calendar-container .cal-hour-segment:hover {
+  background-color: hsl(var(--b2) / 0.8);
+  transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
 }
 
-.cal-day-cell:hover, .cal-hour-segment:hover {
-  background-color: hsl(var(--b2));
-  transition: background-color 0.2s ease;
-}
-
-.cal-day-cell.cal-today {
+.calendar-container .cal-day-cell.cal-today {
   background-color: hsl(var(--p) / 0.1); 
 }
-.cal-day-cell.cal-today .cal-day-number {
-  font-size: 1.1em;
-  font-weight: bold;
+.calendar-container .cal-day-cell.cal-today .cal-day-number {
   color: hsl(var(--p));
+  font-weight: bold;
+}
+.calendar-container .cal-current-time-marker {
+  background-color: hsl(var(--a)); 
+  height: 2px;
 }
 
-.cal-day-number {
-  color: hsl(var(--bc));
-  opacity: 0.7;
-}
-
-.cal-day-cell.cal-out-month .cal-day-number {
-  opacity: 0.2;
-}
-
-.cal-event-title, .cal-event-title a {
-  color: hsl(var(--pc, var(--bc))); 
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
-.cal-event {
-  border-radius: var(--rounded-btn, 0.5rem);
+.calendar-container .cal-event {
+  border-radius: var(--rounded-badge, 0.5rem);
   padding: 4px 10px;
   font-weight: 500;
   box-shadow: none;
-  border: 1px solid hsla(var(--bc) / 0.1);
+  border: none;
+  border-left: 4px solid hsla(var(--bc) / 0.2); 
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: all 0.2s ease;
+}
+.calendar-container .cal-event:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.cal-day-headers .cal-header:not(:last-child),
-.cal-day-column {
-  border-right: 1px solid hsl(var(--b3) / 0.3);
-}
-.cal-hour-odd {
-  background-color: hsl(var(--b1));
-}
-
-.cal-day-hour-text {
-    color: hsl(var(--bc) / 0.5);
+.calendar-container .cal-event.cal-event-confirmed,
+.calendar-container .cal-event.cal-event-pending { 
+  background-color: hsl(var(--p) / 0.8);
+  color: hsl(var(--pc));
+  border-left-color: hsl(var(--p));
 }
 
-.cal-current-time-marker {
-  background-color: hsl(var(--a));
-  height: 2px;
+.calendar-container .cal-event.cal-event-completed {
+  background-color: hsl(var(--b3));
+  color: hsl(var(--bc) / 0.6);
+  border-left-color: hsl(var(--bc) / 0.3);
+  opacity: 0.8;
+}
+
+.calendar-container .cal-event.cal-event-cancelled {
+  background-color: hsl(var(--er) / 0.7);
+  color: hsl(var(--ec));
+  border-left-color: hsl(var(--er));
+  text-decoration: line-through;
+  opacity: 0.7;
 }

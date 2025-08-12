@@ -183,4 +183,53 @@ public class EmployeesController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{employeeId}/details")]
+    [Authorize(Roles = "owner")]
+    public async Task<ActionResult<EmployeeDetailDto>> GetEmployeeDetails(int businessId, int employeeId)
+    {
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var employee = await _context.Employees
+            .Include(e => e.Business)
+            .Include(e => e.WorkSchedules)
+            .Include(e => e.EmployeeServices)
+                .ThenInclude(es => es.Service)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.BusinessId == businessId && e.Business.OwnerId == ownerId);
+
+        if (employee == null)
+        {
+            return NotFound("Pracownik nie został znaleziony lub nie masz do niego dostępu.");
+        }
+
+        var estimatedRevenue = await _context.Reservations
+            .Where(r => r.EmployeeId == employeeId && r.Status == ReservationStatus.Completed)
+            .SumAsync(r => r.Service.Price);
+
+        var employeeDetails = new EmployeeDetailDto
+        {
+            Id = employee.EmployeeId,
+            FirstName = employee.FirstName,
+            LastName = employee.LastName,
+            Position = employee.Position,
+            PhotoUrl = employee.PhotoUrl,
+            EstimatedRevenue = estimatedRevenue,
+            WorkSchedules = employee.WorkSchedules.Select(ws => new WorkScheduleDto
+            {
+                DayOfWeek = ws.DayOfWeek,
+                StartTime = ws.StartTime?.ToString(@"hh\:mm"),
+                EndTime = ws.EndTime?.ToString(@"hh\:mm"),
+                IsDayOff = ws.IsDayOff
+            }).OrderBy(ws => ws.DayOfWeek).ToList(),
+            AssignedServices = employee.EmployeeServices.Select(es => new ServiceDto
+            {
+                Id = es.Service.ServiceId,
+                Name = es.Service.Name,
+                Price = es.Service.Price,
+                DurationMinutes = es.Service.DurationMinutes
+            }).ToList()
+        };
+
+        return Ok(employeeDetails);
+    }
+
 }

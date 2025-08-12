@@ -32,8 +32,13 @@ export class ReservationDetailComponent implements OnInit {
   }
 
   startChat(customerId: string): void {
-    this.chatService.startConversationAsOwner(customerId).subscribe(() => {
-      this.router.navigate(['/dashboard/chat']);
+    this.chatService.startConversationAsOwner(customerId).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard/chat']);
+      },
+      error: () => {
+        console.error("Nie udało się rozpocząć konwersacji.");
+      }
     });
   }
 }

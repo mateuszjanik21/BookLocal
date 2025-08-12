@@ -83,12 +83,10 @@ public class ReservationsController : ControllerBase
     public async Task<ActionResult<IEnumerable<ReservationDto>>> GetMyReservations()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
 
-        var userRoles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
         IQueryable<Reservation> query = _context.Reservations;
 
-        if (userRoles.Contains("owner"))
+        if (User.IsInRole("owner"))
         {
             query = query.Where(r => r.Business.OwnerId == userId);
         }
@@ -97,54 +95,13 @@ public class ReservationsController : ControllerBase
             query = query.Where(r => r.CustomerId == userId);
         }
 
-        var now = DateTime.UtcNow;
-        var reservationsToUpdate = await query
-            .Where(r => r.Status == ReservationStatus.Confirmed && r.EndTime < now)
-            .ToListAsync();
-
-        if (reservationsToUpdate.Any())
-        {
-            foreach (var res in reservationsToUpdate)
-            {
-                res.Status = ReservationStatus.Completed;
-            }
-            await _context.SaveChangesAsync();
-        }
-
         var reservations = await query
             .Include(r => r.Service)
             .Include(r => r.Employee)
             .Include(r => r.Customer)
             .Include(r => r.Business)
+            .Include(r => r.Review)
             .OrderByDescending(r => r.StartTime)
-            .Select(r => new ReservationDto
-            {
-                ReservationId = r.ReservationId,
-                StartTime = r.StartTime,
-                EndTime = r.EndTime,
-                Status = r.Status.ToString(),
-                ServiceName = r.Service.Name,
-                BusinessName = r.Business.Name,
-                EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
-                CustomerFullName = $"{r.Customer.FirstName} {r.Customer.LastName}"
-            })
-            .ToListAsync();
-
-        return Ok(reservations);
-    }
-
-    [HttpGet("{id}")]
-    [Authorize]
-    public async Task<ActionResult<ReservationDto>> GetReservationById(int id)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var userRoles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
-
-        var reservation = await _context.Reservations
-            .Include(r => r.Service)
-            .Include(r => r.Employee)
-            .Include(r => r.Customer)
-            .Include(r => r.Business)
             .Select(r => new ReservationDto
             {
                 ReservationId = r.ReservationId,
@@ -157,8 +114,25 @@ public class ReservationsController : ControllerBase
                 EmployeeId = r.EmployeeId,
                 EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
                 CustomerId = r.CustomerId,
-                CustomerFullName = $"{r.Customer.FirstName} {r.Customer.LastName}"
+                CustomerFullName = r.Customer != null ? $"{r.Customer.FirstName} {r.Customer.LastName}" : null,
+                GuestName = r.GuestName,
+                HasReview = r.Review != null
             })
+            .ToListAsync();
+
+        return Ok(reservations);
+    }
+
+    [HttpGet("{id}")]
+    [Authorize]
+    public async Task<ActionResult<ReservationDto>> GetReservationById(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var reservation = await _context.Reservations
+            .Include(r => r.Service)
+            .Include(r => r.Employee)
+            .Include(r => r.Customer)
             .FirstOrDefaultAsync(r => r.ReservationId == id);
 
         if (reservation == null)
@@ -166,15 +140,30 @@ public class ReservationsController : ControllerBase
             return NotFound();
         }
 
-        var isOwner = userRoles.Contains("owner") && await _context.Businesses
-            .AnyAsync(b => b.OwnerId == userId && b.Categories.Any(c => c.Services.Any(s => s.ServiceId == reservation.ServiceId)));
+        var isOwner = User.IsInRole("owner") && await _context.Businesses
+            .AnyAsync(b => b.OwnerId == userId && b.BusinessId == reservation.BusinessId);
 
         if (reservation.CustomerId != userId && !isOwner)
         {
             return Forbid();
         }
 
-        return Ok(reservation);
+        var reservationDto = new ReservationDto
+        {
+            ReservationId = reservation.ReservationId,
+            StartTime = reservation.StartTime,
+            EndTime = reservation.EndTime,
+            Status = reservation.Status.ToString(),
+            ServiceId = reservation.ServiceId,
+            ServiceName = reservation.Service.Name,
+            EmployeeId = reservation.EmployeeId,
+            EmployeeFullName = $"{reservation.Employee.FirstName} {reservation.Employee.LastName}",
+            CustomerId = reservation.CustomerId,
+            CustomerFullName = reservation.Customer != null ? $"{reservation.Customer.FirstName} {reservation.Customer.LastName}" : null,
+            GuestName = reservation.GuestName
+        };
+
+        return Ok(reservationDto);
     }
 
     [HttpPatch("{id}/status")]
@@ -249,5 +238,62 @@ public class ReservationsController : ControllerBase
             .SendAsync("ReservationCancelledNotification", notificationPayload);
 
         return Ok(new { Message = "Rezerwacja została pomyślnie anulowana." });
+    }
+
+    [HttpPost("dashboard/reservations")]
+    [Authorize(Roles = "owner")]
+    public async Task<IActionResult> CreateReservationAsOwner([FromBody] OwnerCreateReservationDto reservationDto)
+    {
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var service = await _context.Services.Include(s => s.ServiceCategory.Business)
+            .FirstOrDefaultAsync(s => s.ServiceId == reservationDto.ServiceId);
+
+        if (service == null) return NotFound("Usługa nie istnieje.");
+        if (service.ServiceCategory.Business.OwnerId != ownerId) return Forbid();
+
+        var dayOfWeek = reservationDto.StartTime.DayOfWeek;
+        var workSchedule = await _context.WorkSchedules
+            .FirstOrDefaultAsync(ws => ws.EmployeeId == reservationDto.EmployeeId && ws.DayOfWeek == dayOfWeek);
+
+        if (workSchedule == null || workSchedule.IsDayOff || !workSchedule.StartTime.HasValue || !workSchedule.EndTime.HasValue)
+        {
+            return BadRequest("Pracownik nie pracuje w wybranym dniu.");
+        }
+
+        var proposedEndTime = reservationDto.StartTime.AddMinutes(service.DurationMinutes);
+        var requestedStartTimeOfDay = reservationDto.StartTime.TimeOfDay;
+        var requestedEndTimeOfDay = proposedEndTime.TimeOfDay;
+
+        if (requestedStartTimeOfDay < workSchedule.StartTime.Value || requestedEndTimeOfDay > workSchedule.EndTime.Value)
+        {
+            return BadRequest("Wybrany termin wykracza poza godziny pracy pracownika.");
+        }
+
+        var isSlotTaken = await _context.Reservations
+            .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
+                            r.Status == ReservationStatus.Confirmed &&
+                            r.StartTime < proposedEndTime &&
+                            r.EndTime > reservationDto.StartTime);
+
+        if (isSlotTaken)
+            return Conflict("Ten termin u wybranego pracownika jest już zajęty.");
+
+        var reservation = new Reservation
+        {
+            BusinessId = service.BusinessId,
+            ServiceId = reservationDto.ServiceId,
+            EmployeeId = reservationDto.EmployeeId,
+            StartTime = reservationDto.StartTime,
+            EndTime = proposedEndTime,
+            GuestName = reservationDto.GuestName,
+            GuestPhoneNumber = reservationDto.GuestPhoneNumber,
+            Status = ReservationStatus.Confirmed
+        };
+
+        _context.Reservations.Add(reservation);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { Message = "Rezerwacja została pomyślnie utworzona." });
     }
 }

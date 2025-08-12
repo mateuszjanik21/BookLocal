@@ -1,38 +1,84 @@
 @if ((user$ | async); as user) {
   <div class="p-4 md:p-8">
-    <h1 class="text-3xl font-bold">Zarządzaj Profilem i Firmą</h1>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold">Zarządzaj Profilem i Firmą</h1>
+      <p class="text-base-content/70 mt-1">Zarządzaj swoimi danymi, informacjami o firmie i bezpieczeństwem konta.</p>
+    </div>
 
-      <div class="card bg-base-200 shadow-lg">
-        <div class="card-body items-center text-center">
-          <h2 class="card-title">Twoje Zdjęcie Profilowe</h2>
-          <p class="text-xs opacity-60">To zdjęcie będzie widoczne dla klientów na liście personelu.</p>
-          
-          <div class="mt-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <div class="lg:col-span-1 space-y-8">
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body items-center text-center">
+            <h2 class="card-title">Dane Właściciela</h2>
+            <div class="divider my-2"></div>
             <app-image-upload 
-              [currentImageUrl]="ownerAsEmployee?.photoUrl"
+              [currentImageUrl]="user.photoUrl"
               [isLoading]="isUploadingProfilePhoto"
               (imageSelected)="onProfilePhotoSelected($event)">
             </app-image-upload>
+            <p class="mt-4 text-lg font-semibold">{{ user.firstName }} {{ user.lastName }}</p>
+            <p class="text-sm text-base-content/60">{{ user.email }}</p>
           </div>
         </div>
       </div>
 
-      @if(business){
-        <div class="card bg-base-200 shadow-lg">
-          <div class="card-body items-center text-center">
-            <h2 class="card-title">Zdjęcie Firmy</h2>
-            <p class="text-xs opacity-60">To zdjęcie będzie widoczne na liście firm.</p>
-            <div class="mt-4">
-              <app-image-upload 
-                [currentImageUrl]="business.photoUrl"
-                [isLoading]="isUploadingBusinessPhoto"
-                (imageSelected)="onBusinessPhotoSelected($event)">
-              </app-image-upload>
+      <div class="lg:col-span-2 space-y-8">
+        @if(business){
+          <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+              <h2 class="card-title">Informacje o Firmie</h2>
+              <div class="divider my-2"></div>
+              <div class="flex flex-col sm:flex-row gap-8 items-center mt-4">
+                <div class="text-center">
+                  <p class="text-sm font-semibold mb-2">Zdjęcie Firmy</p>
+                  <app-image-upload 
+                    [currentImageUrl]="business.photoUrl"
+                    [isLoading]="isUploadingBusinessPhoto"
+                    (imageSelected)="onBusinessPhotoSelected($event)">
+                  </app-image-upload>
+                </div>
+                <div class="flex-grow space-y-3">
+                  <p><strong>Nazwa:</strong> {{ business.name }}</p>
+                  <p><strong>NIP:</strong> {{ business.nip }}</p>
+                  <p><strong>Adres:</strong> {{ business.address || 'Nie podano' }}, {{ business.city || 'Nie podano' }}</p>
+                </div>
+              </div>
             </div>
           </div>
+        }
+
+        <div class="card bg-base-100 shadow-xl">
+          <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="card-body">
+            <h2 class="card-title">Bezpieczeństwo i Hasło</h2>
+            <div class="divider my-2"></div>
+            <p class="text-sm text-base-content/60 mb-4">Pamiętaj o regularnej zmianie hasła, aby chronić swoje konto.</p>
+            
+            <div class="form-control">
+              <label class="label"><span class="label-text font-semibold">Obecne hasło</span></label>
+              <label class="input-group">
+                <span class="bg-base-200"></span>
+                <input type="password" class="input input-bordered w-full" formControlName="currentPassword" />
+              </label>
+            </div>
+
+            <div class="form-control">
+              <label class="label"><span class="label-text font-semibold">Nowe hasło</span></label>
+              <label class="input-group">
+                <span class="bg-base-200"></span>
+                <input type="password" class="input input-bordered w-full" formControlName="newPassword" />
+              </label>
+            </div>
+
+            <div class="card-actions justify-end mt-4">
+              <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6a1 1 0 10-2 0v5.586L7.707 10.293z" /></svg>
+                Zmień hasło
+              </button>
+            </div>
+          </form>
         </div>
-      }
+      </div>
 
     </div>
   </div>

@@ -17,7 +17,8 @@
               <th>Pracownik</th>
               <th>Firma</th>
               <th>Status</th>
-              <th>Akcje</th> </tr>
+              <th>Akcje</th>
+            </tr>
           </thead>
           <tbody>
             @for (res of upcomingReservations; track res.reservationId) {
@@ -54,7 +55,7 @@
 
     <h2 class="text-2xl font-semibold mb-4">Przeszłe</h2>
      @if (pastReservations.length > 0) {
-      <div class="overflow-x-auto bg-base-100 rounded-lg shadow opacity-70">
+      <div class="overflow-x-auto bg-base-100 rounded-lg shadow opacity-80">
         <table class="table w-full">
           <thead>
             <tr>
@@ -62,7 +63,7 @@
               <th>Usługa</th>
               <th>Pracownik</th>
                <th>Firma</th>
-              <th>Status</th>
+              <th>Akcje</th>
             </tr>
           </thead>
           <tbody>
@@ -73,11 +74,13 @@
                 <td>{{ res.employeeFullName }}</td>
                 <td>{{ res.businessName }}</td>
                 <td>
-                  <span class="badge" [ngClass]="{
-                    'badge-success': res.status.toLowerCase() === 'confirmed',
-                    'badge-error': res.status.toLowerCase() === 'cancelled',
-                    'badge-info': res.status.toLowerCase() === 'completed'
-                  }">{{ res.status | reservationStatus }}</span>
+                  @if (res.status.toLowerCase() === 'completed' && !res.hasReview) {
+                    <button class="btn btn-primary btn-xs" (click)="openReviewModal(res)">
+                      Oceń wizytę
+                    </button>
+                  } @else {
+                    <span class="badge badge-ghost">{{ res.status | reservationStatus }}</span>
+                  }
                 </td>
               </tr>
             }
@@ -89,3 +92,10 @@
     }
   }
 </div>
+
+@if(isReviewModalVisible) {
+  <app-add-review-modal
+    [reservation]="reservationToReview!"
+    (closed)="closeReviewModal($event)">
+  </app-add-review-modal>
+}
