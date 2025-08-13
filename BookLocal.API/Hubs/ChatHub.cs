@@ -110,6 +110,8 @@ namespace BookLocal.API.Hubs
                 }
                 await _context.SaveChangesAsync();
 
+                await Clients.Group(conversationId.ToString()).SendAsync("MessagesRead", conversationId);
+
                 var conversation = await _context.Conversations
                     .Include(c => c.Business)
                     .Include(c => c.Customer)

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, NgZone, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
@@ -15,6 +15,7 @@ export class ChatService {
   private apiUrl = environment.apiUrl;
   private hubConnection?: HubConnection;
   private authService = inject(AuthService);
+  private ngZone = inject(NgZone);
 
   private messageThreadSource = new BehaviorSubject<Message[]>([]);
   public messageThread$ = this.messageThreadSource.asObservable();
@@ -24,12 +25,20 @@ export class ChatService {
   public conversationToOpen$ = this.conversationToOpen.asObservable();
 
   startConversation(businessId: number): Observable<Conversation> {
-  return this.http.post<Conversation>(`${this.apiUrl}/messages/start`, { businessId }).pipe(
-    tap(conversation => {
-      this.conversationToOpen.next(conversation.conversationId);
-    })
-  );
-}
+    return this.http.post<Conversation>(`${this.apiUrl}/messages/start`, { businessId }).pipe(
+      tap(conversation => this.conversationToOpen.next(conversation.conversationId))
+    );
+  }
+
+  startConversationAsOwner(customerId: string): Observable<Conversation> {
+    return this.http.post<Conversation>(`${this.apiUrl}/messages/start-as-owner`, { customerId }).pipe(
+      tap(conversation => this.conversationToOpen.next(conversation.conversationId))
+    );
+  }
+
+  clearConversationToOpen(): void {
+    this.conversationToOpen.next(null);
+  }
 
   getMyConversations(): Observable<Conversation[]> {
     return this.http.get<Conversation[]>(`${this.apiUrl}/messages/my-conversations`);
@@ -44,18 +53,6 @@ export class ChatService {
   async sendMessage(conversationId: number, content: string) {
     return this.hubConnection?.invoke('SendMessage', conversationId, content)
       .catch(error => console.error("Błąd podczas wysyłania wiadomości:", error));
-  }
-
-  startConversationAsOwner(customerId: string): Observable<Conversation> {
-    return this.http.post<Conversation>(`${this.apiUrl}/messages/start-as-owner`, { customerId }).pipe(
-      tap(conversation => {
-        this.conversationToOpen.next(conversation.conversationId);
-      })
-    );
-  }
-
-  clearConversationToOpen(): void {
-    this.conversationToOpen.next(null);
   }
 
   async markMessagesAsRead(conversationId: number) {
@@ -83,35 +80,38 @@ export class ChatService {
 
     return this.hubConnection.start()
       .then(() => {
-        console.log(`Połączenie z ChatHub nawiązane dla konwersacji ${conversationId}.`);
+        console.log(`Połączono z ChatHub dla konwersacji ${conversationId}.`);
         this.hubConnection?.invoke('JoinConversation', conversationId);
-        
+
         this.hubConnection?.on('ReceiveMessage', (message: Message) => {
+          this.ngZone.run(() => {
             const currentMessages = this.messageThreadSource.getValue();
             this.messageThreadSource.next([...currentMessages, message]);
+
             if (message.conversationId === conversationId) {
               this.markMessagesAsRead(conversationId);
             }
+          });
         });
 
         this.hubConnection?.on('MessagesRead', (readConversationId: number) => {
-            if (readConversationId === conversationId) {
-              this.authService.currentUser$.pipe(take(1)).subscribe(user => {
-                if (user) {
-                  const messages = this.messageThreadSource.getValue();
-                  messages.forEach(message => {
-                    if (!message.isRead && message.senderId === user.id) {
-                      message.isRead = true;
-                    }
-                  });
-                  this.messageThreadSource.next([...messages]);
-                }
-              });
-            }
+          if (readConversationId === conversationId) {
+            this.authService.currentUser$.pipe(take(1)).subscribe(user => {
+              if (user) {
+                const updatedMessages = this.messageThreadSource.getValue().map(msg => {
+                  if (!msg.isRead && msg.senderId === user.id) {
+                    return { ...msg, isRead: true };
+                  }
+                  return msg;
+                });
+                this.messageThreadSource.next(updatedMessages);
+              }
+            });
+          }
         });
 
         this.hubConnection?.onclose(error => {
-            console.warn("Połączenie z ChatHub zostało zamknięte.", error);
+          console.warn("Połączenie z ChatHub zamknięte.", error);
         });
       });
   }

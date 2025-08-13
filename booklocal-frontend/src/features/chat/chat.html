@@ -1,6 +1,7 @@
 <div class="container p-4 md:p-8 mx-auto max-w-350">
   <div class="flex border rounded-2xl shadow-2xl h-[80vh] bg-base-100 overflow-hidden">
 
+    <!-- Lista konwersacji -->
     <div 
       class="w-full md:w-1/5 border-r bg-base-200 flex-col"
       [ngClass]="{ 'hidden': activeConversationId, 'md:flex': true }">
@@ -42,6 +43,7 @@
       </div>
     </div>
 
+    <!-- Okno czatu -->
     <div 
       class="w-full md:w-4/5 flex flex-col"
       [ngClass]="{ 'hidden': !activeConversationId, 'md:flex': true }">
@@ -49,11 +51,14 @@
       @if(activeConversationId && (chatService.messageThread$ | async); as messages) {
         <div class="p-4 border-b font-bold text-lg bg-base-200 flex items-center gap-2">
           <button (click)="activeConversationId = null" class="btn btn-ghost btn-circle btn-sm md:hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+            </svg>
           </button>
           <span>Rozmowa z: {{ activeParticipantName }}</span>
         </div>
 
+        <!-- Wiadomości -->
         <div #messageContainer class="flex-1 p-4 overflow-y-auto">
           @for(message of messages; track message.messageId; let isLast = $last) {
             <div class="chat" [class.chat-end]="message.senderId === currentUser?.id"
@@ -73,13 +78,18 @@
               </div>
               @if (isLast && message.senderId === currentUser?.id) {
                 <div class="chat-footer opacity-50">
-                  @if (message.isRead) { <span>Przeczytano</span> } @else { <span>Wysłano</span> }
+                  @if (message.isRead) { 
+                    <span>Przeczytano</span> 
+                  } @else { 
+                    <span>Wysłano</span> 
+                  }
                 </div>
               }
             </div>
           }
         </div>
 
+        <!-- Pole do wpisania wiadomości -->
         <div class="p-4 border-t bg-base-200">
           <div class="flex items-center gap-2">
             <textarea [(ngModel)]="messageContent" (keydown.enter)="sendMessage(); $event.preventDefault()"

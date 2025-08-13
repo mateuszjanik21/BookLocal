@@ -5,7 +5,7 @@ import { BehaviorSubject, Subject, take } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { Conversation } from '../../types/conversation.model';
 import { Router } from '@angular/router';
-import { AuthService } from './auth-service'; // Upewnij się, że ten import istnieje
+import { AuthService } from './auth-service';
 
 @Injectable({ providedIn: 'root' })
 export class PresenceService {
@@ -17,7 +17,7 @@ export class PresenceService {
 
   private toastr = inject(ToastrService);
   private router = inject(Router);
-  private authService = inject(AuthService); // Upewnij się, że serwis jest wstrzyknięty
+  private authService = inject(AuthService);
 
   createHubConnection() {
     const token = localStorage.getItem('authToken');
@@ -63,12 +63,11 @@ export class PresenceService {
           timeOut: 8000
         })
           .onTap.subscribe(() => {
-            // Używamy obserwabla `currentUser$`, aby zawsze mieć aktualne dane
             this.authService.currentUser$.pipe(take(1)).subscribe(user => {
               if (user && user.roles.includes('owner')) {
-                this.router.navigate(['/dashboard/chat']); // Przekierowanie dla właściciela
+                this.router.navigate(['/dashboard/chat']);
               } else {
-                this.router.navigate(['/chat']); // Domyślne przekierowanie dla klienta
+                this.router.navigate(['/chat']);
               }
             });
           });
