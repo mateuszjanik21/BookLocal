@@ -8,6 +8,50 @@ export interface Business {
   photoUrl?: string;
 }
 
+export interface ServiceSearchResult {
+  serviceId: number;
+  serviceName: string;
+  price: number;
+  durationMinutes: number;
+  businessId: number;
+  businessName: string;
+  businessCity: string;
+  mainCategoryName: string;
+  averageRating: number;
+  reviewCount: number;
+}
+
+export interface BusinessSearchResult {
+  businessId: number;
+  name: string;
+  city: string | null;
+  photoUrl: string | null;
+  averageRating: number;
+  reviewCount: number;
+  mainCategories: string[];
+}
+
+export interface ServiceCategorySearchResult {
+  serviceCategoryId: number;
+  name: string;
+  photoUrl: string | null;
+  businessId: number;
+  businessName: string;
+  businessCity: string | null;
+  averageRating: number;
+  reviewCount: number;
+  businessCreatedAt: string;
+  services: Service[];
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export interface Service {
   id: number;
   name: string;
@@ -15,6 +59,7 @@ export interface Service {
   durationMinutes: number;
   serviceCategoryId: number; 
   businessId: number;
+  isArchived: boolean;
 }
 
 export interface ServiceCategory {
@@ -22,6 +67,11 @@ export interface ServiceCategory {
   name: string;
   photoUrl?: string;
   services: Service[];
+}
+
+export interface MainCategory {
+  mainCategoryId: number;
+  name: string;
 }
 
 export interface Employee {

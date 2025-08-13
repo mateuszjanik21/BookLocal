@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,15 +6,15 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { BusinessService } from '../../core/services/business-service';
 import { CategoryService } from '../../core/services/category';
-import { MainCategory, BusinessSearchResult, PagedResult } from '../../types/business.model';
+import { MainCategory, PagedResult, ServiceSearchResult } from '../../types/business.model';
 
 @Component({
-  selector: 'app-business-list',
+  selector: 'app-service-list',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
-  templateUrl: './business-list.html',
+  templateUrl: './service-list.html',
 })
-export class BusinessListComponent implements OnInit, OnDestroy {
+export class ServiceListComponent implements OnInit {
   private businessService = inject(BusinessService);
   private categoryService = inject(CategoryService);
 
@@ -24,9 +24,9 @@ export class BusinessListComponent implements OnInit, OnDestroy {
   isLoading = true;
   mainCategories: MainCategory[] = [];
   
-  pagedResult: PagedResult<BusinessSearchResult> | null = null;
+  pagedResult: PagedResult<ServiceSearchResult> | null = null;
   pageNumber = 1;
-  pageSize = 9;
+  pageSize = 12; // Możemy wyświetlić więcej mniejszych kart
 
   activeMainCategoryId: number | null = null;
   activeSortBy = 'rating_desc';
@@ -55,7 +55,7 @@ export class BusinessListComponent implements OnInit, OnDestroy {
       pageNumber: this.pageNumber,
       pageSize: this.pageSize
     };
-    this.businessService.searchBusinesses(params).subscribe({
+    this.businessService.searchServices(params).subscribe({
       next: (data) => {
         this.pagedResult = data;
         this.isLoading = false;
@@ -94,9 +94,5 @@ export class BusinessListComponent implements OnInit, OnDestroy {
     if (pageNumber < totalPages - 3) pages.push('...');
     pages.push(totalPages);
     return pages;
-  }
-
-  ngOnDestroy(): void {
-    this.searchSubscription?.unsubscribe();
   }
 }

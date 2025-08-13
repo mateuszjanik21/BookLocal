@@ -24,7 +24,9 @@ export class ScheduleModalComponent implements OnInit, OnDestroy {
   private valueChangesSub = new Subscription();
 
   scheduleForm!: FormGroup;
-  daysOfWeek = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
+  daysOfWeekDisplay = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
+  daysOfWeekApi = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  
   isLoading = true;
   isSaving = false;
 
@@ -44,11 +46,11 @@ export class ScheduleModalComponent implements OnInit, OnDestroy {
   }
 
   populateForm(schedules: WorkSchedule[]): void {
-    this.daysOfWeek.forEach(dayName => {
-      const scheduleForDay = schedules.find(s => s.dayOfWeek.toLowerCase() === dayName.toLowerCase());
+    this.daysOfWeekApi.forEach((dayNameApi, index) => {
+      const scheduleForDay = schedules.find(s => s.dayOfWeek.toLowerCase() === dayNameApi.toLowerCase());
       
       const dayGroup = this.fb.group({
-        dayOfWeek: [dayName],
+        dayOfWeekDisplay: [this.daysOfWeekDisplay[index]], 
         startTime: [{ value: scheduleForDay?.startTime || '09:00', disabled: scheduleForDay?.isDayOff || false }],
         endTime: [{ value: scheduleForDay?.endTime || '17:00', disabled: scheduleForDay?.isDayOff || false }],
         isDayOff: [scheduleForDay?.isDayOff || false]
@@ -74,10 +76,12 @@ export class ScheduleModalComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     this.isSaving = true;
-    const scheduleData = this.dayForms.getRawValue().map((day: any) => ({
-      ...day,
+
+    const scheduleData = this.dayForms.getRawValue().map((day: any, index: number) => ({
+      dayOfWeek: this.daysOfWeekApi[index],
       startTime: day.isDayOff ? null : day.startTime,
       endTime: day.isDayOff ? null : day.endTime,
+      isDayOff: day.isDayOff
     }));
 
     this.scheduleService.updateSchedule(this.employee.id, scheduleData).subscribe({

@@ -30,6 +30,11 @@ public class ReservationsController : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("Nie można zidentyfikować użytkownika na podstawie tokenu.");
+        }
+
         var service = await _context.Services.FindAsync(reservationDto.ServiceId);
         if (service == null) return NotFound("Wybrana usługa nie istnieje.");
 
@@ -95,32 +100,41 @@ public class ReservationsController : ControllerBase
             query = query.Where(r => r.CustomerId == userId);
         }
 
-        var reservations = await query
-            .Include(r => r.Service)
+        var reservationsFromDb = await query
             .Include(r => r.Employee)
             .Include(r => r.Customer)
             .Include(r => r.Business)
             .Include(r => r.Review)
             .OrderByDescending(r => r.StartTime)
-            .Select(r => new ReservationDto
-            {
-                ReservationId = r.ReservationId,
-                StartTime = r.StartTime,
-                EndTime = r.EndTime,
-                Status = r.Status.ToString(),
-                ServiceId = r.ServiceId,
-                ServiceName = r.Service.Name,
-                BusinessName = r.Business.Name,
-                EmployeeId = r.EmployeeId,
-                EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
-                CustomerId = r.CustomerId,
-                CustomerFullName = r.Customer != null ? $"{r.Customer.FirstName} {r.Customer.LastName}" : null,
-                GuestName = r.GuestName,
-                HasReview = r.Review != null
-            })
+            .AsNoTracking() 
             .ToListAsync();
 
-        return Ok(reservations);
+        var serviceIds = reservationsFromDb.Select(r => r.ServiceId).Distinct().ToList();
+
+        var services = await _context.Services
+            .IgnoreQueryFilters()
+            .Where(s => serviceIds.Contains(s.ServiceId))
+            .ToDictionaryAsync(s => s.ServiceId);
+
+        var reservationDtos = reservationsFromDb.Select(r => new ReservationDto
+        {
+            ReservationId = r.ReservationId,
+            StartTime = r.StartTime,
+            EndTime = r.EndTime,
+            Status = r.Status.ToString(),
+            ServiceId = r.ServiceId,
+            ServiceName = services.ContainsKey(r.ServiceId) ? services[r.ServiceId].Name : "Usunięta usługa",
+            BusinessName = r.Business.Name,
+            EmployeeId = r.EmployeeId,
+            EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
+            CustomerId = r.CustomerId,
+            CustomerFullName = r.Customer != null ? $"{r.Customer.FirstName} {r.Customer.LastName}" : null,
+            GuestName = r.GuestName,
+            HasReview = r.Review != null
+        }).ToList();
+
+
+        return Ok(reservationDtos);
     }
 
     [HttpGet("{id}")]

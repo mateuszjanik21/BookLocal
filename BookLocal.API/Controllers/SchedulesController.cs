@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 [ApiController]
-[Route("api/schedules")]
+[Route("api/[controller]")]
 [Authorize(Roles = "owner")]
 public class SchedulesController : ControllerBase
 {
@@ -21,19 +21,25 @@ public class SchedulesController : ControllerBase
     public async Task<ActionResult<IEnumerable<WorkScheduleDto>>> GetSchedule(int employeeId)
     {
         var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         var employee = await _context.Employees
+            .AsNoTracking()
             .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.Business.OwnerId == ownerId);
 
-        if (employee == null) return Forbid();
+        if (employee == null)
+        {
+            return Forbid("Brak dostępu do tego pracownika.");
+        }
 
         var schedule = await _context.WorkSchedules
             .Where(ws => ws.EmployeeId == employeeId)
+            .OrderBy(ws => ws.DayOfWeek)
             .Select(ws => new WorkScheduleDto
             {
                 DayOfWeek = ws.DayOfWeek,
-                StartTime = ws.StartTime.HasValue ? ws.StartTime.Value.ToString(@"hh\:mm") : null,
-                EndTime = ws.EndTime.HasValue ? ws.EndTime.Value.ToString(@"hh\:mm") : null,
-                IsDayOff = ws.IsDayOff
+                IsDayOff = ws.IsDayOff,
+                StartTime = ws.StartTime != null ? ws.StartTime.Value.ToString(@"hh\:mm") : null,
+                EndTime = ws.EndTime != null ? ws.EndTime.Value.ToString(@"hh\:mm") : null
             })
             .ToListAsync();
 
@@ -41,31 +47,33 @@ public class SchedulesController : ControllerBase
     }
 
     [HttpPost("{employeeId}")]
-    public async Task<IActionResult> UpdateSchedule(int employeeId, List<WorkScheduleDto> scheduleDtos)
+    public async Task<IActionResult> UpdateSchedule(int employeeId, [FromBody] List<WorkScheduleDto> schedulePayload)
     {
         var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         var employee = await _context.Employees
             .Include(e => e.WorkSchedules)
             .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.Business.OwnerId == ownerId);
 
-        if (employee == null) return Forbid();
-
-        _context.WorkSchedules.RemoveRange(employee.WorkSchedules);
-
-        foreach (var dto in scheduleDtos)
+        if (employee == null)
         {
-            var schedule = new WorkSchedule
+            return Forbid("Brak dostępu do tego pracownika.");
+        }
+
+        foreach (var dayPayload in schedulePayload)
+        {
+            var scheduleDay = employee.WorkSchedules.FirstOrDefault(ws => ws.DayOfWeek == dayPayload.DayOfWeek);
+            if (scheduleDay != null)
             {
-                EmployeeId = employeeId,
-                DayOfWeek = dto.DayOfWeek,
-                IsDayOff = dto.IsDayOff,
-                StartTime = dto.StartTime != null ? TimeSpan.Parse(dto.StartTime) : null,
-                EndTime = dto.EndTime != null ? TimeSpan.Parse(dto.EndTime) : null
-            };
-            _context.WorkSchedules.Add(schedule);
+                scheduleDay.IsDayOff = dayPayload.IsDayOff;
+
+                scheduleDay.StartTime = !dayPayload.IsDayOff && TimeSpan.TryParse(dayPayload.StartTime, out var startTime) ? startTime : null;
+                scheduleDay.EndTime = !dayPayload.IsDayOff && TimeSpan.TryParse(dayPayload.EndTime, out var endTime) ? endTime : null;
+            }
         }
 
         await _context.SaveChangesAsync();
-        return Ok(new { Message = "Grafik pracownika został zaktualizowany." });
+
+        return NoContent();
     }
 }

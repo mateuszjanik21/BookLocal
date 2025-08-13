@@ -30,4 +30,15 @@
     {
         public string? FirstName { get; set; }
     }
+
+    public class BusinessSearchResultDto
+    {
+        public int BusinessId { get; set; }
+        public required string Name { get; set; }
+        public string? City { get; set; }
+        public string? PhotoUrl { get; set; }
+        public double AverageRating { get; set; }
+        public int ReviewCount { get; set; }
+        public List<string> MainCategories { get; set; } = new();
+    }
 }

@@ -7,6 +7,8 @@ namespace BookLocal.API.DTOs
         [Required]
         [MaxLength(100)]
         public required string Name { get; set; }
+        [Required]
+        public int MainCategoryId { get; set; }
     }
     public class ServiceCategoryDto
     {

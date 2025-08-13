@@ -101,6 +101,7 @@ public class ServicesController : ControllerBase
     {
         var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var service = await _context.Services
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.ServiceId == serviceId && s.BusinessId == businessId && s.Business.OwnerId == ownerId);
 
         if (service == null)
@@ -108,16 +109,16 @@ public class ServicesController : ControllerBase
             return NotFound("Usługa nie została znaleziona lub nie masz do niej dostępu.");
         }
 
-        try
-        {
-            _context.Services.Remove(service);
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateException)
-        {
-            return Conflict(new { title = "Nie można usunąć usługi, ponieważ jest ona w użyciu (np. w rezerwacji lub jest przypisana do pracownika)." });
-        }
+        var futureReservations = await _context.Reservations
+            .Where(r => r.ServiceId == serviceId && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
+            .ToListAsync();
 
+        foreach (var reservation in futureReservations)
+        {
+            reservation.Status = ReservationStatus.Cancelled;
+        }
+        service.IsArchived = true;
+        await _context.SaveChangesAsync();
         return NoContent();
     }
 }

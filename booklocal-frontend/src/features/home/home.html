@@ -1,26 +1,14 @@
 <div class="parallax-container">
   <div class="parallax-background">
-    <img [src]="currentBackgroundImage" 
-         [class.image-fading]="isImageFading"
-         alt="Tło z inspirującymi obrazami usług" />
+    <img [src]="currentBackgroundImage" [class.image-fading]="isImageFading" alt="Tło z inspirującymi obrazami usług" />
   </div>
   <div class="parallax-content">
     <div class="text-center text-white p-4">
       <h1 class="text-4xl md:text-6xl font-bold drop-shadow-lg animate-fade-in-down">Odkryj i zarezerwuj wyjątkowe usługi</h1>
       <p class="text-lg md:text-xl mt-4 max-w-2xl mx-auto drop-shadow-md animate-fade-in-up">Znajdź najlepszych specjalistów w Twojej okolicy – od fryzjerów po fizjoterapeutów.</p>
-      
       <div class="relative mt-8 max-w-lg mx-auto">
-        <span class="absolute inset-y-0 left-0 flex items-center pl-4">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-base-content/50">
-            <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
-          </svg>
-        </span>
-        <input 
-          #searchInput
-          type="text" 
-          placeholder="Filtruj po nazwie kategorii..." 
-          class="input input-bordered w-full input-lg shadow-lg text-base-content pl-12"
-          (input)="onSearch(searchInput.value)" />
+        <span class="absolute inset-y-0 left-0 flex items-center pl-4"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 text-base-content/50"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" /></svg></span>
+        <input #searchInput (input)="onSearchInput()" type="text" placeholder="Szukaj po nazwie firmy lub kategorii..." class="input input-bordered w-full input-lg shadow-lg text-base-content pl-12" />
       </div>
     </div>
   </div>
@@ -28,6 +16,29 @@
 
 <div class="bg-base-200/60">
   <div class="container p-4 md:p-8 mx-auto">
+    <div class="p-4 bg-base-100 rounded-lg shadow-md mb-8 sticky top-4 z-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="label"><span class="label-text font-semibold">Filtruj po kategorii głównej</span></label>
+          <select class="select select-bordered w-full" [(ngModel)]="activeMainCategoryId" (ngModelChange)="onFilterChange()">
+            <option [ngValue]="null">Wszystkie kategorie</option>
+            @for(cat of mainCategories; track cat.mainCategoryId) {
+              <option [value]="cat.mainCategoryId">{{ cat.name }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label class="label"><span class="label-text font-semibold">Sortuj według</span></label>
+          <select class="select select-bordered w-full" [(ngModel)]="activeSortBy" (ngModelChange)="onFilterChange()">
+            <option value="rating_desc">Najlepsze opinie</option>
+            <option value="reviews_desc">Najwięcej opinii</option>
+            <option value="newest_desc">Najnowsze</option>
+            <option value="name_asc">Alfabetycznie A-Z</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     @if (isLoading) {
       <div class="space-y-8">
         @for (_ of [0, 1, 2]; track $index) {
@@ -36,21 +47,33 @@
       </div>
     } @else {
       <div class="space-y-8">
-        @for(item of filteredFeed; track item.serviceCategoryId) {
+        @for(item of pagedResult?.items; track item.serviceCategoryId) {
           <div class="category-card card lg:card-side bg-base-100 shadow-lg border border-base-200/50">
-            <figure class="lg:w-2/5">
-              <img [src]="item.photoUrl || 'assets/placeholder.svg'" alt="{{ item.name }}" class="object-cover w-full h-full max-h-96 lg:h-auto" />
-            </figure>
-            <div class="card-body lg:w-3/5 flex flex-col justify-between">
+            <figure class="lg:w-1/5"><img [src]="item.photoUrl || 'assets/placeholder.svg'" alt="{{ item.name }}" class="object-cover w-full h-full" /></figure>
+            <div class="card-body lg:w-2/5 flex flex-col justify-between">
               <div>
-                <h2 class="card-title text-2xl font-bold">{{ item.name }}</h2>
-                <a [routerLink]="['/business', item.businessId]" class="text-primary hover:underline flex items-center gap-1.5 mt-2 text-base">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10 2a.75.75 0 01.75.75v.518a3.75 3.75 0 013.193 3.193H14.5a.75.75 0 010 1.5h-.518a3.75 3.75 0 01-3.193 3.193v.518a.75.75 0 01-1.5 0v-.518A3.75 3.75 0 016.09 9.5H5.5a.75.75 0 010-1.5h.59a3.75 3.75 0 013.193-3.193V2.75A.75.75 0 0110 2zM8.5 6.5a1.5 1.5 0 103 0 1.5 1.5 0 00-3 0z" /><path d="M2 12.5a.75.75 0 01.75-.75h.334a5.25 5.25 0 0110.832 0h.334a.75.75 0 010 1.5h-.334a5.25 5.25 0 01-10.832 0H2.75a.75.75 0 01-.75-.75z" /></svg>
-                  <span>{{ item.businessName }}, {{ item.businessCity }}</span>
-                </a>
-                <div class="border-t border-base-200/80 my-4"></div>
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h2 class="card-title text-2xl font-bold">{{ item.name }}</h2>
+                    <a [routerLink]="['/business', item.businessId]" class="text-primary hover:underline flex items-center gap-1.5 mt-1">
+                      <span>{{ item.businessName }}, {{ item.businessCity }}</span>
+                    </a>
+                  </div>
+                  @if(item.reviewCount > 0){
+                    <div class="flex items-center gap-2 text-right flex-shrink-0">
+                      <div class="rating rating-sm items-center">
+                        @for (star of [1,2,3,4,5]; track star) {
+                          <input type="radio" class="mask mask-star-2 bg-orange-400" [checked]="star === Math.round(item.averageRating)" disabled />
+                        }
+                      </div>
+                      <span class="font-bold text-sm">{{ item.averageRating.toFixed(1) }}</span>
+                      <span class="text-xs text-base-content/60">({{ item.reviewCount }})</span>
+                    </div>
+                  }
+                </div>
+                <div class="border-t my-4"></div>
                 <div class="space-y-3 pr-2">
-                  @for(service of item.services.slice(0, 5); track service.id) {
+                  @for(service of item.services.slice(0, 3); track service.id) {
                     <div class="flex justify-between items-center text-base gap-4">
                       <span class="text-base-content/80">{{ service.name }}</span>
                       <div class="flex items-baseline gap-4 font-mono flex-shrink-0">
@@ -59,26 +82,44 @@
                       </div>
                     </div>
                   }
-                  @if (item.services.length > 5) {
-                    <p class="text-xs text-base-content/60 mt-2 text-right">...i {{ item.services.length - 5 }} więcej</p>
+                  @if (item.services.length > 3) {
+                    <p class="text-xs text-right">...i {{ item.services.length - 3 }} więcej</p>
                   }
                 </div>
               </div>
               <div class="card-actions justify-end mt-6">
-                <a [routerLink]="['/business', item.businessId]" class="btn btn-primary btn-wide">
-                  Zobacz pełną ofertę
-                </a>
+                <a [routerLink]="['/business', item.businessId]" class="btn btn-primary btn-wide">Zobacz pełną ofertę</a>
               </div>
             </div>
           </div>
         } @empty {
           <div class="text-center p-12 bg-base-100 rounded-2xl shadow-md">
             <h2 class="text-2xl font-bold">Brak ofert pasujących do Twoich kryteriów</h2>
-            <p class="text-base-content/60 mt-2 mb-6">Spróbuj wpisać inną frazę lub wyczyść filtr, aby zobaczyć wszystkie kategorie.</p>
-            <button class="btn btn-outline" (click)="clearSearch()">Wyczyść filtr</button>
+            <p class="text-base-content/60 mt-2 mb-6">Spróbuj wpisać inną frazę lub zmienić kategorię.</p>
+            <button class="btn btn-outline" (click)="clearSearch()">Wyczyść filtry</button>
           </div>
         }
       </div>
+
+      @if(pagedResult && pagedResult.totalPages > 1) {
+        <div class="flex justify-center mt-8">
+          <div class="join">
+            <button class="join-item btn" [disabled]="pagedResult.pageNumber === 1" (click)="pageChanged(pagedResult.pageNumber - 1)">«</button>
+            @for(page of paginationPages; track $index) {
+              @if(page === '...') {
+                <button class="join-item btn btn-disabled">...</button>
+              } @else {
+                <button class="join-item btn" 
+                        [class.btn-primary]="page === pagedResult.pageNumber" 
+                        (click)="pageChanged(+page)">
+                  {{ page }}
+                </button>
+              }
+            }
+            <button class="join-item btn" [disabled]="pagedResult.pageNumber === pagedResult.totalPages" (click)="pageChanged(pagedResult.pageNumber + 1)">»</button>
+          </div>
+        </div>
+      }
     }
   </div>
 </div>

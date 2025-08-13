@@ -17,11 +17,13 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<ServiceCategory> ServiceCategories { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<WorkSchedule> WorkSchedules { get; set; }
+    public DbSet<MainCategory> MainCategories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Service>().HasQueryFilter(s => !s.IsArchived);
         modelBuilder.Entity<EmployeeService>()
             .HasKey(es => new { es.EmployeeId, es.ServiceId });
         modelBuilder.Entity<Reservation>()

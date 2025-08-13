@@ -18,10 +18,12 @@ import { ChatComponent } from '../features/chat/chat';
 import { ManageProfileComponent } from '../features/dashboard/manage-profile/manage-profile';
 import { HomeComponent } from '../features/home/home';
 import { EmployeeDetailComponent } from '../features/dashboard/employee-detail/employee-detail';
+import { ServiceListComponent } from '../features/service-list/service-list';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
     { path: 'businesses', component: BusinessListComponent },
+    { path: 'services', component: ServiceListComponent },
     { path: 'business/:id', component: BusinessDetailComponent },
     { path: 'register', component: RegisterComponent },
     { path: 'register-owner', component: RegisterOwnerComponent },

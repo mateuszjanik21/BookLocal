@@ -1,24 +1,39 @@
 import { Component, OnInit, OnDestroy, inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CategoryService } from '../../core/services/category';
-import { Service, ServiceCategoryFeed } from '../../types/business.model';
 import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { BusinessService } from '../../core/services/business-service';
+import { CategoryService } from '../../core/services/category';
+import { MainCategory, PagedResult, ServiceCategorySearchResult } from '../../types/business.model';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './home.html',
   styleUrl: './home.css'
 })
 export class HomeComponent implements OnInit, OnDestroy {
+  private businessService = inject(BusinessService);
   private categoryService = inject(CategoryService);
-  private router = inject(Router);
-
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+  
+  Math = Math;
+  isLoading = true;
+  mainCategories: MainCategory[] = [];
+  
+  pagedResult: PagedResult<ServiceCategorySearchResult> | null = null;
+  pageNumber = 1;
+  pageSize = 10;
 
+  activeMainCategoryId: number | null = null;
+  activeSortBy = 'rating_desc';
+
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
+  
   backgroundImages: string[] = [
     'https://cdn.pixabay.com/photo/2022/05/28/02/25/barber-shop-7226341_1280.jpg',
     'https://cdn.pixabay.com/photo/2019/03/15/13/46/hairstyle-4057094_1280.jpg',
@@ -30,37 +45,89 @@ export class HomeComponent implements OnInit, OnDestroy {
   isImageFading = false;
   private imageInterval: any;
 
-  allFeedItems: ServiceCategoryFeed[] = [];
-  filteredFeed: ServiceCategoryFeed[] = [];
-  isLoading = true;
-
-  private searchSubject = new Subject<string>();
-  private searchSubscription?: Subscription;
-
   ngOnInit(): void {
     this.currentBackgroundImage = this.backgroundImages[0];
     this.startImageRotation();
-
-    this.categoryService.getCategoryFeed().subscribe({
-      next: (data) => {
-        this.allFeedItems = data;
-        this.filteredFeed = data;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.isLoading = false;
-        console.error('Błąd podczas pobierania ofert.');
-      }
-    });
-
+    this.categoryService.getMainCategories().subscribe(data => this.mainCategories = data);
+    this.fetchResults();
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
-    ).subscribe(searchTerm => {
-      this.filterFeed(searchTerm);
+    ).subscribe(() => this.fetchResults());
+  }
+
+  fetchResults(): void {
+    this.isLoading = true;
+    const params = {
+      searchTerm: this.searchInput?.nativeElement.value,
+      mainCategoryId: this.activeMainCategoryId ?? undefined,
+      sortBy: this.activeSortBy,
+      pageNumber: this.pageNumber,
+      pageSize: this.pageSize
+    };
+    this.businessService.searchCategoryFeed(params).subscribe({
+      next: (data) => {
+        this.pagedResult = data;
+        this.isLoading = false;
+      },
+      error: () => this.isLoading = false
     });
   }
 
+  onSearchInput(): void {
+    this.pageNumber = 1;
+    this.searchSubject.next(this.searchInput.nativeElement.value);
+  }
+
+  onFilterChange(): void {
+    this.pageNumber = 1;
+    this.fetchResults();
+  }
+  
+  pageChanged(newPage: number): void {
+    if (this.pageNumber === newPage) return;
+    this.pageNumber = newPage;
+    this.fetchResults();
+    window.scrollTo(0, 400);
+  }
+
+  get paginationPages(): (number | string)[] {
+    if (!this.pagedResult) return [];
+
+    const { totalPages, pageNumber } = this.pagedResult;
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const pages: (number | string)[] = [];
+    pages.push(1);
+    
+    if (pageNumber > 4) {
+      pages.push('...');
+    }
+    
+    for (let i = pageNumber - 2; i <= pageNumber + 2; i++) {
+      if (i > 1 && i < totalPages) {
+        pages.push(i);
+      }
+    }
+
+    if (pageNumber < totalPages - 3) {
+      pages.push('...');
+    }
+
+    pages.push(totalPages);
+
+    return pages;
+  }
+  
+  clearSearch(): void {
+    if (this.searchInput) {
+      this.searchInput.nativeElement.value = '';
+    }
+    this.onSearchInput();
+  }
+  
   startImageRotation(): void {
     this.imageInterval = setInterval(() => {
       this.isImageFading = true;
@@ -75,27 +142,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.isImageFading = false;
       }, 750);
     }, 7000);
-  }
-
-  filterFeed(searchTerm: string): void {
-    const lowerCaseSearchTerm = searchTerm.toLowerCase().trim();
-    if (!lowerCaseSearchTerm) {
-      this.filteredFeed = this.allFeedItems;
-    } else {
-      this.filteredFeed = this.allFeedItems.filter(item => 
-        item.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        item.businessName.toLowerCase().includes(lowerCaseSearchTerm)
-      );
-    }
-  }
-
-  onSearch(searchTerm: string): void {
-    this.searchSubject.next(searchTerm);
-  }
-
-  clearSearch(): void {
-    this.searchInput.nativeElement.value = ''; 
-    this.searchSubject.next(''); 
   }
 
   ngOnDestroy(): void {

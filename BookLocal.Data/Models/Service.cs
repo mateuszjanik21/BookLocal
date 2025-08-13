@@ -27,6 +27,7 @@ public class Service
 
     [Required]
     public int DurationMinutes { get; set; }
+    public bool IsArchived { get; set; } = false;
 
     public virtual Business Business { get; set; }
     public virtual ICollection<EmployeeService> EmployeeServices { get; set; } = new List<EmployeeService>();

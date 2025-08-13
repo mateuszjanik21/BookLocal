@@ -18,6 +18,13 @@ namespace BookLocal.Data.Models
         public int BusinessId { get; set; }
         [ForeignKey("BusinessId")]
         public virtual Business Business { get; set; }
+
+        [Required]
+        public int MainCategoryId { get; set; }
+
+        [ForeignKey("MainCategoryId")]
+        public virtual MainCategory MainCategory { get; set; }
+
         public virtual ICollection<Service> Services { get; set; } = new List<Service>();
     }
 }

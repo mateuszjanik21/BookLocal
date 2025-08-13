@@ -5,8 +5,20 @@
     
     <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="space-y-6">
       <div>
-        <label class="label"><span class="label-text font-semibold">Nazwa kategorii</span></label>
-        <input type="text" placeholder="np. Strzyżenie męskie" class="input input-bordered w-full" formControlName="name" />
+        <label class="label"><span class="label-text font-semibold">Kategoria główna</span></label>
+        <select class="select select-bordered w-full" formControlName="mainCategoryId">
+          <option [ngValue]="null" disabled>Wybierz z listy...</option>
+          @if(mainCategories$ | async; as mainCategories) {
+            @for(mainCat of mainCategories; track mainCat.mainCategoryId) {
+              <option [value]="mainCat.mainCategoryId">{{ mainCat.name }}</option>
+            }
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="label"><span class="label-text font-semibold">Nazwa własna kategorii</span></label>
+        <input type="text" placeholder="np. &quot;Strzyżenie&quot;, &quot;Koloryzacja&quot;, &quot;Pielęgnacja&quot;." class="input input-bordered w-full" formControlName="name" />
       </div>
 
       <div>

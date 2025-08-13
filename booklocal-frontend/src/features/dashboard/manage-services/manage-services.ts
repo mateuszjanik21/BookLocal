@@ -9,6 +9,8 @@ import { AddServiceModalComponent } from '../../../shared/components/add-service
 import { EditServiceModalComponent } from '../../../shared/components/edit-service-modal/edit-service-modal';
 import { of, switchMap, finalize } from 'rxjs';
 import { PhotoService } from '../../../core/services/photo';
+import { ServiceService } from '../../../core/services/service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-manage-services',
@@ -17,25 +19,23 @@ import { PhotoService } from '../../../core/services/photo';
     CommonModule,
     CategoryModalComponent,
     AddServiceModalComponent,
-    EditServiceModalComponent
+    EditServiceModalComponent,
+    FormsModule,
   ],
   templateUrl: './manage-services.html',
 })
 export class ManageServicesComponent implements OnInit {
-  // Wstrzyknięte serwisy
+  private serviceService = inject(ServiceService);
   private businessService = inject(BusinessService);
   private categoryService = inject(CategoryService);
   private photoService = inject(PhotoService);
   private toastr = inject(ToastrService);
 
-  // Stan komponentu
   isLoading = true;
   isSavingCategory = false;
 
-  // Dane biznesowe
   business: BusinessDetail | null = null;
-  
-  // Stan dla okien modalnych
+  showArchived = false;
   isCategoryModalVisible = false;
   categoryToEdit: ServiceCategory | null = null;
   
@@ -50,16 +50,20 @@ export class ManageServicesComponent implements OnInit {
   loadData(): void {
     this.isLoading = true;
     this.businessService.getMyBusiness().pipe(
+      switchMap(businessData => {
+        this.business = businessData;
+        return this.categoryService.getCategories(businessData.id, this.showArchived);
+      }),
       finalize(() => this.isLoading = false)
     ).subscribe({
-      next: (data) => {
-        this.business = data;
+      next: (categoriesData) => {
+        if (this.business) {
+          this.business.categories = categoriesData;
+        }
       },
-      error: () => this.toastr.error('Wystąpił błąd podczas ładowania danych firmy.')
+      error: () => this.toastr.error('Wystąpił błąd podczas ładowania danych.')
     });
   }
-
-  // --- Logika dla modala kategorii ---
 
   openCategoryModal(category: ServiceCategory | null = null): void {
     this.categoryToEdit = category;
@@ -121,6 +125,21 @@ export class ManageServicesComponent implements OnInit {
     }
   }
 
+  onDeleteService(service: Service): void {
+    if (confirm(`Czy na pewno chcesz usunąć usługę "${service.name}"?`)) {
+      if (!this.business) return;
+      
+      this.serviceService.deleteService(this.business.id, service.id).subscribe({
+        next: () => {
+          this.toastr.success('Usługa została usunięta.');
+          this.loadData();
+        },
+        error: (err) => {
+          this.toastr.error(err.error?.title || 'Wystąpił błąd podczas usuwania usługi.');
+        }
+      });
+    }
+  }
 
   openAddServiceModal(category: ServiceCategory): void {
     this.activeCategoryForService = category;

@@ -1,20 +1,21 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/services/auth-service';
 import { UserDto } from '../../types/auth.models';
 import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs';
 import { PhotoService } from '../../core/services/photo';
 import { ImageUploadComponent } from '../../shared/components/image-upload/image-upload';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent],
+  imports: [CommonModule, ReactiveFormsModule, ImageUploadComponent, RouterModule],
   templateUrl: './profile.html',
 })
-export class ProfileComponent {
+export class ProfileComponent implements OnInit {
   private authService = inject(AuthService);
   private photoService = inject(PhotoService);
   private fb = inject(FormBuilder);
@@ -23,10 +24,31 @@ export class ProfileComponent {
   user$: Observable<UserDto | null> = this.authService.currentUser$;
   isUploading = false;
 
-  passwordForm = this.fb.group({
-    currentPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(6)]]
-  });
+  passwordForm: FormGroup;
+  profileForm: FormGroup;
+
+  constructor() {
+    this.passwordForm = this.fb.group({
+      currentPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]]
+    });
+
+    this.profileForm = this.fb.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required]
+    });
+  }
+
+  ngOnInit(): void {
+    this.user$.subscribe(user => {
+      if (user) {
+        this.profileForm.patchValue({
+          firstName: user.firstName,
+          lastName: user.lastName
+        });
+      }
+    });
+  }
 
   onSubmit(): void {
     if (this.passwordForm.invalid) return;
@@ -39,6 +61,23 @@ export class ProfileComponent {
       error: (err) => {
         this.toastr.error('Nie udało się zmienić hasła. Sprawdź obecne hasło.', 'Błąd');
       }
+    });
+  }
+  
+  onProfileSubmit(): void {
+    if (this.profileForm.invalid) return;
+
+    const payload = {
+      firstName: this.profileForm.value.firstName!,
+      lastName: this.profileForm.value.lastName!
+    };
+    
+    this.authService.updateProfile(payload).subscribe({
+      next: (updatedUser) => {
+        this.toastr.success('Twoje dane zostały zaktualizowane!');
+        this.profileForm.markAsPristine();
+      },
+      error: () => this.toastr.error('Wystąpił błąd podczas aktualizacji danych.')
     });
   }
 

@@ -10,7 +10,7 @@
         <div formArrayName="days" class="space-y-4">
           @for(dayGroup of dayForms.controls; track $index; let i = $index) {
             <div [formGroupName]="i" class="grid grid-cols-4 items-center gap-4 p-3 rounded-lg bg-base-200">
-              <label class="font-semibold col-span-1">{{ dayGroup.value.dayOfWeek }}</label>
+              <label class="font-semibold col-span-1">{{ dayGroup.value.dayOfWeekDisplay  }}</label>
               <div class="col-span-2 flex items-center gap-2">
                 <input type="time" class="input input-sm input-bordered w-full" formControlName="startTime" />
                 <span>-</span>

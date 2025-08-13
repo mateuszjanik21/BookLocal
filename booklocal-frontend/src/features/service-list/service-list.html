@@ -1,0 +1,96 @@
+<div class="container p-4 md:p-8 mx-auto">
+  <div class="text-center mb-8">
+    <h2 class="text-3xl font-bold">Znajdź idealną usługę dla siebie</h2>
+    <p class="text-base-content/70 mt-1">Przeglądaj, filtruj i wybieraj spośród tysięcy ofert w całej Polsce.</p>
+  </div>
+
+  <div class="p-4 bg-base-100 rounded-lg shadow-md mb-8 sticky top-4 z-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="md:col-span-1">
+        <label class="label"><span class="label-text font-semibold">Szukaj usługi, firmy...</span></label>
+        <input #searchInput (input)="onSearchInput()" type="text" placeholder="Wpisz frazę..." class="input input-bordered w-full" />
+      </div>
+      <div>
+        <label class="label"><span class="label-text font-semibold">Filtruj po kategorii</span></label>
+        <select class="select select-bordered w-full" [(ngModel)]="activeMainCategoryId" (ngModelChange)="onFilterChange()">
+          <option [ngValue]="null">Wszystkie kategorie</option>
+          @for(cat of mainCategories; track cat.mainCategoryId) {
+            <option [value]="cat.mainCategoryId">{{ cat.name }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="label"><span class="label-text font-semibold">Sortuj według</span></label>
+        <select class="select select-bordered w-full" [(ngModel)]="activeSortBy" (ngModelChange)="onFilterChange()">
+          <option value="rating_desc">Najlepsze opinie</option>
+          <option value="price_asc">Cena: od najniższej</option>
+          <option value="price_desc">Cena: od najwyższej</option>
+          <option value="newest_desc">Najnowsze</option>
+          <option value="name_asc">Alfabetycznie A-Z</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (_ of [0,1,2,3,4,5,6,7,8]; track $index) {
+            <div class="skeleton h-64 w-full"></div>
+        }
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for(item of pagedResult?.items; track item.serviceId) {
+        <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow">
+          <div class="card-body">
+            <span class="badge badge-outline badge-sm self-start">{{ item.mainCategoryName }}</span>
+            <h2 class="card-title mt-2">{{ item.serviceName }}</h2>
+            
+            <a [routerLink]="['/business', item.businessId]" class="link link-hover text-primary text-sm">{{ item.businessName }}, {{ item.businessCity }}</a>
+
+            @if(item.reviewCount > 0){
+              <div class="flex items-center gap-2 mt-2">
+                <div class="rating rating-sm items-center">
+                  @for (star of [1, 2, 3, 4, 5]; track star) {
+                    <input type="radio" class="mask mask-star-2 bg-orange-400" [checked]="star === Math.round(item.averageRating)" disabled />
+                  }
+                </div>
+                <span class="font-bold text-sm">{{ item.averageRating.toFixed(1) }}</span>
+                <span class="text-xs text-base-content/60">({{ item.reviewCount }} opinii)</span>
+              </div>
+            }
+
+            <div class="divider my-3"></div>
+            
+            <div class="flex justify-between items-center">
+              <span class="font-semibold text-lg font-mono">{{ item.price }} zł</span>
+              <span class="text-base-content/60">{{ item.durationMinutes }} min</span>
+            </div>
+            <div class="card-actions justify-end mt-4">
+              <a [routerLink]="['/business', item.businessId]" class="btn btn-primary btn-sm">Zobacz i zarezerwuj</a>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <p class="col-span-full text-center text-lg text-base-content/50 py-16">Nie znaleziono usług pasujących do Twoich kryteriów.</p>
+      }
+    </div>
+    @if(pagedResult && pagedResult.totalPages > 1) {
+      <div class="flex justify-center mt-8">
+        <div class="join">
+          <button class="join-item btn" [disabled]="pagedResult.pageNumber === 1" (click)="pageChanged(pagedResult.pageNumber - 1)">«</button>
+          @for(page of paginationPages; track $index) {
+            @if(page === '...') {
+              <button class="join-item btn btn-disabled">...</button>
+            } @else {
+              <button class="join-item btn" [class.btn-primary]="page === pagedResult.pageNumber" (click)="pageChanged(+page)">
+                {{ page }}
+              </button>
+            }
+          }
+          <button class="join-item btn" [disabled]="pagedResult.pageNumber === pagedResult.totalPages" (click)="pageChanged(pagedResult.pageNumber + 1)">»</button>
+        </div>
+      </div>
+    }
+  }
+</div>

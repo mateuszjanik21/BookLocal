@@ -11,4 +11,10 @@ namespace BookLocal.API.DTOs
         public string? PhotoUrl { get; set; }
         public required IList<string> Roles { get; set; }
     }
+
+    public class UserUpdateDto
+    {
+        public required string FirstName { get; set; }
+        public required string LastName { get; set; }
+    }
 }

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { ServiceCategory, ServiceCategoryFeed } from '../../types/business.model';
+import { MainCategory, ServiceCategory, ServiceCategoryFeed } from '../../types/business.model';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -15,8 +15,10 @@ export class CategoryService {
     return this.http.get<ServiceCategoryFeed[]>(`${this.apiUrl}/categories/feed`);
   }
 
-  getCategories(businessId: number) {
-    return this.http.get<ServiceCategory[]>(`${this.apiUrl}/businesses/${businessId}/categories`);
+  getCategories(businessId: number, includeArchived: boolean): Observable<ServiceCategory[]> {
+    return this.http.get<ServiceCategory[]>(`${this.apiUrl}/businesses/${businessId}/categories`, {
+      params: { includeArchived }
+    });
   }
 
   addCategory(businessId: number, payload: { name: string }): Observable<ServiceCategory> {
@@ -29,5 +31,9 @@ export class CategoryService {
 
   deleteCategory(businessId: number, categoryId: number) {
     return this.http.delete(`${this.apiUrl}/businesses/${businessId}/categories/${categoryId}`);
+  }
+
+  getMainCategories(): Observable<MainCategory[]> {
+    return this.http.get<MainCategory[]>(`${this.apiUrl}/maincategories`);
   }
 }

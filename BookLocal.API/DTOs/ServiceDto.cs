@@ -18,6 +18,7 @@ namespace BookLocal.API.DTOs
         public required string Name { get; set; }
         public decimal Price { get; set; }
         public int DurationMinutes { get; set; }
+        public bool IsArchived { get; set; }
 
         [Required]
         public int ServiceCategoryId { get; set; }

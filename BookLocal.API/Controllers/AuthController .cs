@@ -163,6 +163,35 @@ public class AuthController : ControllerBase
         };
     }
 
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<ActionResult<UserDto>> UpdateProfile(UserUpdateDto updateDto)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return Unauthorized();
+
+        user.FirstName = updateDto.FirstName;
+        user.LastName = updateDto.LastName;
+
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            return new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PhotoUrl = user.PhotoUrl,
+                Roles = (List<string>)roles
+            };
+        }
+
+        return BadRequest("Nie udało się zaktualizować profilu.");
+    }
+
     private async Task<AuthResponseDto> CreateAuthResponse(User user)
     {
         var roles = await _userManager.GetRolesAsync(user);

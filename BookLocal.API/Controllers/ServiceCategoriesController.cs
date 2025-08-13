@@ -21,14 +21,13 @@ namespace BookLocal.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ServiceCategoryDto>>> GetCategories(int businessId)
+        public async Task<ActionResult<IEnumerable<ServiceCategoryDto>>> GetCategories(int businessId, [FromQuery] bool includeArchived = false)
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId))
             {
                 return Forbid();
             }
-
             var categories = await _context.ServiceCategories
                 .Where(sc => sc.BusinessId == businessId)
                 .Select(sc => new ServiceCategoryDto
@@ -38,6 +37,28 @@ namespace BookLocal.API.Controllers
                     PhotoUrl = sc.PhotoUrl
                 })
                 .ToListAsync();
+
+            foreach (var category in categories)
+            {
+                var servicesQuery = _context.Services
+                    .Where(s => s.ServiceCategoryId == category.ServiceCategoryId);
+
+                if (includeArchived)
+                {
+                    servicesQuery = servicesQuery.IgnoreQueryFilters();
+                }
+
+                category.Services = await servicesQuery
+                    .Select(s => new ServiceDto
+                    {
+                        Id = s.ServiceId,
+                        Name = s.Name,
+                        Price = s.Price,
+                        DurationMinutes = s.DurationMinutes,
+                        IsArchived = s.IsArchived
+                    })
+                    .ToListAsync();
+            }
 
             return Ok(categories);
         }
@@ -55,7 +76,8 @@ namespace BookLocal.API.Controllers
             var newCategory = new ServiceCategory
             {
                 Name = categoryDto.Name,
-                BusinessId = businessId
+                BusinessId = businessId,
+                MainCategoryId = categoryDto.MainCategoryId
             };
 
             _context.ServiceCategories.Add(newCategory);
@@ -84,6 +106,7 @@ namespace BookLocal.API.Controllers
             }
 
             category.Name = categoryDto.Name;
+            category.MainCategoryId = categoryDto.MainCategoryId;
             await _context.SaveChangesAsync();
 
             return NoContent();

@@ -38,7 +38,7 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem('authToken');
-    localStorage.removeItem('userData'); //
+    localStorage.removeItem('userData'); 
     this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
@@ -72,6 +72,19 @@ export class AuthService {
     }
   }
   
+  updateProfile(payload: { firstName: string, lastName: string }): Observable<UserDto> {
+    return this.http.put<UserDto>(`${this.apiUrl}/auth/profile`, payload).pipe(
+      tap(updatedUser => {
+        const currentUser = this.currentUserSubject.getValue();
+        if (currentUser) {
+          const newUserState = { ...currentUser, ...updatedUser };
+          localStorage.setItem('userData', JSON.stringify(newUserState));
+          this.currentUserSubject.next(newUserState);
+        }
+      })
+    );
+  }
+
   registerCustomer(payload: RegisterPayload) { return this.http.post(`${this.apiUrl}/auth/register-customer`, payload); }
   changePassword(payload: ChangePasswordPayload) { return this.http.post(`${this.apiUrl}/auth/change-password`, payload); }
 }

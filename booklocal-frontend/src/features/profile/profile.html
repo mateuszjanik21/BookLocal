@@ -1,40 +1,91 @@
-<div class="container p-8 mx-auto">
+<div class="p-4 md:p-8 bg-base-200/40 min-h-screen">
   @if (user$ | async; as user) {
-    <h1 class="text-3xl font-bold">Witaj, {{ user.firstName }}!</h1>
-    <p class="text-base-content/70">Oto szczegóły Twojego konta.</p>
+    <div class="flex flex-col sm:flex-row items-center gap-6 mb-8">
+      <div class="avatar">
+        <div class="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-4">
+          <img [src]="user.photoUrl || 'assets/placeholder.svg'" alt="Avatar użytkownika" />
+        </div>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold">Witaj, {{ user.firstName }}!</h1>
+        <p class="text-base-content/70">Zarządzaj swoim kontem i rezerwacjami w jednym miejscu.</p>
+      </div>
+    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-      <div class="card bg-base-100 shadow-lg">
-        <div class="card-body items-center text-center">
-          <h2 class="card-title">Twoje Dane</h2>
-          
-          <app-image-upload 
-            [currentImageUrl]="user.photoUrl"
-            [isLoading]="isUploading"
-            (imageSelected)="onPhotoSelected($event)">
-          </app-image-upload>
-
-          <p class="mt-4"><strong>Imię i Nazwisko:</strong> {{ user.firstName }} {{ user.lastName }}</p>
-          <p><strong>Email:</strong> {{ user.email }}</p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2 space-y-8">
+        <div class="card bg-base-100 shadow-xl">
+          <form [formGroup]="profileForm" (ngSubmit)="onProfileSubmit()" class="card-body">
+            <h2 class="card-title">Dane Profilowe</h2>
+            <div class="divider"></div>
+            <div class="form-control">
+              <label class="label"><span class="label-text font-semibold">Imię</span></label>
+              <label class="input-group">
+                <span class="bg-base-200"></span>
+                <input type="text" class="input input-bordered w-full" formControlName="firstName" />
+              </label>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text font-semibold">Nazwisko</span></label>
+              <label class="input-group">
+                <span class="bg-base-200"></span>
+                <input type="text" class="input input-bordered w-full" formControlName="lastName" />
+              </label>
+            </div>
+            <div class="card-actions justify-end mt-4">
+              <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid || profileForm.pristine">Zapisz dane</button>
+            </div>
+          </form>
+        </div>
+        
+        <div class="card bg-base-100 shadow-xl">
+          <form [formGroup]="passwordForm" (ngSubmit)="onSubmit()" class="card-body">
+            <h2 class="card-title">Zmień hasło</h2>
+            <div class="divider"></div>
+            <div class="form-control">
+              <label class="label"><span class="label-text font-semibold">Obecne hasło</span></label>
+              <label class="input-group">
+                <span class="bg-base-200"></span>
+                <input type="password" class="input input-bordered w-full" formControlName="currentPassword" />
+              </label>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text font-semibold">Nowe hasło</span></label>
+              <label class="input-group">
+                <span class="bg-base-200"></span>
+                <input type="password" class="input input-bordered w-full" formControlName="newPassword" />
+              </label>
+            </div>
+            <div class="card-actions justify-end mt-4">
+              <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid">Zmień hasło</button>
+            </div>
+          </form>
         </div>
       </div>
 
-      <div class="card bg-base-100 shadow-lg">
-      <form [formGroup]="passwordForm" (ngSubmit)="onSubmit()" class="card-body">
-        <h2 class="card-title">Zmień hasło</h2>
-        <div class="form-control">
-          <label class="label"><span class="label-text">Obecne hasło</span></label>
-          <input type="password" class="input input-bordered" formControlName="currentPassword" />
+      <div class="lg:col-span-1 space-y-8">
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body items-center text-center">
+            <h2 class="card-title">Zdjęcie profilowe</h2>
+            <p class="text-xs text-base-content/60 mb-2">Kliknij, aby zmienić</p>
+            <app-image-upload 
+              [currentImageUrl]="user.photoUrl"
+              [isLoading]="isUploading"
+              (imageSelected)="onPhotoSelected($event)">
+            </app-image-upload>
+          </div>
         </div>
-        <div class="form-control">
-          <label class="label"><span class="label-text">Nowe hasło</span></label>
-          <input type="password" class="input input-bordered" formControlName="newPassword" />
+
+        <div class="card bg-base-100 shadow-xl">
+          <div class="card-body">
+            <h2 class="card-title">Twoje Rezerwacje</h2>
+            <p class="text-base-content/70 text-sm">Przeglądaj swoje nadchodzące i historyczne wizyty.</p>
+            <div class="card-actions justify-end">
+              <a routerLink="/my-reservations" class="btn btn-outline btn-primary w-full">Przejdź do rezerwacji</a>
+            </div>
+          </div>
         </div>
-        <div class="card-actions justify-end mt-4">
-          <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid">Zmień hasło</button>
-        </div>
-      </form>
+      </div>
     </div>
-  </div>
   }
 </div>

@@ -1,4 +1,5 @@
 using BookLocal.API.Configuration;
+using BookLocal.API.Data;
 using BookLocal.API.Hubs;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -13,7 +14,7 @@ namespace BookLocal.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -139,6 +140,25 @@ namespace BookLocal.API
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+
+                using (var scope = app.Services.CreateScope())
+                {
+                    var services = scope.ServiceProvider;
+                    try
+                    {
+                        var context = services.GetRequiredService<AppDbContext>();
+                        var userManager = services.GetRequiredService<UserManager<User>>();
+                        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+                        await context.Database.MigrateAsync();
+                        await DbInitializer.Initialize(context, userManager, roleManager);
+                    }
+                    catch (Exception ex)
+                    {
+                        var logger = services.GetRequiredService<ILogger<Program>>();
+                        logger.LogError(ex, "Wyst¹pi³ b³¹d podczas inicjalizacji bazy danych.");
+                    }
+                }
             }
 
             app.UseHttpsRedirection();
