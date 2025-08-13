@@ -72,10 +72,9 @@
                   <div class="flex items-center gap-4">
                     <span class="font-mono font-semibold">{{ service.price }} zł</span>
                     @if ((authService.currentUser$ | async); as user) {
-                    @if (user.roles.includes('customer')) {
-                    <button class="btn btn-secondary btn-sm"
-                      (click)="openReservationModal(service, reservation_modal)">Rezerwuj</button>
-                    }
+                      @if (user.roles.includes('customer')) {
+                      <button class="btn btn-secondary btn-sm" (click)="openReservationModal(service, reservation_modal)">Rezerwuj</button>
+                      }
                     }
                   </div>
                 </div>

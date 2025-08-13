@@ -1,26 +1,27 @@
-<div class="container p-4 md:p-8 mx-auto">
+<div class="service-list-container">
   <div class="text-center mb-8">
-    <h2 class="text-3xl font-bold">Znajdź idealną usługę dla siebie</h2>
-    <p class="text-base-content/70 mt-1">Przeglądaj, filtruj i wybieraj spośród tysięcy ofert w całej Polsce.</p>
+    <h2 class="text-3xl md:text-4xl font-bold">Znajdź idealną usługę dla siebie</h2>
+    <p class="text-base-content/70 mt-2">Przeglądaj, filtruj i wybieraj spośród tysięcy ofert w całej Polsce.</p>
   </div>
-
-  <div class="p-4 bg-base-100 rounded-lg shadow-md mb-8 sticky top-4 z-10">
+  <div class="filter-bar sticky top-4 z-10">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="md:col-span-1">
-        <label class="label"><span class="label-text font-semibold">Szukaj usługi, firmy...</span></label>
-        <input #searchInput (input)="onSearchInput()" type="text" placeholder="Wpisz frazę..." class="input input-bordered w-full" />
+      <div>
+        <label class="label"><span class="label-text font-medium">Szukaj usługi, firmy...</span></label>
+        <input #searchInput (input)="onSearchInput()" type="text" placeholder="Wpisz frazę..."
+          class="input input-bordered w-full" />
       </div>
       <div>
-        <label class="label"><span class="label-text font-semibold">Filtruj po kategorii</span></label>
-        <select class="select select-bordered w-full" [(ngModel)]="activeMainCategoryId" (ngModelChange)="onFilterChange()">
+        <label class="label"><span class="label-text font-medium">Filtruj po kategorii</span></label>
+        <select class="select select-bordered w-full" [(ngModel)]="activeMainCategoryId"
+          (ngModelChange)="onFilterChange()">
           <option [ngValue]="null">Wszystkie kategorie</option>
           @for(cat of mainCategories; track cat.mainCategoryId) {
-            <option [value]="cat.mainCategoryId">{{ cat.name }}</option>
+          <option [value]="cat.mainCategoryId">{{ cat.name }}</option>
           }
         </select>
       </div>
       <div>
-        <label class="label"><span class="label-text font-semibold">Sortuj według</span></label>
+        <label class="label"><span class="label-text font-medium">Sortuj według</span></label>
         <select class="select select-bordered w-full" [(ngModel)]="activeSortBy" (ngModelChange)="onFilterChange()">
           <option value="rating_desc">Najlepsze opinie</option>
           <option value="price_asc">Cena: od najniższej</option>
@@ -33,64 +34,102 @@
   </div>
 
   @if (isLoading) {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (_ of [0,1,2,3,4,5,6,7,8]; track $index) {
-            <div class="skeleton h-64 w-full"></div>
-        }
-    </div>
-  } @else {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      @for(item of pagedResult?.items; track item.serviceId) {
-        <div class="card bg-base-100 shadow-lg hover:shadow-xl transition-shadow">
-          <div class="card-body">
-            <span class="badge badge-outline badge-sm self-start">{{ item.mainCategoryName }}</span>
-            <h2 class="card-title mt-2">{{ item.serviceName }}</h2>
-            
-            <a [routerLink]="['/business', item.businessId]" class="link link-hover text-primary text-sm">{{ item.businessName }}, {{ item.businessCity }}</a>
-
-            @if(item.reviewCount > 0){
-              <div class="flex items-center gap-2 mt-2">
-                <div class="rating rating-sm items-center">
-                  @for (star of [1, 2, 3, 4, 5]; track star) {
-                    <input type="radio" class="mask mask-star-2 bg-orange-400" [checked]="star === Math.round(item.averageRating)" disabled />
-                  }
-                </div>
-                <span class="font-bold text-sm">{{ item.averageRating.toFixed(1) }}</span>
-                <span class="text-xs text-base-content/60">({{ item.reviewCount }} opinii)</span>
-              </div>
-            }
-
-            <div class="divider my-3"></div>
-            
-            <div class="flex justify-between items-center">
-              <span class="font-semibold text-lg font-mono">{{ item.price }} zł</span>
-              <span class="text-base-content/60">{{ item.durationMinutes }} min</span>
-            </div>
-            <div class="card-actions justify-end mt-4">
-              <a [routerLink]="['/business', item.businessId]" class="btn btn-primary btn-sm">Zobacz i zarezerwuj</a>
-            </div>
-          </div>
-        </div>
-      } @empty {
-        <p class="col-span-full text-center text-lg text-base-content/50 py-16">Nie znaleziono usług pasujących do Twoich kryteriów.</p>
-      }
-    </div>
-    @if(pagedResult && pagedResult.totalPages > 1) {
-      <div class="flex justify-center mt-8">
-        <div class="join">
-          <button class="join-item btn" [disabled]="pagedResult.pageNumber === 1" (click)="pageChanged(pagedResult.pageNumber - 1)">«</button>
-          @for(page of paginationPages; track $index) {
-            @if(page === '...') {
-              <button class="join-item btn btn-disabled">...</button>
-            } @else {
-              <button class="join-item btn" [class.btn-primary]="page === pagedResult.pageNumber" (click)="pageChanged(+page)">
-                {{ page }}
-              </button>
-            }
-          }
-          <button class="join-item btn" [disabled]="pagedResult.pageNumber === pagedResult.totalPages" (click)="pageChanged(pagedResult.pageNumber + 1)">»</button>
-        </div>
-      </div>
+  <div class="flex flex-col gap-4">
+    @for (_ of [0,1,2,3,4]; track $index) {
+    <div class="skeleton h-28 w-full"></div>
     }
+  </div>
+  } @else {
+  <div class="service-list-wrapper">
+    @for(item of pagedResult?.items; track item.serviceId) {
+    <div class="service-item">
+      <div class="service-item-icon-wrapper">
+        @switch (item.mainCategoryName) {
+        @case ('Uroda') { <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M9.315 7.584C12.195 3.883 16.695 1.5 21.75 1.5a.75.75 0 01.75.75c0 5.056-2.383 9.555-6.084 12.436A6.75 6.75 0 019.75 22.5a.75.75 0 01-.75-.75v-4.131A15.838 15.838 0 016.382 15H2.25a.75.75 0 01-.75-.75 6.75 6.75 0 017.815-6.666zM15 6.75a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"
+            clip-rule="evenodd" />
+          <path
+            d="M5.26 17.242a.75.75 0 10-1.06-1.06 7.5 7.5 0 00-1.964 5.304a.75.75 0 00.75.75h3.105a.75.75 0 100-1.5H4.547a6 6 0 01.713-3.494z" />
+        </svg> }
+        @case ('Zdrowie') { <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path
+            d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-1.344-.688 15.247 15.247 0 01-1.344.688l-.022.012-.007.003h-.001ac.248.248 0 01-.07.03c-.11.052-.23.095-.35.14a.5.5 0 01-.65-.65l.095-.35a.248.248 0 01.03-.07l.003-.001.012-.022a15.247 15.247 0 01.688-1.344 15.247 15.247 0 01-.688-1.344l-.012-.022-.003-.001a.248.248 0 01-.07-.03.5.5 0 01.65.65l.35.095c.12.03.24.07.35.14l.07.03h.001z" />
+          <path
+            d="M12 21.354l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.354z" />
+        </svg> }
+        @case ('Sport') { <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M14.615 1.595a.75.75 0 01.359.852L12.982 9.75h7.268a.75.75 0 01.548 1.262l-10.5 11.25a.75.75 0 01-1.272-.71l1.992-7.302H3.75a.75.75 0 01-.548-1.262l10.5-11.25a.75.75 0 01.913-.143z"
+            clip-rule="evenodd" />
+        </svg> }
+        @default { <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path fill-rule="evenodd"
+            d="M12.963 2.286a.75.75 0 00-1.071 0 26.68 26.68 0 00-5.96 6.22A26.68 26.68 0 0012 21.75a26.68 26.68 0 005.038-6.22 26.68 26.68 0 00-5.96-6.222zM12 18.75a.75.75 0 01.75.75v.008c0 .414-.336.75-.75.75s-.75-.336-.75-.75v-.008a.75.75 0 01.75-.75z"
+            clip-rule="evenodd" />
+        </svg> }
+        }
+      </div>
+      <div class="service-item-content">
+        <h2 class="service-item-title">{{ item.serviceName }}</h2>
+        <a [routerLink]="['/business', item.businessId]" class="service-item-business-link">{{ item.businessName }}, {{
+          item.businessCity }}</a>
+        @if(item.reviewCount > 0){
+        <div class="service-item-rating">
+          <div class="rating rating-sm items-center">
+            @for (star of [1, 2, 3, 4, 5]; track star) { <input type="radio" class="mask mask-star-2 bg-orange-400"
+              [checked]="star === Math.round(item.averageRating)" disabled /> }
+          </div>
+          <span class="font-bold text-sm">{{ item.averageRating.toFixed(1) }}</span>
+          <span class="text-xs text-base-content/60">({{ item.reviewCount }} opinii)</span>
+        </div>
+        } @else { <div class="service-item-rating h-7 items-center"><span class="text-xs text-base-content/50">Brak
+            opinii</span></div> }
+      </div>
+      <div class="service-item-actions">
+        <div class="service-item-price">{{ item.price }} zł</div>
+        <div class="service-item-duration">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-13a.75.75 0 00-1.5 0v5c0 .414.336.75.75.75h4a.75.75 0 000-1.5h-3.25V5z"
+              clip-rule="evenodd" />
+          </svg>
+          <span>{{ item.durationMinutes }} min</span>
+        </div>
+        @if ((authService.currentUser$ | async); as user) {
+        @if (user.roles.includes('customer')) {
+        <button class="btn btn-secondary btn-sm"
+          (click)="openReservationModal(item, reservation_modal)">Rezerwuj</button>
+        }
+        }
+      </div>
+    </div>
+    } @empty {
+    }
+  </div>
+
+  @if(pagedResult && pagedResult.totalPages > 1) {
+  <div class="flex justify-center mt-12">
+    <div class="join">
+      <button class="join-item btn" [disabled]="pagedResult.pageNumber === 1"
+        (click)="pageChanged(pagedResult.pageNumber - 1)">«</button>
+      @for(page of paginationPages; track $index) {
+      @if(page === '...') {
+      <button class="join-item btn btn-disabled">...</button>
+      } @else {
+      <button class="join-item btn" [class.btn-active]="page === pagedResult.pageNumber" (click)="pageChanged(+page)">
+        {{ page }}
+      </button>
+      }
+      }
+      <button class="join-item btn" [disabled]="pagedResult.pageNumber === pagedResult.totalPages"
+        (click)="pageChanged(pagedResult.pageNumber + 1)">»</button>
+    </div>
+  </div>
+  }
   }
 </div>
+
+
+<app-reservation-modal #reservation_modal [service]="selectedService"
+  [employees]="filteredEmployees"></app-reservation-modal>

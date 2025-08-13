@@ -1,11 +1,9 @@
 ﻿using BookLocal.API.DTOs;
-using BookLocal.Data;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 
 namespace BookLocal.API.Controllers

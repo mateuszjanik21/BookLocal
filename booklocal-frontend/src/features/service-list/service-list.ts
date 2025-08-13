@@ -6,33 +6,41 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { BusinessService } from '../../core/services/business-service';
 import { CategoryService } from '../../core/services/category';
-import { MainCategory, PagedResult, ServiceSearchResult } from '../../types/business.model';
+import { PagedResult, ServiceSearchResult, MainCategory, Service, Employee } from '../../types/business.model';
+import { AuthService } from '../../core/services/auth-service';
+import { ReservationModalComponent } from '../../shared/components/reservation-modal/reservation-modal';
 
 @Component({
   selector: 'app-service-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, ReservationModalComponent, FormsModule],
   templateUrl: './service-list.html',
+  styleUrl: './service-list.css'
 })
 export class ServiceListComponent implements OnInit {
   private businessService = inject(BusinessService);
   private categoryService = inject(CategoryService);
+  public authService = inject(AuthService);
 
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
-  
+
   Math = Math;
+
   isLoading = true;
   mainCategories: MainCategory[] = [];
-  
   pagedResult: PagedResult<ServiceSearchResult> | null = null;
   pageNumber = 1;
-  pageSize = 12; // Możemy wyświetlić więcej mniejszych kart
+  pageSize = 12;
 
   activeMainCategoryId: number | null = null;
   activeSortBy = 'rating_desc';
 
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
+
+  selectedService: Service | null = null;
+  filteredEmployees: Employee[] = [];
+
 
   ngOnInit(): void {
     this.categoryService.getMainCategories().subscribe(data => this.mainCategories = data);
@@ -64,6 +72,23 @@ export class ServiceListComponent implements OnInit {
     });
   }
 
+  openReservationModal(item: ServiceSearchResult, modal: any): void {
+    const serviceForModal: Service = {
+      id: item.serviceId,
+      name: item.serviceName,
+      price: item.price,
+      durationMinutes: item.durationMinutes,
+      businessId: item.businessId,
+      serviceCategoryId: 0,
+      isArchived: false
+    };
+    this.selectedService = serviceForModal;
+    this.businessService.getEmployeesForService(item.businessId, item.serviceId).subscribe(employees => {
+      this.filteredEmployees = employees;
+      modal.showModal();
+    });
+  }
+
   onSearchInput(): void {
     this.searchSubject.next(this.searchInput.nativeElement.value);
   }
@@ -72,7 +97,7 @@ export class ServiceListComponent implements OnInit {
     this.pageNumber = 1;
     this.fetchResults();
   }
-  
+
   pageChanged(newPage: number): void {
     if (this.pageNumber === newPage) return;
     this.pageNumber = newPage;
@@ -88,8 +113,8 @@ export class ServiceListComponent implements OnInit {
     }
     const pages: (number | string)[] = [1];
     if (pageNumber > 4) pages.push('...');
-    for (let i = pageNumber - 2; i <= pageNumber + 2; i++) {
-      if (i > 1 && i < totalPages) pages.push(i);
+    for (let i = Math.max(2, pageNumber - 2); i <= Math.min(totalPages - 1, pageNumber + 2); i++) {
+      pages.push(i);
     }
     if (pageNumber < totalPages - 3) pages.push('...');
     pages.push(totalPages);

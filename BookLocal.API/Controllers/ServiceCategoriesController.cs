@@ -1,5 +1,4 @@
 ﻿using BookLocal.API.DTOs;
-using BookLocal.Data;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

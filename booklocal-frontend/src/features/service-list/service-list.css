@@ -1,0 +1,164 @@
+/* service-list.css */
+
+/* General container and filter bar styling (bez zmian) */
+.service-list-container {
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .service-list-container {
+    padding: 2rem;
+  }
+}
+
+.filter-bar {
+  background-color: hsl(var(--b2, var(--b1)) / 0.85);
+  backdrop-filter: blur(8px);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid hsl(var(--bc) / 0.1);
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+/* NOWY STYL: Wrapper dla całej listy usług */
+.service-list-wrapper {
+  border-radius: 0.75rem;
+  /* rounded-xl */
+  overflow: hidden;
+  /* Ukrywa cienie wystające z kontenera */
+  border: 1px solid hsl(var(--bc) / 0.1);
+  box-shadow: 0 4px 6px -1px hsl(var(--bc) / 0.07), 0 2px 4px -2px hsl(var(--bc) / 0.07);
+}
+
+/* ZMODYFIKOWANY STYL: Service Item */
+.service-item {
+  display: flex;
+  flex-direction: column;
+  /* Układ mobilny domyślnie */
+  gap: 1rem;
+  padding: 1rem;
+  /* Usunięto border, cień i zaokrąglenie z pojedynczego itemu */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  position: relative;
+  /* Potrzebne dla z-index na hover */
+  background-color: hsl(var(--b1));
+  /* Domyślne tło */
+}
+
+/* Zebra striping - co drugi element ma tło --b2 (zazwyczaj ciemniejsze) */
+.service-item:nth-child(even) {
+  background-color: hsl(var(--b2, var(--b1)));
+}
+
+/* NOWOCZESNY EFEKT HOVER */
+.service-item:hover {
+  background-color: hsl(var(--b3, var(--b2)));
+  /* Lekko ciemniejsze tło */
+  transform: scale(1.02);
+  z-index: 10;
+  box-shadow: 0 10px 25px -5px hsl(var(--bc) / 0.2), 0 8px 10px -6px hsl(var(--bc) / 0.2);
+}
+
+/* Zapewnienie, że hover nie zepsuje układu na mobilnych */
+@media (max-width: 767px) {
+  .service-item:hover {
+    transform: none;
+    /* Wyłączamy skalowanie na małych ekranach */
+  }
+}
+
+/* Układ na większych ekranach (bez zmian) */
+@media (min-width: 768px) {
+  .service-item {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+/* Reszta stylów (ikona, content, akcje) - bez większych zmian */
+.service-item-icon-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.5rem;
+  background-color: hsl(var(--p) / 0.1);
+}
+
+.service-item-icon-wrapper svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: hsl(var(--p));
+}
+
+.service-item-content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.service-item-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: hsl(var(--bc));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.service-item-business-link {
+  display: block;
+  font-size: 0.875rem;
+  color: hsl(var(--bc) / 0.7);
+  transition: color 0.2s;
+}
+
+.service-item-business-link:hover {
+  color: hsl(var(--p));
+}
+
+.service-item-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.service-item-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 150px;
+}
+
+.service-item-price {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: hsl(var(--bc));
+  line-height: 1.2;
+}
+
+.service-item-duration {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.875rem;
+  color: hsl(var(--bc) / 0.6);
+}
+
+.service-item-duration svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+@media (max-width: 767px) {
+  .service-item-actions {
+    width: 100%;
+    align-items: stretch;
+    text-align: center;
+  }
+}

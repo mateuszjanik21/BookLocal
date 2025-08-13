@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-public class PresenceTracker
+﻿public class PresenceTracker
 {
     private static readonly Dictionary<string, List<string>> OnlineUsers =
         new Dictionary<string, List<string>>();
