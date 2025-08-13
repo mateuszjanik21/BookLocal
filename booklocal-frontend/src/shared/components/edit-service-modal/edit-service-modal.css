@@ -1,0 +1,24 @@
+
+@keyframes modal-fade-in-scale-up {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animated-modal {
+  animation: modal-fade-in-scale-up 0.3s ease-out forwards;
+}
+
+.input, .textarea {
+  transition: all 0.3s ease-in-out;
+}
+
+.input:focus, .textarea:focus {
+  border-color: hsl(var(--p));
+  box-shadow: 0 0 0 2px hsl(var(--p) / 0.2);
+}

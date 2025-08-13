@@ -32,6 +32,7 @@ export class ManageServicesComponent implements OnInit {
   private toastr = inject(ToastrService);
 
   isLoading = true;
+  isRefreshing = false;
   isSavingCategory = false;
 
   business: BusinessDetail | null = null;
@@ -44,17 +45,31 @@ export class ManageServicesComponent implements OnInit {
   activeCategoryForService: ServiceCategory | null = null;
 
   ngOnInit(): void {
-    this.loadData();
+    this.loadData(true);
   }
 
-  loadData(): void {
-    this.isLoading = true;
-    this.businessService.getMyBusiness().pipe(
+  loadData(isInitialLoad = false): void {
+    if (isInitialLoad) {
+      this.isLoading = true;
+    } else {
+      this.isRefreshing = true;
+    }
+
+    const business$ = this.business 
+      ? of(this.business) 
+      : this.businessService.getMyBusiness();
+
+    business$.pipe(
       switchMap(businessData => {
-        this.business = businessData;
+        if (!this.business) {
+          this.business = businessData;
+        }
         return this.categoryService.getCategories(businessData.id, this.showArchived);
       }),
-      finalize(() => this.isLoading = false)
+      finalize(() => {
+        this.isLoading = false; 
+        this.isRefreshing = false;
+      })
     ).subscribe({
       next: (categoriesData) => {
         if (this.business) {
@@ -63,6 +78,15 @@ export class ManageServicesComponent implements OnInit {
       },
       error: () => this.toastr.error('Wystąpił błąd podczas ładowania danych.')
     });
+  }
+
+  closeServiceModalAndRefresh(shouldRefresh: boolean): void {
+    this.isAddServiceModalVisible = false;
+    this.serviceToEdit = null;
+    this.activeCategoryForService = null;
+    if (shouldRefresh) {
+      this.loadData();
+    }
   }
 
   openCategoryModal(category: ServiceCategory | null = null): void {
@@ -149,12 +173,5 @@ export class ManageServicesComponent implements OnInit {
   openEditServiceModal(service: Service, category: ServiceCategory): void {
     this.activeCategoryForService = category;
     this.serviceToEdit = service;
-  }
-  
-  closeServiceModalAndRefresh(): void {
-    this.isAddServiceModalVisible = false;
-    this.serviceToEdit = null;
-    this.activeCategoryForService = null;
-    this.loadData();
   }
 }

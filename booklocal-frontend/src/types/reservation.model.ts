@@ -9,6 +9,7 @@ export interface Reservation {
   customerFullName?: string;
   guestName?: string;
   businessName: string;
+  isServiceArchived: boolean;
   hasReview: boolean;
 }
 

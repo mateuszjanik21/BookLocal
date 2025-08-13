@@ -17,6 +17,7 @@ export class CategoryModalComponent implements OnInit {
   @Input() businessId!: number;
   @Output() closed = new EventEmitter<void>();
   @Output() save = new EventEmitter<{ payload: { name: string }, file: File | null }>();
+  @Input() isVisible: boolean = false;
   
   private fb = inject(FormBuilder);
   private categoryService = inject(CategoryService);

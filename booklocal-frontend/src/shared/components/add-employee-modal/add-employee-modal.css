@@ -1,0 +1,35 @@
+@keyframes modal-fade-in-scale-up {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animated-modal {
+  animation: modal-fade-in-scale-up 0.3s ease-out forwards;
+}
+
+/* Stylizacja pól formularza dla spójności z innymi widokami */
+.input {
+  transition: all 0.3s ease-in-out;
+}
+
+.input:focus {
+  border-color: hsl(var(--p));
+  box-shadow: 0 0 0 2px hsl(var(--p) / 0.2);
+}
+
+.avatar-placeholder {
+  transition: transform 0.3s ease;
+}
+.avatar-placeholder:hover {
+  transform: scale(1.05);
+}
+
+.avatar-placeholder label {
+  cursor: pointer;
+}

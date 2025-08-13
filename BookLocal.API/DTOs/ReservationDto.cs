@@ -23,6 +23,7 @@ namespace BookLocal.API.DTOs
         public string CustomerId { get; set; }
         public string? CustomerFullName { get; set; }
         public string? GuestName { get; set; }
+        public bool IsServiceArchived { get; set; }
         public bool HasReview { get; set; }
     }
 

@@ -1,65 +1,65 @@
-<div class="hero min-h-screen bg-base-200">
-  <div class="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
-    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="card-body">
-      <h1 class="text-3xl font-bold text-center">Zarejestruj się</h1>
+<div class="register-container">
+  <div class="card md:flex-row w-full max-w-4xl shadow-2xl bg-base-100 animated-card rounded-2xl overflow-hidden">
 
-      <div class="form-control">
-        <label class="label"><span class="label-text">Imię</span></label>
-        <input type="text" placeholder="Imię" class="input input-bordered" formControlName="firstName" />
-        
-        @if (registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched) {
-          <div class="label">
-            <span class="label-text-alt text-error">Imię jest wymagane.</span>
+    <div
+      class="welcome-panel md:w-1/2 p-8 md:p-12 text-black hidden md:flex flex-col justify-center items-center text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        class="w-24 h-24 mb-6">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+      </svg>
+      <h2 class="text-3xl font-bold mb-2">Stwórz Konto</h2>
+      <p class="opacity-80">Dołącz do nas, aby szybko i wygodnie rezerwować wizyty u najlepszych specjalistów w Twojej
+        okolicy.</p>
+    </div>
+
+    <div class="w-full md:w-1/2">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="card-body p-8 md:p-12">
+        <h1 class="text-3xl font-bold mb-6 text-center md:text-left">Rejestracja Klienta</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="form-control">
+            <label class="label"><span class="label-text">Imię</span></label>
+            <input type="text" placeholder="Imię" class="input input-bordered" formControlName="firstName"
+              [class.input-error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched" />
           </div>
-        }
-      </div>
-
-      <div class="form-control">
-        <label class="label"><span class="label-text">Nazwisko</span></label>
-        <input type="text" placeholder="Nazwisko" class="input input-bordered" formControlName="lastName" />
-
-        @if (registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched) {
-          <div class="label">
-            <span class="label-text-alt text-error">Nazwisko jest wymagane.</span>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Nazwisko</span></label>
+            <input type="text" placeholder="Nazwisko" class="input input-bordered" formControlName="lastName"
+              [class.input-error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched" />
           </div>
-        }
-      </div>
+        </div>
 
-      <div class="form-control">
-        <label class="label"><span class="label-text">Email</span></label>
-        <input type="email" placeholder="Email" class="input input-bordered" formControlName="email" />
+        <div class="form-control mt-4">
+          <label class="label"><span class="label-text">Email</span></label>
+          <input type="email" placeholder="Email" class="input input-bordered" formControlName="email"
+            [class.input-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" />
+        </div>
 
-        @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
-          <div class="label">
-            @if (registerForm.get('email')?.hasError('required')) {
-              <span class="label-text-alt text-error">Email jest wymagany.</span>
-            }
-            @if (registerForm.get('email')?.hasError('email')) {
-              <span class="label-text-alt text-error">Wprowadź poprawny adres email.</span>
-            }
-          </div>
-        }
-      </div>
-      
-      <div class="form-control">
-        <label class="label"><span class="label-text">Hasło</span></label>
-        <input type="password" placeholder="Hasło" class="input input-bordered" formControlName="password" />
+        <div class="form-control mt-4">
+          <label class="label"><span class="label-text">Hasło</span></label>
+          <input type="password" placeholder="Hasło" class="input input-bordered" formControlName="password"
+            [class.input-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" />
+          @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+          <span class="label-text-alt text-error mt-1">Hasło musi mieć min. 6 znaków.</span>
+          }
+        </div>
 
-        @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
-          <div class="label">
-            @if (registerForm.get('password')?.hasError('required')) {
-              <span class="label-text-alt text-error">Hasło jest wymagane.</span>
-            }
-            @if (registerForm.get('password')?.hasError('minlength')) {
-              <span class="label-text-alt text-error">Hasło musi mieć co najmniej 6 znaków.</span>
-            }
-          </div>
-        }
-      </div>
-      
-      <div class="form-control mt-6">
-        <button class="btn btn-primary" type="submit" [disabled]="registerForm.invalid">Zarejestruj się</button>
-      </div>
-    </form>
+        <div class="form-control mt-8">
+          <button class="btn btn-primary btn-lg w-full" type="submit" [disabled]="registerForm.invalid">Zarejestruj
+            się</button>
+        </div>
+
+        <div class="text-center mt-6 space-y-2 text-sm">
+          <p>
+            <a routerLink="/login" class="link link-hover">Masz już konto? Zaloguj się</a>
+          </p>
+          <div class="divider my-1 text-xs">LUB</div>
+          <p>
+            <a routerLink="/register-owner" class="link link-hover font-semibold">Prowadzisz firmę? Zarejestruj ją tutaj!</a>
+          </p>
+        </div>
+      </form>
+    </div>
   </div>
 </div>

@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { OwnerCreateReservationPayload, Reservation } from '../../types/reservation.model'; 
 import { Observable } from 'rxjs';
+import { PagedResult } from '../../types/business.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,8 +23,16 @@ export class ReservationService {
     return this.http.post(`${this.apiUrl}/reservations`, payload);
   }
 
-  getMyReservations(): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(`${this.apiUrl}/reservations/my-reservations`);
+  getMyReservations(scope: string, pageNumber: number, pageSize: number): Observable<PagedResult<Reservation>> {
+    const params = new HttpParams()
+      .set('scope', scope)
+      .set('pageNumber', pageNumber.toString())
+      .set('pageSize', pageSize.toString());
+    return this.http.get<PagedResult<Reservation>>(`${this.apiUrl}/reservations/my-reservations`, { params });
+  }
+
+  getCalendarEvents(): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/reservations/calendar`);
   }
 
   getReservationById(id: number): Observable<Reservation> {

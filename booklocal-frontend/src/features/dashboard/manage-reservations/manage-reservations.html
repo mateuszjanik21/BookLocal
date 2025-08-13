@@ -7,28 +7,36 @@
     } @else {
       <div class="card bg-base-100 shadow-xl">
         <div class="card-body">
-          <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 p-4 border-b border-base-300">
-            <div class="join">
-              <button class="join-item btn" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">Poprzedni</button>
-              <button class="join-item btn" mwlCalendarToday [(viewDate)]="viewDate">Dzisiaj</button>
-              <button class="join-item btn" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">Następny</button>
+
+          <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 p-2 rounded-lg bg-base-200">
+            <div class="flex items-center gap-4">
+              <div class="join">
+                <button class="join-item btn btn-sm" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">‹</button>
+                <button class="join-item btn btn-sm" mwlCalendarToday [(viewDate)]="viewDate">Dzisiaj</button>
+                <button class="join-item btn btn-sm" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">›</button>
+              </div>
+              <div class="join hidden md:inline-flex">
+                <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Month" (click)="setView(CalendarView.Month)">Miesiąc</button>
+                <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Week" (click)="setView(CalendarView.Week)">Tydzień</button>
+                <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Day" (click)="setView(CalendarView.Day)">Dzień</button>
+              </div>
             </div>
-            <h2 class="text-xl font-bold order-first sm:order-none">{{ viewDate | date: 'LLLL yyyy' }}</h2>
-            <button class="btn btn-primary" (click)="openAddReservationModal()">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
-              Dodaj Rezerwację
-            </button>
-          </div>
-          
-          <div class="flex justify-center mb-4">
-            <div class="join">
-              <button class="join-item btn" [class.btn-primary]="view === CalendarView.Month" (click)="setView(CalendarView.Month)">Miesiąc</button>
-              <button class="join-item btn" [class.btn-primary]="view === CalendarView.Week" (click)="setView(CalendarView.Week)">Tydzień</button>
-              <button class="join-item btn" [class.btn-primary]="view === CalendarView.Day" (click)="setView(CalendarView.Day)">Dzień</button>
+            
+            <h2 class="text-xl font-bold text-center order-first sm:order-none">{{ viewDate | date: 'LLLL yyyy' }}</h2>
+            
+            <div class="flex items-center gap-4">
+              <div class="join inline-flex md:hidden"> <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Month" (click)="setView(CalendarView.Month)">M</button>
+                <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Week" (click)="setView(CalendarView.Week)">T</button>
+                <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Day" (click)="setView(CalendarView.Day)">D</button>
+              </div>
+              <button class="btn btn-primary btn-sm" (click)="openAddReservationModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
+                Dodaj Rezerwację
+              </button>
             </div>
           </div>
 
-          <div [ngSwitch]="view" class="p-4">
+          <div [ngSwitch]="view">
             <mwl-calendar-month-view
               *ngSwitchCase="CalendarView.Month"
               [viewDate]="viewDate"

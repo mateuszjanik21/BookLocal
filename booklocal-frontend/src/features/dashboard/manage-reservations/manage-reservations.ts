@@ -60,7 +60,7 @@ export class ManageReservationsComponent implements OnInit {
 
   loadReservations(): void {
     this.isLoading = true;
-    this.reservationService.getMyReservations().pipe(
+    this.reservationService.getCalendarEvents().pipe(
       finalize(() => this.isLoading = false)
     ).subscribe({
       next: (data) => {

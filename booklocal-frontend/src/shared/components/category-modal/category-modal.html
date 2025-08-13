@@ -1,4 +1,4 @@
-<div class="modal modal-open">
+<div class="modal" [class.modal-open]="isVisible">
   <div class="modal-box max-w-lg">
     <h3 class="font-bold text-2xl mb-1">{{ isEditMode ? 'Edytuj Kategorię' : 'Dodaj Nową Kategorię' }}</h3>
     <p class="text-base-content/70 mb-6">Uzupełnij dane, aby stworzyć lub zaktualizować kategorię w swojej ofercie.</p>
@@ -36,7 +36,7 @@
 
       <div class="modal-action mt-8 border-t border-base-200 pt-6">
         <button type="button" class="btn btn-ghost" (click)="closed.emit()">Anuluj</button>
-        <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid || isLoading">
+        <button type="button" class="btn btn-primary" [disabled]="categoryForm.invalid || isLoading" (click)="onSubmit()">
           @if(isLoading){ <span class="loading loading-spinner"></span> }
           Zapisz zmiany
         </button>

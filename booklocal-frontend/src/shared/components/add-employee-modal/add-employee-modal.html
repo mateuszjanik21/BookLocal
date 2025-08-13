@@ -1,22 +1,51 @@
-<div class="modal modal-open">
-  <div class="modal-box">
-    <h3 class="font-bold text-lg">Dodaj Nowego Pracownika</h3>
-    <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+<div class="modal modal-open" (click)="closeModal($event)">
+  <div class="modal-box p-0 max-w-lg animated-modal">
+    <div class="modal-header p-6 bg-base-200 flex items-center gap-4">
+      <div class="bg-primary rounded-full p-2 text-primary-content">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="font-bold text-lg">Dodaj Nowego Pracownika</h3>
+        <p class="text-sm text-base-content/60">Wprowadź dane i przypisz zdjęcie.</p>
+      </div>
+    </div>
+
+    <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" class="p-6">
+      <div class="avatar-section flex flex-col items-center justify-center mb-6">
+        <div class="avatar-placeholder relative">
+          <img [src]="photoPreview || 'assets/placeholder.svg'" alt="Podgląd zdjęcia" class="w-24 h-24 rounded-full object-cover bg-base-300">
+          <label for="photo-upload" class="absolute bottom-0 right-0 btn btn-circle btn-sm btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+              <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+            </svg>
+          </label>
+        </div>
+        <input id="photo-upload" type="file" class="hidden" (change)="onFileSelected($event)">
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Imię</span></label>
+          <input type="text" placeholder="Imię" class="input input-bordered w-full" formControlName="firstName" />
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Nazwisko</span></label>
+          <input type="text" placeholder="Nazwisko" class="input input-bordered w-full" formControlName="lastName" />
+        </div>
+      </div>
       <div class="form-control mt-4">
-        <label class="label"><span class="label-text">Imię</span></label>
-        <input type="text" placeholder="Imię" class="input input-bordered" formControlName="firstName" />
+        <label class="label"><span class="label-text">Stanowisko (opcjonalnie)</span></label>
+        <input type="text" placeholder="np. Stylista, Fryzjer" class="input input-bordered" formControlName="position" />
       </div>
-      <div class="form-control">
-        <label class="label"><span class="label-text">Nazwisko</span></label>
-        <input type="text" placeholder="Nazwisko" class="input input-bordered" formControlName="lastName" />
-      </div>
-      <div class="form-control">
-        <label class="label"><span class="label-text">Stanowisko</span></label>
-        <input type="text" placeholder="np. Stylista" class="input input-bordered" formControlName="position" />
-      </div>
-      <div class="modal-action">
-        <button type="submit" class="btn btn-primary" [disabled]="employeeForm.invalid">Dodaj</button>
-        <button type="button" class="btn" (click)="closed.emit()">Anuluj</button>
+
+      <div class="modal-action mt-8">
+        <button type="button" class="btn btn-ghost" (click)="closed.emit()">Anuluj</button>
+        <button type="submit" class="btn btn-primary" [disabled]="employeeForm.invalid">
+          <span class="loading loading-spinner" *ngIf="isSubmitting"></span>
+          <span *ngIf="!isSubmitting">Dodaj Pracownika</span>
+        </button>
       </div>
     </form>
   </div>

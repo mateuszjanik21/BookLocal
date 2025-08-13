@@ -85,9 +85,14 @@ public class ReservationsController : ControllerBase
     }
 
     [HttpGet("my-reservations")]
-    public async Task<ActionResult<IEnumerable<ReservationDto>>> GetMyReservations()
+    public async Task<ActionResult<IEnumerable<ReservationDto>>> GetMyReservations(
+    [FromQuery] string scope = "upcoming",
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 10
+)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var now = DateTime.UtcNow;
 
         IQueryable<Reservation> query = _context.Reservations;
 
@@ -100,17 +105,96 @@ public class ReservationsController : ControllerBase
             query = query.Where(r => r.CustomerId == userId);
         }
 
+        switch (scope.ToLower())
+        {
+            case "upcoming":
+                query = query.Where(r => r.StartTime >= now)
+                             .OrderBy(r => r.StartTime);
+                break;
+            case "past":
+                query = query.Where(r => r.StartTime < now)
+                             .OrderByDescending(r => r.StartTime);
+                break;
+            default: 
+                query = query.OrderByDescending(r => r.StartTime);
+                break;
+        }
+
+        var totalCount = await query.CountAsync();
+
         var reservationsFromDb = await query
             .Include(r => r.Employee)
             .Include(r => r.Customer)
             .Include(r => r.Business)
             .Include(r => r.Review)
-            .OrderByDescending(r => r.StartTime)
-            .AsNoTracking() 
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .AsNoTracking()
             .ToListAsync();
 
         var serviceIds = reservationsFromDb.Select(r => r.ServiceId).Distinct().ToList();
 
+        var services = await _context.Services
+            .IgnoreQueryFilters()
+            .Where(s => serviceIds.Contains(s.ServiceId))
+            .ToDictionaryAsync(s => s.ServiceId);
+
+        var reservationDtos = reservationsFromDb.Select(r => new ReservationDto
+        {
+            ReservationId = r.ReservationId,
+            StartTime = r.StartTime,
+            EndTime = r.EndTime,
+            Status = r.StartTime < now && r.Status == ReservationStatus.Confirmed ? "Completed" : r.Status.ToString(),
+            ServiceId = r.ServiceId,
+            ServiceName = services.ContainsKey(r.ServiceId) ? services[r.ServiceId].Name : "Usunięta usługa",
+            BusinessName = r.Business.Name,
+            EmployeeId = r.EmployeeId,
+            EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
+            CustomerId = r.CustomerId,
+            CustomerFullName = r.Customer != null ? $"{r.Customer.FirstName} {r.Customer.LastName}" : null,
+            GuestName = r.GuestName,
+            HasReview = r.Review != null
+        }).ToList();
+
+        var pagedResult = new PagedResultDto<ReservationDto>
+        {
+            Items = reservationDtos,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+
+        return Ok(pagedResult);
+    }
+
+    [HttpGet("calendar")]
+    [Authorize(Roles = "owner")]
+    public async Task<ActionResult<IEnumerable<ReservationDto>>> GetCalendarEvents()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var now = DateTime.UtcNow;
+
+        var reservationsFromDb = await _context.Reservations
+            .Where(r => r.Business.OwnerId == userId)
+            .Include(r => r.Employee)
+            .Include(r => r.Customer)
+            .Include(r => r.Business)
+            .Include(r => r.Review)
+            .ToListAsync();
+
+        var reservationsToUpdate = reservationsFromDb
+            .Where(r => r.EndTime < now && r.Status == ReservationStatus.Confirmed)
+            .ToList();
+
+        if (reservationsToUpdate.Any())
+        {
+            foreach (var reservation in reservationsToUpdate)
+            {
+                reservation.Status = ReservationStatus.Completed;
+            }
+            await _context.SaveChangesAsync();
+        }
+        var serviceIds = reservationsFromDb.Select(r => r.ServiceId).Distinct().ToList();
         var services = await _context.Services
             .IgnoreQueryFilters()
             .Where(s => serviceIds.Contains(s.ServiceId))
@@ -133,7 +217,6 @@ public class ReservationsController : ControllerBase
             HasReview = r.Review != null
         }).ToList();
 
-
         return Ok(reservationDtos);
     }
 
@@ -144,23 +227,20 @@ public class ReservationsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         var reservation = await _context.Reservations
-            .Include(r => r.Service)
             .Include(r => r.Employee)
             .Include(r => r.Customer)
+            .Include(r => r.Business)
+            .AsNoTracking()
             .FirstOrDefaultAsync(r => r.ReservationId == id);
 
-        if (reservation == null)
-        {
-            return NotFound();
-        }
+        if (reservation == null) return NotFound();
+        
+        var isOwner = User.IsInRole("owner") && reservation.Business.OwnerId == userId;
+        if (reservation.CustomerId != userId && !isOwner) return Forbid();
 
-        var isOwner = User.IsInRole("owner") && await _context.Businesses
-            .AnyAsync(b => b.OwnerId == userId && b.BusinessId == reservation.BusinessId);
-
-        if (reservation.CustomerId != userId && !isOwner)
-        {
-            return Forbid();
-        }
+        var service = await _context.Services
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(s => s.ServiceId == reservation.ServiceId);
 
         var reservationDto = new ReservationDto
         {
@@ -169,12 +249,15 @@ public class ReservationsController : ControllerBase
             EndTime = reservation.EndTime,
             Status = reservation.Status.ToString(),
             ServiceId = reservation.ServiceId,
-            ServiceName = reservation.Service.Name,
+            ServiceName = service?.Name ?? "Usługa zarchiwizowana",
+            BusinessName = reservation.Business.Name,
             EmployeeId = reservation.EmployeeId,
             EmployeeFullName = $"{reservation.Employee.FirstName} {reservation.Employee.LastName}",
             CustomerId = reservation.CustomerId,
             CustomerFullName = reservation.Customer != null ? $"{reservation.Customer.FirstName} {reservation.Customer.LastName}" : null,
-            GuestName = reservation.GuestName
+            GuestName = reservation.GuestName,
+            HasReview = await _context.Reviews.AnyAsync(r => r.ReservationId == id),
+            IsServiceArchived = service?.IsArchived ?? true
         };
 
         return Ok(reservationDto);
@@ -187,18 +270,22 @@ public class ReservationsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var reservation = await _context.Reservations
             .Include(r => r.Service)
-            .ThenInclude(s => s.ServiceCategory)
-            .ThenInclude(sc => sc.Business)
+            .Include(r => r.Business) 
             .FirstOrDefaultAsync(r => r.ReservationId == id);
 
         if (reservation == null)
         {
-            return NotFound();
+            return NotFound("Nie znaleziono rezerwacji.");
         }
 
-        if (reservation.Service.ServiceCategory.Business.OwnerId != userId)
+        if (reservation.Business.OwnerId != userId)
         {
             return Forbid();
+        }
+
+        if (reservation.Service == null)
+        {
+            return BadRequest("Nie można zmienić statusu rezerwacji dla zarchiwizowanej usługi.");
         }
 
         if (Enum.TryParse<ReservationStatus>(statusDto.Status, true, out var newStatus))

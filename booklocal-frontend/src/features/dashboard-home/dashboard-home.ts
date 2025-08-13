@@ -43,7 +43,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       this.business = businessDetails;
 
       forkJoin({
-        reservations: this.reservationService.getMyReservations(),
+        reservations: this.reservationService.getCalendarEvents(),
         reviews: this.reviewService.getReviews(businessDetails.id)
       }).pipe(
         map(({ reservations, reviews }) => {
