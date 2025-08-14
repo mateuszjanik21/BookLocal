@@ -44,7 +44,7 @@
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <div class="lg:col-span-2 space-y-12">
+    <div class="lg:col-span-2 space-y-12 order-2 lg:order-1">
 
       <div id="services" class="card bg-base-100 shadow-xl p-6 fade-in-up">
         <h2 class="text-3xl font-bold mb-6 border-b pb-4">Cennik Usług</h2>
@@ -181,11 +181,21 @@
           </div>
           }
         </div>
+
+        <div class="text-center mt-8">
+          @if (isLoadingMoreReviews) {
+          <span class="loading loading-spinner loading-md"></span>
+          } @else if (hasMoreReviews) {
+          <button class="btn btn-primary btn-outline w-full sm:w-auto" (click)="onLoadMoreReviews()">
+            Załaduj więcej opinii
+          </button>
+          }
+        </div>
         }
       </div>
     </div>
 
-    <div class="lg:col-span-1">
+    <div class="lg:col-span-1 order-1 lg:order-2">
       <div class="card bg-base-100 shadow-xl sticky top-8 fade-in-up" style="animation-delay: 0.3s;">
         <div class="card-body">
           <h2 class="card-title">O Nas</h2>

@@ -42,6 +42,11 @@ export class BusinessDetailComponent implements OnInit {
 
   isEditReviewModalVisible = false;
   reviewToEdit: Review | null = null;
+  
+  reviewsCurrentPage = 1;
+  reviewsPageSize = 5;
+  totalReviews = 0;
+  isLoadingMoreReviews = false;
 
   ngOnInit(): void {
     const businessId = this.route.snapshot.paramMap.get('id');
@@ -61,12 +66,42 @@ export class BusinessDetailComponent implements OnInit {
     }
   }
 
-  loadReviews(businessId: number): void {
-    this.isReviewsLoading = true;
-    this.reviewService.getReviews(businessId).subscribe(data => {
-      this.reviews = data;
-      this.isReviewsLoading = false;
+  loadReviews(businessId: number, loadMore = false): void {
+    if (loadMore) {
+      this.isLoadingMoreReviews = true;
+    } else {
+      this.isReviewsLoading = true;
+      this.reviewsCurrentPage = 1;
+      this.reviews = [];
+    }
+
+    this.reviewService.getReviews(businessId, this.reviewsCurrentPage, this.reviewsPageSize).subscribe({
+      next: (data) => {
+        this.reviews = [...this.reviews, ...data.items];
+        this.totalReviews = data.totalCount;
+
+        if (loadMore) {
+          this.isLoadingMoreReviews = false;
+        } else {
+          this.isReviewsLoading = false;
+        }
+      },
+      error: () => {
+        this.isReviewsLoading = false;
+        this.isLoadingMoreReviews = false;
+      }
     });
+  }
+
+  onLoadMoreReviews(): void {
+    this.reviewsCurrentPage++;
+    if (this.business) {
+      this.loadReviews(this.business.id, true);
+    }
+  }
+
+  get hasMoreReviews(): boolean {
+    return this.reviews.length < this.totalReviews;
   }
 
   openEditReviewModal(review: Review): void {

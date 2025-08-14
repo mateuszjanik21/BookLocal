@@ -93,6 +93,21 @@
   }
 }
 
+@media (max-width: 768px) {
+  .parallax-container {
+    height: auto;
+    min-height: 300px;
+  }
+
+  .category-card .card-body {
+    padding: 1rem;
+  }
+
+  .category-card .card-title {
+    font-size: 1.25rem;
+  }
+}
+
 .animate-fade-in-down {
   animation: fade-in-down 0.8s ease-out backwards;
 }

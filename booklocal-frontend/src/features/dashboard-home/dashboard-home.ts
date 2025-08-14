@@ -44,7 +44,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
       forkJoin({
         reservations: this.reservationService.getCalendarEvents(),
-        reviews: this.reviewService.getReviews(businessDetails.id)
+        reviews: this.reviewService.getReviews(businessDetails.id, 1, 3) 
       }).pipe(
         map(({ reservations, reviews }) => {
           const now = new Date();
@@ -54,8 +54,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
           this.todaysReservations = reservations
             .filter(r => new Date(r.startTime) >= todayStart && new Date(r.startTime) <= todayEnd)
             .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-          
-          this.latestReviews = reviews.slice(0, 3);
+          this.latestReviews = reviews.items;
           
           this.stats.upcomingCount = reservations.filter(r => new Date(r.startTime) >= new Date()).length;
           this.stats.employeeCount = businessDetails.employees.length;

@@ -18,19 +18,26 @@ public class ReviewsController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<ReviewDto>>> GetReviews(int businessId)
+    public async Task<ActionResult<PagedResultDto<ReviewDto>>> GetReviews(int businessId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
     {
         if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId))
             return NotFound("Firma nie istnieje.");
 
-        var reviews = await _context.Reviews
+        var query = _context.Reviews
             .Where(r => r.BusinessId == businessId)
+            .OrderByDescending(r => r.CreatedAt)
+            .AsQueryable();
+
+        var totalCount = await query.CountAsync();
+
+        var reviewsData = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .Include(r => r.User)
             .Include(r => r.Reservation)
                 .ThenInclude(res => res.Service)
             .Include(r => r.Reservation)
                 .ThenInclude(res => res.Employee)
-            .OrderByDescending(r => r.CreatedAt)
             .Select(r => new ReviewDto
             {
                 ReviewId = r.ReviewId,
@@ -45,7 +52,15 @@ public class ReviewsController : ControllerBase
             })
             .ToListAsync();
 
-        return Ok(reviews);
+        var paginatedResult = new PagedResultDto<ReviewDto>
+        {
+            Items = reviewsData,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+
+        return Ok(paginatedResult);
     }
 
     [HttpPut("{reviewId}")]
