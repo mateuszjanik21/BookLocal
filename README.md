@@ -60,6 +60,18 @@ Wydajne i skalowalne API RESTowe, które dostarcza dane i obsługuje całą logi
 - [Angular CLI](https://angular.io/cli) (`npm install -g @angular/cli`)
 - Lokalna instancja SQL Server (np. SQL Server Express)
 
+### Konta użytkowików
+- **Właściciel**:
+   - Login: owner@test.com
+   - Hasło: P@ssword!
+- **Klient**: 
+   - Login: customer@test.com
+   - Hasło: P@ssword!
+**Chcesz założyć własne konto?**
+
+Oczywiście możesz również samodzielnie przejść przez proces rejestracji. Zachęcam do testowania wszystkich funkcji!
+
+> **Ważna uwaga:** Ponieważ jest to publiczna aplikacja demonstracyjna, **proszę o nierejestrowanie się przy użyciu prawdziwych danych osobowych**. Do celów testowych używaj wyłącznie fikcyjnych informacji (np. Jan Kowalski, test@email.com itp.). Dziękujemy za zrozumienie!
 ### Backend
 
 1. Otwórz `BookLocal.sln` w Visual Studio.
