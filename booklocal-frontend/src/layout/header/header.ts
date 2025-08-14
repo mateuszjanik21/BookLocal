@@ -12,4 +12,11 @@ import { RouterModule } from '@angular/router';
 })
 export class HeaderComponent {
   authService = inject(AuthService);
+
+  closeMobileMenu(): void {
+    const activeElement = document.activeElement as HTMLElement;
+    if (activeElement) {
+      activeElement.blur();
+    }
+  }
 }
