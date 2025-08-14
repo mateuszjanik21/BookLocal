@@ -85,13 +85,7 @@ Wydajne i skalowalne API RESTowe, które dostarcza dane i obsługuje całą logi
 
 ---
 
-## 🤝 Contributing
-
-Pull requests są mile widziane. W przypadku większych zmian, prosimy o wcześniejsze otwarcie "issue" w celu przedyskutowania proponowanych modyfikacji.
-
-Prosimy o upewnienie się, że testy są odpowiednio zaktualizowane.
-
 ## 📄 License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+Ten projekt jest licencjonowany na warunkach licencji MIT - zobacz plik [LICENSE](LICENSE) po szczegóły.
 
