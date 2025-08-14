@@ -13,7 +13,6 @@
   animation: modal-fade-in-scale-up 0.3s ease-out forwards;
 }
 
-/* Stylizacja pól formularza dla spójności z innymi widokami */
 .input {
   transition: all 0.3s ease-in-out;
 }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { ReviewService } from '../../../core/services/review';
-import { Reservation } from '../../../types/reservation.model'; // Upewnij się, że ten import jest poprawny
+import { Reservation } from '../../../types/reservation.model';
 
 @Component({
   selector: 'app-add-review-modal',

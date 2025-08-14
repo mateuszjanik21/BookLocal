@@ -22,7 +22,7 @@ export class AddEmployeeModalComponent {
 
   private fb = inject(FormBuilder);
   private employeeService = inject(EmployeeService);
-  private photoService = inject(PhotoService); // Wstrzyknięcie nowego serwisu
+  private photoService = inject(PhotoService);
   private toastr = inject(ToastrService);
 
   employeeForm: FormGroup;

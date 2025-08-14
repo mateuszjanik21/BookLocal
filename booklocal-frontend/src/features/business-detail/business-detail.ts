@@ -21,6 +21,7 @@ import { ChatService } from '../../core/services/chat';
     EditReviewModalComponent
   ],
   templateUrl: './business-detail.html',
+  styleUrls: ['./business-detail.css']
 })
 export class BusinessDetailComponent implements OnInit {
   private router = inject(Router); 

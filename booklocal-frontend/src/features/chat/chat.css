@@ -1,0 +1,82 @@
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--su) / 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 5px hsl(var(--su) / 0);
+  }
+}
+
+.chat-container {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.conversation-list {
+  transition: all 0.3s ease;
+}
+
+.conversation-item {
+  border-left: 4px solid transparent;
+  transition: background-color 0.2s ease-in-out, border-left-color 0.2s ease-in-out;
+}
+
+.conversation-item:hover {
+  background-color: hsl(var(--b3));
+}
+
+.conversation-item.active {
+  background-color: hsl(var(--p) / 0.1);
+  border-left-color: hsl(var(--p));
+}
+
+.online-indicator {
+  animation: pulse 2s infinite;
+}
+
+.message-bubble {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: slideInUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.chat-start.message-bubble {
+  animation-delay: 0.1s;
+}
+
+.chat-end.message-bubble {
+  animation-delay: 0.05s;
+}
+
+.chat-bubble {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+}
+
+.textarea {
+  transition: box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.textarea:focus {
+  border-color: hsl(var(--p));
+  box-shadow: 0 0 0 2px hsl(var(--p) / 0.2);
+}
+
+.btn-primary:disabled {
+  background-color: hsl(var(--b2));
+  color: hsl(var(--bc) / 0.3);
+}

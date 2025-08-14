@@ -6,22 +6,21 @@
 @if (business) {
 <div class="container mx-auto p-4">
 
-  <div class="relative rounded-xl overflow-hidden shadow-lg mb-8">
+  <div class="header-banner relative rounded-xl overflow-hidden shadow-lg mb-8">
     <div class="absolute inset-0">
-      <div class="absolute inset-0 bg-cover bg-center"
-        [style.background-image]="'url(' + (business.photoUrl || 'assets/placeholder.svg') + ')'"
-        style="filter: blur(20px); transform: scale(1.1);">
+      <div class="header-background absolute inset-0 bg-cover bg-center"
+        [style.background-image]="'url(' + (business.photoUrl || 'assets/placeholder.svg') + ')'">
       </div>
-      <div class="absolute inset-0 bg-black/40"></div>
+      <div class="absolute inset-0 bg-black/50"></div>
     </div>
     <div class="relative p-8 md:p-12 text-white">
       <div class="flex flex-col md:flex-row items-center gap-8">
-        <div class="avatar">
+        <div class="avatar header-avatar">
           <div class="w-32 md:w-40 rounded-full ring-4 ring-white/50 ring-offset-base-100 ring-offset-4">
             <img [src]="business.photoUrl || 'assets/placeholder.svg'" alt="Logo firmy {{ business.name }}" />
           </div>
         </div>
-        <div class="text-center md:text-left">
+        <div class="text-center md:text-left header-text">
           <h1 class="text-4xl md:text-5xl font-bold drop-shadow-lg">{{ business.name }}</h1>
           <p class="text-xl mt-2 opacity-80 drop-shadow-md">{{ business.city }}</p>
           @if(business.reviewCount > 0){
@@ -47,11 +46,12 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-2 space-y-12">
 
-      <div id="services" class="card bg-base-100 shadow-xl p-6">
+      <div id="services" class="card bg-base-100 shadow-xl p-6 fade-in-up">
         <h2 class="text-3xl font-bold mb-6 border-b pb-4">Cennik Usług</h2>
         <div class="space-y-6">
           @for (category of business.categories; track category.serviceCategoryId) {
-          <div class="card card-compact bg-base-200/40 shadow-md mb-6 transition-shadow hover:shadow-lg">
+          <div
+            class="card card-compact bg-base-200/40 shadow-md mb-6 transition-all duration-300 hover:shadow-lg hover:bg-base-200/60">
             <div class="card-body">
               <div class="flex items-center gap-4 border-b border-base-300 pb-3 mb-3">
                 <div class="avatar">
@@ -64,7 +64,7 @@
 
               <div class="space-y-2">
                 @for (service of category.services; track service.id) {
-                <div class="flex justify-between items-center p-2 rounded-lg hover:bg-base-100">
+                <div class="service-row flex justify-between items-center p-2 rounded-lg">
                   <div>
                     <p class="font-semibold">{{ service.name }}</p>
                     <p class="text-sm text-base-content/60">{{ service.durationMinutes }} min</p>
@@ -72,9 +72,10 @@
                   <div class="flex items-center gap-4">
                     <span class="font-mono font-semibold">{{ service.price }} zł</span>
                     @if ((authService.currentUser$ | async); as user) {
-                      @if (user.roles.includes('customer')) {
-                      <button class="btn btn-secondary btn-sm" (click)="openReservationModal(service, reservation_modal)">Rezerwuj</button>
-                      }
+                    @if (user.roles.includes('customer')) {
+                    <button class="btn btn-secondary btn-sm"
+                      (click)="openReservationModal(service, reservation_modal)">Rezerwuj</button>
+                    }
                     }
                   </div>
                 </div>
@@ -90,11 +91,11 @@
         </div>
       </div>
 
-      <div class="card bg-base-100 shadow-xl p-6">
+      <div class="card bg-base-100 shadow-xl p-6 fade-in-up" style="animation-delay: 0.2s;">
         <h2 class="text-3xl font-bold mb-6 border-b pb-4">Nasz Zespół</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           @for (employee of business.employees; track employee.id) {
-          <div class="text-center">
+          <div class="text-center employee-card">
             <div class="avatar">
               <div class="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
                 <img [src]="employee.photoUrl || 'assets/placeholder.svg'" alt="Zdjęcie {{employee.firstName}}" />
@@ -109,7 +110,7 @@
         </div>
       </div>
 
-      <div class="card bg-base-100 shadow-xl p-6">
+      <div class="card bg-base-100 shadow-xl p-6 fade-in-up" style="animation-delay: 0.4s;">
         <div class="flex justify-between items-center mb-6 border-b pb-4">
           <h2 class="text-3xl font-bold">Opinie Klientów</h2>
         </div>
@@ -148,8 +149,14 @@
                   @if ((authService.currentUser$ | async); as user) {
                   @if (user.id === review.userId) {
                   <div class="dropdown dropdown-end">
-                    <label tabindex="0" class="btn btn-ghost btn-xs btn-circle">...</label>
-                    <ul tabindex="0" class="dropdown-content menu ...">
+                    <label tabindex="0" class="btn btn-ghost btn-xs btn-circle">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                      </svg>
+                    </label>
+                    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-32 z-10">
                       <li><button (click)="openEditReviewModal(review)">Edytuj</button></li>
                       <li><button (click)="onDeleteReview(review)" class="text-error">Usuń</button></li>
                     </ul>
@@ -179,7 +186,7 @@
     </div>
 
     <div class="lg:col-span-1">
-      <div class="card bg-base-100 shadow-xl sticky top-8">
+      <div class="card bg-base-100 shadow-xl sticky top-8 fade-in-up" style="animation-delay: 0.3s;">
         <div class="card-body">
           <h2 class="card-title">O Nas</h2>
           <p class="text-base-content/80">{{ business.description }}</p>

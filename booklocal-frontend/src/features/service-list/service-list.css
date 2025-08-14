@@ -1,6 +1,19 @@
-/* service-list.css */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-/* General container and filter bar styling (bez zmian) */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
 .service-list-container {
   padding: 1rem;
 }
@@ -21,54 +34,88 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
 }
 
-/* NOWY STYL: Wrapper dla całej listy usług */
+.skeleton-card {
+  background-color: hsl(var(--b2));
+  border-radius: var(--rounded-box, 1rem);
+  height: 7rem; 
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.shimmer {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 20%,
+    hsl(var(--b1) / 0.5) 50%,
+    transparent 80%
+  );
+  animation: shimmer 1.5s infinite linear;
+}
+
 .service-list-wrapper {
   border-radius: 0.75rem;
-  /* rounded-xl */
   overflow: hidden;
-  /* Ukrywa cienie wystające z kontenera */
   border: 1px solid hsl(var(--bc) / 0.1);
   box-shadow: 0 4px 6px -1px hsl(var(--bc) / 0.07), 0 2px 4px -2px hsl(var(--bc) / 0.07);
 }
 
-/* ZMODYFIKOWANY STYL: Service Item */
 .service-item {
   display: flex;
   flex-direction: column;
-  /* Układ mobilny domyślnie */
   gap: 1rem;
   padding: 1rem;
-  /* Usunięto border, cień i zaokrąglenie z pojedynczego itemu */
   transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
   position: relative;
-  /* Potrzebne dla z-index na hover */
   background-color: hsl(var(--b1));
-  /* Domyślne tło */
 }
 
-/* Zebra striping - co drugi element ma tło --b2 (zazwyczaj ciemniejsze) */
 .service-item:nth-child(even) {
   background-color: hsl(var(--b2, var(--b1)));
 }
 
-/* NOWOCZESNY EFEKT HOVER */
 .service-item:hover {
   background-color: hsl(var(--b3, var(--b2)));
-  /* Lekko ciemniejsze tło */
   transform: scale(1.02);
   z-index: 10;
   box-shadow: 0 10px 25px -5px hsl(var(--bc) / 0.2), 0 8px 10px -6px hsl(var(--bc) / 0.2);
 }
 
-/* Zapewnienie, że hover nie zepsuje układu na mobilnych */
+.anim-item {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.anim-item:nth-child(1) { animation-delay: 0.05s; }
+.anim-item:nth-child(2) { animation-delay: 0.1s; }
+.anim-item:nth-child(3) { animation-delay: 0.15s; }
+.anim-item:nth-child(4) { animation-delay: 0.2s; }
+.anim-item:nth-child(5) { animation-delay: 0.25s; }
+.anim-item:nth-child(6) { animation-delay: 0.3s; }
+.anim-item:nth-child(7) { animation-delay: 0.35s; }
+.anim-item:nth-child(8) { animation-delay: 0.4s; }
+.anim-item:nth-child(9) { animation-delay: 0.45s; }
+.anim-item:nth-child(10) { animation-delay: 0.5s; }
+.anim-item:nth-child(11) { animation-delay: 0.55s; }
+.anim-item:nth-child(12) { animation-delay: 0.6s; }
+
+
 @media (max-width: 767px) {
   .service-item:hover {
     transform: none;
-    /* Wyłączamy skalowanie na małych ekranach */
   }
 }
 
-/* Układ na większych ekranach (bez zmian) */
 @media (min-width: 768px) {
   .service-item {
     flex-direction: row;
@@ -77,7 +124,6 @@
   }
 }
 
-/* Reszta stylów (ikona, content, akcje) - bez większych zmian */
 .service-item-icon-wrapper {
   flex-shrink: 0;
   display: flex;

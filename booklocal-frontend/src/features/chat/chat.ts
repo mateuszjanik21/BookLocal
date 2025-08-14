@@ -15,6 +15,7 @@ import { ToastrService } from 'ngx-toastr';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './chat.html',
+  styleUrls: ['./chat.css']
 })
 export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messageContainer') private messageContainer!: ElementRef;

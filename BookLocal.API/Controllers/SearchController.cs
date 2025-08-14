@@ -87,7 +87,7 @@ public class SearchController : ControllerBase
     [FromQuery] int? mainCategoryId,
     [FromQuery] string? sortBy,
     [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 9) 
+    [FromQuery] int pageSize = 12) 
     {
         var query = _context.Businesses.AsQueryable();
 

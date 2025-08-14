@@ -13,6 +13,7 @@ import { MainCategory, BusinessSearchResult, PagedResult } from '../../types/bus
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './business-list.html',
+  styleUrls: ['./business-list.css'] 
 })
 export class BusinessListComponent implements OnInit, OnDestroy {
   private businessService = inject(BusinessService);
@@ -26,7 +27,7 @@ export class BusinessListComponent implements OnInit, OnDestroy {
   
   pagedResult: PagedResult<BusinessSearchResult> | null = null;
   pageNumber = 1;
-  pageSize = 9;
+  pageSize = 12;
 
   activeMainCategoryId: number | null = null;
   activeSortBy = 'rating_desc';
