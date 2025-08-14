@@ -39,7 +39,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           skip_app_build: true
-          app_location: "booklocal-frontend/dist" 
+          app_location: "booklocal-frontend/dist/browser" 
           api_location: "" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
 
