@@ -81,7 +81,7 @@ namespace BookLocal.API
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                                   policy =>
                                   {
-                                      policy.WithOrigins("http://localhost:4200")
+                                      policy.WithOrigins("http://localhost:4200", "https://wonderful-pebble-00b01fe03.2.azurestaticapps.net")
                                             .AllowAnyHeader()
                                             .AllowAnyMethod()
                                             .AllowCredentials();
@@ -135,12 +135,11 @@ namespace BookLocal.API
 
             var app = builder.Build();
 
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-
                 using (var scope = app.Services.CreateScope())
                 {
                     var services = scope.ServiceProvider;
@@ -163,9 +162,9 @@ namespace BookLocal.API
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
-
             app.UseCors(MyAllowSpecificOrigins);
+
+            app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
