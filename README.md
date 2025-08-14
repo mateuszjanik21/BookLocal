@@ -1,107 +1,97 @@
-BookLocal
+# 📖 BookLocal
 
-BookLocal to w pełni funkcjonalna aplikacja webowa do rezerwacji wizyt w lokalnych firmach usługowych. Umożliwia klientom wyszukiwanie i rezerwowanie usług, a właścicielom firm zarządzanie swoim biznesem, pracownikami, grafikami i rezerwacjami.
+BookLocal to w pełni funkcjonalna aplikacja webowa typu SPA (Single Page Application) z dedykowanym backendem, stworzona do rezerwacji wizyt w lokalnych firmach usługowych. Umożliwia klientom wyszukiwanie i rezerwowanie usług, a właścicielom firm kompleksowe zarządzanie swoim biznesem, pracownikami, grafikami i rezerwacjami.
 
-Podgląd na żywo
+---
 
-    Aplikacja Frontendowa: https://wonderful-pebble-00b01fe03.2.azurestaticapps.net
+## 🚀 Podgląd na żywo
 
-    Dokumentacja API (Swagger): https://booklocal-api-gja0begeg4gfbfcj.polandcentral-01.azurewebsites.net/swagger
+- **Aplikacja Frontendowa:** <https://wonderful-pebble-00b01fe03.2.azurestaticapps.net>
+- **Dokumentacja API (Swagger):** <https://booklocal-api-gja0begeg4gfbfcj.polandcentral-01.azurewebsites.net/swagger>
 
-Główne Funkcje
+---
 
-    Wyszukiwanie i filtrowanie firm usługowych.
+## ✨ Główne Funkcje
 
-    System rezerwacji wizyt online.
+- **Wyszukiwanie i filtrowanie:** Zaawansowane wyszukiwanie firm usługowych z opcjami filtrowania i sortowania.
+- **System Rezerwacji:** Intuicyjny kalendarz do rezerwacji i zarządzania wizytami.
+- **Panel Zarządzania:** Dedykowany panel dla właścicieli firm do zarządzania usługami, pracownikami i grafikami.
+- **Uwierzytelnianie i Autoryzacja:** Bezpieczny system logowania oparty na rolach (klient, właściciel) przy użyciu tokenów JWT.
+- **System Ocen i Opinii:** Możliwość dodawania ocen i komentarzy do zrealizowanych usług.
+- **Zarządzanie Zdjęciami:** Przesyłanie i zarządzanie zdjęciami dla profili firmowych, zintegrowane z usługą Cloudinary.
+- **Komunikacja w czasie rzeczywistym:** Czat między użytkownikami oraz system powiadomień, zaimplementowane przy użyciu SignalR.
 
-    Panel zarządzania dla właścicieli firm.
+---
 
-    Uwierzytelnianie użytkowników oparte na rolach (klient, właściciel) przy użyciu tokenów JWT.
+## 🛠️ Architektura i Stos Technologiczny
 
-    System ocen i opinii dla firm.
+Aplikacja została zbudowana w architekturze rozproszonej, oddzielającej warstwę prezentacji (Frontend) od logiki biznesowej (Backend).
 
-    Przesyłanie i zarządzanie zdjęciami (usługa Cloudinary).
+### **Frontend**
+Zbudowany jako Single Page Application (SPA), co zapewnia płynne i szybkie działanie bez przeładowywania strony.
+- **Framework:** **Angular** – dojrzały i wydajny framework do budowania dynamicznych interfejsów użytkownika.
+- **Język:** **TypeScript** – dla bezpieczeństwa typów i lepszej skalowalności kodu.
+- **Wdrożenie:** **Azure Static Web Apps** – usługa idealnie dopasowana do hostowania nowoczesnych aplikacji frontendowych, zintegrowana z globalną siecią CDN.
+- **CI/CD:** **GitHub Actions** – proces budowania i wdrażania jest w pełni zautomatyzowany po każdym `push` do głównej gałęzi repozytorium.
 
-    Komunikacja w czasie rzeczywistym (czat, powiadomienia) za pomocą SignalR.
+### **Backend**
+Wydajne i skalowalne API RESTowe, które dostarcza dane i obsługuje całą logikę biznesową aplikacji.
+- **Framework:** **.NET (ASP.NET Core)** – do budowy szybkiego i bezpiecznego Web API.
+- **Dostęp do Danych:** **Entity Framework Core** – nowoczesny ORM (Object-Relational Mapper) do komunikacji z bazą danych.
+- **Uwierzytelnianie:** **ASP.NET Core Identity z JWT** – standard branżowy do zabezpieczania endpointów API.
+- **Komunikacja Real-time:** **SignalR** – do implementacji dwukierunkowej komunikacji (np. w czacie).
+- **Wdrożenie:** **Azure App Service** – niezawodna platforma do hostowania aplikacji webowych .NET.
 
-Stos Technologiczny
+### **Baza Danych**
+- **Silnik:** **Azure SQL Database** – w pełni zarządzana, relacyjna baza danych w chmurze Microsoft.
+- **Zasilanie Danych:** **Bogus** – biblioteka używana do generowania realistycznych, przykładowych danych na potrzeby deweloperskie.
 
-Frontend
+### **Usługi Zewnętrzne**
+- **Przechowywanie Zdjęć:** **Cloudinary** – platforma do zarządzania mediami, używana do hostowania i serwowania zdjęć.
 
-    Framework: Angular
+---
 
-    Wdrożenie: Azure Static Web Apps
+## ⚙️ Uruchomienie Lokalne
 
-    CI/CD: GitHub Actions
+### Wymagania wstępne
 
-Backend
+- [.NET SDK](https://dotnet.microsoft.com/download)
+- [Node.js](https://nodejs.org/)
+- [Angular CLI](https://angular.io/cli) (`npm install -g @angular/cli`)
+- Lokalna instancja SQL Server (np. SQL Server Express)
 
-    Framework: .NET (ASP.NET Core Web API)
+### Backend
 
-    Baza Danych: Entity Framework Core
+1. Otwórz `BookLocal.sln` w Visual Studio.
+2. W pliku `BookLocal.API/appsettings.Development.json` uzupełnij sekcje `ConnectionStrings`, `Jwt` i `CloudinarySettings`.
+3. Uruchom projekt `BookLocal.API` (klawisz F5). Spowoduje to również wypełnienie bazy danych przykładowymi danymi.
 
-    Uwierzytelnianie: ASP.NET Core Identity z JWT
+### Frontend
 
-    Komunikacja Real-time: SignalR
+1. Przejdź do folderu `booklocal-frontend`:
+   ```bash
+   cd booklocal-frontend
+   ```
+2. Zainstaluj zależności:
+   ```bash
+   npm install
+   ```
+3. W pliku `src/environments/environment.ts` upewnij się, że `apiUrl` wskazuje na adres Twojego lokalnego API (np. `https://localhost:5001/api`).
+4. Uruchom serwer deweloperski:
+   ```bash
+   ng serve
+   ```
+5. Otwórz w przeglądarce `http://localhost:4200`.
 
-    Wdrożenie: Azure App Service
+---
 
-Baza Danych
+## 🤝 Contributing
 
-    Silnik: Azure SQL Database
+Pull requests są mile widziane. W przypadku większych zmian, prosimy o wcześniejsze otwarcie "issue" w celu przedyskutowania proponowanych modyfikacji.
 
-    Zasilanie danymi: Aplikacja zawiera mechanizm do automatycznego wypełniania bazy danych realistycznymi, wygenerowanymi danymi przy użyciu biblioteki Bogus.
+Prosimy o upewnienie się, że testy są odpowiednio zaktualizowane.
 
-Usługi Chmurowe
+## 📄 License
 
-    Hosting: Microsoft Azure
+[MIT](https://choosealicense.com/licenses/mit/)
 
-    Przechowywanie zdjęć: Cloudinary
-
-Struktura Projektu
-
-/
-├── BookLocal.API/         # Główny projekt backendowy (ASP.NET Core API)
-├── BookLocal.Data/        # Projekt z kontekstem bazy danych i modelami (EF Core)
-├── booklocal-frontend/    # Projekt frontendowy (Angular)
-└── BookLocal.sln          # Plik solucji Visual Studio
-
-Konfiguracja i Uruchomienie Lokalne
-
-Wymagania Wstępne
-
-    .NET SDK (wersja zgodna z projektem)
-
-    Node.js i npm
-
-    Angular CLI (npm install -g @angular/cli)
-
-    Lokalna instancja SQL Server (np. SQL Server Express) lub dostęp do bazy danych w chmurze
-
-Uruchomienie Backendu
-
-    Otwórz plik BookLocal.sln w Visual Studio.
-
-    W pliku appsettings.Development.json w projekcie BookLocal.API skonfiguruj następujące sekcje:
-
-        ConnectionStrings:DefaultConnection: Wpisz swój connection string do lokalnej bazy danych.
-
-        Jwt: Ustaw swój klucz, wystawcę (issuer) i odbiorcę (audience).
-
-        CloudinarySettings: Wpisz swoje klucze do usługi Cloudinary.
-
-    Aby wypełnić bazę danych przykładowymi danymi, upewnij się, że kod inicjalizujący w Program.cs jest aktywny.
-
-    Uruchom projekt BookLocal.API z Visual Studio (klawisz F5).
-
-Uruchomienie Frontendu
-
-    Otwórz terminal w folderze booklocal-frontend.
-
-    Zainstaluj zależności: npm install.
-
-    W pliku src/environments/environment.ts upewnij się, że apiUrl wskazuje na adres Twojego lokalnie uruchomionego API (domyślnie https://localhost:5001/api lub podobny).
-
-    Uruchom serwer deweloperski Angulara: ng serve.
-
-    Otwórz przeglądarkę pod adresem http://localhost:4200.
