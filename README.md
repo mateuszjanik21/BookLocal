@@ -6,7 +6,7 @@ BookLocal to w pełni funkcjonalna aplikacja webowa typu SPA (Single Page Applic
 
 ## 🚀 Podgląd na żywo
 
-- **Aplikacja Frontendowa:** <https://wonderful-pebble-00b01fe03.2.azurestaticapps.net>
+- **Aplikacja:** <https://wonderful-pebble-00b01fe03.2.azurestaticapps.net> (aplikacja na darmowym planie Azure, może potrzebować chwili na „wybudzenie się”)
 - **Dokumentacja API (Swagger):** <https://booklocal-api-gja0begeg4gfbfcj.polandcentral-01.azurewebsites.net/swagger>
 
 ---
