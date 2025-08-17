@@ -1,6 +1,6 @@
 # 📖 BookLocal
 
-BookLocal to w pełni funkcjonalna aplikacja webowa typu SPA (Single Page Application) z dedykowanym backendem, stworzona do rezerwacji wizyt w lokalnych firmach usługowych. Umożliwia klientom wyszukiwanie i rezerwowanie usług, a właścicielom firm kompleksowe zarządzanie swoim biznesem, pracownikami, grafikami i rezerwacjami.
+BookLocal to w pełni funkcjonalna aplikacja webowa, stworzona do rezerwacji wizyt w lokalnych firmach usługowych. Umożliwia klientom wyszukiwanie i rezerwowanie usług, a właścicielom firm kompleksowe zarządzanie swoim biznesem, pracownikami, grafikami i rezerwacjami.
 
 ---
 
