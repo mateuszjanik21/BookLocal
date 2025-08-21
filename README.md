@@ -67,6 +67,7 @@ Wydajne i skalowalne API RESTowe, które dostarcza dane i obsługuje całą logi
 - **Klient**: 
    - Login: customer@test.com
    - Hasło: P@ssword!
+
 **Chcesz założyć własne konto?**
 
 Oczywiście możesz również samodzielnie przejść przez proces rejestracji. Zachęcam do testowania wszystkich funkcji!
