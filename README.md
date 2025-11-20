@@ -63,10 +63,10 @@ Wydajne i skalowalne API RESTowe, które dostarcza dane i obsługuje całą logi
 ### Konta użytkowików
 - **Właściciel**:
    - Login: owner@test.com
-   - Hasło: P@ssword!
+   - Hasło: P@ssword1
 - **Klient**: 
    - Login: customer@test.com
-   - Hasło: P@ssword!
+   - Hasło: P@ssword1
 
 **Chcesz założyć własne konto?**
 
