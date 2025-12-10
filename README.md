@@ -63,15 +63,16 @@ Wydajne i skalowalne API RESTowe, które dostarcza dane i obsługuje całą logi
 ### Konta użytkowików
 - **Właściciel**:
    - Login: owner@test.com
-   - Hasło: P@ssword!
+   - Hasło: P@ssword1
 - **Klient**: 
    - Login: customer@test.com
-   - Hasło: P@ssword!
+   - Hasło: P@ssword1
+
 **Chcesz założyć własne konto?**
 
 Oczywiście możesz również samodzielnie przejść przez proces rejestracji. Zachęcam do testowania wszystkich funkcji!
 
-> **Ważna uwaga:** Ponieważ jest to publiczna aplikacja demonstracyjna, **proszę o nierejestrowanie się przy użyciu prawdziwych danych osobowych**. Do celów testowych używaj wyłącznie fikcyjnych informacji (np. Jan Kowalski, test@email.com itp.). Dziękujemy za zrozumienie!
+> **Ważna uwaga:** Ponieważ jest to publiczna aplikacja demonstracyjna, **proszę o nierejestrowanie się przy użyciu prawdziwych danych osobowych**. Do celów testowych używaj wyłącznie fikcyjnych informacji (np. Jan Kowalski, test@email.com itp.).
 ### Backend
 
 1. Otwórz `BookLocal.sln` w Visual Studio.
