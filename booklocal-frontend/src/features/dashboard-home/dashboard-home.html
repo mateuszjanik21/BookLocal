@@ -1,92 +1,111 @@
 @if (isLoading) {
-  <div class="flex justify-center items-center p-16">
-    <span class="loading loading-spinner loading-lg text-primary"></span>
-  </div>
+<div class="flex justify-center items-center p-16">
+  <span class="loading loading-spinner loading-lg text-primary"></span>
+</div>
 } @else {
-  <div class="space-y-8">
-    <div>
-      <h1 class="text-3xl font-bold">Witaj w panelu, {{ business?.owner?.firstName }}!</h1>
-      <p class="mt-1 text-base-content/70">Oto podsumowanie dzisiejszego dnia w Twojej firmie.</p>
-      
-      <div class="flex items-center gap-2 text-lg text-base-content/80 mt-4">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-          <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clip-rule="evenodd" />
-        </svg>
-        <span>{{ currentDate | date: 'EEEE, d MMMM yyyy' }}</span>
-        <span>|</span>
-        <span class="font-mono font-semibold">{{ currentDate | date: 'HH:mm:ss' }}</span>
+<div class="space-y-8">
+  <div>
+    <h1 class="text-3xl font-bold">Witaj w panelu, {{ business?.owner?.firstName }}!</h1>
+    <p class="mt-1 text-base-content/70">Oto podsumowanie dzisiejszego dnia w Twojej firmie.</p>
+
+    <div class="flex items-center gap-2 text-lg text-base-content/80 mt-4">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+        <path fill-rule="evenodd"
+          d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z"
+          clip-rule="evenodd" />
+      </svg>
+      <span>{{ currentDate | date: 'EEEE, d MMMM yyyy' }}</span>
+      <span>|</span>
+      <span class="font-mono font-semibold">{{ currentDate | date: 'HH:mm:ss' }}</span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <div class="stat bg-base-200 rounded-box">
+      <div class="stat-title">Nadchodzące wizyty</div>
+      <div class="stat-value">{{ stats.upcomingCount }}</div>
+    </div>
+    <div class="stat bg-base-200 rounded-box">
+      <div class="stat-title">Liczba pracowników</div>
+      <div class="stat-value">{{ stats.employeeCount }}</div>
+    </div>
+    <div class="stat bg-base-200 rounded-box">
+      <div class="stat-title">Liczba usług</div>
+      <div class="stat-value">{{ stats.serviceCount }}</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 card bg-base-200">
+      <div class="card-body">
+        <h2 class="card-title">Dzisiejszy Plan Dnia</h2>
+        @if (todaysReservations.length > 0) {
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Godzina</th>
+                <th>Klient</th>
+                <th>Usługa</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (res of todaysReservations; track res.reservationId) {
+              <tr>
+                <td class="font-mono font-semibold">{{ res.startTime | date: 'HH:mm' }}</td>
+                <td>{{ res.customerFullName }}</td>
+                <td>{{ res.serviceName }}</td>
+                <td><a [routerLink]="['/dashboard/reservations', res.reservationId]"
+                    class="btn btn-xs btn-ghost">Zobacz</a></td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        } @else {
+        <div class="text-center p-8">
+          <p>Brak zaplanowanych wizyt na dzisiaj.</p>
+        </div>
+        }
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      <div class="stat bg-base-200 rounded-box"><div class="stat-title">Nadchodzące wizyty</div><div class="stat-value">{{ stats.upcomingCount }}</div></div>
-      <div class="stat bg-base-200 rounded-box"><div class="stat-title">Liczba pracowników</div><div class="stat-value">{{ stats.employeeCount }}</div></div>
-      <div class="stat bg-base-200 rounded-box"><div class="stat-title">Liczba usług</div><div class="stat-value">{{ stats.serviceCount }}</div></div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2 card bg-base-200">
-        <div class="card-body">
-          <h2 class="card-title">Dzisiejszy Plan Dnia</h2>
-          @if (todaysReservations.length > 0) {
-            <div class="overflow-x-auto">
-              <table class="table">
-                <thead><tr><th>Godzina</th><th>Klient</th><th>Usługa</th><th></th></tr></thead>
-                <tbody>
-                  @for (res of todaysReservations; track res.reservationId) {
-                    <tr>
-                      <td class="font-mono font-semibold">{{ res.startTime | date: 'HH:mm' }}</td>
-                      <td>{{ res.customerFullName }}</td>
-                      <td>{{ res.serviceName }}</td>
-                      <td><a [routerLink]="['/dashboard/reservations', res.reservationId]" class="btn btn-xs btn-ghost">Zobacz</a></td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          } @else {
-            <div class="text-center p-8">
-              <p>Brak zaplanowanych wizyt na dzisiaj.</p>
-            </div>
-          }
+    <div class="card bg-base-200">
+      <div class="card-body">
+        <h2 class="card-title">Szybkie Akcje</h2>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+          <a routerLink="/dashboard/reservations" class="btn btn-outline btn-primary h-24 flex-col gap-2">Kalendarz</a>
+          <a routerLink="/dashboard/services" class="btn btn-outline btn-primary h-24 flex-col gap-2">Usługi</a>
+          <a routerLink="/dashboard/employees" class="btn btn-outline btn-primary h-24 flex-col gap-2">Pracownicy</a>
+          <a routerLink="/dashboard/profile" class="btn btn-outline btn-primary h-24 flex-col gap-2">Mój Profil</a>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="card bg-base-200">
-        <div class="card-body">
-          <h2 class="card-title">Szybkie Akcje</h2>
-          <div class="grid grid-cols-2 gap-4 mt-4">
-            <a routerLink="/dashboard/reservations" class="btn btn-outline btn-primary h-24 flex-col gap-2">Kalendarz</a>
-            <a routerLink="/dashboard/services" class="btn btn-outline btn-primary h-24 flex-col gap-2">Usługi</a>
-            <a routerLink="/dashboard/employees" class="btn btn-outline btn-primary h-24 flex-col gap-2">Pracownicy</a>
-            <a routerLink="/dashboard/profile" class="btn btn-outline btn-primary h-24 flex-col gap-2">Mój Profil</a>
+  <div class="card bg-base-200">
+    <div class="card-body">
+      <h2 class="card-title">Najnowsze Opinie</h2>
+      @if (latestReviews.length > 0) {
+      <div class="space-y-4 mt-4">
+        @for(review of latestReviews; track review.reviewId){
+        <div class="flex gap-4 items-center">
+          <div class="flex items-center gap-1 font-bold">
+            <span class="text-yellow-400">★</span>
+            <span>{{ review.rating }}</span>
+          </div>
+          <div class="flex-grow">
+            <p class="font-semibold">{{ review.reviewerName }}</p>
+            <p class="text-sm text-base-content/70 italic">"{{ review.comment }}"</p>
           </div>
         </div>
+        }
       </div>
-    </div>
-
-     <div class="card bg-base-200">
-        <div class="card-body">
-            <h2 class="card-title">Najnowsze Opinie</h2>
-            @if (latestReviews.length > 0) {
-                <div class="space-y-4 mt-4">
-                    @for(review of latestReviews; track review.reviewId){
-                        <div class="flex gap-4 items-center">
-                           <div class="flex items-center gap-1 font-bold">
-                             <span class="text-yellow-400">★</span>
-                             <span>{{ review.rating }}</span>
-                           </div>
-                            <div class="flex-grow">
-                                <p class="font-semibold">{{ review.reviewerName }}</p>
-                                <p class="text-sm text-base-content/70 italic">"{{ review.comment }}"</p>
-                            </div>
-                        </div>
-                    }
-                </div>
-            } @else {
-                <p class="mt-4">Brak opinii do wyświetlenia.</p>
-            }
-        </div>
+      } @else {
+      <p class="mt-4">Brak opinii do wyświetlenia.</p>
+      }
     </div>
   </div>
+</div>
 }
