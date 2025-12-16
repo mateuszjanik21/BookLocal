@@ -15,21 +15,26 @@ class AuthService with ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   UserDto? get currentUser => _currentUser;
   String? get token => _token;
-
+  
   Future<bool> tryAutoLogin() async {
-    final storedToken = await _storage.read(key: 'jwt_token');
-    final storedUserData = await _storage.read(key: 'user_data');
+    try {
+      final storedToken = await _storage.read(key: 'jwt_token');
+      final storedUserData = await _storage.read(key: 'user_data');
 
-    if (storedToken == null || storedUserData == null) {
+      if (storedToken == null || storedUserData == null) {
+        return false;
+      }
+
+      _token = storedToken;
+      _currentUser = UserDto.fromJson(jsonDecode(storedUserData));
+      _isAuthenticated = true;
+      
+      notifyListeners();
+      return true;
+    } catch (e) {
+      await logout();
       return false;
     }
-
-    _token = storedToken;
-    _currentUser = UserDto.fromJson(jsonDecode(storedUserData));
-    _isAuthenticated = true;
-    
-    notifyListeners();
-    return true;
   }
 
   Future<bool> login(String email, String password) async {
@@ -56,11 +61,9 @@ class AuthService with ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        print('Błąd logowania: ${response.body}');
         return false;
       }
-    } catch (e) {
-      print('Błąd połączenia: $e');
+    } catch (e) { 
       return false;
     }
   }

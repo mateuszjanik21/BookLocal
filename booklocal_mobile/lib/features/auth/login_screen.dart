@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/services/auth_service.dart';
+import '../client/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -78,7 +79,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       if (user != null && user.isOwner) {
         
       } else {
-        
+        Navigator.pushReplacement(
+        context, 
+        MaterialPageRoute(builder: (context) => const MainScreen()));
       }
     } else {
       if (!mounted) return;
@@ -134,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         child: Column(
                           children: [
                             const Icon(
-                              Icons.verified_user_outlined,
+                              Icons.lock,
                               size: 64,
                               color: Colors.white,
                             ),
@@ -238,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               Center(
                                 child: GestureDetector(
                                   onTap: () {
-                                    // TODO: Nawigacja do rejestracji
+                                    
                                   },
                                   child: RichText(
                                     text: TextSpan(

@@ -112,7 +112,15 @@ public class ReviewsController : ControllerBase
 
         if (reservation == null) return NotFound("Rezerwacja nie istnieje.");
         if (reservation.CustomerId != userId) return Forbid("To nie jest Twoja rezerwacja.");
-        if (reservation.Status != ReservationStatus.Completed) return BadRequest("Możesz ocenić tylko zakończone wizyty.");
+        var endTime = reservation.StartTime.AddMinutes(reservation.Service.DurationMinutes);
+
+        bool isEffectivelyCompleted = reservation.Status == ReservationStatus.Completed ||
+                                      (reservation.Status == ReservationStatus.Confirmed && endTime < DateTime.UtcNow);
+
+        if (!isEffectivelyCompleted)
+        {
+            return BadRequest("Możesz ocenić tylko zakończone wizyty.");
+        }
 
         var existingReview = await _context.Reviews.AnyAsync(r => r.ReservationId == reservationId);
         if (existingReview) return Conflict("Ta wizyta została już oceniona.");

@@ -79,13 +79,21 @@ namespace BookLocal.API
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy(name: MyAllowSpecificOrigins,
-                                  policy =>
-                                  {
-                                      policy.WithOrigins("http://localhost:4200", "https://wonderful-pebble-00b01fe03.2.azurestaticapps.net")
-                                            .AllowAnyHeader()
-                                            .AllowAnyMethod()
-                                            .AllowCredentials();
-                                  });
+                    policy =>
+                    {
+                        policy.WithOrigins("http://localhost:4200", "https://wonderful-pebble-00b01fe03.2.azurestaticapps.net")
+                            .AllowAnyHeader()
+                            .AllowAnyMethod()
+                            .AllowCredentials();
+                    });
+
+                options.AddPolicy("UniversalPolicy", policy =>
+                {
+                    policy.SetIsOriginAllowed(origin => true) // Magiczna linijka: Pozwala na ka¿dy adres (localhost, 10.0.2.2 itp.)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials(); // To jest wymagane dla SignalR w Angularze!
+                });
             });
 
 
@@ -160,9 +168,16 @@ namespace BookLocal.API
                 }
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
-            app.UseCors(MyAllowSpecificOrigins);
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseCors("UniversalPolicy");
+            }
+            else
+            {
+                app.UseCors(MyAllowSpecificOrigins);
+            }
 
             app.UseRouting();
 
