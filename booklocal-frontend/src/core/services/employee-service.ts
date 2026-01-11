@@ -12,6 +12,10 @@ export class EmployeeService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
+  getEmployees(businessId: number): Observable<Employee[]> {
+    return this.http.get<Employee[]>(`${this.apiUrl}/businesses/${businessId}/employees`);
+  }
+
   getAssignedServiceIds(businessId: number, employeeId: number): Observable<number[]> {
     return this.http.get<number[]>(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}/services`);
   }

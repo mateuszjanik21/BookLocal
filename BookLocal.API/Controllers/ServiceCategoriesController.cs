@@ -23,43 +23,44 @@ namespace BookLocal.API.Controllers
         public async Task<ActionResult<IEnumerable<ServiceCategoryDto>>> GetCategories(int businessId, [FromQuery] bool includeArchived = false)
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId))
             {
                 return Forbid();
             }
+
             var categories = await _context.ServiceCategories
                 .Where(sc => sc.BusinessId == businessId)
-                .Select(sc => new ServiceCategoryDto
-                {
-                    ServiceCategoryId = sc.ServiceCategoryId,
-                    Name = sc.Name,
-                    PhotoUrl = sc.PhotoUrl
-                })
+                .Include(sc => sc.Services)
+                    .ThenInclude(s => s.Variants)
                 .ToListAsync();
 
-            foreach (var category in categories)
+            var categoryDtos = categories.Select(sc => new ServiceCategoryDto
             {
-                var servicesQuery = _context.Services
-                    .Where(s => s.ServiceCategoryId == category.ServiceCategoryId);
-
-                if (includeArchived)
-                {
-                    servicesQuery = servicesQuery.IgnoreQueryFilters();
-                }
-
-                category.Services = await servicesQuery
+                ServiceCategoryId = sc.ServiceCategoryId,
+                Name = sc.Name,
+                PhotoUrl = sc.PhotoUrl,
+                Services = sc.Services
+                    .Where(s => includeArchived || !s.IsArchived)
                     .Select(s => new ServiceDto
                     {
                         Id = s.ServiceId,
                         Name = s.Name,
-                        Price = s.Price,
-                        DurationMinutes = s.DurationMinutes,
-                        IsArchived = s.IsArchived
-                    })
-                    .ToListAsync();
-            }
+                        Description = s.Description,
+                        ServiceCategoryId = s.ServiceCategoryId,
+                        IsArchived = s.IsArchived,
+                        Variants = s.Variants.Select(v => new ServiceVariantDto
+                        {
+                            ServiceVariantId = v.ServiceVariantId,
+                            Name = v.Name,
+                            Price = v.Price,
+                            DurationMinutes = v.DurationMinutes,
+                            IsDefault = v.IsDefault
+                        }).ToList()
+                    }).ToList()
+            }).ToList();
 
-            return Ok(categories);
+            return Ok(categoryDtos);
         }
 
         [HttpPost]
@@ -67,6 +68,7 @@ namespace BookLocal.API.Controllers
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
+
             if (business == null)
             {
                 return Forbid();
@@ -86,7 +88,8 @@ namespace BookLocal.API.Controllers
             {
                 ServiceCategoryId = newCategory.ServiceCategoryId,
                 Name = newCategory.Name,
-                PhotoUrl = newCategory.PhotoUrl
+                PhotoUrl = newCategory.PhotoUrl,
+                Services = new List<ServiceDto>()
             };
 
             return CreatedAtAction(nameof(GetCategories), new { businessId = businessId }, categoryToReturn);
@@ -96,7 +99,9 @@ namespace BookLocal.API.Controllers
         public async Task<IActionResult> UpdateCategory(int businessId, int categoryId, ServiceCategoryUpsertDto categoryDto)
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var category = await _context.ServiceCategories
+                .Include(sc => sc.Business)
                 .FirstOrDefaultAsync(sc => sc.ServiceCategoryId == categoryId && sc.BusinessId == businessId && sc.Business.OwnerId == ownerId);
 
             if (category == null)
@@ -106,6 +111,7 @@ namespace BookLocal.API.Controllers
 
             category.Name = categoryDto.Name;
             category.MainCategoryId = categoryDto.MainCategoryId;
+
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -115,7 +121,9 @@ namespace BookLocal.API.Controllers
         public async Task<IActionResult> DeleteCategory(int businessId, int categoryId)
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var category = await _context.ServiceCategories
+                .Include(sc => sc.Business)
                 .Include(sc => sc.Services)
                 .FirstOrDefaultAsync(sc => sc.ServiceCategoryId == categoryId && sc.BusinessId == businessId && sc.Business.OwnerId == ownerId);
 

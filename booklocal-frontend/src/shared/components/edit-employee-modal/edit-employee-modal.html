@@ -5,6 +5,12 @@
       <h3 class="text-2xl font-bold">Edytuj Dane Pracownika</h3>
       <p class="text-base-content/60 text-sm">Zaktualizuj informacje o członku zespołu.</p>
     </div>
+    
+    <div class="alert alert-info shadow-sm mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Zmiana statusu studenta wpłynie na wyliczenia wynagrodzeń w HR.</span>
+    </div>
+
     <div class="divider my-4"></div>
 
     @if(employee){
@@ -34,6 +40,23 @@
 
       <div class="form-control">
         <label class="label">
+          <span class="label-text font-semibold">Data Urodzenia</span>
+        </label>
+        <label class="input-group">
+          <span class="bg-base-200"></span>
+          <input type="date" class="input input-bordered w-full" formControlName="dateOfBirth" />
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label cursor-pointer justify-start gap-4">
+          <input type="checkbox" class="checkbox checkbox-primary" formControlName="isStudent" />
+          <span class="label-text font-semibold">Status Studenta (< 26 lat)</span>
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label">
           <span class="label-text font-semibold">Stanowisko</span>
         </label>
         <label class="input-group">
@@ -41,6 +64,32 @@
           </span>
           <input type="text" class="input input-bordered w-full" formControlName="position" />
         </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label">
+          <span class="label-text font-semibold">Specjalizacja</span>
+        </label>
+        <label class="input-group">
+           <span class="bg-base-200"></span>
+           <input type="text" class="input input-bordered w-full" formControlName="specialization" />
+        </label>
+      </div>
+
+      <div class="form-control">
+         <label class="label"><span class="label-text font-semibold">Bio</span></label>
+         <textarea class="textarea textarea-bordered h-24" formControlName="bio"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="form-control">
+           <label class="label"><span class="label-text font-semibold">Instagram</span></label>
+           <input type="text" class="input input-bordered w-full" formControlName="instagramProfileUrl" />
+        </div>
+         <div class="form-control">
+           <label class="label"><span class="label-text font-semibold">Portfolio</span></label>
+           <input type="text" class="input input-bordered w-full" formControlName="portfolioUrl" />
+        </div>
       </div>
 
       <div class="modal-action mt-8">

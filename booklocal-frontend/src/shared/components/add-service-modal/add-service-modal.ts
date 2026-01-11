@@ -26,17 +26,30 @@ export class AddServiceModalComponent {
     name: ['', Validators.required],
     description: [''],
     price: [null, [Validators.required, Validators.min(0)]],
-    durationMinutes: [null, [Validators.required, Validators.min(1)]]
+    durationMinutes: [null, [Validators.required, Validators.min(1)]],
+    cleanupTimeMinutes: [0, [Validators.min(0)]]
   });
 
   onSubmit() {
     if (this.serviceForm.invalid || !this.businessId || !this.categoryId) return;
     this.isSubmitting = true;
     
+    const formValue = this.serviceForm.value;
+    
     const payload = {
-      ...this.serviceForm.value,
-      serviceCategoryId: this.categoryId
-    }
+      name: formValue.name,
+      description: formValue.description,
+      serviceCategoryId: this.categoryId,
+      variants: [
+        {
+          name: 'Standard',
+          price: formValue.price,
+          durationMinutes: formValue.durationMinutes,
+          cleanupTimeMinutes: formValue.cleanupTimeMinutes,
+          isDefault: true
+        }
+      ]
+    };
 
     this.serviceService.addService(this.businessId, payload as any)
       .pipe(finalize(() => this.isSubmitting = false))

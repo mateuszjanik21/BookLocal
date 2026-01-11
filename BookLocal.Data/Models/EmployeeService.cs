@@ -1,11 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
-[PrimaryKey("EmployeeId", "ServiceId")]
-public class EmployeeService
+namespace BookLocal.Data.Models
 {
-    public int EmployeeId { get; set; }
-    public int ServiceId { get; set; }
+    [PrimaryKey("EmployeeId", "ServiceId")]
+    public class EmployeeService
+    {
+        public int EmployeeId { get; set; }
+        public int ServiceId { get; set; }
 
-    public virtual Employee Employee { get; set; }
-    public virtual Service Service { get; set; }
+        [ForeignKey("EmployeeId")]
+        public virtual Employee Employee { get; set; }
+
+        [ForeignKey("ServiceId")]
+        public virtual Service Service { get; set; }
+    }
 }

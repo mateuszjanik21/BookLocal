@@ -1,0 +1,94 @@
+<div class="card bg-base-100 shadow-xl border border-base-200">
+  <div class="card-body">
+    <h2 class="card-title text-2xl mb-4">Zarządzanie Umowami</h2>
+
+    <form [formGroup]="contractForm" (ngSubmit)="onSubmit()" class="bg-base-200 p-4 rounded-lg mb-6">
+      <h3 class="font-bold text-lg mb-4">Nowa Umowa</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Pracownik</span></label>
+          <select class="select select-bordered w-full" formControlName="employeeId">
+            <option [ngValue]="null" disabled>Wybierz pracownika</option>
+            @for(emp of employees; track emp.id) {
+              <option [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text">Typ Umowy</span></label>
+          <select class="select select-bordered w-full" formControlName="contractType">
+            @for(type of contractTypes; track type.value) {
+              <option [value]="type.value">{{ type.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="label"><span class="label-text">Wynagrodzenie Podstawowe (Brutto)</span></label>
+          <input type="number" class="input input-bordered w-full" formControlName="baseSalary" placeholder="0.00" />
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Koszty Uzyskania Przychodu (PLN)</span>
+            <span class="label-text-alt text-xs text-base-content/60">Standard: 250, Dojazdy: 300</span>
+          </label>
+          <input type="number" class="input input-bordered w-full" formControlName="taxDeductibleExpenses" placeholder="250.00" />
+        </div>
+
+        <div class="form-control">
+            <label class="label"><span class="label-text">Data Rozpoczęcia</span></label>
+            <input type="date" class="input input-bordered w-full" formControlName="startDate" />
+        </div>
+
+         <div class="form-control">
+            <label class="label"><span class="label-text">Data Zakończenia (Opcjonalnie)</span></label>
+            <input type="date" class="input input-bordered w-full" formControlName="endDate" />
+        </div>
+      </div>
+
+      <div class="mt-4 flex justify-end">
+        <button type="submit" class="btn btn-primary" [disabled]="contractForm.invalid || isSubmitting">
+            <span *ngIf="isSubmitting" class="loading loading-spinner"></span>
+            Dodaj Umowę
+        </button>
+      </div>
+    </form>
+
+    <div class="overflow-x-auto">
+      <table class="table w-full">
+        <thead>
+          <tr>
+            <th>Pracownik</th>
+            <th>Typ</th>
+            <th>Płaca</th>
+            <th>Od</th>
+            <th>Do</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for(contract of contracts; track contract.contractId) {
+            <tr class="hover">
+              <td class="font-bold">{{ contract.employeeName }}</td>
+              <td>{{ getContractTypeLabel(contract.contractType) }}</td>
+              <td>{{ contract.baseSalary | number:'1.2-2' }} zł</td>
+              <td>{{ contract.startDate }}</td>
+              <td>{{ contract.endDate || '-' }}</td>
+              <td>
+                <span class="badge" [class.badge-success]="contract.isActive" [class.badge-ghost]="!contract.isActive">
+                    {{ contract.isActive ? 'Aktywna' : 'Archiwalna' }}
+                </span>
+              </td>
+            </tr>
+          } @empty {
+             <tr>
+                <td colspan="6" class="text-center">Brak zdefiniowanych umów.</td>
+             </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

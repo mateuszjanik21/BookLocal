@@ -2,43 +2,58 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-[ApiController]
-[Route("api/[controller]")]
-public class CategoriesController : ControllerBase
+namespace BookLocal.API.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public CategoriesController(AppDbContext context)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class CategoriesController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly AppDbContext _context;
 
-    [HttpGet("feed")]
-    public async Task<ActionResult<IEnumerable<ServiceCategoryFeedDto>>> GetCategoryFeed()
-    {
-        var feed = await _context.ServiceCategories
-            .Include(sc => sc.Business)
-            .Include(sc => sc.Services) 
-            .Where(sc => sc.Services.Any()) 
-            .Select(sc => new ServiceCategoryFeedDto
-            {
-                ServiceCategoryId = sc.ServiceCategoryId,
-                Name = sc.Name,
-                PhotoUrl = sc.PhotoUrl,
-                BusinessId = sc.BusinessId,
-                BusinessName = sc.Business.Name,
-                BusinessCity = sc.Business.City,
-                Services = sc.Services.Select(s => new ServiceDto 
+        public CategoriesController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet("feed")]
+        public async Task<ActionResult<IEnumerable<ServiceCategoryFeedDto>>> GetCategoryFeed()
+        {
+            var feed = await _context.ServiceCategories
+                .AsNoTracking()
+                .Include(sc => sc.Business)
+                .Include(sc => sc.Services)
+                    .ThenInclude(s => s.Variants)
+                .Where(sc => sc.Services.Any(s => !s.IsArchived && s.Variants.Any(v => v.IsActive)))
+                .Select(sc => new ServiceCategoryFeedDto
                 {
-                    Id = s.ServiceId,
-                    Name = s.Name,
-                    Price = s.Price,
-                    DurationMinutes = s.DurationMinutes,
-                    ServiceCategoryId = s.ServiceCategoryId
+                    ServiceCategoryId = sc.ServiceCategoryId,
+                    Name = sc.Name,
+                    PhotoUrl = sc.PhotoUrl,
+                    BusinessId = sc.BusinessId,
+                    BusinessName = sc.Business.Name,
+                    BusinessCity = sc.Business.City,
+                    Services = sc.Services
+                        .Where(s => !s.IsArchived)
+                        .Select(s => new ServiceDto
+                        {
+                            Id = s.ServiceId,
+                            Name = s.Name,
+                            Description = s.Description,
+                            ServiceCategoryId = s.ServiceCategoryId,
+                            IsArchived = s.IsArchived,
+                            Variants = s.Variants.Select(v => new ServiceVariantDto
+                            {
+                                ServiceVariantId = v.ServiceVariantId,
+                                Name = v.Name,
+                                Price = v.Price,
+                                DurationMinutes = v.DurationMinutes,
+                                IsDefault = v.IsDefault
+                            }).ToList()
+                        }).ToList()
                 })
-            })
-            .ToListAsync();
+                .ToListAsync();
 
-        return Ok(feed);
+            return Ok(feed);
+        }
     }
 }

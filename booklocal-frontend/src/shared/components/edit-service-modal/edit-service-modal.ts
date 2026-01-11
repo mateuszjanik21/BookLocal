@@ -28,7 +28,8 @@ export class EditServiceModalComponent implements OnChanges {
     name: ['', Validators.required],
     description: [''],
     price: [0, [Validators.required, Validators.min(0)]],
-    durationMinutes: [30, [Validators.required, Validators.min(1)]]
+    durationMinutes: [30, [Validators.required, Validators.min(1)]],
+    cleanupTimeMinutes: [0, [Validators.min(0)]]
   });
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -41,7 +42,24 @@ export class EditServiceModalComponent implements OnChanges {
     if (this.serviceForm.invalid || !this.service) return;
 
     this.isSubmitting = true;
-    this.serviceService.updateService(this.businessId, this.service.id, this.serviceForm.value as any)
+    const formValue = this.serviceForm.value;
+
+    const payload = {
+      name: formValue.name,
+      description: formValue.description,
+      serviceCategoryId: this.service.serviceCategoryId,
+      variants: [
+        {
+          name: 'Standard',
+          price: formValue.price,
+          durationMinutes: formValue.durationMinutes,
+          cleanupTimeMinutes: formValue.cleanupTimeMinutes,
+          isDefault: true
+        }
+      ]
+    };
+
+    this.serviceService.updateService(this.businessId, this.service.id, payload as any)
       .pipe(finalize(() => this.isSubmitting = false))
       .subscribe({
         next: () => {

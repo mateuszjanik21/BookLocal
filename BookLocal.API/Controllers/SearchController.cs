@@ -22,8 +22,12 @@ public class SearchController : ControllerBase
         [FromQuery] int pageSize = 12)
     {
         var query = _context.Services
-            .Include(s => s.Business).ThenInclude(b => b.Reviews)
-            .Include(s => s.ServiceCategory).ThenInclude(sc => sc.MainCategory)
+            .Include(s => s.Variants)
+            .Include(s => s.Business)
+                .ThenInclude(b => b.Reviews)
+            .Include(s => s.ServiceCategory)
+                .ThenInclude(sc => sc.MainCategory)
+            .Where(s => !s.IsArchived && s.Variants.Any(v => v.IsActive))
             .AsQueryable();
 
         if (mainCategoryId.HasValue)
@@ -44,9 +48,10 @@ public class SearchController : ControllerBase
         var projectedQuery = query.Select(s => new ServiceSearchResultDto
         {
             ServiceId = s.ServiceId,
+            DefaultServiceVariantId = s.Variants.OrderBy(v => v.Price).First().ServiceVariantId,
             ServiceName = s.Name,
-            Price = s.Price,
-            DurationMinutes = s.DurationMinutes,
+            Price = s.Variants.Min(v => v.Price),
+            DurationMinutes = s.Variants.OrderBy(v => v.Price).First().DurationMinutes,
             BusinessId = s.BusinessId,
             BusinessName = s.Business.Name,
             BusinessCity = s.Business.City,
@@ -87,7 +92,7 @@ public class SearchController : ControllerBase
     [FromQuery] int? mainCategoryId,
     [FromQuery] string? sortBy,
     [FromQuery] int pageNumber = 1,
-    [FromQuery] int pageSize = 12) 
+    [FromQuery] int pageSize = 12)
     {
         var query = _context.Businesses.AsQueryable();
 
@@ -150,8 +155,12 @@ public class SearchController : ControllerBase
     [FromQuery] int pageSize = 10)
     {
         var query = _context.ServiceCategories
-            .Include(sc => sc.Business).ThenInclude(b => b.Reviews)
+            .AsNoTracking()
+            .Include(sc => sc.Business)
+                .ThenInclude(b => b.Reviews)
             .Include(sc => sc.Services)
+                .ThenInclude(s => s.Variants)
+            .Where(sc => sc.Services.Any(s => !s.IsArchived))
             .AsQueryable();
 
         if (mainCategoryId.HasValue)
@@ -180,41 +189,52 @@ public class SearchController : ControllerBase
         {
             "rating_desc" => projectedQuery.OrderByDescending(x => x.AverageRating).ThenByDescending(x => x.ReviewCount),
             "reviews_desc" => projectedQuery.OrderByDescending(x => x.ReviewCount),
-            "newest_desc" => projectedQuery.OrderByDescending(x => x.Business.CreatedAt), 
+            "newest_desc" => projectedQuery.OrderByDescending(x => x.Business.CreatedAt),
             "name_asc" => projectedQuery.OrderBy(x => x.Business.Name),
             _ => projectedQuery.OrderByDescending(x => x.AverageRating).ThenByDescending(x => x.ReviewCount)
         };
 
         var totalCount = await projectedQuery.CountAsync();
 
-        var pagedItems = await projectedQuery
+        var itemsData = await projectedQuery
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .Select(x => new ServiceCategorySearchResultDto
-            {
-                ServiceCategoryId = x.ServiceCategory.ServiceCategoryId,
-                Name = x.ServiceCategory.Name,
-                PhotoUrl = x.ServiceCategory.PhotoUrl,
-                BusinessId = x.ServiceCategory.BusinessId,
-                BusinessName = x.ServiceCategory.Business.Name,
-                BusinessCity = x.ServiceCategory.Business.City,
-                AverageRating = x.AverageRating,
-                BusinessCreatedAt = x.Business.CreatedAt,
-                ReviewCount = x.ReviewCount,
-                Services = x.ServiceCategory.Services.Select(s => new ServiceDto
-                {
-                    Id = s.ServiceId,
-                    Name = s.Name,
-                    Price = s.Price,
-                    DurationMinutes = s.DurationMinutes,
-                    IsArchived = s.IsArchived
-                }).ToList()
-            })
             .ToListAsync();
+
+        var resultItems = itemsData.Select(x => new ServiceCategorySearchResultDto
+        {
+            ServiceCategoryId = x.ServiceCategory.ServiceCategoryId,
+            Name = x.ServiceCategory.Name,
+            PhotoUrl = x.ServiceCategory.PhotoUrl,
+            BusinessId = x.ServiceCategory.BusinessId,
+            BusinessName = x.ServiceCategory.Business.Name,
+            BusinessCity = x.ServiceCategory.Business.City,
+            AverageRating = x.AverageRating,
+            ReviewCount = x.ReviewCount,
+            BusinessCreatedAt = x.Business.CreatedAt,
+            Services = x.ServiceCategory.Services
+                    .Where(s => !s.IsArchived)
+                    .Select(s => new ServiceDto
+                    {
+                        Id = s.ServiceId,
+                        Name = s.Name,
+                        Description = s.Description,
+                        ServiceCategoryId = s.ServiceCategoryId,
+                        IsArchived = s.IsArchived,
+                        Variants = s.Variants.Select(v => new ServiceVariantDto
+                        {
+                            ServiceVariantId = v.ServiceVariantId,
+                            Name = v.Name,
+                            Price = v.Price,
+                            DurationMinutes = v.DurationMinutes,
+                            IsDefault = v.IsDefault
+                        }).ToList()
+                    }).ToList()
+        }).ToList();
 
         var pagedResult = new PagedResultDto<ServiceCategorySearchResultDto>
         {
-            Items = pagedItems,
+            Items = resultItems,
             TotalCount = totalCount,
             PageNumber = pageNumber,
             PageSize = pageSize

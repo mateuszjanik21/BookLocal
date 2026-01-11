@@ -89,10 +89,10 @@ namespace BookLocal.API
 
                 options.AddPolicy("UniversalPolicy", policy =>
                 {
-                    policy.SetIsOriginAllowed(origin => true) // Magiczna linijka: Pozwala na ka¿dy adres (localhost, 10.0.2.2 itp.)
+                    policy.SetIsOriginAllowed(origin => true)
                           .AllowAnyMethod()
                           .AllowAnyHeader()
-                          .AllowCredentials(); // To jest wymagane dla SignalR w Angularze!
+                          .AllowCredentials();
                 });
             });
 

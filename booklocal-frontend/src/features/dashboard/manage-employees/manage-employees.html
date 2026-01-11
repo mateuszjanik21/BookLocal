@@ -51,7 +51,12 @@
                   </div>
                 </div>
                 <h2 class="card-title mt-4 text-lg">{{ employee.firstName }} {{ employee.lastName }}</h2>
-                <p class="text-base-content/60">{{ employee.position || 'Brak stanowiska' }}</p>
+                <div class="flex flex-col items-center gap-1">
+                   <p class="text-base-content/60">{{ employee.position || 'Brak stanowiska' }}</p>
+                   @if(employee.specialization) {
+                     <p class="text-xs text-primary font-medium">{{ employee.specialization }}</p>
+                   }
+                </div>
 
                 <div class="divider my-2"></div>
 

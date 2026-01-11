@@ -8,7 +8,6 @@
         public string? City { get; set; }
         public string? Description { get; set; }
         public string? PhotoUrl { get; set; }
-
     }
 
     public class BusinessDetailDto
@@ -20,12 +19,14 @@
         public string? Address { get; set; }
         public string? City { get; set; }
         public string? Description { get; set; }
+        public bool IsVerified { get; set; }
         public List<ServiceCategoryDto> Categories { get; set; } = new();
         public List<EmployeeDto> Employees { get; set; } = new();
         public double AverageRating { get; set; }
         public int ReviewCount { get; set; }
         public OwnerDto Owner { get; set; }
     }
+
     public class OwnerDto
     {
         public string? FirstName { get; set; }
@@ -39,6 +40,8 @@
         public string? PhotoUrl { get; set; }
         public double AverageRating { get; set; }
         public int ReviewCount { get; set; }
+        public bool IsVerified { get; set; }
+
         public List<string> MainCategories { get; set; } = new();
     }
 }

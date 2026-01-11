@@ -66,6 +66,107 @@ namespace BookLocal.Data.Migrations
                     b.ToTable("Businesses");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.BusinessSubscription", b =>
+                {
+                    b.Property<int>("SubscriptionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubscriptionId"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExternalSubscriptionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAutoRenew")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PlanId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("SubscriptionId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("PlanId");
+
+                    b.ToTable("BusinessSubscriptions");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.BusinessVerification", b =>
+                {
+                    b.Property<int>("VerificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VerificationId"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("VerificationId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.ToTable("BusinessVerifications");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.CommissionRate", b =>
+                {
+                    b.Property<int>("CommissionRateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommissionRateId"));
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Percentage")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("ServiceCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ThresholdAmount")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("CommissionRateId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("ServiceCategoryId");
+
+                    b.ToTable("CommissionRates");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.Conversation", b =>
                 {
                     b.Property<int>("ConversationId")
@@ -88,6 +189,605 @@ namespace BookLocal.Data.Migrations
                     b.HasIndex("CustomerId");
 
                     b.ToTable("Conversations");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.CustomerBusinessProfile", b =>
+                {
+                    b.Property<int>("ProfileId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProfileId"));
+
+                    b.Property<string>("Allergies")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Formulas")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsBanned")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVIP")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastVisitDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("NoShowCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PrivateNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalSpent")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("ProfileId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("CustomerBusinessProfiles");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.DailyEmployeePerformance", b =>
+                {
+                    b.Property<int>("PerformanceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PerformanceId"));
+
+                    b.Property<double>("AverageRating")
+                        .HasColumnType("float");
+
+                    b.Property<int>("ClientsServed")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinutesIdle")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinutesWorked")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("ReportDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("ServicesPerformed")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalRevenueGenerated")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("PerformanceId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("DailyEmployeePerformances");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.DailyFinancialReport", b =>
+                {
+                    b.Property<int>("ReportId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReportId"));
+
+                    b.Property<decimal>("AverageTicketValue")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CancelledAppointments")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CashRevenue")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("CompletedAppointments")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NewCustomersCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NoShowCount")
+                        .HasColumnType("int");
+
+                    b.Property<double>("OccupancyRate")
+                        .HasColumnType("float");
+
+                    b.Property<decimal>("OnlineRevenue")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<DateOnly>("ReportDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("ReturningCustomersCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TipsAmount")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<string>("TopSellingServiceName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("TotalAppointments")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalRevenue")
+                        .HasColumnType("decimal(12, 2)");
+
+                    b.HasKey("ReportId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.ToTable("DailyFinancialReports");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Discount", b =>
+                {
+                    b.Property<int>("DiscountId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DiscountId"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MaxUses")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsedCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly?>("ValidFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ValidTo")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("Value")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("DiscountId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.ToTable("Discounts");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Employee", b =>
+                {
+                    b.Property<int>("EmployeeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EmployeeId"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("DateOfBirth")
+                        .HasColumnType("date");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Position")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("EmployeeId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmployeeCertificate", b =>
+                {
+                    b.Property<int>("CertificateId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CertificateId"));
+
+                    b.Property<DateOnly>("DateObtained")
+                        .HasColumnType("date");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Institution")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsVisibleToClient")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("CertificateId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeCertificates");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmployeeDetails", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Bio")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Hobbies")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("InstagramProfileUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PortfolioUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Specialization")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId")
+                        .IsUnique();
+
+                    b.ToTable("EmployeeDetails");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmployeeFinanceSettings", b =>
+                {
+                    b.Property<int>("SettingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SettingId"));
+
+                    b.Property<int>("CommuteType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("HasPit2Filed")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("HourlyRate")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<bool>("IsPensionRetired")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsStudent")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("PPKEmployeeRate")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PPKEmployerRate")
+                        .HasColumnType("float");
+
+                    b.Property<bool>("ParticipatesInPPK")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("UseMiddleClassRelief")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("VoluntarySicknessInsurance")
+                        .HasColumnType("bit");
+
+                    b.HasKey("SettingId");
+
+                    b.HasIndex("EmployeeId")
+                        .IsUnique();
+
+                    b.ToTable("EmployeeFinanceSettings");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmployeePayroll", b =>
+                {
+                    b.Property<int>("PayrollId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PayrollId"));
+
+                    b.Property<decimal>("BaseSalaryComponent")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("BonusComponent")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("CommissionComponent")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("EmployerPPKContribution")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("EmployerSocialSecurityTax")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<DateOnly?>("GeneratedAt")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("GrossAmount")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("HealthInsuranceTax")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("IncomeTaxAdvance")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("NetAmount")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("OtherDeductions")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<DateOnly?>("PaidAt")
+                        .HasColumnType("date");
+
+                    b.Property<int>("PeriodMonth")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PeriodYear")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("SocialSecurityTax")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalEmployerCost")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("PayrollId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeePayrolls");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmployeeService", b =>
+                {
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("EmployeeId", "ServiceId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("EmployeeServices");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmploymentContract", b =>
+                {
+                    b.Property<int>("ContractId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContractId"));
+
+                    b.Property<decimal>("BaseSalary")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("ContractType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("TaxDeductibleExpenses")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("ContractId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmploymentContracts");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Invoice", b =>
+                {
+                    b.Property<int>("InvoiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceId"));
+
+                    b.Property<string>("BuyerAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BuyerNIP")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BuyerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("IssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PdfUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("InvoiceId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.LoyaltyPoint", b =>
+                {
+                    b.Property<int>("LoyaltyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LoyaltyId"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PointsBalance")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalPointsEarned")
+                        .HasColumnType("int");
+
+                    b.HasKey("LoyaltyId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("LoyaltyPoints");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.LoyaltyProgramConfig", b =>
+                {
+                    b.Property<int>("ConfigId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ConfigId"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("SpendAmountForOnePoint")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("ConfigId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.ToTable("LoyaltyProgramConfigs");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.LoyaltyTransaction", b =>
+                {
+                    b.Property<int>("TransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LoyaltyPointId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PointsAmount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReservationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("TransactionId");
+
+                    b.HasIndex("LoyaltyPointId");
+
+                    b.ToTable("LoyaltyTransactions");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.MainCategory", b =>
@@ -142,6 +842,67 @@ namespace BookLocal.Data.Migrations
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.Payment", b =>
+                {
+                    b.Property<int>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExternalTransactionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PaymentMethodId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("PaymentMethodId");
+
+                    b.HasIndex("ReservationId");
+
+                    b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.PaymentMethod", b =>
+                {
+                    b.Property<int>("PaymentMethodId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentMethodId"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("PaymentMethodId");
+
+                    b.ToTable("PaymentMethods");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.Review", b =>
                 {
                     b.Property<int>("ReviewId")
@@ -186,6 +947,128 @@ namespace BookLocal.Data.Migrations
                     b.ToTable("Reviews");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.ScheduleException", b =>
+                {
+                    b.Property<int>("ExceptionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExceptionId"));
+
+                    b.Property<bool>("BlocksCalendar")
+                        .HasColumnType("bit");
+
+                    b.Property<DateOnly>("DateFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("DateTo")
+                        .HasColumnType("date");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("ExceptionId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("ScheduleExceptions");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Service", b =>
+                {
+                    b.Property<int>("ServiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceId"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("ServiceCategoryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ServiceId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("ServiceCategoryId");
+
+                    b.ToTable("Services");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.ServiceBundle", b =>
+                {
+                    b.Property<int>("ServiceBundleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceBundleId"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("ServiceBundleId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.ToTable("ServiceBundles");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.ServiceBundleItem", b =>
+                {
+                    b.Property<int>("ServiceBundleItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceBundleItemId"));
+
+                    b.Property<int>("ServiceBundleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServiceVariantId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ServiceBundleItemId");
+
+                    b.HasIndex("ServiceBundleId");
+
+                    b.HasIndex("ServiceVariantId");
+
+                    b.ToTable("ServiceBundleItems");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.ServiceCategory", b =>
                 {
                     b.Property<int>("ServiceCategoryId")
@@ -215,6 +1098,83 @@ namespace BookLocal.Data.Migrations
                     b.HasIndex("MainCategoryId");
 
                     b.ToTable("ServiceCategories");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.ServiceVariant", b =>
+                {
+                    b.Property<int>("ServiceVariantId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceVariantId"));
+
+                    b.Property<int>("CleanupTimeMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ServiceVariantId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("ServiceVariants");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.SubscriptionPlan", b =>
+                {
+                    b.Property<int>("PlanId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PlanId"));
+
+                    b.Property<bool>("HasAdvancedReports")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasMarketingTools")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxEmployees")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxServices")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("PriceMonthly")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("PriceYearly")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("PlanId");
+
+                    b.ToTable("SubscriptionPlans");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.User", b =>
@@ -293,6 +1253,79 @@ namespace BookLocal.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.VerificationDocument", b =>
+                {
+                    b.Property<int>("DocumentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentId"));
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("VerificationId")
+                        .HasColumnType("int");
+
+                    b.HasKey("DocumentId");
+
+                    b.HasIndex("VerificationId");
+
+                    b.ToTable("VerificationDocuments");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Waitlist", b =>
+                {
+                    b.Property<int>("WaitlistId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WaitlistId"));
+
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateOnly>("DesiredDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeSpan?>("DesiredTimeFrom")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan?>("DesiredTimeTo")
+                        .HasColumnType("time");
+
+                    b.Property<int?>("PreferredEmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ServiceVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("WaitlistId");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Waitlists");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.WorkSchedule", b =>
                 {
                     b.Property<int>("WorkScheduleId")
@@ -322,56 +1355,6 @@ namespace BookLocal.Data.Migrations
                     b.HasIndex("EmployeeId");
 
                     b.ToTable("WorkSchedules");
-                });
-
-            modelBuilder.Entity("Employee", b =>
-                {
-                    b.Property<int>("EmployeeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EmployeeId"));
-
-                    b.Property<int>("BusinessId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PhotoUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Position")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("EmployeeId");
-
-                    b.HasIndex("BusinessId");
-
-                    b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("EmployeeService", b =>
-                {
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ServiceId")
-                        .HasColumnType("int");
-
-                    b.HasKey("EmployeeId", "ServiceId");
-
-                    b.HasIndex("ServiceId");
-
-                    b.ToTable("EmployeeServices");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -515,6 +1498,9 @@ namespace BookLocal.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReservationId"));
 
+                    b.Property<decimal>("AgreedPrice")
+                        .HasColumnType("decimal(10, 2)");
+
                     b.Property<int>("BusinessId")
                         .HasColumnType("int");
 
@@ -536,7 +1522,10 @@ namespace BookLocal.Data.Migrations
                     b.Property<string>("GuestPhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ServiceId")
+                    b.Property<int?>("ServiceBundleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ServiceVariantId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("StartTime")
@@ -554,49 +1543,11 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("ServiceBundleId");
+
+                    b.HasIndex("ServiceVariantId");
 
                     b.ToTable("Reservations");
-                });
-
-            modelBuilder.Entity("Service", b =>
-                {
-                    b.Property<int>("ServiceId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceId"));
-
-                    b.Property<int>("BusinessId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DurationMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsArchived")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(10, 2)");
-
-                    b.Property<int>("ServiceCategoryId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ServiceId");
-
-                    b.HasIndex("BusinessId");
-
-                    b.HasIndex("ServiceCategoryId");
-
-                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Business", b =>
@@ -608,6 +1559,53 @@ namespace BookLocal.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.BusinessSubscription", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookLocal.Data.Models.SubscriptionPlan", "Plan")
+                        .WithMany()
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Plan");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.BusinessVerification", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.CommissionRate", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookLocal.Data.Models.ServiceCategory", "ServiceCategory")
+                        .WithMany()
+                        .HasForeignKey("ServiceCategoryId");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("ServiceCategory");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Conversation", b =>
@@ -629,6 +1627,195 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.CustomerBusinessProfile", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookLocal.Data.Models.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.DailyEmployeePerformance", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.DailyFinancialReport", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Discount", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Employee", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany("Employees")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmployeeCertificate", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmployeeDetails", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
+                        .WithOne("EmployeeDetails")
+                        .HasForeignKey("BookLocal.Data.Models.EmployeeDetails", "EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmployeeFinanceSettings", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
+                        .WithOne("FinanceSettings")
+                        .HasForeignKey("BookLocal.Data.Models.EmployeeFinanceSettings", "EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmployeePayroll", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
+                        .WithMany("Payrolls")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmployeeService", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
+                        .WithMany("EmployeeServices")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookLocal.Data.Models.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.EmploymentContract", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
+                        .WithMany("Contracts")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Invoice", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Payment", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.LoyaltyPoint", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookLocal.Data.Models.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.LoyaltyProgramConfig", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.LoyaltyTransaction", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.LoyaltyPoint", "LoyaltyPoint")
+                        .WithMany()
+                        .HasForeignKey("LoyaltyPointId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("LoyaltyPoint");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.Message", b =>
                 {
                     b.HasOne("BookLocal.Data.Models.Conversation", "Conversation")
@@ -646,6 +1833,25 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("Conversation");
 
                     b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Payment", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.PaymentMethod", "PaymentMethod")
+                        .WithMany()
+                        .HasForeignKey("PaymentMethodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PaymentMethod");
+
+                    b.Navigation("Reservation");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Review", b =>
@@ -673,6 +1879,66 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.ScheduleException", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
+                        .WithMany("ScheduleExceptions")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Service", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookLocal.Data.Models.ServiceCategory", "ServiceCategory")
+                        .WithMany("Services")
+                        .HasForeignKey("ServiceCategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("ServiceCategory");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.ServiceBundle", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.ServiceBundleItem", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.ServiceBundle", "ServiceBundle")
+                        .WithMany("BundleItems")
+                        .HasForeignKey("ServiceBundleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookLocal.Data.Models.ServiceVariant", "ServiceVariant")
+                        .WithMany()
+                        .HasForeignKey("ServiceVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ServiceBundle");
+
+                    b.Navigation("ServiceVariant");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.ServiceCategory", b =>
                 {
                     b.HasOne("BookLocal.Data.Models.Business", "Business")
@@ -692,45 +1958,56 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("MainCategory");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.ServiceVariant", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Service", "Service")
+                        .WithMany("Variants")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.VerificationDocument", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.BusinessVerification", "Verification")
+                        .WithMany()
+                        .HasForeignKey("VerificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Verification");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Waitlist", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookLocal.Data.Models.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.WorkSchedule", b =>
                 {
-                    b.HasOne("Employee", "Employee")
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
                         .WithMany("WorkSchedules")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Employee");
-                });
-
-            modelBuilder.Entity("Employee", b =>
-                {
-                    b.HasOne("BookLocal.Data.Models.Business", "Business")
-                        .WithMany("Employees")
-                        .HasForeignKey("BusinessId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Business");
-                });
-
-            modelBuilder.Entity("EmployeeService", b =>
-                {
-                    b.HasOne("Employee", "Employee")
-                        .WithMany("EmployeeServices")
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Service", "Service")
-                        .WithMany("EmployeeServices")
-                        .HasForeignKey("ServiceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-
-                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -793,18 +2070,22 @@ namespace BookLocal.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("BookLocal.Data.Models.User", "Customer")
-                        .WithMany()
+                        .WithMany("Reservations")
                         .HasForeignKey("CustomerId");
 
-                    b.HasOne("Employee", "Employee")
+                    b.HasOne("BookLocal.Data.Models.Employee", "Employee")
                         .WithMany("Reservations")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Service", "Service")
+                    b.HasOne("BookLocal.Data.Models.ServiceBundle", "ServiceBundle")
                         .WithMany()
-                        .HasForeignKey("ServiceId")
+                        .HasForeignKey("ServiceBundleId");
+
+                    b.HasOne("BookLocal.Data.Models.ServiceVariant", "ServiceVariant")
+                        .WithMany("Reservations")
+                        .HasForeignKey("ServiceVariantId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -814,26 +2095,9 @@ namespace BookLocal.Data.Migrations
 
                     b.Navigation("Employee");
 
-                    b.Navigation("Service");
-                });
+                    b.Navigation("ServiceBundle");
 
-            modelBuilder.Entity("Service", b =>
-                {
-                    b.HasOne("BookLocal.Data.Models.Business", "Business")
-                        .WithMany()
-                        .HasForeignKey("BusinessId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BookLocal.Data.Models.ServiceCategory", "ServiceCategory")
-                        .WithMany("Services")
-                        .HasForeignKey("ServiceCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Business");
-
-                    b.Navigation("ServiceCategory");
+                    b.Navigation("ServiceVariant");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Business", b =>
@@ -852,9 +2116,38 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("Messages");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.Employee", b =>
+                {
+                    b.Navigation("Contracts");
+
+                    b.Navigation("EmployeeDetails");
+
+                    b.Navigation("EmployeeServices");
+
+                    b.Navigation("FinanceSettings");
+
+                    b.Navigation("Payrolls");
+
+                    b.Navigation("Reservations");
+
+                    b.Navigation("ScheduleExceptions");
+
+                    b.Navigation("WorkSchedules");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.MainCategory", b =>
                 {
                     b.Navigation("ServiceCategories");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Service", b =>
+                {
+                    b.Navigation("Variants");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.ServiceBundle", b =>
+                {
+                    b.Navigation("BundleItems");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.ServiceCategory", b =>
@@ -862,28 +2155,21 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("Services");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.ServiceVariant", b =>
+                {
+                    b.Navigation("Reservations");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.User", b =>
                 {
                     b.Navigation("Messages");
-                });
-
-            modelBuilder.Entity("Employee", b =>
-                {
-                    b.Navigation("EmployeeServices");
 
                     b.Navigation("Reservations");
-
-                    b.Navigation("WorkSchedules");
                 });
 
             modelBuilder.Entity("Reservation", b =>
                 {
                     b.Navigation("Review");
-                });
-
-            modelBuilder.Entity("Service", b =>
-                {
-                    b.Navigation("EmployeeServices");
                 });
 #pragma warning restore 612, 618
         }

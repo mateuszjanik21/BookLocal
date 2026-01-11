@@ -23,7 +23,13 @@ export class EditEmployeeModalComponent implements OnChanges {
   employeeForm = this.fb.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
-    position: ['']
+    dateOfBirth: ['', Validators.required],
+    position: [''],
+    bio: [''],
+    specialization: [''],
+    instagramProfileUrl: [''],
+    portfolioUrl: [''],
+    isStudent: [false]
   });
   
   ngOnChanges(changes: SimpleChanges): void {

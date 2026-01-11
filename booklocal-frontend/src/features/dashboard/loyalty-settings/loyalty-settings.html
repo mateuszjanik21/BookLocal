@@ -1,0 +1,50 @@
+<div class="p-6 bg-base-100 rounded-lg shadow-lg">
+  <h2 class="text-2xl font-bold mb-6">Program Lojalnościowy</h2>
+
+  @if (isLoading) {
+    <div class="flex justify-center p-8">
+      <span class="loading loading-spinner loading-lg"></span>
+    </div>
+  } @else {
+    <form [formGroup]="configForm" (submit)="saveConfig()">
+      
+      <div class="form-control mb-6">
+        <label class="label cursor-pointer justify-start gap-4">
+          <input type="checkbox" class="toggle toggle-primary" formControlName="isActive" />
+          <span class="label-text text-lg font-medium">Aktywuj Program Lojalnościowy</span>
+        </label>
+      </div>
+
+      @if (configForm.get('isActive')?.value) {
+        <div class="card bg-base-200 p-6 mb-6">
+          <h3 class="font-bold text-lg mb-4">Zasady naliczania</h3>
+          
+          <div class="form-control w-full max-w-sm">
+            <label class="label">
+              <span class="label-text">Wydana kwota za 1 punkt (PLN)</span>
+            </label>
+            <div class="join">
+                <input type="number" class="input input-bordered join-item w-full" 
+                       formControlName="spendAmountForOnePoint" min="0.01" step="0.01" />
+                <span class="btn btn-neutral join-item no-animation">PLN = 1 pkt</span>
+            </div>
+            <label class="label">
+              <span class="label-text-alt opacity-70">
+                Przykład: Jeśli ustawisz 10 PLN, to za wizytę o wartości 100 PLN klient otrzyma 10 punktów.
+              </span>
+            </label>
+          </div>
+        </div>
+      }
+
+      <div class="flex justify-end">
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving || configForm.invalid">
+            @if (isSaving) {
+                <span class="loading loading-spinner"></span>
+            }
+            Zapisz zmiany
+        </button>
+      </div>
+    </form>
+  }
+</div>

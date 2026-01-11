@@ -63,14 +63,22 @@ namespace BookLocal.API.Controllers
 
             var conversations = await query
                 .Include(c => c.Messages)
+                .Include(c => c.Business)
+                .Include(c => c.Customer)
                 .Select(c => new ConversationDto
                 {
                     ConversationId = c.ConversationId,
                     ParticipantId = userRoles.Contains("owner") ? c.CustomerId : c.Business.OwnerId,
                     ParticipantName = userRoles.Contains("owner") ? (c.Customer.FirstName + " " + c.Customer.LastName) : c.Business.Name,
                     ParticipantPhotoUrl = userRoles.Contains("owner") ? c.Customer.PhotoUrl : c.Business.PhotoUrl,
-                    LastMessage = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault() != null ? c.Messages.OrderByDescending(m => m.SentAt).First().Content : "Brak wiadomości",
-                    LastMessageAt = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault() != null ? c.Messages.OrderByDescending(m => m.SentAt).First().SentAt : DateTime.MinValue,
+
+                    LastMessage = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault() != null
+                        ? c.Messages.OrderByDescending(m => m.SentAt).First().Content
+                        : "Brak wiadomości",
+                    LastMessageAt = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault() != null
+                        ? c.Messages.OrderByDescending(m => m.SentAt).First().SentAt
+                        : DateTime.MinValue,
+
                     UnreadCount = c.Messages.Count(m => m.SenderId != userId && !m.IsRead)
                 })
                 .OrderByDescending(c => c.LastMessageAt)
@@ -85,15 +93,19 @@ namespace BookLocal.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var conversation = await _context.Conversations
+                .AsNoTracking()
                 .Include(c => c.Business)
                 .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
 
-            if (conversation == null || (conversation.CustomerId != userId && conversation.Business.OwnerId != userId))
+            if (conversation == null) return NotFound("Nie znaleziono konwersacji.");
+
+            if (conversation.CustomerId != userId && conversation.Business.OwnerId != userId)
             {
                 return Forbid();
             }
 
             var messages = await _context.Messages
+                .AsNoTracking()
                 .Where(m => m.ConversationId == conversationId)
                 .Include(m => m.Sender)
                 .OrderBy(m => m.SentAt)
@@ -102,12 +114,17 @@ namespace BookLocal.API.Controllers
                     MessageId = m.MessageId,
                     ConversationId = m.ConversationId,
                     Content = m.Content,
-                    SentAt = DateTime.SpecifyKind(m.SentAt, DateTimeKind.Utc),
+                    SentAt = m.SentAt,
                     SenderId = m.SenderId,
+
                     SenderFullName = m.SenderId == conversation.Business.OwnerId
                         ? conversation.Business.Name
                         : m.Sender.FirstName + " " + m.Sender.LastName,
-                    SenderPhotoUrl = m.Sender.PhotoUrl,
+
+                    SenderPhotoUrl = m.SenderId == conversation.Business.OwnerId
+                        ? conversation.Business.PhotoUrl
+                        : m.Sender.PhotoUrl,
+
                     IsRead = m.IsRead
                 })
                 .ToListAsync();

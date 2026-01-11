@@ -29,10 +29,27 @@ public class ServicesController : ControllerBase
         }
 
         var services = await _context.Services
+            .Include(s => s.Variants)
             .Where(s => s.BusinessId == businessId)
             .ToListAsync();
 
-        return Ok(services);
+        var serviceDtos = services.Select(s => new ServiceDto
+        {
+            Id = s.ServiceId,
+            Name = s.Name,
+            ServiceCategoryId = s.ServiceCategoryId,
+            IsArchived = s.IsArchived,
+            Variants = s.Variants.Select(v => new ServiceVariantDto
+            {
+                ServiceVariantId = v.ServiceVariantId,
+                Name = v.Name,
+                Price = v.Price,
+                DurationMinutes = v.DurationMinutes,
+                IsDefault = v.IsDefault,
+            }).ToList()
+        });
+
+        return Ok(serviceDtos);
     }
 
     [HttpPost]
@@ -40,6 +57,7 @@ public class ServicesController : ControllerBase
     public async Task<ActionResult<ServiceDto>> AddService(int businessId, ServiceUpsertDto serviceDto)
     {
         var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
         var categoryExists = await _context.ServiceCategories
             .AnyAsync(sc => sc.ServiceCategoryId == serviceDto.ServiceCategoryId && sc.BusinessId == businessId && sc.Business.OwnerId == ownerId);
 
@@ -52,10 +70,17 @@ public class ServicesController : ControllerBase
         {
             Name = serviceDto.Name,
             Description = serviceDto.Description,
-            Price = serviceDto.Price,
-            DurationMinutes = serviceDto.DurationMinutes,
             ServiceCategoryId = serviceDto.ServiceCategoryId,
-            BusinessId = businessId
+            BusinessId = businessId,
+            Variants = serviceDto.Variants.Select(v => new ServiceVariant
+            {
+                Name = v.Name,
+                Price = v.Price,
+                DurationMinutes = v.DurationMinutes,
+                CleanupTimeMinutes = v.CleanupTimeMinutes,
+                IsDefault = v.IsDefault,
+                IsActive = true
+            }).ToList()
         };
 
         _context.Services.Add(service);
@@ -65,8 +90,15 @@ public class ServicesController : ControllerBase
         {
             Id = service.ServiceId,
             Name = service.Name,
-            Price = service.Price,
-            DurationMinutes = service.DurationMinutes
+            ServiceCategoryId = service.ServiceCategoryId,
+            Variants = service.Variants.Select(v => new ServiceVariantDto
+            {
+                ServiceVariantId = v.ServiceVariantId,
+                Name = v.Name,
+                Price = v.Price,
+                DurationMinutes = v.DurationMinutes,
+                IsDefault = v.IsDefault
+            }).ToList()
         };
 
         return CreatedAtAction(nameof(GetServicesForBusiness), new { businessId = businessId, id = service.ServiceId }, serviceToReturn);
@@ -88,8 +120,20 @@ public class ServicesController : ControllerBase
 
         service.Name = serviceDto.Name;
         service.Description = serviceDto.Description;
-        service.Price = serviceDto.Price;
-        service.DurationMinutes = serviceDto.DurationMinutes;
+        service.ServiceCategoryId = serviceDto.ServiceCategoryId;
+
+        _context.ServiceVariants.RemoveRange(service.Variants);
+
+        service.Variants = serviceDto.Variants.Select(v => new ServiceVariant
+        {
+            Name = v.Name,
+            Price = v.Price,
+            DurationMinutes = v.DurationMinutes,
+            CleanupTimeMinutes = v.CleanupTimeMinutes,
+            IsDefault = v.IsDefault,
+            IsActive = true,
+            ServiceId = service.ServiceId
+        }).ToList();
 
         await _context.SaveChangesAsync();
         return NoContent();
@@ -109,14 +153,20 @@ public class ServicesController : ControllerBase
             return NotFound("Usługa nie została znaleziona lub nie masz do niej dostępu.");
         }
 
+        var variantIds = await _context.ServiceVariants
+            .Where(v => v.ServiceId == serviceId)
+            .Select(v => v.ServiceVariantId)
+            .ToListAsync();
+
         var futureReservations = await _context.Reservations
-            .Where(r => r.ServiceId == serviceId && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
+            .Where(r => variantIds.Contains(r.ServiceVariantId) && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
             .ToListAsync();
 
         foreach (var reservation in futureReservations)
         {
             reservation.Status = ReservationStatus.Cancelled;
         }
+
         service.IsArchived = true;
         await _context.SaveChangesAsync();
         return NoContent();

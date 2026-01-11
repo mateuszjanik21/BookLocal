@@ -8,5 +8,6 @@ namespace BookLocal.Data.Models
         public required string LastName { get; set; }
         public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
         public string? PhotoUrl { get; set; }
+        public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     }
 }

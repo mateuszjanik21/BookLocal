@@ -1,9 +1,15 @@
-import { Service } from "./business.model";
+import { Service} from "./business.model";
 
 export interface EmployeePayload {
   firstName: string;
   lastName: string;
   position?: string;
+  dateOfBirth: string;
+  bio?: string;
+  specialization?: string;
+  instagramProfileUrl?: string;
+  portfolioUrl?: string;
+  isStudent: boolean;
 }
 
 export interface EmployeeDetail {
@@ -12,12 +18,19 @@ export interface EmployeeDetail {
   lastName: string;
   position?: string;
   photoUrl?: string;
+  
+  bio?: string;
+  specialization?: string;
+  instagramProfileUrl?: string;
+  portfolioUrl?: string;
+
   estimatedRevenue: number;
+  
   assignedServices: Service[];
-  workSchedules: WorkSchedule[];
+  workSchedules: WorkScheduleDto[];
 }
 
-export interface WorkSchedule {
+export interface WorkScheduleDto {
   dayOfWeek: number;
   startTime?: string;
   endTime?: string;

@@ -6,7 +6,8 @@ public enum ReservationStatus
 {
     Confirmed,
     Cancelled,
-    Completed
+    Completed,
+    NoShow
 }
 
 public class Reservation
@@ -26,7 +27,17 @@ public class Reservation
     public string? GuestPhoneNumber { get; set; }
 
     [Required]
-    public int ServiceId { get; set; }
+    public int ServiceVariantId { get; set; }
+    [ForeignKey("ServiceVariantId")]
+    public virtual ServiceVariant ServiceVariant { get; set; }
+
+    [Required]
+    [Column(TypeName = "decimal(10, 2)")]
+    public decimal AgreedPrice { get; set; }
+
+    public int? ServiceBundleId { get; set; }
+    [ForeignKey("ServiceBundleId")]
+    public virtual ServiceBundle? ServiceBundle { get; set; }
 
     [Required]
     public int EmployeeId { get; set; }
@@ -42,7 +53,6 @@ public class Reservation
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public virtual Service Service { get; set; }
     public virtual Employee Employee { get; set; }
     public virtual Review? Review { get; set; }
 }

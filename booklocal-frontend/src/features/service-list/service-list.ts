@@ -76,11 +76,17 @@ export class ServiceListComponent implements OnInit {
     const serviceForModal: Service = {
       id: item.serviceId,
       name: item.serviceName,
-      price: item.price,
-      durationMinutes: item.durationMinutes,
-      businessId: item.businessId,
       serviceCategoryId: 0,
-      isArchived: false
+      isArchived: false,
+      businessId: item.businessId,
+      variants: [{
+        serviceVariantId: item.defaultServiceVariantId || 0,
+        name: 'Standard',
+        price: item.price,
+        durationMinutes: item.durationMinutes,
+        cleanupTimeMinutes: 0,
+        isDefault: true
+      }]
     };
     this.selectedService = serviceForModal;
     this.businessService.getEmployeesForService(item.businessId, item.serviceId).subscribe(employees => {

@@ -19,6 +19,9 @@ import { ManageProfileComponent } from '../features/dashboard/manage-profile/man
 import { HomeComponent } from '../features/home/home';
 import { EmployeeDetailComponent } from '../features/dashboard/employee-detail/employee-detail';
 import { ServiceListComponent } from '../features/service-list/service-list';
+import { ManageHrComponent } from '../features/dashboard/manage-hr/manage-hr';
+import { ManageCustomersComponent } from '../features/dashboard/manage-customers/manage-customers';
+import { LoyaltySettingsComponent } from '../features/dashboard/loyalty-settings/loyalty-settings';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -39,11 +42,14 @@ export const routes: Routes = [
       { path: '', component: DashboardHomeComponent }, 
       { path: 'services', component: ManageServicesComponent },
       { path: 'employees', component: ManageEmployeesComponent },
+      { path: 'customers', component: ManageCustomersComponent },
       { path: 'reservations', component: ManageReservationsComponent },
       { path: 'reservations/:id', component: ReservationDetailComponent },
       { path: 'chat', component: ChatComponent },
       { path: 'profile', component: ManageProfileComponent },
       { path: 'employees/:id', component: EmployeeDetailComponent },
+      { path: 'hr', component: ManageHrComponent },
+      { path: 'loyalty', component: LoyaltySettingsComponent },
     ]
   },
 ];

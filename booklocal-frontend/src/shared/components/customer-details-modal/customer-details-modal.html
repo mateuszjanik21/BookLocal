@@ -1,0 +1,140 @@
+<div class="modal modal-open">
+  <div class="modal-box w-11/12 max-w-4xl max-h-[90vh] overflow-y-auto pt-16 relative">
+    <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 z-50 bg-base-100 shadow-sm" (click)="closeModal()">✕</button>
+
+    @if (isLoading || !customer) {
+      <div class="flex justify-center p-12">
+        <span class="loading loading-spinner loading-lg"></span>
+      </div>
+    } @else {
+      <!-- Header -->
+      <div class="flex items-start gap-4 mb-6">
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content rounded-full w-20">
+            <span class="text-3xl">{{ customer.fullName.charAt(0) }}</span>
+          </div>
+        </div>
+        <div class="flex-1">
+          <h3 class="font-bold text-2xl pt-2">{{ customer.fullName }}</h3>
+          <div class="text-sm opacity-70 flex gap-4 mt-1">
+            <span *ngIf="customer.phoneNumber">📞 {{ customer.phoneNumber }}</span>
+            <span *ngIf="customer.email">✉️ {{ customer.email }}</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+            <button class="btn btn-sm" [class.btn-warning]="customer.isVIP" (click)="toggleVIP()">
+                {{ customer.isVIP ? '⭐ VIP' : 'Oznacz jako VIP' }}
+            </button>
+             <button class="btn btn-sm" [class.btn-error]="customer.isBanned" (click)="toggleBan()">
+                {{ customer.isBanned ? '🚫 Zablokowany' : 'Zablokuj' }}
+            </button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats shadow w-full mb-6 bg-base-200">
+        <div class="stat">
+          <div class="stat-title">Wizyty</div>
+          <div class="stat-value">{{ customer.visitCount }}</div>
+          <div class="stat-desc">Zrealizowane</div>
+        </div>
+         <div class="stat">
+          <div class="stat-title">Nieobecności</div>
+          <div class="stat-value text-error">{{ customer.noShowCount }}</div>
+          <div class="stat-desc">No-Show</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">Wydano łącznie</div>
+          <div class="stat-value text-primary">{{ customer.totalSpent | number:'1.2-2' }} zł</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">Punkty</div>
+          <div class="stat-value text-accent">{{ customer.pointsBalance }}</div>
+          <div class="stat-desc">Zgromadzone</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">Ostatnia wizyta</div>
+          <div class="stat-desc mt-1 font-bold text-sm">
+             <span *ngIf="customer.lastVisitDate !== '0001-01-01T00:00:00'">{{ customer.lastVisitDate | date:'mediumDate' }}</span>
+             <span *ngIf="customer.lastVisitDate === '0001-01-01T00:00:00'">Brak</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes Form -->
+      <form [formGroup]="notesForm" (submit)="saveNotes()">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Left Col: Private Notes -->
+              <div class="form-control">
+                  <label class="label"><span class="label-text font-bold">Notatki prywatne</span></label>
+                  <textarea class="textarea textarea-bordered h-40" 
+                            placeholder="Preferencje klienta, o czym lubi rozmawiać..."
+                            formControlName="privateNotes"></textarea>
+              </div>
+
+               <!-- Right Col: Tech Specs -->
+              <div class="flex flex-col gap-4">
+                  <div class="form-control">
+                      <label class="label"><span class="label-text font-bold">Alergie / Przeciwwskazania</span></label>
+                      <textarea class="textarea textarea-bordered h-16 textarea-error" 
+                                placeholder="Np. uczulenie na hennę..."
+                                formControlName="allergies"></textarea>
+                  </div>
+                   <div class="form-control">
+                      <label class="label"><span class="label-text font-bold">Formuły / Mieszanki</span></label>
+                      <textarea class="textarea textarea-bordered h-16" 
+                                placeholder="Np. Farba 7.1 + 3%..."
+                                formControlName="formulas"></textarea>
+                  </div>
+              </div>
+          </div>
+
+          <!-- History -->
+          <div class="mt-8">
+              <h4 class="font-bold text-lg mb-4">Historia wizyt</h4>
+              <div class="overflow-x-auto border rounded-lg">
+                  <table class="table table-sm">
+                      <thead>
+                          <tr class="bg-base-200">
+                              <th>Data</th>
+                              <th>Usługa</th>
+                              <th>Pracownik</th>
+                              <th>Cena</th>
+                              <th>Status</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          @for (visit of customer.history; track visit.reservationId) {
+                              <tr>
+                                  <td>{{ visit.startTime | date:'medium' }}</td>
+                                  <td>{{ visit.serviceName }}</td>
+                                  <td>{{ visit.employeeName }}</td>
+                                  <td>{{ visit.price | number:'1.2-2' }} zł</td>
+                                  <td>
+                                      <span class="badge badge-sm" 
+                                            [class.badge-success]="visit.status === 'Completed'"
+                                            [class.badge-error]="visit.status === 'Cancelled' || visit.status === 'NoShow'"
+                                            [class.badge-warning]="visit.status === 'Confirmed'">
+                                          {{ visit.status }}
+                                      </span>
+                                  </td>
+                              </tr>
+                          }
+                          @if (customer.history.length === 0) {
+                              <tr>
+                                  <td colspan="5" class="text-center opacity-50 py-4">Brak historii wizyt.</td>
+                              </tr>
+                          }
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+
+          <div class="modal-action">
+              <button type="button" class="btn" (click)="closeModal()">Zamknij</button>
+              <button type="submit" class="btn btn-primary">Zapisz notatki</button>
+          </div>
+      </form>
+    }
+  </div>
+</div>

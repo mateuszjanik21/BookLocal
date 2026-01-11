@@ -33,8 +33,14 @@ export class AddEmployeeModalComponent {
     this.employeeForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
+      dateOfBirth: ['', Validators.required],
       position: [''],
-      photo: [null as File | null]
+      bio: [''],
+      specialization: [''],
+      instagramProfileUrl: [''],
+      portfolioUrl: [''],
+      photo: [null as File | null],
+      isStudent: [false]
     });
   }
 
@@ -59,6 +65,12 @@ export class AddEmployeeModalComponent {
       firstName: this.employeeForm.get('firstName')?.value,
       lastName: this.employeeForm.get('lastName')?.value,
       position: this.employeeForm.get('position')?.value || '',
+      dateOfBirth: this.employeeForm.get('dateOfBirth')?.value,
+      bio: this.employeeForm.get('bio')?.value || '',
+      specialization: this.employeeForm.get('specialization')?.value || '',
+      instagramProfileUrl: this.employeeForm.get('instagramProfileUrl')?.value || '',
+      portfolioUrl: this.employeeForm.get('portfolioUrl')?.value || '',
+      isStudent: this.employeeForm.get('isStudent')?.value || false
     };
     
     const photoFile = this.employeeForm.get('photo')?.value as File | null;

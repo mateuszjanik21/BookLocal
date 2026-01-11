@@ -1,3 +1,47 @@
+export interface MainCategory {
+  mainCategoryId: number;
+  name: string;
+}
+
+export interface ServiceVariant {
+  serviceVariantId: number;
+  name: string;
+  price: number;
+  durationMinutes: number;
+  cleanupTimeMinutes: number;
+  isDefault: boolean;
+}
+
+export interface Service {
+  id: number;
+  name: string;
+  description?: string;
+  serviceCategoryId: number;
+  businessId: number; // Required by frontend logic
+  isArchived: boolean;
+  variants: ServiceVariant[];
+}
+
+export interface ServiceCategory {
+  serviceCategoryId: number;
+  name: string;
+  photoUrl?: string;
+  services: Service[];
+}
+
+export interface Employee {
+  id: number;
+  firstName: string;
+  lastName: string;
+  position: string | null;
+  photoUrl?: string;
+  dateOfBirth: string;
+  specialization?: string;
+  instagramProfileUrl?: string;
+  portfolioUrl?: string;
+  isStudent: boolean;
+}
+
 export interface Business {
   id: number;
   name: string;
@@ -8,17 +52,15 @@ export interface Business {
   photoUrl?: string;
 }
 
-export interface ServiceSearchResult {
-  serviceId: number;
-  serviceName: string;
-  price: number;
-  durationMinutes: number;
-  businessId: number;
-  businessName: string;
-  businessCity: string;
-  mainCategoryName: string;
+export interface BusinessDetail extends Business {
+  isVerified: boolean;
   averageRating: number;
   reviewCount: number;
+  owner: {
+    firstName?: string;
+  };
+  categories: ServiceCategory[];
+  employees: Employee[];
 }
 
 export interface BusinessSearchResult {
@@ -28,7 +70,24 @@ export interface BusinessSearchResult {
   photoUrl: string | null;
   averageRating: number;
   reviewCount: number;
+  isVerified: boolean;
   mainCategories: string[];
+}
+
+export interface ServiceSearchResult {
+  serviceId: number;
+  defaultServiceVariantId: number;
+  serviceName: string;
+  price: number;
+  durationMinutes: number;
+  
+  businessId: number;
+  businessName: string;
+  businessCity: string;
+  mainCategoryName: string;
+  
+  averageRating: number;
+  reviewCount: number;
 }
 
 export interface ServiceCategorySearchResult {
@@ -44,53 +103,6 @@ export interface ServiceCategorySearchResult {
   services: Service[];
 }
 
-export interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-}
-
-export interface Service {
-  id: number;
-  name: string;
-  price: number;
-  durationMinutes: number;
-  serviceCategoryId: number; 
-  businessId: number;
-  isArchived: boolean;
-}
-
-export interface ServiceCategory {
-  serviceCategoryId: number;
-  name: string;
-  photoUrl?: string;
-  services: Service[];
-}
-
-export interface MainCategory {
-  mainCategoryId: number;
-  name: string;
-}
-
-export interface Employee {
-  id: number;
-  firstName: string;
-  lastName: string;
-  position: string | null;
-  photoUrl?: string;
-}
-
-export interface BusinessDetail extends Business {
-  services: Service[];
-  employees: Employee[];
-  categories: ServiceCategory[];
-  averageRating: number;
-  reviewCount: number;
-  owner: Owner;
-}
-
 export interface ServiceCategoryFeed {
   serviceCategoryId: number;
   name: string;
@@ -101,14 +113,26 @@ export interface ServiceCategoryFeed {
   businessCity: string | null;
 }
 
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface ServiceVariantPayload {
+  serviceVariantId?: number;
+  name: string;
+  price: number;
+  durationMinutes: number;
+  cleanupTimeMinutes?: number;
+  isDefault: boolean;
+}
+
 export interface ServicePayload {
   name: string;
   description?: string;
-  price: number;
-  durationMinutes: number;
   serviceCategoryId: number;
-}
-
-export interface Owner {
-  firstName: string;
+  variants: ServiceVariantPayload[];
 }

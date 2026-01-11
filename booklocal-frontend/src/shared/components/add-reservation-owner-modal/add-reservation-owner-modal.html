@@ -27,7 +27,9 @@
                 <select class="select select-bordered" formControlName="serviceId">
                     <option disabled selected value="">Wybierz usługę...</option>
                     @for (service of services; track service.id) {
-                        <option [value]="service.id">{{ service.name }} ({{ service.durationMinutes }} min)</option>
+                        <option [value]="service.id">
+                          {{ service.name }} ({{ service.variants[0].durationMinutes }} min)
+                        </option>
                     }
                 </select>
             </div>

@@ -35,9 +35,43 @@
           <input type="text" placeholder="Nazwisko" class="input input-bordered w-full" formControlName="lastName" />
         </div>
       </div>
+
+      <div class="form-control mt-4">
+        <label class="label"><span class="label-text">Data urodzenia</span></label>
+        <input type="date" class="input input-bordered w-full" formControlName="dateOfBirth" />
+      </div>
+
+       <div class="form-control mt-4">
+        <label class="label cursor-pointer justify-start gap-4">
+          <input type="checkbox" class="checkbox checkbox-primary" formControlName="isStudent" />
+          <span class="label-text">Status Studenta (< 26 lat)</span>
+        </label>
+      </div>
+
       <div class="form-control mt-4">
         <label class="label"><span class="label-text">Stanowisko (opcjonalnie)</span></label>
         <input type="text" placeholder="np. Stylista, Fryzjer" class="input input-bordered" formControlName="position" />
+      </div>
+
+      <div class="form-control mt-4">
+        <label class="label"><span class="label-text">Specjalizacja (opcjonalnie)</span></label>
+        <input type="text" placeholder="np. Koloryzacja, Strzyżenie męskie" class="input input-bordered" formControlName="specialization" />
+      </div>
+
+      <div class="form-control mt-4">
+        <label class="label"><span class="label-text">Bio / O mnie</span></label>
+        <textarea class="textarea textarea-bordered h-24" placeholder="Krótki opis pracownika..." formControlName="bio"></textarea>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+         <div class="form-control">
+          <label class="label"><span class="label-text">Instagram URL</span></label>
+          <input type="text" placeholder="Link do profilu" class="input input-bordered w-full" formControlName="instagramProfileUrl" />
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Portfolio URL</span></label>
+          <input type="text" placeholder="Link do portfolio" class="input input-bordered w-full" formControlName="portfolioUrl" />
+        </div>
       </div>
 
       <div class="modal-action mt-8">

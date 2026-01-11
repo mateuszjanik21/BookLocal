@@ -80,8 +80,8 @@
                 }
               </div>
               <div class="flex items-center gap-4 flex-shrink-0">
-                <span class="font-mono text-sm text-base-content/80">{{ service.price }} zł</span>
-                <span class="font-mono text-sm text-base-content/60 hidden sm:inline">{{ service.durationMinutes }}
+                <span class="font-mono text-sm text-base-content/80">{{ service.variants[0].price }} zł</span>
+                <span class="font-mono text-sm text-base-content/60 hidden sm:inline">{{ service.variants[0].durationMinutes }}
                   min</span>
 
                 @if(service.isArchived) {

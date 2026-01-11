@@ -89,8 +89,12 @@
                     <div class="flex justify-between items-center text-sm sm:text-base gap-2 sm:gap-4">
                       <span class="text-base-content/80">{{ service.name }}</span>
                       <div class="flex items-baseline gap-2 sm:gap-4 font-mono flex-shrink-0">
-                        <span class="text-xs sm:text-sm text-base-content/60">{{ service.durationMinutes }} min</span>
-                        <span class="font-semibold text-primary text-right w-20 sm:w-24">{{ service.price }} zł</span>
+                        <span class="text-xs sm:text-sm text-base-content/60">
+                          {{ service.variants[0].durationMinutes }} min
+                        </span>
+                        <span class="font-semibold text-primary text-right w-24 sm:w-28">
+                          od {{ service.variants[0].price }} zł
+                        </span>
                       </div>
                     </div>
                   }

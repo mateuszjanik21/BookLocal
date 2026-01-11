@@ -55,9 +55,9 @@
                 <div class="flex justify-between items-center p-3 rounded-lg hover:bg-base-200/50">
                   <div>
                     <p class="font-semibold">{{ service.name }}</p>
-                    <p class="text-sm text-base-content/60">{{ service.durationMinutes }} min</p>
+                    <p class="text-sm text-base-content/60">{{ service.variants[0].durationMinutes }} min</p>
                   </div>
-                  <span class="font-mono font-semibold">{{ service.price | currency:'PLN' }}</span>
+                  <span class="font-mono font-semibold">{{ service.variants[0].price | currency:'PLN' }}</span>
                 </div>
               } @empty {
                 <p class="text-center p-4">Ten pracownik nie ma jeszcze przypisanych żadnych usług.</p>

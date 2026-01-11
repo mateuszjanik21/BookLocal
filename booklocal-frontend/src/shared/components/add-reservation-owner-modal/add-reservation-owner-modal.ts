@@ -64,20 +64,29 @@ export class AddReservationOwnerModalComponent implements OnInit {
   onSubmit(): void {
     if (this.reservationForm.invalid) {
       this.toastr.error('Wypełnij wszystkie wymagane pola.');
+      this.reservationForm.markAllAsTouched();
       return;
     }
 
     this.isSaving = true;
-
     const formValue = this.reservationForm.value;
+
+    const serviceId = Number(formValue.serviceId);
+    const selectedService = this.services.find(s => s.id === serviceId);  
+
+    if (!selectedService || !selectedService.variants || selectedService.variants.length === 0) {
+      this.toastr.error('Błąd: Wybrana usługa nie jest poprawna lub nie posiada wariantów cenowych.');
+      this.isSaving = false;
+      return;
+    }
+
     const [year, month, day] = formValue.date.split('-').map(Number);
     const [hour, minute] = formValue.startTime.split(':').map(Number);
-    
     const finalDate = new Date(year, month - 1, day, hour, minute);
 
     const payload: OwnerCreateReservationPayload = {
-      serviceId: +formValue.serviceId,
-      employeeId: +formValue.employeeId,
+      serviceVariantId: selectedService.variants[0].serviceVariantId,
+      employeeId: Number(formValue.employeeId),
       startTime: finalDate.toISOString(),
       guestName: formValue.guestName,
       guestPhoneNumber: formValue.guestPhoneNumber
@@ -90,6 +99,7 @@ export class AddReservationOwnerModalComponent implements OnInit {
         this.closed.emit(true);
       },
       error: (err) => {
+        console.error(err);
         this.toastr.error(err.error?.title || 'Wystąpił błąd podczas zapisu rezerwacji.');
         this.isSaving = false;
       }
