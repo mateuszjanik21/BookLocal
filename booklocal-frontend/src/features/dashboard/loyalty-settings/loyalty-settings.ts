@@ -68,4 +68,18 @@ export class LoyaltySettingsComponent implements OnInit {
             error: () => this.toastr.error('Błąd zapisu.')
         });
   }
+
+  isRecalculating = false;
+
+  recalculatePoints() {
+      if (!this.businessId) return;
+      
+      this.isRecalculating = true;
+      this.loyaltyService.recalculatePoints(this.businessId)
+        .pipe(finalize(() => this.isRecalculating = false))
+        .subscribe({
+            next: (res) => this.toastr.success(res.message || 'Punkty przeliczone.'),
+            error: (err) => this.toastr.error(err.error || 'Wystąpił błąd.')
+        });
+  }
 }

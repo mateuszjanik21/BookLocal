@@ -5,7 +5,7 @@
       <p class="text-base-content/60">Zarządzaj relacjami, historią i notatkami.</p>
     </div>
     <div class="flex gap-4 items-center">
-        <div class="form-control">
+        <div class="form-control" style="display: none;"> <!-- Hidden as per performance optimization -->
             <label class="label cursor-pointer gap-2">
                 <span class="label-text">Tylko z historią</span> 
                 <input type="checkbox" class="toggle toggle-primary" [(ngModel)]="showRealCustomersOnly" />
@@ -139,6 +139,16 @@
             }
         </tbody>
       </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="flex justify-between items-center mt-4">
+        <span class="text-sm opacity-50">Strona {{ page }} z {{ totalPages }} (Razem: {{ totalCount }})</span>
+        <div class="join">
+            <button class="join-item btn btn-sm" [disabled]="page === 1" (click)="prevPage()">«</button>
+            <button class="join-item btn btn-sm">Strona {{ page }}</button>
+            <button class="join-item btn btn-sm" [disabled]="page >= totalPages" (click)="nextPage()">»</button>
+        </div>
     </div>
   }
   

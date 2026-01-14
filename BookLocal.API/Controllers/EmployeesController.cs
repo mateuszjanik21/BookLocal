@@ -146,7 +146,6 @@ namespace BookLocal.API.Controllers
             var employees = await _context.EmployeeServices
                 .Where(es => es.Service.BusinessId == businessId && es.ServiceId == serviceId)
                 .Select(es => es.Employee)
-                .Include(e => e.EmployeeDetails)
                 .Select(e => new EmployeeDto
                 {
                     Id = e.EmployeeId,

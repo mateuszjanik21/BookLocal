@@ -14,12 +14,12 @@ export class ReservationService {
 
   getAvailableSlots(employeeId: number, serviceId: number, date: string): Observable<string[]> {
     const params = new HttpParams()
-      .set('serviceId', serviceId.toString())
+      .set('serviceVariantId', serviceId.toString())
       .set('date', date);
     return this.http.get<string[]>(`${this.apiUrl}/employees/${employeeId}/availability`, { params });
   }
 
-  createReservation(payload: { serviceId: number; employeeId: number; startTime: string; }) {
+  createReservation(payload: { serviceVariantId: number; employeeId: number; startTime: string; discountCode?: string; paymentMethod: string }) {
     return this.http.post(`${this.apiUrl}/reservations`, payload);
   }
 

@@ -31,6 +31,9 @@ namespace BookLocal.Data.Models
         public decimal CashRevenue { get; set; }
 
         [Column(TypeName = "decimal(12, 2)")]
+        public decimal CardRevenue { get; set; }
+
+        [Column(TypeName = "decimal(12, 2)")]
         public decimal OnlineRevenue { get; set; }
 
         // --- RUCH I KLINECI ---

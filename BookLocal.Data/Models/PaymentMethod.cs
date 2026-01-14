@@ -1,16 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace BookLocal.Data.Models
+﻿namespace BookLocal.Data.Models
 {
-    public class PaymentMethod
+    public enum PaymentMethod
     {
-        [Key]
-        public int PaymentMethodId { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string Name { get; set; }
-
-        public bool IsActive { get; set; } = true;
+        Cash, 
+        Card,
+        Online,
+        Other 
     }
 }

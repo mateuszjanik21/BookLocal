@@ -8,7 +8,8 @@
       <ul class="steps w-full mt-4">
         <li class="step" [class.step-primary]="currentStep >= 1">Wybierz pracownika</li>
         <li class="step" [class.step-primary]="currentStep >= 2">Wybierz datę</li>
-        <li class="step" [class.step-primary]="currentStep === 3">Wybierz godzinę</li>
+        <li class="step" [class.step-primary]="currentStep >= 3">Wybierz godzinę</li>
+        <li class="step" [class.step-primary]="currentStep === 4">Płatność</li>
       </ul>
 
       <div class="py-4 min-h-64">
@@ -32,7 +33,7 @@
         }
 
         @if(currentStep === 3) {
-          <div class="animate-fade-in">
+          <div class="animate-fade-in space-y-4">
             @if(isLoadingSlots) {
               <div class="flex justify-center items-center h-48"><span class="loading loading-spinner"></span></div>
             } @else {
@@ -47,19 +48,143 @@
                 }
               </div>
             }
+
+            <!-- Summary & Discount -->
+             @if(reservationForm.get('startTime')?.value) {
+                <div class="divider"></div>
+                <div class="bg-base-200 p-4 rounded-lg space-y-3">
+                    <h4 class="font-bold text-sm uppercase opacity-70">Podsumowanie</h4>
+                    <div class="flex justify-between">
+                        <span>Cena podstawowa:</span>
+                        <span class="font-bold">{{ service?.variants?.[0]?.price }} PLN</span>
+                    </div>
+
+                    @if(!verifiedDiscount) {
+                        <div class="flex gap-2 items-end">
+                            <div class="form-control w-full">
+                                <label class="label"><span class="label-text">Kod rabatowy</span></label>
+                                <input type="text" class="input input-sm input-bordered uppercase" formControlName="discountCode" placeholder="np. SUMMER" />
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline" (click)="verifyDiscount()" [disabled]="isVerifyingDiscount || !reservationForm.get('discountCode')?.value">
+                                @if(isVerifyingDiscount) { <span class="loading loading-spinner loading-xs"></span> }
+                                Sprawdź
+                            </button>
+                        </div>
+                        @if(discountError) {
+                            <p class="text-error text-xs mt-1">{{ discountError }}</p>
+                        }
+                    } @else {
+                        <div class="alert alert-success py-2 text-sm flex justify-between items-center">
+                            <div>
+                                <span class="font-bold block">Kod aktywny!</span>
+                                <span class="text-xs">Zniżka: -{{ verifiedDiscount.discountAmount }} PLN</span>
+                            </div>
+                            <button type="button" class="btn btn-xs btn-ghost btn-circle" (click)="removeDiscount()">✕</button>
+                        </div>
+                        <div class="flex justify-between text-lg text-primary font-bold border-t pt-2 border-base-300">
+                            <span>Do zapłaty:</span>
+                            <span>{{ verifiedDiscount.finalPrice }} PLN</span>
+                        </div>
+                    }
+                </div>
+             }
           </div>
+        }
+
+        @if(currentStep === 4) {
+             <div class="animate-fade-in space-y-6">
+                <div class="flex flex-col gap-4">
+                    <h3 class="text-lg font-semibold">Wybierz metodę płatności</h3>
+                    
+                    <div class="grid grid-cols-1 gap-4">
+                        <!-- Option 1: Salon -->
+                        <label class="relative flex items-center justify-between p-4 cursor-pointer rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:border-primary/50 group"
+                               [class.border-primary]="reservationForm.get('paymentMethod')?.value === 'Cash'"
+                               [class.bg-primary-content]="reservationForm.get('paymentMethod')?.value === 'Cash'"
+                               [class.border-base-200]="reservationForm.get('paymentMethod')?.value !== 'Cash'">
+                            
+                            <div class="flex items-start gap-4">
+                                <div class="p-3 rounded-full bg-base-200 group-hover:bg-primary/10 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-primary">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg">Płatność w salonie</h4>
+                                    <p class="text-sm opacity-70 mt-1 max-w-sm">Zapłać gotówką lub kartą dopiero po wykonaniu usługi.</p>
+                                </div>
+                            </div>
+                            <input type="radio" formControlName="paymentMethod" value="Cash" class="radio radio-primary" />
+                        </label>
+
+                        <!-- Option 2: Online -->
+                        <label class="relative flex items-center justify-between p-4 cursor-pointer rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:border-primary/50 group"
+                               [class.border-primary]="reservationForm.get('paymentMethod')?.value === 'Online'"
+                               [class.bg-primary-content]="reservationForm.get('paymentMethod')?.value === 'Online'"
+                               [class.border-base-200]="reservationForm.get('paymentMethod')?.value !== 'Online'">
+
+                            <div class="flex items-start gap-4">
+                                <div class="p-3 rounded-full bg-base-200 group-hover:bg-primary/10 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-primary">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="font-bold text-lg">Płatność Online</h4>
+                                        <span class="badge badge-xs badge-success truncate">Szybka rezerwacja</span>
+                                    </div>
+                                    <p class="text-sm opacity-70 mt-1 max-w-sm">Blik, bezpieczne płatności błyskawiczne.</p>
+                                    <div class="flex gap-2 mt-2 flex-wrap">
+                                        <div class="badge badge-outline bg-base-100 text-xs">BLIK</div>
+                                        <div class="badge badge-outline bg-base-100 text-xs">Przelewy24</div>
+                                        <div class="badge badge-outline bg-base-100 text-xs">Karty</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="radio" formControlName="paymentMethod" value="Online" class="radio radio-primary" />
+                        </label>
+                    </div>
+
+                    @if(reservationForm.get('paymentMethod')?.value === 'Online') {
+                         <div class="alert alert-info shadow-sm mt-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Zostaniesz przekierowany do bramki płatności po kliknięciu "Zapłać i zarezerwuj".</span>
+                        </div>
+                    }
+
+                    @if(paymentStatus === 'processing') {
+                         <div class="flex flex-col items-center justify-center p-8 bg-base-100 rounded-lg border">
+                            <span class="loading loading-dots loading-lg text-primary mb-4"></span>
+                            <p class="font-bold text-lg">Przetwarzanie płatności...</p>
+                            <p class="text-sm text-base-content/60">Proszę nie zamykać okna.</p>
+                        </div>
+                    }
+                    
+                    @if(paymentStatus === 'success') {
+                         <div class="flex flex-col items-center justify-center p-8 bg-green-50 rounded-lg border border-green-200 text-green-700 animate-fade-in">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <p class="font-bold text-lg">Płatność przyjęta!</p>
+                            <p class="text-sm">Finalizowanie rezerwacji...</p>
+                        </div>
+                    }
+                </div>
+             </div>
         }
       </div>
 
       <div class="modal-action">
-        @if(currentStep > 1 && currentStep <= 3) {
-          <button type="button" class="btn btn-ghost" (click)="prevStep()">Wstecz</button>
+        @if(currentStep > 1 && currentStep <= 4) {
+          <button type="button" class="btn btn-ghost" (click)="prevStep()" [disabled]="isProcessingPayment">Wstecz</button>
+        }
+        @if(currentStep === 4) {
+          <button type="submit" class="btn btn-primary" [disabled]="!reservationForm.valid || isReserving || isProcessingPayment || (paymentStatus === 'processing')">
+             @if(isReserving) { <span class="loading loading-spinner"></span> }
+             {{ reservationForm.get('paymentMethod')?.value === 'Online' ? 'Zapłać i zarezerwuj' : 'Potwierdź rezerwację' }}
+          </button>
         }
         @if(currentStep === 3) {
-          <button type="submit" class="btn btn-primary" [disabled]="!reservationForm.valid || isReserving">
-             @if(isReserving) { <span class="loading loading-spinner"></span> }
-            Zatwierdź rezerwację
-          </button>
+            <button type="button" class="btn btn-primary" (click)="nextStep()" [disabled]="!reservationForm.get('startTime')?.value"> Dalej </button>
         }
       </div>
     </form>

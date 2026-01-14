@@ -55,4 +55,14 @@ public class Reservation
 
     public virtual Employee Employee { get; set; }
     public virtual Review? Review { get; set; }
+
+    public int? DiscountId { get; set; }
+    [ForeignKey("DiscountId")]
+    public virtual Discount? Discount { get; set; }
+
+    [Column(TypeName = "decimal(10, 2)")]
+    public decimal DiscountAmount { get; set; } = 0;
+
+    public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
 }
+

@@ -41,9 +41,9 @@ public class AppDbContext : IdentityDbContext<User>
 
     // --- 5. FINANSE ---
     public DbSet<Payment> Payments { get; set; }
-    public DbSet<PaymentMethod> PaymentMethods { get; set; }
-    public DbSet<Invoice> Invoices { get; set; }
     public DbSet<DailyFinancialReport> DailyFinancialReports { get; set; }
+    public DbSet<Invoice> Invoices { get; set; }
+    public DbSet<InvoiceItem> InvoiceItems { get; set; }
     public DbSet<DailyEmployeePerformance> DailyEmployeePerformances { get; set; }
 
     // --- 6. WERYFIKACJA & SUBSKRYPCJE ---
@@ -58,7 +58,6 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<LoyaltyPoint> LoyaltyPoints { get; set; }
     public DbSet<LoyaltyProgramConfig> LoyaltyProgramConfigs { get; set; }
     public DbSet<LoyaltyTransaction> LoyaltyTransactions { get; set; }
-    public DbSet<Waitlist> Waitlists { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -99,6 +98,14 @@ public class AppDbContext : IdentityDbContext<User>
 
         modelBuilder.Entity<BusinessVerification>()
             .Property(v => v.Status)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<Discount>()
+            .Property(d => d.Type)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<Reservation>()
+            .Property(r => r.PaymentMethod)
             .HasConversion<string>();
 
         modelBuilder.Entity<DailyFinancialReport>()

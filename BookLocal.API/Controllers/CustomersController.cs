@@ -23,56 +23,63 @@ namespace BookLocal.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CustomerListItemDto>>> GetCustomers(int businessId, [FromQuery] string? search)
+        public async Task<ActionResult<PagedResultDto<CustomerListItemDto>>> GetCustomers(
+            int businessId,
+            [FromQuery] string? search,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             // Verify access
             var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
             if (business == null) return Forbid();
 
-            var query = _context.CustomerBusinessProfiles
-                .Include(p => p.Customer)
-                .Where(p => p.BusinessId == businessId)
-                .AsQueryable();
+            var query = from p in _context.CustomerBusinessProfiles
+                        where p.BusinessId == businessId
+                        let loyalty = _context.LoyaltyPoints.FirstOrDefault(lp => lp.BusinessId == businessId && lp.CustomerId == p.CustomerId)
+                        select new CustomerListItemDto
+                        {
+                            ProfileId = p.ProfileId,
+                            UserId = p.CustomerId,
+                            FullName = p.Customer.FirstName + " " + p.Customer.LastName,
+                            PhoneNumber = p.Customer.PhoneNumber,
+                            Email = p.Customer.Email,
+                            LastVisitDate = p.LastVisitDate,
+                            NextVisitDate = p.NextVisitDate,
+                            CancelledCount = p.CancelledCount,
+                            TotalSpent = p.TotalSpent,
+                            IsVIP = p.IsVIP,
+                            IsBanned = p.IsBanned,
+                            PointsBalance = loyalty != null ? loyalty.PointsBalance : 0
+                        };
 
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var term = search.ToLower();
-                query = query.Where(p =>
-                    (p.Customer.FirstName + " " + p.Customer.LastName).ToLower().Contains(term) ||
-                    (p.Customer.Email != null && p.Customer.Email.ToLower().Contains(term)) ||
-                    (p.Customer.PhoneNumber != null && p.Customer.PhoneNumber.Contains(term))
+                query = query.Where(c =>
+                    c.FullName.ToLower().Contains(term) ||
+                    (c.Email != null && c.Email.ToLower().Contains(term)) ||
+                    (c.PhoneNumber != null && c.PhoneNumber.Contains(term))
                 );
             }
 
+            var totalCount = await query.CountAsync();
+
             var customers = await query
-                .Select(p => new CustomerListItemDto
-                {
-                    ProfileId = p.ProfileId,
-                    UserId = p.CustomerId,
-                    FullName = p.Customer.FirstName + " " + p.Customer.LastName,
-                    PhoneNumber = p.Customer.PhoneNumber,
-                    Email = p.Customer.Email,
-                    LastVisitDate = p.LastVisitDate,
-                    NextVisitDate = p.Customer.Reservations
-                        .Where(r => r.BusinessId == businessId && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
-                        .OrderBy(r => r.StartTime)
-                        .Select(r => (DateTime?)r.StartTime)
-                        .FirstOrDefault(),
-                    CancelledCount = p.Customer.Reservations
-                        .Count(r => r.BusinessId == businessId && r.Status == ReservationStatus.Cancelled),
-                    TotalSpent = p.TotalSpent,
-                    IsVIP = p.IsVIP,
-                    IsBanned = p.IsBanned,
-                    PointsBalance = _context.LoyaltyPoints
-                        .Where(lp => lp.BusinessId == businessId && lp.CustomerId == p.CustomerId)
-                        .Select(lp => lp.PointsBalance)
-                        .FirstOrDefault()
-                })
                 .OrderByDescending(c => c.LastVisitDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return Ok(customers);
+            var result = new PagedResultDto<CustomerListItemDto>
+            {
+                Items = customers,
+                TotalCount = totalCount,
+                PageNumber = page,
+                PageSize = pageSize
+            };
+
+            return Ok(result);
         }
 
         [HttpGet("{customerId}")]

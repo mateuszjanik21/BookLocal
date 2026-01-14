@@ -27,9 +27,17 @@ export class ManageCustomersComponent implements OnInit {
   
   showRealCustomersOnly = false;
 
+  page = 1;
+  pageSize = 20;
+  totalCount = 0;
+
+  get totalPages() {
+    return Math.ceil(this.totalCount / this.pageSize);
+  }
+
   get filteredCustomers() {
-    if (!this.showRealCustomersOnly) return this.customers;
-    return this.customers.filter(c => c.totalSpent > 0 || (c.lastVisitDate !== '0001-01-01T00:00:00'));
+      // Backend filtering is now used.
+      return this.customers;
   }
 
   ngOnInit() {
@@ -43,6 +51,7 @@ export class ManageCustomersComponent implements OnInit {
       distinctUntilChanged()
     ).subscribe(term => {
       this.searchQuery = term;
+      this.page = 1; // Reset to first page
       this.loadCustomers();
     });
   }
@@ -54,13 +63,28 @@ export class ManageCustomersComponent implements OnInit {
   loadCustomers() {
     if (!this.businessId) return;
     this.isLoading = true;
-    this.customerService.getCustomers(this.businessId, this.searchQuery).subscribe({
+    this.customerService.getCustomers(this.businessId, this.searchQuery, this.page, this.pageSize).subscribe({
       next: (data) => {
-        this.customers = data;
+        this.customers = data.items;
+        this.totalCount = data.totalCount;
         this.isLoading = false;
       },
       error: () => this.isLoading = false
     });
+  }
+
+  nextPage() {
+    if (this.page * this.pageSize < this.totalCount) {
+        this.page++;
+        this.loadCustomers();
+    }
+  }
+
+  prevPage() {
+    if (this.page > 1) {
+        this.page--;
+        this.loadCustomers();
+    }
   }
 
   openDetails(customer: CustomerListItem) {
@@ -70,8 +94,10 @@ export class ManageCustomersComponent implements OnInit {
   closeDetails(updatedCustomer: any) {
     this.selectedCustomer = null;
     if (updatedCustomer && this.businessId) {
+      // Update local list instead of full reload
       const index = this.customers.findIndex(c => c.profileId === updatedCustomer.profileId);
       if (index !== -1) {
+        // We update only fields that could have changed and are important for list view
         const existing = this.customers[index];
         this.customers[index] = {
             ...existing,

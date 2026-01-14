@@ -69,6 +69,20 @@ namespace BookLocal.API.Controllers
             if (isSlotTaken)
                 return Conflict("Wybrany termin u tego pracownika jest już zajęty.");
 
+            decimal discountAmount = 0;
+            int? discountId = null;
+
+            if (!string.IsNullOrEmpty(reservationDto.DiscountCode))
+            {
+                var discountResult = await ApplyDiscount(service.BusinessId, reservationDto.DiscountCode, variant.Price, service.ServiceId); // verify if ServiceId matches
+                if (discountResult.error != null)
+                {
+                    return BadRequest(discountResult.error);
+                }
+                discountAmount = discountResult.discountAmount;
+                discountId = discountResult.discountId;
+            }
+
             var reservation = new Reservation
             {
                 BusinessId = service.BusinessId,
@@ -77,8 +91,11 @@ namespace BookLocal.API.Controllers
                 EmployeeId = reservationDto.EmployeeId,
                 StartTime = reservationDto.StartTime,
                 EndTime = proposedEndTime,
-                AgreedPrice = variant.Price,
-                Status = ReservationStatus.Confirmed
+                AgreedPrice = variant.Price - discountAmount,
+                DiscountAmount = discountAmount,
+                DiscountId = discountId,
+                Status = ReservationStatus.Confirmed,
+                PaymentMethod = reservationDto.PaymentMethod
             };
 
             _context.Reservations.Add(reservation);
@@ -159,12 +176,14 @@ namespace BookLocal.API.Controllers
                 VariantName = r.ServiceVariant?.Name ?? "",
                 AgreedPrice = r.AgreedPrice,
                 BusinessName = r.Business.Name,
+                BusinessId = r.BusinessId,
                 EmployeeId = r.EmployeeId,
                 EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
                 CustomerId = r.CustomerId,
                 CustomerFullName = r.Customer != null ? $"{r.Customer.FirstName} {r.Customer.LastName}" : "Gość",
                 GuestName = r.GuestName,
-                HasReview = r.Review != null
+                HasReview = r.Review != null,
+                PaymentMethod = r.PaymentMethod.ToString()
             }).ToList();
 
             var pagedResult = new PagedResultDto<ReservationDto>
@@ -205,6 +224,12 @@ namespace BookLocal.API.Controllers
                 foreach (var reservation in reservationsToUpdate)
                 {
                     reservation.Status = ReservationStatus.Completed;
+                    if (reservation.CustomerId != null)
+                    {
+                        await ProcessLoyaltyPoints(reservation.BusinessId, reservation.CustomerId, reservation.AgreedPrice, reservation.ReservationId);
+                        await EnsureCustomerProfile(reservation.BusinessId, reservation.CustomerId);
+                        await UpdateCustomerStats(reservation.BusinessId, reservation.CustomerId);
+                    }
                 }
                 await _context.SaveChangesAsync();
             }
@@ -222,12 +247,14 @@ namespace BookLocal.API.Controllers
                 AgreedPrice = r.AgreedPrice,
 
                 BusinessName = r.Business.Name,
+                BusinessId = r.BusinessId,
                 EmployeeId = r.EmployeeId,
                 EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
                 CustomerId = r.CustomerId,
                 CustomerFullName = r.Customer != null ? $"{r.Customer.FirstName} {r.Customer.LastName}" : null,
                 GuestName = r.GuestName,
-                HasReview = r.Review != null
+                HasReview = r.Review != null,
+                PaymentMethod = r.PaymentMethod.ToString()
             }).ToList();
 
             return Ok(reservationDtos);
@@ -267,13 +294,15 @@ namespace BookLocal.API.Controllers
                 AgreedPrice = reservation.AgreedPrice,
 
                 BusinessName = reservation.Business.Name,
+                BusinessId = reservation.BusinessId,
                 EmployeeId = reservation.EmployeeId,
                 EmployeeFullName = $"{reservation.Employee.FirstName} {reservation.Employee.LastName}",
                 CustomerId = reservation.CustomerId,
                 CustomerFullName = reservation.Customer != null ? $"{reservation.Customer.FirstName} {reservation.Customer.LastName}" : null,
                 GuestName = reservation.GuestName,
                 HasReview = await _context.Reviews.AnyAsync(r => r.ReservationId == id),
-                IsServiceArchived = reservation.ServiceVariant?.Service?.IsArchived ?? true
+                IsServiceArchived = reservation.ServiceVariant?.Service?.IsArchived ?? true,
+                PaymentMethod = reservation.PaymentMethod.ToString()
             };
 
             return Ok(reservationDto);
@@ -400,6 +429,20 @@ namespace BookLocal.API.Controllers
             if (isSlotTaken)
                 return Conflict("Ten termin u wybranego pracownika jest już zajęty.");
 
+            decimal discountAmount = 0;
+            int? discountId = null;
+
+            if (!string.IsNullOrEmpty(reservationDto.DiscountCode))
+            {
+                var discountResult = await ApplyDiscount(variant.Service.BusinessId, reservationDto.DiscountCode, variant.Price, variant.Service.ServiceId);
+                if (discountResult.error != null)
+                {
+                    return BadRequest(discountResult.error);
+                }
+                discountAmount = discountResult.discountAmount;
+                discountId = discountResult.discountId;
+            }
+
             var reservation = new Reservation
             {
                 BusinessId = variant.Service.BusinessId,
@@ -407,7 +450,9 @@ namespace BookLocal.API.Controllers
                 EmployeeId = reservationDto.EmployeeId,
                 StartTime = reservationDto.StartTime,
                 EndTime = proposedEndTime,
-                AgreedPrice = variant.Price,
+                AgreedPrice = variant.Price - discountAmount,
+                DiscountAmount = discountAmount,
+                DiscountId = discountId,
                 GuestName = reservationDto.GuestName,
                 GuestPhoneNumber = reservationDto.GuestPhoneNumber,
                 Status = ReservationStatus.Confirmed
@@ -451,7 +496,12 @@ namespace BookLocal.API.Controllers
                 {
                     TotalSpent = g.Where(r => r.Status == ReservationStatus.Completed).Sum(r => r.AgreedPrice),
                     NoShowCount = g.Count(r => r.Status == ReservationStatus.NoShow),
-                    LastVisit = g.Where(r => r.Status == ReservationStatus.Completed).Max(r => (DateTime?)r.StartTime)
+                    LastVisit = g.Where(r => r.Status == ReservationStatus.Completed).Max(r => (DateTime?)r.StartTime),
+                    CancelledCount = g.Count(r => r.Status == ReservationStatus.Cancelled),
+                    NextVisit = g.Where(r => r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
+                        .OrderBy(r => r.StartTime)
+                        .Select(r => (DateTime?)r.StartTime)
+                        .FirstOrDefault()
                 })
                 .FirstOrDefaultAsync();
 
@@ -460,8 +510,50 @@ namespace BookLocal.API.Controllers
                 profile.TotalSpent = stats.TotalSpent;
                 profile.NoShowCount = stats.NoShowCount;
                 profile.LastVisitDate = stats.LastVisit ?? profile.LastVisitDate;
+                profile.CancelledCount = stats.CancelledCount;
+                profile.NextVisitDate = stats.NextVisit;
                 await _context.SaveChangesAsync();
             }
+        }
+
+        private async Task<(decimal discountAmount, int? discountId, string? error)> ApplyDiscount(int businessId, string code, decimal originalPrice, int? serviceId)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return (0, null, null);
+
+            var discount = await _context.Discounts
+                .FirstOrDefaultAsync(d => d.BusinessId == businessId && d.Code == code && d.IsActive);
+
+            if (discount == null) return (0, null, "Kod rabatowy nie istnieje lub jest nieaktywny.");
+
+            if (discount.MaxUses.HasValue && discount.UsedCount >= discount.MaxUses.Value)
+                return (0, null, "Limit użycia tego kodu został wyczerpany.");
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            if (discount.ValidFrom.HasValue && today < discount.ValidFrom.Value)
+                return (0, null, "Kod nie jest jeszcze aktywny.");
+            if (discount.ValidTo.HasValue && today > discount.ValidTo.Value)
+                return (0, null, "Kod wygasł.");
+
+            if (discount.ServiceId.HasValue && serviceId.HasValue && discount.ServiceId != serviceId)
+                return (0, null, "Kod nie dotyczy tej usługi.");
+
+            decimal amount = 0;
+            if (discount.Type == DiscountType.Percentage)
+            {
+                amount = originalPrice * (discount.Value / 100m);
+            }
+            else
+            {
+                amount = discount.Value;
+            }
+
+            if (amount > originalPrice) amount = originalPrice;
+
+            // Increment usage
+            discount.UsedCount++;
+            await _context.SaveChangesAsync();
+
+            return (amount, discount.DiscountId, null);
         }
 
         private async Task ProcessLoyaltyPoints(int businessId, string customerId, decimal price, int reservationId)

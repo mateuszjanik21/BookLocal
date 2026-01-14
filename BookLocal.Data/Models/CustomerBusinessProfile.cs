@@ -29,5 +29,8 @@ namespace BookLocal.Data.Models
         public decimal TotalSpent { get; set; }
 
         public DateTime LastVisitDate { get; set; }
+
+        public DateTime? NextVisitDate { get; set; }
+        public int CancelledCount { get; set; }
     }
 }

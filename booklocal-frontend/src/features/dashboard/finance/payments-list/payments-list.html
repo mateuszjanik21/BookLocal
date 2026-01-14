@@ -1,0 +1,62 @@
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="card-title text-2xl">Transakcje</h2>
+        <button class="btn btn-ghost btn-sm" (click)="loadData()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 4.992 9.19-9.19M16.022 9.348l9.19-9.19M3 9a6 6 0 0 1 10.395-5.352m9.41 11.23a6 6 0 0 1-10.395 5.352" />
+            </svg>
+            Odśwież
+        </button>
+    </div>
+
+    @if(isLoading) {
+      <div class="flex justify-center p-8">
+        <span class="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Data</th>
+              <th>Metoda</th>
+              <th>Status</th>
+              <th>Kwota</th>
+              <th>Rezerwacja</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(payment of payments; track payment.paymentId) {
+              <tr>
+                <td>#{{ payment.paymentId }}</td>
+                <td>{{ payment.transactionDate | date:'short' }}</td>
+                <td>
+                    <div class="badge badge-outline gap-2">
+                        {{ payment.method }}
+                    </div>
+                </td>
+                <td>
+                    <div class="badge" [class.badge-success]="payment.status === 'Completed'" [class.badge-warning]="payment.status === 'Pending'">
+                        {{ payment.status }}
+                    </div>
+                </td>
+                <td class="font-bold">{{ payment.amount | currency:'PLN':'symbol':'1.2-2' }}</td>
+                <td>
+                    <a [routerLink]="['/dashboard/reservations', payment.reservationId]" class="link link-primary">
+                        Rezerwacja #{{ payment.reservationId }}
+                    </a>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center p-8 text-base-content/60">Brak zarejestrowanych płatności.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

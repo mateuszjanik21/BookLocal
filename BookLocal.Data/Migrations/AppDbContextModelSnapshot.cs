@@ -205,6 +205,9 @@ namespace BookLocal.Data.Migrations
                     b.Property<int>("BusinessId")
                         .HasColumnType("int");
 
+                    b.Property<int>("CancelledCount")
+                        .HasColumnType("int");
+
                     b.Property<string>("CustomerId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -219,6 +222,9 @@ namespace BookLocal.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("LastVisitDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("NextVisitDate")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("NoShowCount")
@@ -295,6 +301,9 @@ namespace BookLocal.Data.Migrations
                     b.Property<int>("CancelledAppointments")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("CardRevenue")
+                        .HasColumnType("decimal(10, 2)");
+
                     b.Property<decimal>("CashRevenue")
                         .HasColumnType("decimal(10, 2)");
 
@@ -364,8 +373,9 @@ namespace BookLocal.Data.Migrations
                     b.Property<int?>("ServiceId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UsedCount")
                         .HasColumnType("int");
@@ -668,35 +678,89 @@ namespace BookLocal.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceId"));
 
-                    b.Property<string>("BuyerAddress")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("BuyerNIP")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("BuyerName")
+                    b.Property<string>("CustomerId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("InvoiceNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("IssueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PaymentId")
+                    b.Property<int>("PaymentMethod")
                         .HasColumnType("int");
 
-                    b.Property<string>("PdfUrl")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("ReservationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SaleDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("TotalGross")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("TotalNet")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("TotalTax")
+                        .HasColumnType("decimal(10, 2)");
 
                     b.HasKey("InvoiceId");
 
-                    b.HasIndex("PaymentId");
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("ReservationId");
 
                     b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.InvoiceItem", b =>
+                {
+                    b.Property<int>("InvoiceItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceItemId"));
+
+                    b.Property<decimal>("GrossValue")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("NetValue")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TaxValue")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("UnitPriceNet")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<decimal>("VatRate")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.HasKey("InvoiceItemId");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.ToTable("InvoiceItems");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.LoyaltyPoint", b =>
@@ -853,6 +917,9 @@ namespace BookLocal.Data.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(10, 2)");
 
+                    b.Property<int>("BusinessId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -860,7 +927,7 @@ namespace BookLocal.Data.Migrations
                     b.Property<string>("ExternalTransactionId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PaymentMethodId")
+                    b.Property<int>("PaymentMethod")
                         .HasColumnType("int");
 
                     b.Property<int>("ReservationId")
@@ -875,32 +942,11 @@ namespace BookLocal.Data.Migrations
 
                     b.HasKey("PaymentId");
 
-                    b.HasIndex("PaymentMethodId");
+                    b.HasIndex("BusinessId");
 
                     b.HasIndex("ReservationId");
 
                     b.ToTable("Payments");
-                });
-
-            modelBuilder.Entity("BookLocal.Data.Models.PaymentMethod", b =>
-                {
-                    b.Property<int>("PaymentMethodId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentMethodId"));
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("PaymentMethodId");
-
-                    b.ToTable("PaymentMethods");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Review", b =>
@@ -1281,51 +1327,6 @@ namespace BookLocal.Data.Migrations
                     b.ToTable("VerificationDocuments");
                 });
 
-            modelBuilder.Entity("BookLocal.Data.Models.Waitlist", b =>
-                {
-                    b.Property<int>("WaitlistId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WaitlistId"));
-
-                    b.Property<int>("BusinessId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CustomerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateOnly>("DesiredDate")
-                        .HasColumnType("date");
-
-                    b.Property<TimeSpan?>("DesiredTimeFrom")
-                        .HasColumnType("time");
-
-                    b.Property<TimeSpan?>("DesiredTimeTo")
-                        .HasColumnType("time");
-
-                    b.Property<int?>("PreferredEmployeeId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ServiceVariantId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("WaitlistId");
-
-                    b.HasIndex("BusinessId");
-
-                    b.HasIndex("CustomerId");
-
-                    b.ToTable("Waitlists");
-                });
-
             modelBuilder.Entity("BookLocal.Data.Models.WorkSchedule", b =>
                 {
                     b.Property<int>("WorkScheduleId")
@@ -1510,6 +1511,12 @@ namespace BookLocal.Data.Migrations
                     b.Property<string>("CustomerId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(10, 2)");
+
+                    b.Property<int?>("DiscountId")
+                        .HasColumnType("int");
+
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
@@ -1520,6 +1527,10 @@ namespace BookLocal.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GuestPhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("ServiceBundleId")
@@ -1540,6 +1551,8 @@ namespace BookLocal.Data.Migrations
                     b.HasIndex("BusinessId");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("DiscountId");
 
                     b.HasIndex("EmployeeId");
 
@@ -1766,13 +1779,38 @@ namespace BookLocal.Data.Migrations
 
             modelBuilder.Entity("BookLocal.Data.Models.Invoice", b =>
                 {
-                    b.HasOne("BookLocal.Data.Models.Payment", "Payment")
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
                         .WithMany()
-                        .HasForeignKey("PaymentId")
+                        .HasForeignKey("BusinessId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Payment");
+                    b.HasOne("BookLocal.Data.Models.User", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Reservation", "Reservation")
+                        .WithMany()
+                        .HasForeignKey("ReservationId");
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Reservation");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.InvoiceItem", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.Invoice", "Invoice")
+                        .WithMany("Items")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Invoice");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.LoyaltyPoint", b =>
@@ -1837,9 +1875,9 @@ namespace BookLocal.Data.Migrations
 
             modelBuilder.Entity("BookLocal.Data.Models.Payment", b =>
                 {
-                    b.HasOne("BookLocal.Data.Models.PaymentMethod", "PaymentMethod")
+                    b.HasOne("BookLocal.Data.Models.Business", "Business")
                         .WithMany()
-                        .HasForeignKey("PaymentMethodId")
+                        .HasForeignKey("BusinessId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1849,7 +1887,7 @@ namespace BookLocal.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("PaymentMethod");
+                    b.Navigation("Business");
 
                     b.Navigation("Reservation");
                 });
@@ -1980,25 +2018,6 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("Verification");
                 });
 
-            modelBuilder.Entity("BookLocal.Data.Models.Waitlist", b =>
-                {
-                    b.HasOne("BookLocal.Data.Models.Business", "Business")
-                        .WithMany()
-                        .HasForeignKey("BusinessId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BookLocal.Data.Models.User", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Business");
-
-                    b.Navigation("Customer");
-                });
-
             modelBuilder.Entity("BookLocal.Data.Models.WorkSchedule", b =>
                 {
                     b.HasOne("BookLocal.Data.Models.Employee", "Employee")
@@ -2073,6 +2092,10 @@ namespace BookLocal.Data.Migrations
                         .WithMany("Reservations")
                         .HasForeignKey("CustomerId");
 
+                    b.HasOne("BookLocal.Data.Models.Discount", "Discount")
+                        .WithMany()
+                        .HasForeignKey("DiscountId");
+
                     b.HasOne("BookLocal.Data.Models.Employee", "Employee")
                         .WithMany("Reservations")
                         .HasForeignKey("EmployeeId")
@@ -2092,6 +2115,8 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("Business");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("Discount");
 
                     b.Navigation("Employee");
 
@@ -2133,6 +2158,11 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("ScheduleExceptions");
 
                     b.Navigation("WorkSchedules");
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.Invoice", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.MainCategory", b =>

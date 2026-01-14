@@ -84,5 +84,77 @@ namespace BookLocal.API.Controllers
 
             return Ok(new { Balance = balanceDto, Transactions = transactions });
         }
+        [HttpPost("recalculate")]
+        [Authorize(Roles = "owner")]
+        public async Task<IActionResult> RecalculatePoints(int businessId)
+        {
+            var config = await _context.LoyaltyProgramConfigs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.BusinessId == businessId);
+
+            if (config == null || !config.IsActive || config.SpendAmountForOnePoint <= 0)
+            {
+                return BadRequest("Program lojalnościowy nie jest aktywny lub nie został skonfigurowany.");
+            }
+
+            var completedReservations = await _context.Reservations
+                .Where(r => r.BusinessId == businessId && r.Status == ReservationStatus.Completed && r.CustomerId != null)
+                .ToListAsync();
+
+            var existingTransactions = await _context.LoyaltyTransactions
+                .Where(t => t.LoyaltyPoint.BusinessId == businessId && t.ReservationId != null)
+                .Select(t => t.ReservationId.Value)
+                .ToListAsync();
+
+            var existingTransactionsSet = new HashSet<int>(existingTransactions);
+            int addedPointsCount = 0;
+            int processedReservations = 0;
+
+            foreach (var reservation in completedReservations)
+            {
+                if (existingTransactionsSet.Contains(reservation.ReservationId)) continue;
+                if (reservation.CustomerId == null) continue;
+
+                var pointsToEarn = (int)(reservation.AgreedPrice / config.SpendAmountForOnePoint);
+                if (pointsToEarn <= 0) continue;
+
+                var loyaltyPoint = await _context.LoyaltyPoints
+                    .FirstOrDefaultAsync(p => p.BusinessId == businessId && p.CustomerId == reservation.CustomerId);
+
+                if (loyaltyPoint == null)
+                {
+                    loyaltyPoint = new LoyaltyPoint
+                    {
+                        BusinessId = businessId,
+                        CustomerId = reservation.CustomerId,
+                        PointsBalance = 0,
+                        TotalPointsEarned = 0
+                    };
+                    _context.LoyaltyPoints.Add(loyaltyPoint);
+                }
+
+                loyaltyPoint.PointsBalance += pointsToEarn;
+                loyaltyPoint.TotalPointsEarned += pointsToEarn;
+                loyaltyPoint.LastUpdated = DateTime.UtcNow;
+
+                var transaction = new LoyaltyTransaction
+                {
+                    LoyaltyPoint = loyaltyPoint,
+                    PointsAmount = pointsToEarn,
+                    Type = LoyaltyTransactionType.Earned,
+                    Description = $"Wizyta (ID: {reservation.ReservationId}) - Przeliczenie",
+                    ReservationId = reservation.ReservationId,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.LoyaltyTransactions.Add(transaction);
+                processedReservations++;
+                addedPointsCount += pointsToEarn;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = $"Przeliczono punkty. Dodano {addedPointsCount} punktów dla {processedReservations} wizyt." });
+        }
     }
 }

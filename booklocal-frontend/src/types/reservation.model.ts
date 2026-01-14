@@ -14,19 +14,25 @@ export interface OwnerCreateReservationPayload {
 
 export interface Reservation {
   reservationId: number;
-  customerId: string;
+  businessId: number;
+  customerId?: string;
   startTime: string; 
   endTime: string;
   status: string;
+  
   serviceVariantId: number;
   serviceName: string;
   variantName: string;
-  agreedPrice: number;
+  agreedPrice: number; 
+
   employeeFullName: string;
   employeeId: number;
+
   customerFullName?: string;
   guestName?: string;
   businessName: string;
+  
   isServiceArchived: boolean;
   hasReview: boolean;
+  paymentMethod: string;
 }

@@ -1,0 +1,54 @@
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h2 class="text-2xl font-bold">Faktury</h2>
+      <p class="text-base-content/70">Historia wystawionych dokumentów sprzedaży</p>
+    </div>
+  </div>
+
+  @if(isLoading) {
+    <div class="flex justify-center p-12">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  } @else {
+    <div class="bg-base-100 rounded-box shadow overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table table-zebra">
+          <thead>
+            <tr>
+              <th>Numer</th>
+              <th>Data Wystawienia</th>
+              <th>Klient</th>
+              <th>Kwota Brutto</th>
+              <th>Akcje</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for(invoice of invoices; track invoice.invoiceId) {
+              <tr>
+                <td class="font-bold font-mono">{{ invoice.invoiceNumber }}</td>
+                <td>{{ invoice.issueDate | date:'dd.MM.yyyy' }}</td>
+                <td>{{ invoice.customerName }}</td>
+                <td class="text-primary font-bold">{{ invoice.totalGross | currency:'PLN':'symbol':'1.2-2' }}</td>
+                <td>
+                  <button class="btn btn-sm btn-ghost gap-2" (click)="downloadPdf(invoice)">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    PDF
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="text-center py-8 opacity-50">
+                  Brak wystawionych faktur.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

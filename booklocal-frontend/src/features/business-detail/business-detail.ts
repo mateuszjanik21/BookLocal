@@ -130,9 +130,8 @@ export class BusinessDetailComponent implements OnInit {
   }
 
   openReservationModal(service: Service, modal: any): void {
-    this.selectedService = service;
-
     if (this.business) {
+      this.selectedService = { ...service, businessId: this.business.id };
       this.businessService.getEmployeesForService(this.business.id, service.id).subscribe(employees => {
         this.filteredEmployees = employees;
         modal.showModal(); 

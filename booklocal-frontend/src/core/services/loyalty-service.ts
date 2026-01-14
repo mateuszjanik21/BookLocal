@@ -44,4 +44,8 @@ export class LoyaltyService {
   getCustomerLoyalty(businessId: number, customerId: string): Observable<CustomerLoyaltyData> {
     return this.http.get<CustomerLoyaltyData>(`${this.apiUrl}/businesses/${businessId}/loyalty/customer/${customerId}`);
   }
+
+  recalculatePoints(businessId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/businesses/${businessId}/loyalty/recalculate`, {});
+  }
 }

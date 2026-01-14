@@ -22,9 +22,12 @@ namespace BookLocal.Data.Models
         public virtual Reservation Reservation { get; set; }
 
         [Required]
-        public int PaymentMethodId { get; set; }
-        [ForeignKey("PaymentMethodId")]
-        public virtual PaymentMethod PaymentMethod { get; set; }
+        public int BusinessId { get; set; }
+        [ForeignKey("BusinessId")]
+        public virtual Business Business { get; set; }
+
+        [Required]
+        public PaymentMethod PaymentMethod { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(10, 2)")]

@@ -22,6 +22,10 @@ import { ServiceListComponent } from '../features/service-list/service-list';
 import { ManageHrComponent } from '../features/dashboard/manage-hr/manage-hr';
 import { ManageCustomersComponent } from '../features/dashboard/manage-customers/manage-customers';
 import { LoyaltySettingsComponent } from '../features/dashboard/loyalty-settings/loyalty-settings';
+import { DiscountManagerComponent } from '../features/dashboard/discount-manager/discount-manager/discount-manager';
+import { FinanceDashboardComponent } from '../features/dashboard/finance/finance-dashboard/finance-dashboard';
+import { InvoicesListComponent } from '../features/dashboard/invoices/invoices';
+import { PaymentsListComponent } from '../features/dashboard/finance/payments-list/payments-list';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -50,6 +54,11 @@ export const routes: Routes = [
       { path: 'employees/:id', component: EmployeeDetailComponent },
       { path: 'hr', component: ManageHrComponent },
       { path: 'loyalty', component: LoyaltySettingsComponent },
+      { path: 'discounts', component: DiscountManagerComponent },
+      { path: 'finance', component: FinanceDashboardComponent },
+      { path: 'invoices', component: InvoicesListComponent },
+      { path: 'payments', component: PaymentsListComponent },
+    
     ]
   },
 ];

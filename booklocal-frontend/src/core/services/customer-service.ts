@@ -4,6 +4,12 @@ import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
 import { CustomerDetail, CustomerListItem, UpdateCustomerNotePayload, UpdateCustomerStatusPayload } from '../../types/customer.models';
 
+export interface PagedResult<T> {
+    items: T[];
+    totalCount: number;
+    pageNumber: number;
+    pageSize: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -12,11 +18,14 @@ export class CustomerService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  getCustomers(businessId: number, search?: string): Observable<CustomerListItem[]> {
-    let params = new HttpParams();
+  getCustomers(businessId: number, search?: string, page: number = 1, pageSize: number = 20): Observable<PagedResult<CustomerListItem>> {
+    let params = new HttpParams()
+        .set('page', page)
+        .set('pageSize', pageSize);
+        
     if (search) params = params.set('search', search);
 
-    return this.http.get<CustomerListItem[]>(`${this.apiUrl}/businesses/${businessId}/customers`, { params });
+    return this.http.get<PagedResult<CustomerListItem>>(`${this.apiUrl}/businesses/${businessId}/customers`, { params });
   }
 
   getCustomerDetails(businessId: number, customerId: string): Observable<CustomerDetail> {

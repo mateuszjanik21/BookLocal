@@ -368,7 +368,12 @@ public static class DbInitializer
                 NoShowCount = g.Count(r => r.Status == ReservationStatus.NoShow),
                 PrivateNotes = faker.Random.Bool(0.2f) ? faker.Lorem.Sentence() : null,
                 IsVIP = faker.Random.Bool(0.05f),
-                IsBanned = faker.Random.Bool(0.01f)
+                IsBanned = faker.Random.Bool(0.01f),
+                CancelledCount = g.Count(r => r.Status == ReservationStatus.Cancelled),
+                NextVisitDate = g.Where(r => r.StartTime > simulationNow && r.Status == ReservationStatus.Confirmed)
+                    .OrderBy(r => r.StartTime)
+                    .Select(r => (DateTime?)r.StartTime)
+                    .FirstOrDefault()
             })
             .ToList();
 
