@@ -80,6 +80,38 @@ namespace BookLocal.API.Controllers
             });
         }
 
+        [HttpPut("plans/{id}")]
+        public async Task<IActionResult> UpdatePlan(int id, CreateSubscriptionPlanDto dto)
+        {
+            var plan = await _context.SubscriptionPlans.FindAsync(id);
+            if (plan == null) return NotFound("Nie znaleziono planu.");
+
+            plan.Name = dto.Name;
+            plan.PriceMonthly = dto.PriceMonthly;
+            plan.PriceYearly = dto.PriceYearly;
+            plan.MaxEmployees = dto.MaxEmployees;
+            plan.MaxServices = dto.MaxServices;
+            plan.HasAdvancedReports = dto.HasAdvancedReports;
+            plan.HasMarketingTools = dto.HasMarketingTools;
+            plan.CommissionPercentage = dto.CommissionPercentage;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("plans/{id}")]
+        public async Task<IActionResult> DeletePlan(int id)
+        {
+            var plan = await _context.SubscriptionPlans.FindAsync(id);
+            if (plan == null) return NotFound("Nie znaleziono planu.");
+
+            // Soft delete
+            plan.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         // --- BUSINESS VERIFICATION ---
 
         [HttpGet("businesses")]
@@ -109,7 +141,8 @@ namespace BookLocal.API.Controllers
                 .Where(bs => businessIds.Contains(bs.BusinessId) && bs.IsActive)
                 .ToListAsync();
 
-            var dtos = businesses.Select(b => {
+            var dtos = businesses.Select(b =>
+            {
                 var sub = activeSubs.FirstOrDefault(s => s.BusinessId == b.BusinessId);
                 return new AdminBusinessListDto
                 {

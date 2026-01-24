@@ -9,6 +9,7 @@ import { OwnerLayoutComponent } from '../layout/owner-layout/owner-layout';
 import { MyReservationsComponent } from '../features/my-reservation/my-reservation';
 import { authGuard } from '../core/guards/auth-guard';
 import { ownerGuard } from '../core/guards/owner-guard';
+import { featureGuard } from '../core/guards/feature-guard';
 import { ProfileComponent } from '../features/profile/profile';
 import { ManageServicesComponent } from '../features/dashboard/manage-services/manage-services';
 import { ManageEmployeesComponent } from '../features/dashboard/manage-employees/manage-employees';
@@ -34,6 +35,7 @@ import { AdminDashboardComponent } from '../features/admin/admin-dashboard/admin
 import { AdminPlansComponent } from '../features/admin/plans/plans';
 import { AdminBusinessApprovalComponent } from '../features/admin/business-approval/business-approval';
 import { SubscriptionManagerComponent } from '../features/dashboard/subscription/subscription';
+import { UpgradeRequiredComponent } from '../features/dashboard/upgrade-required/upgrade-required';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -61,14 +63,15 @@ export const routes: Routes = [
       { path: 'profile', component: ManageProfileComponent },
       { path: 'employees/:id', component: EmployeeDetailComponent },
       { path: 'hr', component: ManageHrComponent },
-      { path: 'loyalty', component: LoyaltySettingsComponent },
-      { path: 'discounts', component: DiscountManagerComponent },
-      { path: 'finance', component: FinanceDashboardComponent },
-      { path: 'invoices', component: InvoicesListComponent },
+      { path: 'loyalty', component: LoyaltySettingsComponent, canActivate: [featureGuard], data: { feature: 'marketing' } },
+      { path: 'discounts', component: DiscountManagerComponent, canActivate: [featureGuard], data: { feature: 'marketing' } },
+      { path: 'finance', component: FinanceDashboardComponent, canActivate: [featureGuard], data: { feature: 'reports' } },
+      { path: 'invoices', component: InvoicesListComponent, canActivate: [featureGuard], data: { feature: 'reports' } },
       { path: 'payments', component: PaymentsListComponent },
       { path: 'bundles', component: ServiceBundlesListComponent },
       { path: 'bundles/create', component: ServiceBundleWizardComponent },
       { path: 'subscription', component: SubscriptionManagerComponent },
+      { path: 'upgrade-required', component: UpgradeRequiredComponent }
     ]
   },
   {

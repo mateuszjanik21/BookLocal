@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface SubscriptionPlan {
@@ -23,6 +24,8 @@ export interface CurrentSubscription {
   endDate?: string;
   price?: number;
   isActive: boolean;
+  hasAdvancedReports?: boolean;
+  hasMarketingTools?: boolean;
 }
 
 @Injectable({
@@ -32,15 +35,43 @@ export class SubscriptionService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/subscription`;
 
+  private _currentSubscription = new BehaviorSubject<CurrentSubscription | null>(null);
+  public currentSubscription$ = this._currentSubscription.asObservable();
+
+  constructor() {
+  }
+
   getPublicPlans(): Observable<SubscriptionPlan[]> {
     return this.http.get<SubscriptionPlan[]>(`${this.apiUrl}/plans`);
   }
 
   subscribe(planId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/subscribe`, planId);
+    return this.http.post(`${this.apiUrl}/subscribe`, planId).pipe(
+        tap(() => this.refreshSubscription())
+    );
   }
 
   getCurrentSubscription(): Observable<CurrentSubscription> {
-    return this.http.get<CurrentSubscription>(`${this.apiUrl}/current`);
+    return this.http.get<CurrentSubscription>(`${this.apiUrl}/current`).pipe(
+        tap(sub => this._currentSubscription.next(sub))
+    );
+  }
+  
+  refreshSubscription() {
+      this.getCurrentSubscription().subscribe({
+          error: (err) => console.error('Failed to refresh subscription', err)
+      });
+  }
+
+  createPlan(plan: Partial<SubscriptionPlan>): Observable<SubscriptionPlan> {
+    return this.http.post<SubscriptionPlan>(this.apiUrl, plan);
+  }
+
+  updatePlan(id: number, plan: Partial<SubscriptionPlan>): Observable<SubscriptionPlan> {
+    return this.http.put<SubscriptionPlan>(`${this.apiUrl}/${id}`, plan);
+  }
+
+  deletePlan(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 }

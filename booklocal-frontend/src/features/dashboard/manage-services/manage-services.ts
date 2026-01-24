@@ -2,11 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BusinessService } from '../../../core/services/business-service';
 import { CategoryService } from '../../../core/services/category';
-import { BusinessDetail, ServiceCategory, Service } from '../../../types/business.model';
+import { BusinessDetail, ServiceCategory, Service, ServiceVariant } from '../../../types/business.model';
 import { ToastrService } from 'ngx-toastr';
 import { CategoryModalComponent } from '../../../shared/components/category-modal/category-modal';
 import { AddServiceModalComponent } from '../../../shared/components/add-service-modal/add-service-modal';
 import { EditServiceModalComponent } from '../../../shared/components/edit-service-modal/edit-service-modal';
+import { VariantModalComponent } from '../../../shared/components/variant-modal/variant-modal';
 import { of, switchMap, finalize } from 'rxjs';
 import { PhotoService } from '../../../core/services/photo';
 import { ServiceService } from '../../../core/services/service';
@@ -20,6 +21,7 @@ import { FormsModule } from '@angular/forms';
     CategoryModalComponent,
     AddServiceModalComponent,
     EditServiceModalComponent,
+    VariantModalComponent,
     FormsModule,
   ],
   templateUrl: './manage-services.html',
@@ -43,6 +45,11 @@ export class ManageServicesComponent implements OnInit {
   isAddServiceModalVisible = false;
   serviceToEdit: Service | null = null;
   activeCategoryForService: ServiceCategory | null = null;
+
+  // Variant Modal
+  isVariantModalVisible = false;
+  variantToEdit: ServiceVariant | null = null;
+  activeServiceForVariant: Service | null = null;
 
   ngOnInit(): void {
     this.loadData(true);
@@ -173,5 +180,20 @@ export class ManageServicesComponent implements OnInit {
   openEditServiceModal(service: Service, category: ServiceCategory): void {
     this.activeCategoryForService = category;
     this.serviceToEdit = service;
+  }
+
+  openVariantModal(service: Service, variant?: ServiceVariant) {
+    this.activeServiceForVariant = service;
+    this.variantToEdit = variant || null;
+    this.isVariantModalVisible = true;
+  }
+
+  closeVariantModalAndRefresh(refresh: boolean) {
+    this.isVariantModalVisible = false;
+    this.activeServiceForVariant = null;
+    this.variantToEdit = null;
+    if (refresh) {
+      this.loadData();
+    }
   }
 }

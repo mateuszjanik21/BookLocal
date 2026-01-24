@@ -1,11 +1,11 @@
 <div class="modal" [class.modal-open]="isVisible">
   <div class="modal-box max-w-lg">
-    <h3 class="font-bold text-2xl mb-1">{{ isEditMode ? 'Edytuj Kategorię' : 'Dodaj Nową Kategorię' }}</h3>
-    <p class="text-base-content/70 mb-6">Uzupełnij dane, aby stworzyć lub zaktualizować kategorię w swojej ofercie.</p>
+    <h3 class="font-bold text-2xl mb-1">{{ isEditMode ? 'Edytuj Usługę' : 'Dodaj Nową Usługę' }}</h3>
+    <p class="text-base-content/70 mb-6">Uzupełnij dane, aby stworzyć lub zaktualizować usługę w swojej ofercie.</p>
     
     <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="space-y-6">
       <div>
-        <label class="label"><span class="label-text font-semibold">Kategoria główna</span></label>
+        <label class="label"><span class="label-text font-semibold">Grupa Usług (Kategoria Główna)</span></label>
         <select class="select select-bordered w-full" formControlName="mainCategoryId">
           <option [ngValue]="null" disabled>Wybierz z listy...</option>
           @if(mainCategories$ | async; as mainCategories) {
@@ -17,12 +17,12 @@
       </div>
 
       <div>
-        <label class="label"><span class="label-text font-semibold">Nazwa własna kategorii</span></label>
+        <label class="label"><span class="label-text font-semibold">Nazwa Usługi</span></label>
         <input type="text" placeholder="np. &quot;Strzyżenie&quot;, &quot;Koloryzacja&quot;, &quot;Pielęgnacja&quot;." class="input input-bordered w-full" formControlName="name" />
       </div>
 
       <div>
-        <label class="label"><span class="label-text font-semibold">Zdjęcie kategorii</span></label>
+        <label class="label"><span class="label-text font-semibold">Zdjęcie Usługi</span></label>
         <p class="text-xs text-base-content/60 mt-1 mb-3">Profesjonalne zdjęcie przyciągnie uwagę klientów.</p>
 
         <app-image-upload 

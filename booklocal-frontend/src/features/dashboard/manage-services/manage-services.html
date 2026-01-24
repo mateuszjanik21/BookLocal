@@ -22,9 +22,9 @@
       class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-4"
     >
       <div>
-        <h1 class="text-3xl font-bold text-base-content">Zarządzaj Usługami</h1>
+        <h1 class="text-3xl font-bold text-base-content">Twoje Usługi</h1>
         <p class="mt-1 text-base-content/70">
-          Zarządzaj kategoriami i usługami, które oferujesz swoim klientom.
+          Zarządzaj ofertą usług i ich cennikami.
         </p>
       </div>
       <button
@@ -41,13 +41,13 @@
             d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"
           />
         </svg>
-        Dodaj Kategorię
+        Dodaj Nową Usługę
       </button>
     </div>
 
     <div class="form-control w-60 mb-8">
       <label class="cursor-pointer label">
-        <span class="label-text">Pokaż archiwalne usługi</span>
+        <span class="label-text">Pokaż archiwalne pozycje</span>
         <input
           type="checkbox"
           class="toggle toggle-primary"
@@ -64,10 +64,10 @@
         class="card bg-base-100 shadow-lg border border-base-200/50 transition-all duration-300 hover:shadow-2xl hover:border-primary"
       >
         <div class="card-body p-5">
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-4 border-b border-base-200 pb-4 mb-4">
             <div class="avatar">
               <div
-                class="w-24 rounded-full ring-2 ring-primary ring-offset-base-100 ring-offset-2"
+                class="w-16 rounded-full ring-2 ring-primary ring-offset-base-100 ring-offset-2"
               >
                 <img
                   [src]="category.photoUrl || 'assets/placeholder.svg'"
@@ -75,9 +75,11 @@
                 />
               </div>
             </div>
-            <h2 class="flex-grow text-xl font-bold text-base-content">
-              {{ category.name }}
-            </h2>
+            <div class="flex-grow">
+               <h2 class="text-xl font-bold text-base-content">{{ category.name }}</h2>
+               <div class="badge badge-sm badge-ghost mt-1">Usługa Główna</div>
+            </div>
+            
             <div class="dropdown dropdown-end">
               <label tabindex="0" class="btn btn-ghost btn-circle btn-sm">
                 <svg
@@ -101,7 +103,7 @@
               >
                 <li>
                   <button (click)="openCategoryModal(category)">
-                    Edytuj kategorię
+                    Edytuj usługę
                   </button>
                 </li>
                 <li>
@@ -109,134 +111,103 @@
                     class="text-error"
                     (click)="onDeleteCategory(category)"
                   >
-                    Usuń kategorię
+                    Usuń usługę
                   </button>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div class="mt-4 space-y-4">
+          <!-- Cennik Header -->
+          <div class="flex justify-between items-center mb-2">
+             <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/60">Cennik / Warianty</h3>
+          </div>
+
+          <div class="space-y-3">
             @for(service of category.services; track service.id) {
             <div
-              class="border border-base-200 rounded-xl overflow-hidden bg-base-100 transition-all hover:shadow-md"
+              class="collapse collapse-arrow border border-base-200 bg-base-100 rounded-box"
               [class.opacity-60]="service.isArchived"
             >
-              <!-- Service Header -->
-              <div class="flex items-center justify-between p-4 bg-base-200/30">
-                <div class="flex items-center gap-2">
-                  <h3 class="font-bold text-lg text-base-content">
-                    {{ service.name }}
-                  </h3>
-                  @if(service.isArchived) {
-                  <span class="badge badge-sm badge-ghost">Archiwalna</span>
-                  }
-                </div>
-
-                <div class="flex gap-2">
-                  @if(!service.isArchived) {
-                  <button
-                    class="btn btn-ghost btn-sm btn-square tooltip"
-                    data-tip="Edytuj usługę"
-                    (click)="openEditServiceModal(service, category)"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      class="w-5 h-5"
-                    >
-                      <path
-                        d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z"
-                      />
-                      <path
-                        d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    class="btn btn-ghost btn-sm btn-square text-error tooltip"
-                    data-tip="Usuń usługę"
-                    (click)="onDeleteService(service)"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      class="w-5 h-5"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.22-2.365.468a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.866 19h4.268a2.75 2.75 0 002.75-2.529l.84-10.518.149.022a.75.75 0 10.23-1.482A41.03 41.03 0 0014 4.193v-.443A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                  }
-                </div>
-              </div>
-
-              <!-- Variants List -->
-              <div class="divide-y divide-base-200">
-                @for(variant of service.variants; track
-                variant.serviceVariantId) {
-                <div
-                  class="flex items-center justify-between p-3 pl-6 hover:bg-base-100/50"
-                >
-                  <div class="flex items-center gap-3">
-                    <span class="w-2 h-2 rounded-full bg-primary/40"></span>
-                    <span class="text-sm font-medium">{{ variant.name }}</span>
+               <input type="checkbox" /> 
+               <div class="collapse-title text-base font-medium flex items-center justify-between pr-10">
+                  <div class="flex items-center gap-2">
+                     <span>{{ service.name }}</span>
+                     @if(service.isArchived) { <span class="badge badge-xs badge-ghost">Archiwum</span> }
                   </div>
-                  <div class="flex items-center gap-6 text-sm">
-                    <div class="flex items-center gap-1 text-base-content/70">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="w-4 h-4"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <span>{{ variant.durationMinutes }} min</span>
-                    </div>
-                    <span class="font-bold font-mono text-base-content"
-                      >{{ variant.price }} PLN</span
-                    >
+                  <!-- Primary price preview -->
+                  <div class="text-sm font-normal opacity-70">
+                     @if(service.variants.length > 0) {
+                        {{ service.variants[0].price }} PLN
+                     }
                   </div>
-                </div>
-                }
-              </div>
+               </div>
+               
+               <div class="collapse-content bg-base-200/30">
+                  <div class="pt-2 space-y-2">
+                     <div class="flex justify-end gap-2 mb-2">
+                        @if(!service.isArchived) {
+                          <button class="btn btn-xs btn-outline btn-primary" (click)="openVariantModal(service)">+ Dodaj opcję wariantu</button>
+                          <div class="divider divider-horizontal mx-0"></div>
+                          <button class="btn btn-xs btn-ghost" (click)="openEditServiceModal(service, category)">Edytuj opis usługi</button>
+                          <button class="btn btn-xs btn-ghost text-error" (click)="onDeleteService(service)">Usuń usługę</button>
+                        }
+                     </div>
+                     
+                     <table class="table table-xs w-full">
+                        <thead>
+                           <tr>
+                              <th>Wariant</th>
+                              <th>Czas</th>
+                              <th>Cena</th>
+                              <th class="text-right">Akcje</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           @for(variant of service.variants; track variant.serviceVariantId) {
+                           <tr class="hover">
+                              <td>{{ variant.name }}</td>
+                              <td>{{ variant.durationMinutes }} min</td>
+                              <td class="font-bold">{{ variant.price }} PLN</td>
+                              <td class="text-right">
+                                 <button class="btn btn-xs btn-square btn-ghost" (click)="openVariantModal(service, variant)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+                                       <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
+                                       <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
+                                    </svg>
+                                 </button>
+                              </td>
+                           </tr>
+                           }
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
             </div>
             } @empty {
             <div
-              class="text-center py-8 px-4 border-2 border-dashed border-base-300 rounded-lg mt-4"
+              class="text-center py-8 px-4 border-2 border-dashed border-base-300 rounded-lg bg-base-200/20"
             >
-              <p class="font-semibold text-base-content/80">
-                Brak usług w tej kategorii
+              <p class="font-semibold text-base-content/60 text-sm">
+                Cennik jest pusty
               </p>
               <button
                 class="btn btn-primary btn-sm mt-3"
                 (click)="openAddServiceModal(category)"
               >
-                + Dodaj pierwszą usługę
+                + Dodaj pozycję cennika
               </button>
             </div>
             }
           </div>
 
           @if (category.services.length > 0) {
-          <div class="card-actions justify-end mt-4">
+          <div class="card-actions justify-end mt-4 pt-4 border-t border-base-200">
             <button
-              class="btn btn-primary btn-sm"
+              class="btn btn-ghost btn-sm text-primary"
               (click)="openAddServiceModal(category)"
             >
-              + Dodaj usługę
+              + Dodaj pozycję cennika
             </button>
           </div>
           }
@@ -255,19 +226,14 @@
             stroke="currentColor"
             class="w-16 h-16 text-primary"
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-            />
+             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <h3 class="text-xl font-semibold mt-6">
-          Stwórz swoją pierwszą kategorię usług
+          Zdefiniuj swoją pierwszą usługę
         </h3>
         <p class="text-base-content/70 mt-2 max-w-sm">
-          Kategorie pomagają w organizacji oferty. Kliknij przycisk poniżej, aby
-          dodać nową kategorię i przypisać do niej usługi.
+          Aby rozpocząć, dodaj główną usługę (np. "Strzyżenie"), a następnie zdefiniuj jej cennik.
         </p>
         <button class="btn btn-primary mt-6" (click)="openCategoryModal()">
           <svg
@@ -280,7 +246,7 @@
               d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"
             />
           </svg>
-          Dodaj Kategorię
+          Dodaj Usługę
         </button>
       </div>
       }
@@ -315,4 +281,13 @@
   (closed)="closeServiceModalAndRefresh($event)"
 >
 </app-edit-service-modal>
+
+<app-variant-modal
+  [isVisible]="isVariantModalVisible"
+  [service]="activeServiceForVariant"
+  [variant]="variantToEdit"
+  [businessId]="business.id"
+  (closed)="closeVariantModalAndRefresh($event)"
+>
+</app-variant-modal>
 }

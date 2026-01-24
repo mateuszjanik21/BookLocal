@@ -71,6 +71,14 @@ export class AdminService {
     return this.http.post<SubscriptionPlan>(`${this.apiUrl}/plans`, plan);
   }
 
+  updatePlan(id: number, plan: CreateSubscriptionPlan): Observable<any> {
+    return this.http.put(`${this.apiUrl}/plans/${id}`, plan);
+  }
+
+  deletePlan(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/plans/${id}`);
+  }
+
   // --- BUSINESSES ---
   getBusinesses(status?: string): Observable<AdminBusinessListDto[]> {
     let params = new HttpParams();

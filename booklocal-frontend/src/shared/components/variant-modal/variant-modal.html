@@ -1,47 +1,44 @@
 <div class="modal" [class.modal-open]="isVisible" (click)="closeModal($event)">
   <div class="modal-box p-0 max-w-lg animated-modal">
     <div class="modal-header p-6 bg-base-200 flex items-center gap-4">
-      <div class="bg-primary rounded-full p-2 text-primary-content">
+      <div class="bg-primary/20 rounded-full p-2 text-primary">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.47 2.118v-.09A12.318 12.318 0 0 1 9.374 21c2.331 0 4.512-.645 6.374-1.766v.09a2.25 2.25 0 0 1-2.47 2.118 3 3 0 0 0-5.78 1.128ZM9.375 10.375a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
           <path stroke-linecap="round" stroke-linejoin="round" d="M18.375 10.375a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-3 6.375a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.47 2.118v-.09A12.318 12.318 0 0 1 9.374 21c2.331 0 4.512-.645 6.374-1.766v.09a2.25 2.25 0 0 1-2.47 2.118 3 3 0 0 0-5.78 1.128Z" />
         </svg>
       </div>
       <div>
-        <h3 class="font-bold text-lg">Dodaj Pozycję Cennika</h3>
-        <p class="text-sm text-base-content/60">Wypełnij poniższe pola, aby dodać nową pozycję do cennika tej usługi.</p>
+        <h3 class="font-bold text-lg">{{ variant ? 'Edytuj Pozycję Cennika' : 'Dodaj Pozycję Cennika' }}</h3>
+        <p class="text-sm text-base-content/60">Zarządzaj wariantem (ceną, czasem) dla usługi: <span class="font-bold">{{ service?.name }}</span></p>
       </div>
     </div>
-
-    <form [formGroup]="serviceForm" class="p-6">
+    
+    <form [formGroup]="variantForm" (ngSubmit)="onSubmit()" class="p-6">
       <div class="form-control">
-        <label class="label"><span class="label-text">Nazwa wariantu (np. Włosy długie)</span></label>
-        <input type="text" placeholder="np. Włosy średnie - standard" class="input input-bordered" formControlName="name" />
+        <label class="label"><span class="label-text">Nazwa wariantu</span></label>
+        <input type="text" placeholder="np. Włosy długie" class="input input-bordered" formControlName="name" />
       </div>
-      <div class="form-control mt-4">
-        <label class="label"><span class="label-text">Opis (opcjonalnie)</span></label>
-        <textarea class="textarea textarea-bordered h-24" placeholder="Szczegóły dotyczące tej pozycji cennika" formControlName="description"></textarea>
-      </div>
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <div class="form-control">
           <label class="label"><span class="label-text">Cena (zł)</span></label>
-          <input type="number" placeholder="50" class="input input-bordered" formControlName="price" />
+          <input type="number" class="input input-bordered" formControlName="price" />
         </div>
         <div class="form-control">
           <label class="label"><span class="label-text">Czas trwania (min)</span></label>
-          <input type="number" placeholder="30" class="input input-bordered" formControlName="durationMinutes" />
+          <input type="number" class="input input-bordered" formControlName="durationMinutes" />
         </div>
         <div class="form-control">
-          <label class="label"><span class="label-text">Czas na sprzątanie (min)</span></label>
-          <input type="number" placeholder="0" class="input input-bordered" formControlName="cleanupTimeMinutes" />
-        </div>
+           <label class="label"><span class="label-text">Czas na sprzątanie (min)</span></label>
+           <input type="number" class="input input-bordered" formControlName="cleanupTimeMinutes" />
+         </div>
       </div>
-      
+
       <div class="modal-action mt-8 pt-6 border-t border-base-200">
         <button type="button" class="btn btn-ghost" (click)="closed.emit(false)">Anuluj</button>
-        <button type="button" class="btn btn-primary" [disabled]="serviceForm.invalid" (click)="onSubmit()">
+        <button type="button" class="btn btn-primary" [disabled]="variantForm.invalid" (click)="onSubmit()">
           <span class="loading loading-spinner" *ngIf="isSubmitting"></span>
-          <span *ngIf="!isSubmitting">Dodaj do cennika</span>
+          <span *ngIf="!isSubmitting">Zapisz</span>
         </button>
       </div>
     </form>

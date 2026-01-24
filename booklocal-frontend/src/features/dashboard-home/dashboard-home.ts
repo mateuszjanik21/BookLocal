@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 import { ReservationService } from '../../core/services/reservation';
 import { BusinessService } from '../../core/services/business-service';
 import { ReviewService } from '../../core/services/review';
+import { CustomerService } from '../../core/services/customer-service';
 import { Reservation } from '../../types/reservation.model';
 import { Review } from '../../types/review.model';
 import { BusinessDetail } from '../../types/business.model';
@@ -20,6 +21,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   private reservationService = inject(ReservationService);
   private businessService = inject(BusinessService);
   private reviewService = inject(ReviewService);
+  private customerService = inject(CustomerService);
 
   public currentDate = new Date();
   private clockInterval: any;
@@ -28,10 +30,12 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   business: BusinessDetail | null = null;
   todaysReservations: Reservation[] = [];
   latestReviews: Review[] = [];
+
   stats = {
     upcomingCount: 0,
     employeeCount: 0,
-    serviceCount: 0
+    serviceCount: 0,
+    clientCount: 0
   };
 
   ngOnInit(): void {
@@ -44,9 +48,10 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
       forkJoin({
         reservations: this.reservationService.getCalendarEvents(),
-        reviews: this.reviewService.getReviews(businessDetails.id, 1, 3) 
+        reviews: this.reviewService.getReviews(businessDetails.id, 1, 3),
+        customers: this.customerService.getCustomers(businessDetails.id, '', 1, 1) // Fetch 1 just to get totalCount
       }).pipe(
-        map(({ reservations, reviews }) => {
+        map(({ reservations, reviews, customers }) => {
           const now = new Date();
           const todayStart = new Date(now.setHours(0, 0, 0, 0));
           const todayEnd = new Date(now.setHours(23, 59, 59, 999));
@@ -59,6 +64,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
           this.stats.upcomingCount = reservations.filter(r => new Date(r.startTime) >= new Date()).length;
           this.stats.employeeCount = businessDetails.employees.length;
           this.stats.serviceCount = businessDetails.categories.flatMap(c => c.services).length;
+          this.stats.clientCount = customers.totalCount;
         })
       ).subscribe(() => {
         this.isLoading = false;

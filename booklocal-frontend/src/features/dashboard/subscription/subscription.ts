@@ -63,7 +63,8 @@ export class SubscriptionManagerComponent implements OnInit {
         this.loadCurrentSubscription();
       },
       error: (err) => {
-        this.toastr.error('Wystąpił błąd podczas zmiany planu.');
+        const message = typeof err.error === 'string' ? err.error : 'Wystąpił błąd podczas zmiany planu.';
+        this.toastr.error(message, 'Błąd zmiany planu');
         console.error(err);
       }
     });

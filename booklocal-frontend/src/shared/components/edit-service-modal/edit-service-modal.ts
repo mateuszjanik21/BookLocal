@@ -26,10 +26,7 @@ export class EditServiceModalComponent implements OnChanges {
   isSubmitting = false;
   serviceForm = this.fb.group({
     name: ['', Validators.required],
-    description: [''],
-    price: [0, [Validators.required, Validators.min(0)]],
-    durationMinutes: [30, [Validators.required, Validators.min(1)]],
-    cleanupTimeMinutes: [0, [Validators.min(0)]]
+    description: ['']
   });
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -48,15 +45,7 @@ export class EditServiceModalComponent implements OnChanges {
       name: formValue.name,
       description: formValue.description,
       serviceCategoryId: this.service.serviceCategoryId,
-      variants: [
-        {
-          name: 'Standard',
-          price: formValue.price,
-          durationMinutes: formValue.durationMinutes,
-          cleanupTimeMinutes: formValue.cleanupTimeMinutes,
-          isDefault: true
-        }
-      ]
+      variants: this.service.variants // Preserve existing variants!
     };
 
     this.serviceService.updateService(this.businessId, this.service.id, payload as any)

@@ -1,111 +1,259 @@
 @if (isLoading) {
-<div class="flex justify-center items-center p-16">
-  <span class="loading loading-spinner loading-lg text-primary"></span>
-</div>
+  <div class="flex justify-center items-center h-[50vh]">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
 } @else {
-<div class="space-y-8">
-  <div>
-    <h1 class="text-3xl font-bold">Witaj w panelu, {{ business?.owner?.firstName }}!</h1>
-    <p class="mt-1 text-base-content/70">Oto podsumowanie dzisiejszego dnia w Twojej firmie.</p>
+  <div class="space-y-8 animate-fade-in">
+    
+    <!-- Hero Section -->
+    <div class="hero bg-base-200/50 rounded-3xl overflow-hidden relative shadow-sm border border-base-200">
+      <div class="hero-content flex-col lg:flex-row-reverse w-full justify-between p-8 lg:p-12 z-10">
+        <div class="text-right hidden lg:block">
+          <div class="text-6xl font-black text-base-content font-mono tracking-tighter">
+            {{ currentDate | date: 'HH:mm:ss' }}
+          </div>
+          <div class="text-xl uppercase tracking-widest text-primary font-bold mt-2">
+            {{ currentDate | date: 'EEEE, d MMMM' }}
+          </div>
+        </div>
+        
+        <div class="max-w-xl">
+          <div class="badge badge-primary mb-4 font-bold tracking-wider">PANEL WŁAŚCICIELA</div>
+          <h1 class="text-4xl lg:text-5xl font-bold mb-4">
+            Dzień dobry, <span class="text-primary">{{ business?.owner?.firstName }}</span>!
+          </h1>
+          <p class="text-lg opacity-80 leading-relaxed">
+            Oto podsumowanie Twojego biznesu na dzisiaj. Masz {{ stats.upcomingCount }} nadchodzących wizyt.
+          </p>
+        </div>
+      </div>
+      <!-- Background decoration -->
+      <div class="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-primary/5 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-secondary/5 rounded-full blur-3xl"></div>
+    </div>
 
-    <div class="flex items-center gap-2 text-lg text-base-content/80 mt-4">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
-        <path fill-rule="evenodd"
-          d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z"
-          clip-rule="evenodd" />
-      </svg>
-      <span>{{ currentDate | date: 'EEEE, d MMMM yyyy' }}</span>
-      <span>|</span>
-      <span class="font-mono font-semibold">{{ currentDate | date: 'HH:mm:ss' }}</span>
-    </div>
-  </div>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Stat 1: Upcoming Reservations -->
+      <div class="stats shadow-lg bg-base-100 border border-base-200 overflow-visible group hover:shadow-xl transition-shadow">
+        <div class="stat">
+          <div class="stat-figure text-primary group-hover:scale-110 transition-transform duration-300">
+            <div class="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+              </svg>
+            </div>
+          </div>
+          <div class="stat-title font-bold text-base-content/60 uppercase tracking-wider text-xs">Nadchodzące wizyty</div>
+          <div class="stat-value text-primary mt-1">{{ stats.upcomingCount }}</div>
+          <div class="stat-desc text-success font-medium mt-1">Zarezerwowane</div>
+        </div>
+      </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-    <div class="stat bg-base-200 rounded-box">
-      <div class="stat-title">Nadchodzące wizyty</div>
-      <div class="stat-value">{{ stats.upcomingCount }}</div>
-    </div>
-    <div class="stat bg-base-200 rounded-box">
-      <div class="stat-title">Liczba pracowników</div>
-      <div class="stat-value">{{ stats.employeeCount }}</div>
-    </div>
-    <div class="stat bg-base-200 rounded-box">
-      <div class="stat-title">Liczba usług</div>
-      <div class="stat-value">{{ stats.serviceCount }}</div>
-    </div>
-  </div>
+      <!-- Stat 2: Clients -->
+      <div class="stats shadow-lg bg-base-100 border border-base-200 overflow-visible group hover:shadow-xl transition-shadow">
+        <div class="stat">
+          <div class="stat-figure text-secondary group-hover:scale-110 transition-transform duration-300">
+            <div class="w-12 h-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+              </svg>
+            </div>
+          </div>
+          <div class="stat-title font-bold text-base-content/60 uppercase tracking-wider text-xs">Baza klientów</div>
+          <div class="stat-value text-secondary mt-1">{{ stats.clientCount }}</div>
+          <div class="stat-desc font-medium mt-1">Łącznie zarejestrowanych</div>
+        </div>
+      </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 card bg-base-200">
-      <div class="card-body">
-        <h2 class="card-title">Dzisiejszy Plan Dnia</h2>
-        @if (todaysReservations.length > 0) {
-        <div class="overflow-x-auto">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Godzina</th>
-                <th>Klient</th>
-                <th>Usługa</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (res of todaysReservations; track res.reservationId) {
-              <tr>
-                <td class="font-mono font-semibold">{{ res.startTime | date: 'HH:mm' }}</td>
-                <td>{{ res.customerFullName }}</td>
-                <td>{{ res.serviceName }}</td>
-                <td><a [routerLink]="['/dashboard/reservations', res.reservationId]"
-                    class="btn btn-xs btn-ghost">Zobacz</a></td>
-              </tr>
+      <!-- Stat 3: Employees -->
+      <div class="stats shadow-lg bg-base-100 border border-base-200 overflow-visible group hover:shadow-xl transition-shadow">
+        <div class="stat">
+          <div class="stat-figure text-accent group-hover:scale-110 transition-transform duration-300">
+             <div class="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+              </svg>
+            </div>
+          </div>
+          <div class="stat-title font-bold text-base-content/60 uppercase tracking-wider text-xs">Twój Zespół</div>
+          <div class="stat-value text-accent mt-1">{{ stats.employeeCount }}</div>
+          <div class="stat-desc font-medium mt-1">Aktywnych pracowników</div>
+        </div>
+      </div>
+
+      <!-- Stat 4: Services -->
+      <div class="stats shadow-lg bg-base-100 border border-base-200 overflow-visible group hover:shadow-xl transition-shadow">
+        <div class="stat">
+          <div class="stat-figure text-info group-hover:scale-110 transition-transform duration-300">
+             <div class="w-12 h-12 rounded-2xl bg-info/10 flex items-center justify-center text-info">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+              </svg>
+            </div>
+          </div>
+          <div class="stat-title font-bold text-base-content/60 uppercase tracking-wider text-xs">Oferta</div>
+          <div class="stat-value text-info mt-1">{{ stats.serviceCount }}</div>
+          <div class="stat-desc font-medium mt-1">Dostępnych usług</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      
+      <!-- Left Column: Scheduler & Reservations (2/3 width) -->
+      <div class="xl:col-span-2 space-y-8">
+        
+        <!-- Today's Schedule -->
+        <div class="card bg-base-100 shadow-lg border border-base-200">
+          <div class="card-body p-0">
+            <div class="p-6 border-b border-base-200 flex justify-between items-center">
+              <div>
+                <h2 class="card-title text-xl font-bold">Dzisiejsze Wizyty</h2>
+                <p class="text-xs text-base-content/60 mt-1 uppercase tracking-wide font-bold">Agenda na dzisiaj</p>
+              </div>
+              <a routerLink="/dashboard/reservations" class="btn btn-sm btn-ghost gap-2">
+                Pełny Kalendarz &rarr;
+              </a>
+            </div>
+
+            @if (todaysReservations.length > 0) {
+            <div class="overflow-x-auto">
+              <table class="table table-zebra w-full">
+                <thead class="bg-base-200/50">
+                  <tr>
+                    <th class="pl-6">Godzina</th>
+                    <th>Klient</th>
+                    <th>Usługa</th>
+                    <th class="text-right pr-6">Akcja</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (res of todaysReservations; track res.reservationId) {
+                  <tr class="hover">
+                    <td class="pl-6">
+                      <div class="font-mono font-bold text-lg bg-base-200 inline-block px-2 py-1 rounded">
+                        {{ res.startTime | date: 'HH:mm' }}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="font-bold">{{ res.customerFullName }}</div>
+                      <div class="text-xs opacity-50">Stały klient</div> <!-- Placeholder logic -->
+                    </td>
+                    <td>
+                      <div class="badge badge-outline">{{ res.serviceName }}</div>
+                    </td>
+                    <td class="text-right pr-6">
+                      <a [routerLink]="['/dashboard/reservations', res.reservationId]" class="btn btn-sm btn-square btn-ghost">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                        </svg>
+                      </a>
+                    </td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            } @else {
+            <div class="flex flex-col items-center justify-center py-16 text-center">
+              <div class="w-16 h-16 bg-base-200 rounded-full flex items-center justify-center mb-4">
+                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8 text-base-content/30">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-bold">Wolny dzień!</h3>
+              <p class="text-base-content/60 max-w-xs mt-2">Brak zaplanowanych wizyt na dzisiaj. Możesz odpocząć lub zająć się marketingiem.</p>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Quick Actions & Reviews (1/3 width) -->
+      <div class="space-y-8">
+        
+        <!-- Quick Actions Tiles -->
+        <div class="card bg-base-100 shadow-lg border border-base-200">
+           <div class="card-body">
+              <h2 class="card-title text-lg font-bold mb-4">Szybki Start</h2>
+              <div class="grid grid-cols-2 gap-4">
+                 <a routerLink="/dashboard/reservations" class="card bg-primary text-primary-content hover:bg-primary-focus transition-colors cursor-pointer shadow-md hover:shadow-lg">
+                    <div class="card-body p-4 items-center text-center">
+                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                       </svg>
+                       <span class="text-xs font-bold uppercase tracking-wide">Dodaj Wizytę</span>
+                    </div>
+                 </a>
+                 <a routerLink="/dashboard/customers" class="card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer border border-base-300">
+                    <div class="card-body p-4 items-center text-center">
+                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM3.75 14.25c0-.93.63-1.745 1.54-1.928 2.378-.475 4.805-.475 7.183 0 .91.182 1.54.998 1.54 1.928v2.625A2.25 2.25 0 0111.75 21h-6a2.25 2.25 0 01-2.25-2.25v-2.625z" />
+                       </svg>
+                       <span class="text-xs font-bold uppercase tracking-wide">Nowy Klient</span>
+                    </div>
+                 </a>
+                 <a routerLink="/dashboard/services" class="card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer border border-base-300">
+                    <div class="card-body p-4 items-center text-center">
+                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.85 6.361a15.995 15.995 0 00-4.647 4.763m0 0c-.026.096-.053.191-.078.288m0 0a2.015 2.015 0 01-2.64 2.913c-.957-.469-1.562-1.423-1.562-2.487 0-1.168.687-2.188 1.693-2.658l.192-.092m0 0c.945-.451 1.761-1.077 2.404-1.83m0 0c.937-1.096 1.579-2.476 1.789-3.963l.033-.243" />
+                       </svg>
+                       <span class="text-xs font-bold uppercase tracking-wide">Usługi</span>
+                    </div>
+                 </a>
+                 <a routerLink="/dashboard/finance" class="card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer border border-base-300">
+                    <div class="card-body p-4 items-center text-center">
+                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 mb-1">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                       </svg>
+                       <span class="text-xs font-bold uppercase tracking-wide">Raporty</span>
+                    </div>
+                 </a>
+              </div>
+           </div>
+        </div>
+
+        <!-- Latest Reviews -->
+        <div class="card bg-base-100 shadow-lg border border-base-200">
+           <div class="card-body">
+              <h2 class="card-title text-lg font-bold flex justify-between">
+                <span>Opinie</span>
+                <span class="text-xs text-base-content/50 font-normal uppercase tracking-wide">Ostatnie 3</span>
+              </h2>
+              
+              @if (latestReviews.length > 0) {
+              <div class="space-y-4 mt-2">
+                @for(review of latestReviews; track review.reviewId){
+                  <div class="chat chat-start w-full">
+                    <div class="chat-header text-xs opacity-70 mb-1 flex justify-between w-full pr-2">
+                      <span>{{ review.reviewerName }}</span>
+                      <span class="flex text-yellow-500 gap-0.5">
+                        <!-- Simple star rendering -->
+                        @for (star of [1,2,3,4,5]; track star) {
+                           @if (star <= review.rating) { ★ } @else { ☆ }
+                        }
+                      </span>
+                    </div>
+                    <div class="chat-bubble chat-bubble-secondary bg-secondary/10 text-base-content text-sm w-full">
+                       "{{ review.comment }}"
+                    </div>
+                  </div>
+                }
+              </div>
+              } @else {
+                 <div class="text-center py-6">
+                    <p class="text-sm opacity-60">Brak nowych opinii.</p>
+                 </div>
               }
-            </tbody>
-          </table>
-        </div>
-        } @else {
-        <div class="text-center p-8">
-          <p>Brak zaplanowanych wizyt na dzisiaj.</p>
-        </div>
-        }
-      </div>
-    </div>
-
-    <div class="card bg-base-200">
-      <div class="card-body">
-        <h2 class="card-title">Szybkie Akcje</h2>
-        <div class="grid grid-cols-2 gap-4 mt-4">
-          <a routerLink="/dashboard/reservations" class="btn btn-outline btn-primary h-24 flex-col gap-2">Kalendarz</a>
-          <a routerLink="/dashboard/services" class="btn btn-outline btn-primary h-24 flex-col gap-2">Usługi</a>
-          <a routerLink="/dashboard/employees" class="btn btn-outline btn-primary h-24 flex-col gap-2">Pracownicy</a>
-          <a routerLink="/dashboard/profile" class="btn btn-outline btn-primary h-24 flex-col gap-2">Mój Profil</a>
+              
+              <div class="card-actions justify-center mt-2">
+                 <button routerLink="/dashboard/profile" class="btn btn-xs btn-link no-underline text-base-content/60">Wszystkie opinie</button>
+              </div>
+           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <div class="card bg-base-200">
-    <div class="card-body">
-      <h2 class="card-title">Najnowsze Opinie</h2>
-      @if (latestReviews.length > 0) {
-      <div class="space-y-4 mt-4">
-        @for(review of latestReviews; track review.reviewId){
-        <div class="flex gap-4 items-center">
-          <div class="flex items-center gap-1 font-bold">
-            <span class="text-yellow-400">★</span>
-            <span>{{ review.rating }}</span>
-          </div>
-          <div class="flex-grow">
-            <p class="font-semibold">{{ review.reviewerName }}</p>
-            <p class="text-sm text-base-content/70 italic">"{{ review.comment }}"</p>
-          </div>
-        </div>
-        }
-      </div>
-      } @else {
-      <p class="mt-4">Brak opinii do wyświetlenia.</p>
-      }
-    </div>
-  </div>
-</div>
 }

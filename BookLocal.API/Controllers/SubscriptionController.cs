@@ -57,6 +57,22 @@ namespace BookLocal.API.Controllers
             var plan = await _context.SubscriptionPlans.FindAsync(planId);
             if (plan == null || !plan.IsActive) return BadRequest("Nieprawidłowy plan.");
 
+            // Weryfikacja limitów nowego planu
+            var currentEmployeeCount = await _context.Employees.CountAsync(e => e.BusinessId == business.BusinessId);
+
+            // Check Services count
+            var currentServiceCount = await _context.Services.CountAsync(s => s.BusinessId == business.BusinessId);
+
+            if (currentEmployeeCount > plan.MaxEmployees)
+            {
+                return BadRequest($"Nie można zmienić planu. Twój obecny stan pracowników ({currentEmployeeCount}) przekracza limit nowego planu ({plan.MaxEmployees}). Aby zmienić plan, zmniejsz liczbę pracowników.");
+            }
+
+            if (currentServiceCount > plan.MaxServices)
+            {
+                return BadRequest($"Nie można zmienić planu. Twoja obecna liczba usług ({currentServiceCount}) przekracza limit nowego planu ({plan.MaxServices}). Aby zmienić plan, usuń zbędne usługi.");
+            }
+
             // Check current subscription
             var currentSub = await _context.BusinessSubscriptions
                 .FirstOrDefaultAsync(bs => bs.BusinessId == business.BusinessId && bs.IsActive);
@@ -109,7 +125,9 @@ namespace BookLocal.API.Controllers
                 StartDate = sub.StartDate,
                 EndDate = sub.EndDate,
                 Price = sub.Plan.PriceMonthly,
-                IsActive = true
+                IsActive = true,
+                HasAdvancedReports = sub.Plan.HasAdvancedReports,
+                HasMarketingTools = sub.Plan.HasMarketingTools
             });
         }
     }
