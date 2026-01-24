@@ -28,7 +28,9 @@ export class LoginComponent {
 
     this.authService.login(this.loginForm.value as any).subscribe({
       next: (response) => {
-        if (response.user.roles.includes('owner')) {
+        if (response.user.roles.includes('superadmin')) {
+          this.router.navigate(['/admin/dashboard']);
+        } else if (response.user.roles.includes('owner')) {
           this.router.navigate(['/dashboard']);
         } else {
           this.router.navigate(['/']);

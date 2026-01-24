@@ -49,6 +49,20 @@ namespace BookLocal.API.Controllers
                 TransactionDate = DateTime.UtcNow
             };
 
+            // Calculate Commission for Online payments
+            if (paymentDto.Method == PaymentMethod.Online)
+            {
+                var activeSubscription = await _context.BusinessSubscriptions
+                    .Include(s => s.Plan)
+                    .FirstOrDefaultAsync(s => s.BusinessId == reservation.BusinessId && s.IsActive);
+
+                if (activeSubscription != null)
+                {
+                    var commissionRate = (decimal)activeSubscription.Plan.CommissionPercentage / 100m;
+                    payment.CommissionAmount = Math.Round(paymentDto.Amount * commissionRate, 2);
+                }
+            }
+
             // Update Reservation PaymentMethod to match this payment (fix for Reports)
             reservation.PaymentMethod = paymentDto.Method;
 

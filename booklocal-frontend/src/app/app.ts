@@ -25,7 +25,7 @@ export class App {
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
-      this.showMainHeader = !event.url.startsWith('/dashboard');
+      this.showMainHeader = !event.url.startsWith('/dashboard') && !event.url.startsWith('/admin');
     });
 
     this.authService.currentUser$.subscribe(user => {

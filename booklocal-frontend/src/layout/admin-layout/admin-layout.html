@@ -1,0 +1,115 @@
+<div class="flex min-h-screen bg-gray-50 font-sans overflow-x-hidden">
+    
+    <div *ngIf="isMobileMenuOpen" 
+         (click)="closeMobileMenu()" 
+         class="fixed inset-0 bg-gray-900/50 z-40 md:hidden backdrop-blur-sm transition-opacity animate-fade-in">
+    </div>
+
+    <aside [class.translate-x-0]="isMobileMenuOpen" 
+           [class.-translate-x-full]="!isMobileMenuOpen" 
+           class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] text-white transition-transform duration-300 ease-in-out md:translate-x-0 shadow-xl flex flex-col">
+        
+        <div class="h-16 flex items-center px-6 border-b border-white/10 shrink-0 justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-indigo-500/30">
+                    B
+                </div>
+                <div>
+                   <span class="text-lg font-bold tracking-tight block leading-none">BookLocal</span>
+                   <span class="text-[0.6rem] text-indigo-300 uppercase tracking-widest font-semibold">Admin Panel</span>
+                </div>
+            </div>
+            <button (click)="closeMobileMenu()" class="md:hidden text-gray-400 hover:text-white transition-colors p-1">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+  
+      <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+        <div class="px-3 mb-2 text-xs font-bold text-gray-500 uppercase tracking-wider font-display">Zarządzanie</div>
+        
+        <a routerLink="/admin/dashboard" (click)="closeMobileMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer group">
+          <i class="fas fa-chart-line w-5 text-center group-hover:text-white transition-colors" routerLinkActive="text-white"></i>
+          <span class="font-medium">Pulpit</span>
+        </a>
+        
+        <a routerLink="/admin/plans" (click)="closeMobileMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer group">
+          <i class="fas fa-tags w-5 text-center group-hover:text-white transition-colors" routerLinkActive="text-white"></i>
+          <span class="font-medium">Plany Subskrypcyjne</span>
+        </a>
+  
+        <a routerLink="/admin/businesses" (click)="closeMobileMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer group">
+          <i class="fas fa-building w-5 text-center group-hover:text-white transition-colors" routerLinkActive="text-white"></i>
+          <span class="font-medium">Weryfikacja Firm</span>
+        </a>
+
+        <div class="mt-8 px-3 mb-2 text-xs font-bold text-gray-500 uppercase tracking-wider font-display">System</div>
+        
+        <button (click)="logout()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 cursor-pointer group">
+          <i class="fas fa-sign-out-alt w-5 text-center"></i>
+          <span class="font-medium">Wyloguj</span>
+        </button>
+      </nav>
+      
+      <div class="p-4 border-t border-white/10 bg-black/20 shrink-0">
+          <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-white/10">SA</div>
+              <div class="overflow-hidden">
+                  <div class="text-sm font-semibold text-white truncate">Super Admin</div>
+                  <div class="text-xs text-green-400 flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> Online
+                  </div>
+              </div>
+          </div>
+      </div>
+    </aside>
+  
+    <main class="flex-1 transition-all duration-300 w-full min-h-screen flex flex-col md:ml-64">
+      
+      <header class="h-16 bg-white border-b border-gray-200 sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between shadow-sm">
+           
+           <div class="flex items-center gap-4">
+               <button (click)="toggleMobileMenu()" class="md:hidden -ml-2 p-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                   <i class="fas fa-bars text-xl"></i>
+               </button>
+               
+               <h1 class="text-lg md:text-xl font-bold text-gray-800 font-display truncate">
+                   Witaj, Admin
+               </h1>
+           </div>
+           
+           <div class="flex items-center gap-3 md:gap-4">
+               <button class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors relative focus:outline-none group">
+                   <i class="far fa-bell text-lg group-hover:text-gray-700"></i>
+                   <span class="absolute top-2.5 right-2.5 flex h-2.5 w-2.5"></span>
+               </button>
+
+               <div class="relative">
+                   <button (click)="toggleProfileMenu()" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer">
+                       A
+                   </button>
+
+                   <div *ngIf="isProfileMenuOpen" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
+                       <div class="px-4 py-3 border-b border-gray-100">
+                           <p class="text-sm font-semibold text-gray-900">Super Admin</p>
+                           <p class="text-xs text-gray-500 truncate">admin@booklocal.com</p>
+                       </div>
+                       <div class="py-1">
+                           <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600">Ustawienia konta</a>
+                       </div>
+                       <div class="border-t border-gray-100 pt-1">
+                           <button (click)="logout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2">
+                               <i class="fas fa-sign-out-alt"></i> Wyloguj się
+                           </button>
+                       </div>
+                   </div>
+                   
+                   <div *ngIf="isProfileMenuOpen" (click)="closeProfileMenu()" class="fixed inset-0 z-40 bg-transparent cursor-default"></div>
+               </div>
+           </div>
+      </header>
+
+      <div class="p-4 md:p-8 overflow-x-hidden bg-gray-50 flex-1">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+</div>

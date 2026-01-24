@@ -37,7 +37,7 @@ namespace BookLocal.API.Controllers
                 .AsNoTracking()
                 .Where(r => r.EmployeeId == employeeId &&
                             r.StartTime.Date == date.Date &&
-                            r.Status != ReservationStatus.Cancelled) 
+                            r.Status != ReservationStatus.Cancelled)
                 .Select(r => new { r.StartTime, r.EndTime })
                 .ToListAsync();
 
@@ -65,6 +65,71 @@ namespace BookLocal.API.Controllers
                 {
                     break;
                 }
+
+                var isSlotTaken = reservations.Any(r =>
+                    potentialStart < r.EndTime && r.StartTime < potentialEnd);
+
+                if (!isSlotTaken)
+                {
+                    availableSlots.Add(potentialStart);
+                }
+            }
+
+            return Ok(availableSlots);
+        }
+
+        [HttpGet("bundle")]
+        public async Task<ActionResult<IEnumerable<DateTime>>> GetBundleAvailableSlots(int employeeId, [FromQuery] DateTime date, [FromQuery] int bundleId)
+        {
+            var bundle = await _context.ServiceBundles
+                .Include(sb => sb.BundleItems)
+                .ThenInclude(i => i.ServiceVariant)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(sb => sb.ServiceBundleId == bundleId);
+
+            if (bundle == null) return BadRequest("Pakiet nie istnieje.");
+
+            // Calculate total duration (sum of all items duration + cleanup)
+            // Note: In a real scenario, we might want to enforce that the employee can perform ALL services.
+            // For MVP, we presume if the user selected this employee, they can do it, or we rely on frontend filtering.
+
+            var totalDurationMinutes = bundle.BundleItems.Sum(i => i.ServiceVariant.DurationMinutes + i.ServiceVariant.CleanupTimeMinutes);
+            if (totalDurationMinutes == 0) return Ok(new List<DateTime>());
+
+            var dayOfWeek = date.DayOfWeek;
+            var workSchedule = await _context.WorkSchedules
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ws => ws.EmployeeId == employeeId && ws.DayOfWeek == dayOfWeek);
+
+            if (workSchedule == null || workSchedule.IsDayOff || !workSchedule.StartTime.HasValue || !workSchedule.EndTime.HasValue)
+            {
+                return Ok(new List<DateTime>());
+            }
+
+            var reservations = await _context.Reservations
+                .AsNoTracking()
+                .Where(r => r.EmployeeId == employeeId &&
+                            r.StartTime.Date == date.Date &&
+                            r.Status != ReservationStatus.Cancelled)
+                .Select(r => new { r.StartTime, r.EndTime })
+                .ToListAsync();
+
+            var availableSlots = new List<DateTime>();
+            var bookingInterval = 15;
+
+            var dayStart = date.Date + workSchedule.StartTime.Value;
+            var dayEnd = date.Date + workSchedule.EndTime.Value;
+
+            var now = DateTime.UtcNow.AddHours(1); // Adjust for timezone if needed
+            var firstPossibleMoment = (date.Date == now.Date && now > dayStart) ? RoundUpToNearestInterval(now, bookingInterval) : dayStart;
+
+            for (var potentialStart = dayStart; potentialStart < dayEnd; potentialStart = potentialStart.AddMinutes(bookingInterval))
+            {
+                if (potentialStart < firstPossibleMoment) continue;
+
+                var potentialEnd = potentialStart.AddMinutes(totalDurationMinutes);
+
+                if (potentialEnd > dayEnd) break;
 
                 var isSlotTaken = reservations.Any(r =>
                     potentialStart < r.EndTime && r.StartTime < potentialEnd);

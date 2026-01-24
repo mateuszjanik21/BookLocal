@@ -50,4 +50,12 @@ export class ReservationService {
   createReservationAsOwner(payload: OwnerCreateReservationPayload): Observable<any> {
     return this.http.post(`${this.apiUrl}/reservations/dashboard/reservations`, payload);
   }
+
+  createBundleReservationAsOwner(payload: { serviceBundleId: number; employeeId: number; startTime: string; guestName: string; guestPhoneNumber?: string; paymentMethod: string }) {
+    return this.http.post(`${this.apiUrl}/reservations/dashboard/reservations/bundle`, payload);
+  }
+
+  createBundleReservation(payload: { serviceBundleId: number; employeeId: number; startTime: string; paymentMethod: string }) {
+    return this.http.post(`${this.apiUrl}/reservations/bundle`, payload);
+  }
 }

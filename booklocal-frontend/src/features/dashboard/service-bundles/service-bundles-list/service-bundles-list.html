@@ -1,0 +1,68 @@
+<div class="p-4 sm:p-6 lg:p-8 bg-base-200/30 min-h-screen">
+  <div class="flex flex-col sm:flex-row justify-between sm:items-start gap-4 mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-base-content">Pakiety Usług</h1>
+      <p class="mt-1 text-base-content/70">Twórz i zarządzaj pakietami usług (np. Dzień SPA).</p>
+    </div>
+    <button class="btn btn-primary w-full sm:w-auto shadow-md" routerLink="create">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Stwórz Pakiet
+    </button>
+  </div>
+
+  @if (isLoading) {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="skeleton h-48 w-full rounded-xl"></div>
+      <div class="skeleton h-48 w-full rounded-xl"></div>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      @for (bundle of bundles; track bundle.serviceBundleId) {
+        <div class="card bg-base-100 shadow-xl border border-base-200 hover:shadow-2xl transition-all">
+          <figure class="h-48 relative overflow-hidden bg-base-200">
+            @if(bundle.photoUrl) {
+                <img [src]="bundle.photoUrl" class="w-full h-full object-cover" alt="Zdjęcie pakietu" />
+            } @else {
+                <div class="flex flex-col items-center justify-center h-full text-base-content/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 mb-2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H4.5a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-12V7.5m0-3.75a2.625 2.625 0 112.625 2.625H12" />
+                    </svg>
+                    <span>Brak zdjęcia</span>
+                </div>
+            }
+            <div class="absolute top-2 right-2 badge badge-lg shadow-sm font-mono font-bold" [class.badge-primary]="bundle.isActive" [class.badge-ghost]="!bundle.isActive">
+                {{ bundle.totalPrice }} PLN
+            </div>
+          </figure>
+          <div class="card-body">
+            <h2 class="card-title justify-between">
+              {{ bundle.name }}
+            </h2>
+            <p class="text-sm text-base-content/70 line-clamp-2">{{ bundle.description || 'Brak opisu.' }}</p>
+            
+            <div class="divider my-2"></div>
+            
+            <h3 class="font-bold text-sm mb-2">Usługi w pakiecie:</h3>
+            <ul class="steps steps-vertical lg:steps-horizontal w-full text-sm">
+                @for(item of bundle.items; track item.serviceBundleItemId) {
+                    <li class="step step-primary" [attr.data-content]="item.sequenceOrder + 1">{{ item.serviceName }} <br><span class="text-xs opacity-70">({{item.variantName}})</span></li>
+                }
+            </ul>
+
+            <div class="card-actions justify-end mt-4">
+              <button class="btn btn-ghost btn-sm text-error" (click)="deleteBundle(bundle)">Usuń</button>
+              <button class="btn btn-neutral btn-sm" [routerLink]="['create']">Edytuj</button>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="col-span-full text-center py-12 bg-base-100 rounded-xl border border-dashed border-base-300">
+           <p class="font-bold text-lg opacity-60">Nie masz jeszcze żadnych pakietów.</p>
+           <button class="btn btn-primary btn-sm mt-4" routerLink="create">Stwórz pierwszy pakiet</button>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -115,6 +115,8 @@ namespace BookLocal.API.Controllers
                     .Where(p => p.PaymentMethod == PaymentMethod.Online)
                     .Sum(p => p.Amount),
 
+                TotalCommission = payments.Sum(p => p.CommissionAmount),
+
                 TotalAppointments = reservations.Count,
                 CompletedAppointments = completedReservations.Count,
                 CancelledAppointments = reservations.Count(r => r.Status == ReservationStatus.Cancelled),

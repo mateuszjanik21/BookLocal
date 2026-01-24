@@ -66,4 +66,31 @@ namespace BookLocal.API.DTOs
         public string? GuestPhoneNumber { get; set; }
         public string? DiscountCode { get; set; }
     }
+
+    public class OwnerCreateBundleReservationDto
+    {
+        [Required]
+        public int ServiceBundleId { get; set; }
+        [Required]
+        public int EmployeeId { get; set; }
+        [Required]
+        public DateTime StartTime { get; set; }
+        [Required]
+        public string GuestName { get; set; }
+        public string? GuestPhoneNumber { get; set; }
+        public string? DiscountCode { get; set; }
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+    }
+
+    public class BundleReservationCreateDto
+    {
+        [Required]
+        public int ServiceBundleId { get; set; }
+        [Required]
+        public int EmployeeId { get; set; }
+        [Required]
+        public DateTime StartTime { get; set; }
+        public string? DiscountCode { get; set; }
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash; // Default
+    }
 }

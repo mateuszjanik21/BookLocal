@@ -26,5 +26,8 @@ namespace BookLocal.Data.Models
         public bool HasMarketingTools { get; set; } = false;
 
         public bool IsActive { get; set; } = true;
+
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal CommissionPercentage { get; set; } = 0;
     }
 }

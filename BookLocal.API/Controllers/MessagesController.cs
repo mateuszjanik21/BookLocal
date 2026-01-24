@@ -160,5 +160,20 @@ namespace BookLocal.API.Controllers
 
             return Ok(new { conversationId = conversation.ConversationId });
         }
+
+        [HttpGet("unread-count")]
+        public async Task<ActionResult<int>> GetTotalUnreadCount()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
+            var count = await _context.Messages
+                .CountAsync(m => m.ConversationId != 0 && // Ensure valid conversation
+                                 (m.Conversation.CustomerId == userId || m.Conversation.Business.OwnerId == userId) &&
+                                 m.SenderId != userId &&
+                                 !m.IsRead);
+
+            return Ok(count);
+        }
     }
 }

@@ -33,6 +33,9 @@ namespace BookLocal.Data.Models
         [Column(TypeName = "decimal(10, 2)")]
         public decimal Amount { get; set; }
 
+        [Column(TypeName = "decimal(10, 2)")]
+        public decimal CommissionAmount { get; set; } = 0;
+
         [Required]
         public string Currency { get; set; } = "PLN";
 

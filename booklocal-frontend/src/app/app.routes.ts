@@ -26,6 +26,14 @@ import { DiscountManagerComponent } from '../features/dashboard/discount-manager
 import { FinanceDashboardComponent } from '../features/dashboard/finance/finance-dashboard/finance-dashboard';
 import { InvoicesListComponent } from '../features/dashboard/invoices/invoices';
 import { PaymentsListComponent } from '../features/dashboard/finance/payments-list/payments-list';
+import { ServiceBundlesListComponent } from '../features/dashboard/service-bundles/service-bundles-list/service-bundles-list';
+import { ServiceBundleWizardComponent } from '../features/dashboard/service-bundles/service-bundle-wizard/service-bundle-wizard';
+import { AdminLayoutComponent } from '../layout/admin-layout/admin-layout';
+import { superAdminGuard } from '../core/guards/super-admin-guard';
+import { AdminDashboardComponent } from '../features/admin/admin-dashboard/admin-dashboard';
+import { AdminPlansComponent } from '../features/admin/plans/plans';
+import { AdminBusinessApprovalComponent } from '../features/admin/business-approval/business-approval';
+import { SubscriptionManagerComponent } from '../features/dashboard/subscription/subscription';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -58,7 +66,20 @@ export const routes: Routes = [
       { path: 'finance', component: FinanceDashboardComponent },
       { path: 'invoices', component: InvoicesListComponent },
       { path: 'payments', component: PaymentsListComponent },
-    
+      { path: 'bundles', component: ServiceBundlesListComponent },
+      { path: 'bundles/create', component: ServiceBundleWizardComponent },
+      { path: 'subscription', component: SubscriptionManagerComponent },
     ]
   },
+  {
+    path: 'admin',
+    component: AdminLayoutComponent,
+    canActivate: [superAdminGuard],
+    children: [
+        { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+        { path: 'dashboard', component: AdminDashboardComponent },
+        { path: 'plans', component: AdminPlansComponent },
+        { path: 'businesses', component: AdminBusinessApprovalComponent },
+    ]
+  }
 ];

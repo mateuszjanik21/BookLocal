@@ -33,4 +33,10 @@ export class PhotoService {
     formData.append('file', file);
     return this.http.post<{ photoUrl: string }>(`${this.apiUrl}/photos/category/${categoryId}`, formData);
   }
+
+  uploadBundlePhoto(bundleId: number, file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ photoUrl: string }>(`${this.apiUrl}/photos/bundle/${bundleId}`, formData);
+  }
 }

@@ -1,0 +1,131 @@
+<div class="space-y-6 animate-fade-in">
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 font-display">
+        Twoja Subskrypcja
+      </h1>
+      <p class="text-gray-500">
+        Zarządzaj planem i funkcjonalnościami swojego konta
+      </p>
+    </div>
+
+    <div
+      *ngIf="currentSubscription"
+      class="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100"
+    >
+      <div class="text-right">
+        <div class="text-xs text-gray-500 font-medium uppercase tracking-wider">
+          Obecny plan
+        </div>
+        <div class="font-bold text-indigo-600">
+          {{ currentSubscription.planName }}
+        </div>
+      </div>
+      <div
+        class="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600"
+      >
+        <i class="fas fa-crown text-xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Plans Grid -->
+  <div
+    *ngIf="!isLoading; else loading"
+    class="grid grid-cols-1 md:grid-cols-3 gap-6"
+  >
+    <div
+      *ngFor="let plan of plans"
+      [class.border-indigo-500]="currentSubscription?.planId === plan.planId"
+      [class.ring-2]="currentSubscription?.planId === plan.planId"
+      [class.ring-indigo-500]="currentSubscription?.planId === plan.planId"
+      class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-all flex flex-col relative overflow-hidden group"
+    >
+      <!-- Current Plan Badge -->
+      <div
+        *ngIf="currentSubscription?.planId === plan.planId"
+        class="absolute top-0 right-0 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl"
+      >
+        OBECNY PLAN
+      </div>
+
+      <h3 class="text-lg font-bold text-gray-900 mb-2">{{ plan.name }}</h3>
+      <div class="mb-6">
+        <span class="text-3xl font-bold text-gray-900"
+          >{{ plan.priceMonthly }} zł</span
+        >
+        <span class="text-gray-500">/mies.</span>
+      </div>
+
+      <ul class="space-y-3 mb-8 flex-1">
+        <li class="flex items-center gap-2 text-sm text-gray-600">
+          <i class="fas fa-check text-green-500 w-5"></i>
+          <span
+            >Max pracowników: <strong>{{ plan.maxEmployees }}</strong></span
+          >
+        </li>
+        <li class="flex items-center gap-2 text-sm text-gray-600">
+          <i class="fas fa-check text-green-500 w-5"></i>
+          <span
+            >Max usług: <strong>{{ plan.maxServices }}</strong></span
+          >
+        </li>
+        <li class="flex items-center gap-2 text-sm text-gray-600">
+          <i
+            [class.fa-check]="plan.hasAdvancedReports"
+            [class.text-green-500]="plan.hasAdvancedReports"
+            [class.fa-times]="!plan.hasAdvancedReports"
+            [class.text-gray-300]="!plan.hasAdvancedReports"
+            class="fas w-5"
+          ></i>
+          <span>Zaawansowane raporty</span>
+        </li>
+        <li class="flex items-center gap-2 text-sm text-gray-600">
+          <i
+            [class.fa-check]="plan.hasMarketingTools"
+            [class.text-green-500]="plan.hasMarketingTools"
+            [class.fa-times]="!plan.hasMarketingTools"
+            [class.text-gray-300]="!plan.hasMarketingTools"
+            class="fas w-5"
+          ></i>
+          <span>Narzędzia marketingowe</span>
+        </li>
+        <li class="flex items-center gap-2 text-sm text-gray-600">
+          <i class="fas fa-info-circle text-blue-500 w-5"></i>
+          <span
+            >Prowizja: <strong>{{ plan.commissionPercentage }}%</strong></span
+          >
+        </li>
+      </ul>
+
+      <button
+        (click)="selectPlan(plan)"
+        [disabled]="currentSubscription?.planId === plan.planId"
+        [class.bg-gray-100]="currentSubscription?.planId === plan.planId"
+        [class.text-gray-400]="currentSubscription?.planId === plan.planId"
+        [class.cursor-not-allowed]="currentSubscription?.planId === plan.planId"
+        [class.bg-indigo-600]="currentSubscription?.planId !== plan.planId"
+        [class.text-white]="currentSubscription?.planId !== plan.planId"
+        [class.hover:bg-indigo-700]="
+          currentSubscription?.planId !== plan.planId
+        "
+        class="w-full py-3 rounded-xl font-semibold transition-colors"
+      >
+        {{
+          currentSubscription?.planId === plan.planId
+            ? "Obecny Plan"
+            : "Wybierz Plan"
+        }}
+      </button>
+    </div>
+  </div>
+
+  <ng-template #loading>
+    <div class="flex items-center justify-center py-12">
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"
+      ></div>
+    </div>
+  </ng-template>
+</div>

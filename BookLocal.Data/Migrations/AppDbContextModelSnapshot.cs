@@ -43,6 +43,9 @@ namespace BookLocal.Data.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
                     b.Property<string>("NIP")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -59,11 +62,14 @@ namespace BookLocal.Data.Migrations
                     b.Property<string>("PhotoUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("VerificationStatus")
+                        .HasColumnType("int");
+
                     b.HasKey("BusinessId");
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Businesses");
+                    b.ToTable("Businesses", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.BusinessSubscription", b =>
@@ -101,7 +107,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("PlanId");
 
-                    b.ToTable("BusinessSubscriptions");
+                    b.ToTable("BusinessSubscriptions", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.BusinessVerification", b =>
@@ -135,7 +141,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("BusinessId");
 
-                    b.ToTable("BusinessVerifications");
+                    b.ToTable("BusinessVerifications", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.CommissionRate", b =>
@@ -164,7 +170,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("ServiceCategoryId");
 
-                    b.ToTable("CommissionRates");
+                    b.ToTable("CommissionRates", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Conversation", b =>
@@ -188,7 +194,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Conversations");
+                    b.ToTable("Conversations", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.CustomerBusinessProfile", b =>
@@ -242,7 +248,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("CustomerBusinessProfiles");
+                    b.ToTable("CustomerBusinessProfiles", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.DailyEmployeePerformance", b =>
@@ -281,7 +287,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("DailyEmployeePerformances");
+                    b.ToTable("DailyEmployeePerformances", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.DailyFinancialReport", b =>
@@ -338,6 +344,9 @@ namespace BookLocal.Data.Migrations
                     b.Property<int>("TotalAppointments")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("TotalCommission")
+                        .HasColumnType("decimal(10, 2)");
+
                     b.Property<decimal>("TotalRevenue")
                         .HasColumnType("decimal(12, 2)");
 
@@ -345,7 +354,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("BusinessId");
 
-                    b.ToTable("DailyFinancialReports");
+                    b.ToTable("DailyFinancialReports", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Discount", b =>
@@ -393,7 +402,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("BusinessId");
 
-                    b.ToTable("Discounts");
+                    b.ToTable("Discounts", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Employee", b =>
@@ -430,7 +439,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("BusinessId");
 
-                    b.ToTable("Employees");
+                    b.ToTable("Employees", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.EmployeeCertificate", b =>
@@ -464,7 +473,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("EmployeeCertificates");
+                    b.ToTable("EmployeeCertificates", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.EmployeeDetails", b =>
@@ -498,7 +507,7 @@ namespace BookLocal.Data.Migrations
                     b.HasIndex("EmployeeId")
                         .IsUnique();
 
-                    b.ToTable("EmployeeDetails");
+                    b.ToTable("EmployeeDetails", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.EmployeeFinanceSettings", b =>
@@ -547,7 +556,7 @@ namespace BookLocal.Data.Migrations
                     b.HasIndex("EmployeeId")
                         .IsUnique();
 
-                    b.ToTable("EmployeeFinanceSettings");
+                    b.ToTable("EmployeeFinanceSettings", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.EmployeePayroll", b =>
@@ -616,7 +625,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("EmployeePayrolls");
+                    b.ToTable("EmployeePayrolls", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.EmployeeService", b =>
@@ -631,7 +640,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("EmployeeServices");
+                    b.ToTable("EmployeeServices", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.EmploymentContract", b =>
@@ -667,7 +676,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("EmploymentContracts");
+                    b.ToTable("EmploymentContracts", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Invoice", b =>
@@ -719,7 +728,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("ReservationId");
 
-                    b.ToTable("Invoices");
+                    b.ToTable("Invoices", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.InvoiceItem", b =>
@@ -760,7 +769,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("InvoiceItems");
+                    b.ToTable("InvoiceItems", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.LoyaltyPoint", b =>
@@ -793,7 +802,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("LoyaltyPoints");
+                    b.ToTable("LoyaltyPoints", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.LoyaltyProgramConfig", b =>
@@ -817,7 +826,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("BusinessId");
 
-                    b.ToTable("LoyaltyProgramConfigs");
+                    b.ToTable("LoyaltyProgramConfigs", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.LoyaltyTransaction", b =>
@@ -851,7 +860,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("LoyaltyPointId");
 
-                    b.ToTable("LoyaltyTransactions");
+                    b.ToTable("LoyaltyTransactions", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.MainCategory", b =>
@@ -869,7 +878,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasKey("MainCategoryId");
 
-                    b.ToTable("MainCategories");
+                    b.ToTable("MainCategories", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Message", b =>
@@ -903,7 +912,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Payment", b =>
@@ -919,6 +928,9 @@ namespace BookLocal.Data.Migrations
 
                     b.Property<int>("BusinessId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("CommissionAmount")
+                        .HasColumnType("decimal(10, 2)");
 
                     b.Property<string>("Currency")
                         .IsRequired()
@@ -946,7 +958,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("ReservationId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Review", b =>
@@ -990,7 +1002,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.ScheduleException", b =>
@@ -1026,7 +1038,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("ScheduleExceptions");
+                    b.ToTable("ScheduleExceptions", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Service", b =>
@@ -1060,7 +1072,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("ServiceCategoryId");
 
-                    b.ToTable("Services");
+                    b.ToTable("Services", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.ServiceBundle", b =>
@@ -1074,6 +1086,9 @@ namespace BookLocal.Data.Migrations
                     b.Property<int>("BusinessId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -1082,6 +1097,9 @@ namespace BookLocal.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("PhotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(10, 2)");
 
@@ -1089,7 +1107,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("BusinessId");
 
-                    b.ToTable("ServiceBundles");
+                    b.ToTable("ServiceBundles", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.ServiceBundleItem", b =>
@@ -1099,6 +1117,9 @@ namespace BookLocal.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceBundleItemId"));
+
+                    b.Property<int>("SequenceOrder")
+                        .HasColumnType("int");
 
                     b.Property<int>("ServiceBundleId")
                         .HasColumnType("int");
@@ -1112,7 +1133,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("ServiceVariantId");
 
-                    b.ToTable("ServiceBundleItems");
+                    b.ToTable("ServiceBundleItems", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.ServiceCategory", b =>
@@ -1143,7 +1164,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("MainCategoryId");
 
-                    b.ToTable("ServiceCategories");
+                    b.ToTable("ServiceCategories", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.ServiceVariant", b =>
@@ -1181,7 +1202,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("ServiceVariants");
+                    b.ToTable("ServiceVariants", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.SubscriptionPlan", b =>
@@ -1191,6 +1212,9 @@ namespace BookLocal.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PlanId"));
+
+                    b.Property<decimal>("CommissionPercentage")
+                        .HasColumnType("decimal(10, 2)");
 
                     b.Property<bool>("HasAdvancedReports")
                         .HasColumnType("bit");
@@ -1220,7 +1244,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasKey("PlanId");
 
-                    b.ToTable("SubscriptionPlans");
+                    b.ToTable("SubscriptionPlans", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.User", b =>
@@ -1299,34 +1323,6 @@ namespace BookLocal.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("BookLocal.Data.Models.VerificationDocument", b =>
-                {
-                    b.Property<int>("DocumentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentId"));
-
-                    b.Property<string>("FileUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("VerificationId")
-                        .HasColumnType("int");
-
-                    b.HasKey("DocumentId");
-
-                    b.HasIndex("VerificationId");
-
-                    b.ToTable("VerificationDocuments");
-                });
-
             modelBuilder.Entity("BookLocal.Data.Models.WorkSchedule", b =>
                 {
                     b.Property<int>("WorkScheduleId")
@@ -1355,7 +1351,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("EmployeeId");
 
-                    b.ToTable("WorkSchedules");
+                    b.ToTable("WorkSchedules", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -1560,7 +1556,7 @@ namespace BookLocal.Data.Migrations
 
                     b.HasIndex("ServiceVariantId");
 
-                    b.ToTable("Reservations");
+                    b.ToTable("Reservations", (string)null);
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.Business", b =>
@@ -2005,17 +2001,6 @@ namespace BookLocal.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Service");
-                });
-
-            modelBuilder.Entity("BookLocal.Data.Models.VerificationDocument", b =>
-                {
-                    b.HasOne("BookLocal.Data.Models.BusinessVerification", "Verification")
-                        .WithMany()
-                        .HasForeignKey("VerificationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Verification");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.WorkSchedule", b =>

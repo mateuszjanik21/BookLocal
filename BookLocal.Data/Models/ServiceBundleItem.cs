@@ -15,5 +15,7 @@ namespace BookLocal.Data.Models
         public int ServiceVariantId { get; set; }
         [ForeignKey("ServiceVariantId")]
         public virtual ServiceVariant ServiceVariant { get; set; }
+
+        public int SequenceOrder { get; set; }
     }
 }

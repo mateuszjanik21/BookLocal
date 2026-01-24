@@ -1,4 +1,5 @@
 import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject, Subject, take } from 'rxjs';
@@ -9,15 +10,22 @@ import { AuthService } from './auth-service';
 
 @Injectable({ providedIn: 'root' })
 export class PresenceService {
-  private hubConnection?: HubConnection;
-  private onlineUsersSource = new BehaviorSubject<string[]>([]);
-  onlineUsers$ = this.onlineUsersSource.asObservable();
-  private conversationUpdatedSource = new Subject<Conversation>();
-  conversationUpdated$ = this.conversationUpdatedSource.asObservable();
-
+  private http = inject(HttpClient);
   private toastr = inject(ToastrService);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private apiUrl = environment.apiUrl;
+
+  private hubConnection?: HubConnection;
+  
+  private onlineUsersSource = new BehaviorSubject<string[]>([]);
+  public onlineUsers$ = this.onlineUsersSource.asObservable();
+  
+  private conversationUpdatedSource = new Subject<Conversation>();
+  public conversationUpdated$ = this.conversationUpdatedSource.asObservable();
+
+  private totalUnreadCountSource = new BehaviorSubject<number>(0);
+  public totalUnreadCount$ = this.totalUnreadCountSource.asObservable();
 
   createHubConnection() {
     const token = localStorage.getItem('authToken');
@@ -72,10 +80,21 @@ export class PresenceService {
             });
           });
       }
+      
+      this.refreshUnreadCount();
     });
+
+    this.refreshUnreadCount();
   }
 
   stopHubConnection() {
     this.hubConnection?.stop().catch(err => console.error(err));
+  }
+
+  refreshUnreadCount() {
+      this.http.get<number>(`${this.apiUrl}/messages/unread-count`).subscribe({
+          next: count => this.totalUnreadCountSource.next(count),
+          error: err => console.error('Failed to fetch unread count', err)
+      });
   }
 }

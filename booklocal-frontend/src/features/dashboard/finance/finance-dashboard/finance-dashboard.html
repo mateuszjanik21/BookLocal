@@ -56,7 +56,7 @@
       <div class="stat bg-base-100 shadow rounded-box">
         <div class="stat-title">Online vs Gotówka</div>
         <div class="stat-value text-xl">
-            {{ (monthOnlineRevenue / (monthTotalRevenue || 1)) * 100 | number:'1.0-0' }}% Online
+            {{ (monthOnlineRevenue / (monthTotalRevenue || 1)) * 100 | number:'1.0-0' }}% Onl
         </div>
         <div class="stat-desc">
             {{ monthCashRevenue | currency:'PLN':'symbol':'1.0-0' }} (Gotówka) / 
@@ -68,6 +68,12 @@
         <div class="stat-title">Nowi Klienci</div>
         <div class="stat-value text-secondary">{{ monthNewCustomers }}</div>
         <div class="stat-desc">w tym miesiącu</div>
+      </div>
+
+      <div class="stat bg-base-100 shadow rounded-box">
+        <div class="stat-title">Prowizja (Platforma)</div>
+        <div class="stat-value text-warning">{{ monthTotalCommission | currency:'PLN':'symbol':'1.2-2' }}</div>
+        <div class="stat-desc">Koszty operacyjne</div>
       </div>
     </div>
 

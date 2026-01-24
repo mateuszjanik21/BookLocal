@@ -1,0 +1,81 @@
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-900 font-display">Weryfikacja Firm</h2>
+            <p class="text-gray-500 mt-1">Zatwierdzaj nowe firmy dołączające do platformy.</p>
+        </div>
+        <div class="flex bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+            <button (click)="filterStatus = 'Pending'; loadBusinesses()" 
+                [class.bg-indigo-50]="filterStatus === 'Pending'" [class.text-indigo-600]="filterStatus === 'Pending'"
+                class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">
+                Oczekujące
+            </button>
+            <button (click)="filterStatus = 'Approved'; loadBusinesses()" 
+                [class.bg-indigo-50]="filterStatus === 'Approved'" [class.text-indigo-600]="filterStatus === 'Approved'"
+                class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">
+                Zatwierdzone
+            </button>
+            <button (click)="filterStatus = 'Rejected'; loadBusinesses()" 
+                 [class.bg-indigo-50]="filterStatus === 'Rejected'" [class.text-indigo-600]="filterStatus === 'Rejected'"
+                 class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">
+                Odrzucone
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                    <th class="px-6 py-4">Firma</th>
+                    <th class="px-6 py-4">Właściciel</th>
+                    <th class="px-6 py-4">Data dołączenia</th>
+                    <th class="px-6 py-4">Plan</th>
+                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4 text-right">Akcje</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+                <tr *ngFor="let business of businesses" class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="font-medium text-gray-900">{{ business.name }}</div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ business.ownerEmail }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">{{ business.createdAt | date:'shortDate' }}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {{ business.subscriptionPlanName }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span [ngClass]="{
+                            'bg-yellow-100 text-yellow-800': business.verificationStatus === 'Pending',
+                            'bg-green-100 text-green-800': business.verificationStatus === 'Approved',
+                            'bg-red-100 text-red-800': business.verificationStatus === 'Rejected'
+                        }" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                            {{ business.verificationStatus }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right space-x-2">
+                        <ng-container *ngIf="business.verificationStatus === 'Pending'">
+                            <button (click)="approve(business.businessId)" class="text-green-600 hover:text-green-800 font-medium text-sm">
+                                <i class="fas fa-check mr-1"></i> Zatwierdź
+                            </button>
+                            <button (click)="reject(business.businessId)" class="text-red-500 hover:text-red-700 font-medium text-sm">
+                                <i class="fas fa-times mr-1"></i> Odrzuć
+                            </button>
+                        </ng-container>
+                        <span *ngIf="business.verificationStatus !== 'Pending'" class="text-gray-400 text-sm italic">
+                            Zarządzane
+                        </span>
+                    </td>
+                </tr>
+                <tr *ngIf="businesses.length === 0">
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                        Brak firm w tej kategorii.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

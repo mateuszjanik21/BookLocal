@@ -20,6 +20,9 @@ namespace BookLocal.Data.Models
         [Column(TypeName = "decimal(10, 2)")]
         public decimal TotalPrice { get; set; }
 
+        public string? Description { get; set; }
+        public string? PhotoUrl { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         public virtual ICollection<ServiceBundleItem> BundleItems { get; set; } = new List<ServiceBundleItem>();

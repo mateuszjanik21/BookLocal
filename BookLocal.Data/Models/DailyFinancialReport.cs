@@ -26,6 +26,9 @@ namespace BookLocal.Data.Models
         [Column(TypeName = "decimal(12, 2)")]
         public decimal AverageTicketValue { get; set; }
 
+        [Column(TypeName = "decimal(12, 2)")]
+        public decimal TotalCommission { get; set; }
+
         // --- METODY PŁATNOŚCI ---
         [Column(TypeName = "decimal(12, 2)")]
         public decimal CashRevenue { get; set; }
@@ -39,7 +42,7 @@ namespace BookLocal.Data.Models
         // --- RUCH I KLINECI ---
         public int TotalAppointments { get; set; }
         public int CompletedAppointments { get; set; }
-        public int CancelledAppointments { get; set; } 
+        public int CancelledAppointments { get; set; }
         public int NoShowCount { get; set; }
 
         public int NewCustomersCount { get; set; }

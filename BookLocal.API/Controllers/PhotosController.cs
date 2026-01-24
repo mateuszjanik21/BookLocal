@@ -110,4 +110,24 @@ public class PhotosController : ControllerBase
 
         return Ok(new { photoUrl = category.PhotoUrl });
     }
+
+    [HttpPost("bundle/{bundleId}")]
+    [Authorize(Roles = "owner")]
+    public async Task<ActionResult<object>> UploadBundlePhoto(int bundleId, IFormFile file)
+    {
+        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var bundle = await _context.ServiceBundles
+            .Include(sb => sb.Business)
+            .FirstOrDefaultAsync(sb => sb.ServiceBundleId == bundleId && sb.Business.OwnerId == ownerId);
+
+        if (bundle == null) return Forbid();
+
+        var uploadResult = await _photoService.UploadPhotoAsync(file);
+        if (uploadResult.Error != null) return BadRequest(uploadResult.Error.Message);
+
+        bundle.PhotoUrl = uploadResult.SecureUrl.AbsoluteUri;
+        await _context.SaveChangesAsync();
+
+        return Ok(new { photoUrl = bundle.PhotoUrl });
+    }
 }

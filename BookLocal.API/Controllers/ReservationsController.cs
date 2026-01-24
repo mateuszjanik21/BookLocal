@@ -384,6 +384,119 @@ namespace BookLocal.API.Controllers
             return Ok(new { Message = "Rezerwacja została pomyślnie anulowana." });
         }
 
+        // POST: api/reservations/bundle
+        [HttpPost("bundle")]
+        [Authorize(Roles = "customer")]
+        public async Task<IActionResult> CreateBundleReservation([FromBody] BundleReservationCreateDto reservationDto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null) return Unauthorized();
+
+            var bundle = await _context.ServiceBundles
+                .Include(sb => sb.BundleItems)
+                    .ThenInclude(i => i.ServiceVariant)
+                        .ThenInclude(sv => sv.Service)
+                .FirstOrDefaultAsync(sb => sb.ServiceBundleId == reservationDto.ServiceBundleId);
+
+            if (bundle == null) return NotFound("Pakiet nie istnieje.");
+
+            var bundleItems = bundle.BundleItems.OrderBy(i => i.SequenceOrder).ToList();
+            if (!bundleItems.Any()) return BadRequest("Pakiet nie zawiera żadnych usług.");
+
+            // 1. Availability Check
+            var dayOfWeek = reservationDto.StartTime.DayOfWeek;
+            var workSchedule = await _context.WorkSchedules
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ws => ws.EmployeeId == reservationDto.EmployeeId && ws.DayOfWeek == dayOfWeek);
+
+            if (workSchedule == null || workSchedule.IsDayOff || !workSchedule.StartTime.HasValue || !workSchedule.EndTime.HasValue)
+            {
+                return BadRequest("Pracownik nie pracuje w wybranym dniu.");
+            }
+
+            var totalDuration = bundleItems.Sum(i => i.ServiceVariant.DurationMinutes + i.ServiceVariant.CleanupTimeMinutes);
+            var sequenceEndTime = reservationDto.StartTime.AddMinutes(totalDuration);
+
+            if (reservationDto.StartTime.TimeOfDay < workSchedule.StartTime.Value || sequenceEndTime.TimeOfDay > workSchedule.EndTime.Value)
+            {
+                return BadRequest("Wybrany termin pakietu wykracza poza godziny pracy.");
+            }
+
+            var isTaken = await _context.Reservations
+                .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
+                               r.Status == ReservationStatus.Confirmed &&
+                               r.StartTime < sequenceEndTime &&
+                               r.EndTime > reservationDto.StartTime);
+
+            if (isTaken) return Conflict("Jeden z terminów w ramach pakietu jest już zajęty.");
+
+            // 2. Prepare Reservations
+            var currentStartTime = reservationDto.StartTime;
+            var reservationsToCreate = new List<Reservation>();
+
+            decimal sumOfVariantsPrice = bundleItems.Sum(i => i.ServiceVariant.Price);
+            decimal globalDiscountRatio = 1.0m;
+            if (sumOfVariantsPrice > 0)
+            {
+                globalDiscountRatio = bundle.TotalPrice / sumOfVariantsPrice;
+            }
+
+            foreach (var item in bundleItems)
+            {
+                var variantDuration = item.ServiceVariant.DurationMinutes + item.ServiceVariant.CleanupTimeMinutes;
+                var currentEndTime = currentStartTime.AddMinutes(variantDuration);
+
+                var itemPrice = item.ServiceVariant.Price * globalDiscountRatio;
+
+                var reservation = new Reservation
+                {
+                    BusinessId = bundle.BusinessId,
+                    CustomerId = userId, // Logged in user
+                    ServiceVariantId = item.ServiceVariantId,
+                    EmployeeId = reservationDto.EmployeeId,
+                    ServiceBundleId = bundle.ServiceBundleId,
+                    StartTime = currentStartTime,
+                    EndTime = currentEndTime,
+                    AgreedPrice = itemPrice,
+                    Status = ReservationStatus.Confirmed,
+                    PaymentMethod = reservationDto.PaymentMethod
+                };
+
+                reservationsToCreate.Add(reservation);
+                currentStartTime = currentEndTime;
+            }
+
+            // 3. Transactional Save
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                _context.Reservations.AddRange(reservationsToCreate);
+                await _context.SaveChangesAsync();
+
+                // Notifications
+                var customer = await _userManager.FindByIdAsync(userId);
+                var notificationPayload = new
+                {
+                    Message = $"Nowa rezerwacja pakietowa od {customer.FirstName} na '{bundle.Name}'.",
+                    ReservationId = reservationsToCreate.First().ReservationId
+                };
+
+                await _hubContext.Clients.Group(bundle.BusinessId.ToString())
+                    .SendAsync("NewReservationNotification", notificationPayload);
+
+                await EnsureCustomerProfile(bundle.BusinessId, userId);
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, "Wystąpił błąd podczas tworzenia rezerwacji pakietowej.");
+            }
+
+            return Ok(new { Message = "Pakiet został pomyślnie zarezerwowany." });
+        }
+
         // POST: api/reservations/dashboard/reservations
         [HttpPost("dashboard/reservations")]
         [Authorize(Roles = "owner")]
@@ -462,6 +575,122 @@ namespace BookLocal.API.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { Message = "Rezerwacja została pomyślnie utworzona." });
+        }
+
+        // POST: api/reservations/dashboard/reservations/bundle
+        [HttpPost("dashboard/reservations/bundle")]
+        [Authorize(Roles = "owner")]
+        public async Task<IActionResult> CreateBundleReservationAsOwner([FromBody] OwnerCreateBundleReservationDto reservationDto)
+        {
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var bundle = await _context.ServiceBundles
+                .Include(sb => sb.BundleItems)
+                    .ThenInclude(i => i.ServiceVariant)
+                .FirstOrDefaultAsync(sb => sb.ServiceBundleId == reservationDto.ServiceBundleId);
+
+            if (bundle == null) return NotFound("Pakiet nie istnieje.");
+
+            // Verify owner
+            if (!await _context.Businesses.AnyAsync(b => b.BusinessId == bundle.BusinessId && b.OwnerId == ownerId))
+                return Forbid();
+
+            var bundleItems = bundle.BundleItems.OrderBy(i => i.SequenceOrder).ToList();
+            if (!bundleItems.Any()) return BadRequest("Pakiet nie zawiera żadnych usług.");
+
+            // 1. Calculate timing and check availability for ALL items sequence
+            // Note: AvailabilityController already did this check for finding slots, but we must verify again to prevent race conditions.
+
+            var dayOfWeek = reservationDto.StartTime.DayOfWeek;
+            var workSchedule = await _context.WorkSchedules
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ws => ws.EmployeeId == reservationDto.EmployeeId && ws.DayOfWeek == dayOfWeek);
+
+            if (workSchedule == null || workSchedule.IsDayOff || !workSchedule.StartTime.HasValue || !workSchedule.EndTime.HasValue)
+            {
+                return BadRequest("Pracownik nie pracuje w wybranym dniu.");
+            }
+
+            // Calculate total duration for bounds check
+            var totalDuration = bundleItems.Sum(i => i.ServiceVariant.DurationMinutes + i.ServiceVariant.CleanupTimeMinutes);
+            var sequenceEndTime = reservationDto.StartTime.AddMinutes(totalDuration);
+
+            if (reservationDto.StartTime.TimeOfDay < workSchedule.StartTime.Value || sequenceEndTime.TimeOfDay > workSchedule.EndTime.Value)
+            {
+                return BadRequest("Wybrany termin pakietu wykracza poza godziny pracy.");
+            }
+
+            // Check if ANY slot in the range is taken
+            var isTaken = await _context.Reservations
+                .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
+                               r.Status == ReservationStatus.Confirmed &&
+                               r.StartTime < sequenceEndTime &&
+                               r.EndTime > reservationDto.StartTime);
+
+            if (isTaken) return Conflict("Jeden z terminów w ramach pakietu jest już zajęty.");
+
+            // 2. Create Reservations
+            var currentStartTime = reservationDto.StartTime;
+            var reservationsToCreate = new List<Reservation>();
+
+            // Calculate per-service price discount ratio if bundle has custom TotalPrice?
+            // Current model has Bundle.TotalPrice which might be cheaper than sum of services.
+            // We should split the Bundle TotalPrice proportionally across items?
+            // Or simpler: Assign price to first item and 0 to others? Or average?
+            // Proportional split is best for reports.
+
+            decimal sumOfVariantsPrice = bundleItems.Sum(i => i.ServiceVariant.Price);
+            decimal globalDiscountRatio = 1.0m;
+            if (sumOfVariantsPrice > 0)
+            {
+                globalDiscountRatio = bundle.TotalPrice / sumOfVariantsPrice;
+            }
+
+            foreach (var item in bundleItems)
+            {
+                var variantDuration = item.ServiceVariant.DurationMinutes + item.ServiceVariant.CleanupTimeMinutes;
+                var currentEndTime = currentStartTime.AddMinutes(variantDuration);
+
+                // Calculate price share
+                var itemPrice = item.ServiceVariant.Price * globalDiscountRatio;
+
+                var reservation = new Reservation
+                {
+                    BusinessId = bundle.BusinessId,
+                    ServiceVariantId = item.ServiceVariantId,
+                    EmployeeId = reservationDto.EmployeeId,
+                    ServiceBundleId = bundle.ServiceBundleId, // Link!
+                    StartTime = currentStartTime,
+                    EndTime = currentEndTime,
+                    AgreedPrice = itemPrice,
+                    GuestName = reservationDto.GuestName,
+                    GuestPhoneNumber = reservationDto.GuestPhoneNumber,
+                    Status = ReservationStatus.Confirmed,
+                    PaymentMethod = reservationDto.PaymentMethod
+                };
+
+                reservationsToCreate.Add(reservation);
+                currentStartTime = currentEndTime;
+            }
+
+            // 3. Save
+            // Using transaction to ensure all or nothing
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                _context.Reservations.AddRange(reservationsToCreate);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                // Notifications could go here (skipped for brevity)
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, "Wystąpił błąd podczas tworzenia rezerwacji pakietowej.");
+            }
+
+            return Ok(new { Message = "Pakiet został pomyślnie zarezerwowany." });
         }
 
         private async Task EnsureCustomerProfile(int businessId, string customerId)

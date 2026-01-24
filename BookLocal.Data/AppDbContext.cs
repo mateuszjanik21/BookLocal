@@ -50,7 +50,6 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
     public DbSet<BusinessSubscription> BusinessSubscriptions { get; set; }
     public DbSet<BusinessVerification> BusinessVerifications { get; set; }
-    public DbSet<VerificationDocument> VerificationDocuments { get; set; }
 
     // --- 7. MARKETING & CRM ---
     public DbSet<CustomerBusinessProfile> CustomerBusinessProfiles { get; set; }

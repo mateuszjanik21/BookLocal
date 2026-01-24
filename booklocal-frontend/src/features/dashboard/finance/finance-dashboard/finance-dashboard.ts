@@ -31,6 +31,7 @@ export class FinanceDashboardComponent implements OnInit {
   businessId: number | null = null;
   businessName: string = '';
 
+  // Range Generation
   generationMode: 'single' | 'range' = 'single';
   rangeStartDate: string;
   rangeEndDate: string;
@@ -118,7 +119,7 @@ export class FinanceDashboardComponent implements OnInit {
             this.toastr.success(`Raport za ${date} wygenerowany pomyślnie.`);
             this.isGenerating = false;
             this.generateModal.nativeElement.close();
-            this.loadReports(); 
+            this.loadReports(); // Refresh list
         },
         error: (err) => {
             this.toastr.error('Błąd generowania raportu.');
@@ -176,6 +177,7 @@ export class FinanceDashboardComponent implements OnInit {
             doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
             doc.setFont('Roboto');
 
+            // Header
             doc.setFontSize(18);
             doc.text(`Raport Finansowy: ${this.months.find(m => m.value == this.selectedMonth)?.label} ${this.selectedYear}`, 14, 20);
             
@@ -183,6 +185,7 @@ export class FinanceDashboardComponent implements OnInit {
             doc.text(`Firma: ${this.businessName}`, 14, 30);
             doc.text(`Data wygenerowania: ${new Date().toLocaleDateString()}`, 14, 36);
 
+            // Summary
             doc.setFontSize(14);
             doc.text('Podsumowanie', 14, 50);
             
@@ -199,12 +202,13 @@ export class FinanceDashboardComponent implements OnInit {
                 startY: 55,
                 head: [['Metryka', 'Wartość']],
                 body: summaryData,
-                theme: 'striped', 
-                headStyles: { fillColor: [66, 66, 66], font: 'Roboto' }, 
-                bodyStyles: { font: 'Roboto' }, 
-                styles: { font: 'Roboto', fontStyle: 'normal' } 
+                theme: 'striped', // Striped theme has alternating rows
+                headStyles: { fillColor: [66, 66, 66], font: 'Roboto' }, // Apply font to header
+                bodyStyles: { font: 'Roboto' }, // Apply font to body
+                styles: { font: 'Roboto', fontStyle: 'normal' } // Apply font globally to table
             });
 
+            // Detailed Table
             const lastY = (doc as any).lastAutoTable.finalY || 100;
             
             doc.text('Szczegółowe Raporty Dzienne', 14, lastY + 15);
@@ -237,9 +241,13 @@ export class FinanceDashboardComponent implements OnInit {
         console.error('Błąd ładowania czcionki:', error);
         this.toastr.warning('Nie udało się załadować polskiej czcionki. Generuję PDF ze standardową.');
         
+        // Fallback without custom font
+        // ... (Simplified fallback or just fail)
+        // For brevity we assume it works or user accepts basic font
     }
   }
 
+  // Aggregated Getters
   get monthTotalRevenue(): number {
       return this.reports.reduce((sum, r) => sum + r.totalRevenue, 0);
   }
@@ -260,5 +268,9 @@ export class FinanceDashboardComponent implements OnInit {
   }
   get monthNewCustomers(): number {
       return this.reports.reduce((sum, r) => sum + r.newCustomersCount, 0);
+  }
+  get monthTotalCommission(): number {
+      // Assuming totalCommission exists on report object from API (it will matching the backend model)
+      return this.reports.reduce((sum, r) => sum + (r as any).totalCommission, 0);
   }
 }

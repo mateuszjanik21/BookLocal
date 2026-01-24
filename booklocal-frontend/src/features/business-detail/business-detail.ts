@@ -10,6 +10,9 @@ import { Review } from '../../types/review.model';
 import { ReservationModalComponent } from '../../shared/components/reservation-modal/reservation-modal';
 import { EditReviewModalComponent } from '../../shared/components/edit-review-modal/edit-review-modal';
 import { ChatService } from '../../core/services/chat';
+import { ServiceBundleService } from '../../core/services/service-bundle';
+import { ServiceBundle } from '../../types/service-bundle.model';
+import { BookBundleModalComponent } from '../dashboard/service-bundles/book-bundle-modal/book-bundle-modal';
 
 @Component({
   selector: 'app-business-detail',
@@ -18,7 +21,8 @@ import { ChatService } from '../../core/services/chat';
     CommonModule, 
     RouterModule, 
     ReservationModalComponent,
-    EditReviewModalComponent
+    EditReviewModalComponent,
+    BookBundleModalComponent
   ],
   templateUrl: './business-detail.html',
   styleUrls: ['./business-detail.css']
@@ -48,6 +52,12 @@ export class BusinessDetailComponent implements OnInit {
   totalReviews = 0;
   isLoadingMoreReviews = false;
 
+  bundles: ServiceBundle[] = [];
+  selectedBundle: ServiceBundle | null = null;
+  isBookBundleModalOpen = false;
+
+  private serviceBundleService = inject(ServiceBundleService);
+
   ngOnInit(): void {
     const businessId = this.route.snapshot.paramMap.get('id');
 
@@ -57,6 +67,7 @@ export class BusinessDetailComponent implements OnInit {
           this.business = data;
           this.isLoading = false; 
           this.loadReviews(+businessId);
+          this.loadBundles(+businessId);
         },
         error: (err) => {
           console.error('Błąd pobierania szczegółów firmy:', err);
@@ -166,5 +177,25 @@ export class BusinessDetailComponent implements OnInit {
         console.error(err);
       }
     });
+  }
+
+  loadBundles(businessId: number) {
+      this.serviceBundleService.getBundles(businessId).subscribe({
+        next: (bundles) => {
+          this.bundles = bundles;
+          console.log('Loaded bundles:', bundles);
+        },
+        error: (err) => console.error('Error loading bundles:', err)
+      });
+  }
+  
+  openBookBundleModal(bundle: ServiceBundle) {
+      this.selectedBundle = bundle;
+      this.isBookBundleModalOpen = true; 
+  }
+
+  closeBookBundleModal() {
+      this.isBookBundleModalOpen = false;
+      this.selectedBundle = null;
   }
 }
