@@ -18,7 +18,6 @@ namespace BookLocal.Data.Models
         [Column(TypeName = "decimal(10, 2)")]
         public decimal PriceYearly { get; set; }
 
-        // Ograniczenia w pakiecie
         public int MaxEmployees { get; set; }
         public int MaxServices { get; set; }
 

@@ -4,7 +4,7 @@ export interface CustomerListItem {
   fullName: string;
   phoneNumber?: string;
   email?: string;
-  lastVisitDate: string; // ISO Date
+  lastVisitDate: string;
   nextVisitDate?: string;
   totalSpent: number;
   cancelledCount: number;

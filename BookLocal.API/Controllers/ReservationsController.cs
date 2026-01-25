@@ -74,7 +74,7 @@ namespace BookLocal.API.Controllers
 
             if (!string.IsNullOrEmpty(reservationDto.DiscountCode))
             {
-                var discountResult = await ApplyDiscount(service.BusinessId, reservationDto.DiscountCode, variant.Price, service.ServiceId); // verify if ServiceId matches
+                var discountResult = await ApplyDiscount(service.BusinessId, reservationDto.DiscountCode, variant.Price, service.ServiceId);
                 if (discountResult.error != null)
                 {
                     return BadRequest(discountResult.error);
@@ -403,7 +403,6 @@ namespace BookLocal.API.Controllers
             var bundleItems = bundle.BundleItems.OrderBy(i => i.SequenceOrder).ToList();
             if (!bundleItems.Any()) return BadRequest("Pakiet nie zawiera żadnych usług.");
 
-            // 1. Availability Check
             var dayOfWeek = reservationDto.StartTime.DayOfWeek;
             var workSchedule = await _context.WorkSchedules
                 .AsNoTracking()
@@ -430,7 +429,6 @@ namespace BookLocal.API.Controllers
 
             if (isTaken) return Conflict("Jeden z terminów w ramach pakietu jest już zajęty.");
 
-            // 2. Prepare Reservations
             var currentStartTime = reservationDto.StartTime;
             var reservationsToCreate = new List<Reservation>();
 
@@ -451,7 +449,7 @@ namespace BookLocal.API.Controllers
                 var reservation = new Reservation
                 {
                     BusinessId = bundle.BusinessId,
-                    CustomerId = userId, // Logged in user
+                    CustomerId = userId,
                     ServiceVariantId = item.ServiceVariantId,
                     EmployeeId = reservationDto.EmployeeId,
                     ServiceBundleId = bundle.ServiceBundleId,
@@ -466,14 +464,12 @@ namespace BookLocal.API.Controllers
                 currentStartTime = currentEndTime;
             }
 
-            // 3. Transactional Save
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 _context.Reservations.AddRange(reservationsToCreate);
                 await _context.SaveChangesAsync();
 
-                // Notifications
                 var customer = await _userManager.FindByIdAsync(userId);
                 var notificationPayload = new
                 {
@@ -591,15 +587,12 @@ namespace BookLocal.API.Controllers
 
             if (bundle == null) return NotFound("Pakiet nie istnieje.");
 
-            // Verify owner
             if (!await _context.Businesses.AnyAsync(b => b.BusinessId == bundle.BusinessId && b.OwnerId == ownerId))
                 return Forbid();
 
             var bundleItems = bundle.BundleItems.OrderBy(i => i.SequenceOrder).ToList();
             if (!bundleItems.Any()) return BadRequest("Pakiet nie zawiera żadnych usług.");
 
-            // 1. Calculate timing and check availability for ALL items sequence
-            // Note: AvailabilityController already did this check for finding slots, but we must verify again to prevent race conditions.
 
             var dayOfWeek = reservationDto.StartTime.DayOfWeek;
             var workSchedule = await _context.WorkSchedules
@@ -611,7 +604,6 @@ namespace BookLocal.API.Controllers
                 return BadRequest("Pracownik nie pracuje w wybranym dniu.");
             }
 
-            // Calculate total duration for bounds check
             var totalDuration = bundleItems.Sum(i => i.ServiceVariant.DurationMinutes + i.ServiceVariant.CleanupTimeMinutes);
             var sequenceEndTime = reservationDto.StartTime.AddMinutes(totalDuration);
 
@@ -620,7 +612,6 @@ namespace BookLocal.API.Controllers
                 return BadRequest("Wybrany termin pakietu wykracza poza godziny pracy.");
             }
 
-            // Check if ANY slot in the range is taken
             var isTaken = await _context.Reservations
                 .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
                                r.Status == ReservationStatus.Confirmed &&
@@ -629,15 +620,9 @@ namespace BookLocal.API.Controllers
 
             if (isTaken) return Conflict("Jeden z terminów w ramach pakietu jest już zajęty.");
 
-            // 2. Create Reservations
             var currentStartTime = reservationDto.StartTime;
             var reservationsToCreate = new List<Reservation>();
 
-            // Calculate per-service price discount ratio if bundle has custom TotalPrice?
-            // Current model has Bundle.TotalPrice which might be cheaper than sum of services.
-            // We should split the Bundle TotalPrice proportionally across items?
-            // Or simpler: Assign price to first item and 0 to others? Or average?
-            // Proportional split is best for reports.
 
             decimal sumOfVariantsPrice = bundleItems.Sum(i => i.ServiceVariant.Price);
             decimal globalDiscountRatio = 1.0m;
@@ -651,7 +636,6 @@ namespace BookLocal.API.Controllers
                 var variantDuration = item.ServiceVariant.DurationMinutes + item.ServiceVariant.CleanupTimeMinutes;
                 var currentEndTime = currentStartTime.AddMinutes(variantDuration);
 
-                // Calculate price share
                 var itemPrice = item.ServiceVariant.Price * globalDiscountRatio;
 
                 var reservation = new Reservation
@@ -659,7 +643,7 @@ namespace BookLocal.API.Controllers
                     BusinessId = bundle.BusinessId,
                     ServiceVariantId = item.ServiceVariantId,
                     EmployeeId = reservationDto.EmployeeId,
-                    ServiceBundleId = bundle.ServiceBundleId, // Link!
+                    ServiceBundleId = bundle.ServiceBundleId,
                     StartTime = currentStartTime,
                     EndTime = currentEndTime,
                     AgreedPrice = itemPrice,
@@ -673,16 +657,12 @@ namespace BookLocal.API.Controllers
                 currentStartTime = currentEndTime;
             }
 
-            // 3. Save
-            // Using transaction to ensure all or nothing
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 _context.Reservations.AddRange(reservationsToCreate);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-
-                // Notifications could go here (skipped for brevity)
             }
             catch (Exception)
             {
@@ -778,7 +758,6 @@ namespace BookLocal.API.Controllers
 
             if (amount > originalPrice) amount = originalPrice;
 
-            // Increment usage
             discount.UsedCount++;
             await _context.SaveChangesAsync();
 

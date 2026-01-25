@@ -16,7 +16,7 @@ export class AdminBusinessApprovalComponent implements OnInit {
 
   businesses: AdminBusinessListDto[] = [];
   isLoading = false;
-  filterStatus: string = 'Pending'; // Pending, Approved, Rejected
+  filterStatus: string = 'Pending';
 
   ngOnInit() {
     this.loadBusinesses();

@@ -57,10 +57,8 @@ namespace BookLocal.API.Controllers
             var plan = await _context.SubscriptionPlans.FindAsync(planId);
             if (plan == null || !plan.IsActive) return BadRequest("Nieprawidłowy plan.");
 
-            // Weryfikacja limitów nowego planu
             var currentEmployeeCount = await _context.Employees.CountAsync(e => e.BusinessId == business.BusinessId);
 
-            // Check Services count
             var currentServiceCount = await _context.Services.CountAsync(s => s.BusinessId == business.BusinessId);
 
             if (currentEmployeeCount > plan.MaxEmployees)
@@ -73,14 +71,11 @@ namespace BookLocal.API.Controllers
                 return BadRequest($"Nie można zmienić planu. Twoja obecna liczba usług ({currentServiceCount}) przekracza limit nowego planu ({plan.MaxServices}). Aby zmienić plan, usuń zbędne usługi.");
             }
 
-            // Check current subscription
             var currentSub = await _context.BusinessSubscriptions
                 .FirstOrDefaultAsync(bs => bs.BusinessId == business.BusinessId && bs.IsActive);
 
             if (currentSub != null)
             {
-                // Logic for upgrade/downgrade?
-                // For MVP, simplify: Deactivate old, create new.
                 currentSub.IsActive = false;
                 currentSub.EndDate = DateTime.UtcNow;
             }
@@ -90,7 +85,7 @@ namespace BookLocal.API.Controllers
                 BusinessId = business.BusinessId,
                 PlanId = planId,
                 StartDate = DateTime.UtcNow,
-                EndDate = DateTime.UtcNow.AddMonths(1), // Default monthly, MVP
+                EndDate = DateTime.UtcNow.AddMonths(1),
                 IsActive = true,
                 IsAutoRenew = true
             };

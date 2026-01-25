@@ -21,19 +21,18 @@ namespace BookLocal.Data.Models
 
         public bool IsStudent { get; set; } = false;
 
-        // --- (PIT) ---
-
         public bool HasPit2Filed { get; set; } = true;
         public WorkCommuteType CommuteType { get; set; } = WorkCommuteType.Local;
         public bool UseMiddleClassRelief { get; set; } = false;
         [Column(TypeName = "decimal(18,2)")]
         public decimal HourlyRate { get; set; }
 
-        // --- ZUS ---
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal? CommissionPercentage { get; set; }
+
         public bool IsPensionRetired { get; set; } = false;
         public bool VoluntarySicknessInsurance { get; set; } = true;
 
-        // --- PPK ---
         public bool ParticipatesInPPK { get; set; } = false;
 
         [Range(0.5, 4.0)]

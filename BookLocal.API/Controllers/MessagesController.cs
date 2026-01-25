@@ -168,7 +168,7 @@ namespace BookLocal.API.Controllers
             if (userId == null) return Unauthorized();
 
             var count = await _context.Messages
-                .CountAsync(m => m.ConversationId != 0 && // Ensure valid conversation
+                .CountAsync(m => m.ConversationId != 0 &&
                                  (m.Conversation.CustomerId == userId || m.Conversation.Business.OwnerId == userId) &&
                                  m.SenderId != userId &&
                                  !m.IsRead);

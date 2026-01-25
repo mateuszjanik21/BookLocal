@@ -72,7 +72,6 @@ export class ReservationDetailComponent implements OnInit {
       const agreedPrice = this.reservation.agreedPrice;
       let remainingAmount = agreedPrice - totalPaid;
 
-      // Ensure we don't show negative remaining amount (unless it's a refund scenario, but let's keep it simple)
       if (remainingAmount < 0) remainingAmount = 0;
 
       let defaultAmount = remainingAmount > 0 
@@ -92,7 +91,6 @@ export class ReservationDetailComponent implements OnInit {
         return;
       }
 
-      // Optional: Warning if overpaying
       if (totalPaid + amount > agreedPrice) {
           if (!confirm(`Kwota przewyższa ustaloną cenę (${agreedPrice} PLN). Czy na pewno chcesz dodać nadpłatę/napiwek?`)) {
               return;

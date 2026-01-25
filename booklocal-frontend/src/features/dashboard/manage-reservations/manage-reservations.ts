@@ -51,7 +51,6 @@ export class ManageReservationsComponent implements OnInit {
       const endDay = datePipe.transform(endOfWeek, 'd');
       const month = this.maximizeFirstLetter(datePipe.transform(endOfWeek, 'MMMM') || '');
       
-      // Check if same month
       if (startOfWeek.getMonth() === endOfWeek.getMonth()) {
          return `${startDay} - ${endDay} ${month}`;
       } else {
@@ -59,7 +58,6 @@ export class ManageReservationsComponent implements OnInit {
          return `${startDay} ${startMonth} - ${endDay} ${month}`;
       }
     } else {
-      // Day
       return this.maximizeFirstLetter(datePipe.transform(this.viewDate, 'd MMMM yyyy') || '');
     }
   }
@@ -70,7 +68,7 @@ export class ManageReservationsComponent implements OnInit {
 
   private getStartOfWeek(date: Date): Date {
     const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
     return new Date(date.setDate(diff));
   }
   

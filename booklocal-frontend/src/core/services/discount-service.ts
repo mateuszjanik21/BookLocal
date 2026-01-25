@@ -18,10 +18,10 @@ export interface Discount {
 
 export interface CreateDiscountDto {
   code: string;
-  type: number; // 0=Percentage, 1=Fixed
+  type: number;
   value: number;
   maxUses?: number;
-  validFrom?: string; // yyyy-MM-dd
+  validFrom?: string;
   validTo?: string;
   serviceId?: number;
 }

@@ -17,14 +17,13 @@ import { SubscriptionService } from '../../core/services/subscription-service';
 export class OwnerLayoutComponent implements OnInit, OnDestroy {
   private notificationService = inject(NotificationService);
   private businessService = inject(BusinessService);
-  private subscriptionService = inject(SubscriptionService); // Inject
+  private subscriptionService = inject(SubscriptionService);
   public presenceService = inject(PresenceService);
   private router = inject(Router);
 
   public businessName: string | null = null;
   public businessId: number | null = null;
 
-  // Capabilities
   public hasReports = false;
   public hasMarketing = false;
 
@@ -38,7 +37,6 @@ export class OwnerLayoutComponent implements OnInit, OnDestroy {
           this.businessName = business.name;
           this.businessId = business.id;
 
-          // Listen for subscription updates
           this.subscriptionService.currentSubscription$.subscribe((sub) => {
             if (sub) {
               const s = sub as any;
@@ -47,18 +45,15 @@ export class OwnerLayoutComponent implements OnInit, OnDestroy {
             }
           });
 
-          // Trigger initial load
           this.subscriptionService.refreshSubscription();
         }
       });
 
-    // Close drawer on navigation (mobile)
     this.router.events.subscribe(() => {
        this.closeDrawer();
     });
   }
 
-  // Drawer state
   isDrawerOpen = false;
 
   closeDrawer() {

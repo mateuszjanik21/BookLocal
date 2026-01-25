@@ -45,7 +45,7 @@ export class EditServiceModalComponent implements OnChanges {
       name: formValue.name,
       description: formValue.description,
       serviceCategoryId: this.service.serviceCategoryId,
-      variants: this.service.variants // Preserve existing variants!
+      variants: this.service.variants
     };
 
     this.serviceService.updateService(this.businessId, this.service.id, payload as any)

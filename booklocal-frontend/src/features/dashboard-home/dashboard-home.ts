@@ -49,7 +49,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       forkJoin({
         reservations: this.reservationService.getCalendarEvents(),
         reviews: this.reviewService.getReviews(businessDetails.id, 1, 3),
-        customers: this.customerService.getCustomers(businessDetails.id, '', 1, 1) // Fetch 1 just to get totalCount
+        customers: this.customerService.getCustomers(businessDetails.id, '', 1, 1)
       }).pipe(
         map(({ reservations, reviews, customers }) => {
           const now = new Date();

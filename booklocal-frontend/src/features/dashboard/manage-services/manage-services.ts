@@ -46,7 +46,6 @@ export class ManageServicesComponent implements OnInit {
   serviceToEdit: Service | null = null;
   activeCategoryForService: ServiceCategory | null = null;
 
-  // Variant Modal
   isVariantModalVisible = false;
   variantToEdit: ServiceVariant | null = null;
   activeServiceForVariant: Service | null = null;

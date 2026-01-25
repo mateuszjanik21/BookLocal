@@ -1,7 +1,6 @@
 <div class="p-4 sm:p-6 lg:p-8 bg-base-200/30 min-h-screen">
   <div class="max-w-4xl mx-auto">
     
-    <!-- Header -->
     <div class="flex items-center gap-4 mb-8">
         <button class="btn btn-circle btn-ghost" routerLink="../">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -14,14 +13,12 @@
         </div>
     </div>
 
-    <!-- Progress -->
     <ul class="steps w-full mb-8">
         <li class="step" [class.step-primary]="currentStep >= 1">Podstawowe Info</li>
         <li class="step" [class.step-primary]="currentStep >= 2">Wybór Usług</li>
         <li class="step" [class.step-primary]="currentStep >= 3">Podsumowanie</li>
     </ul>
 
-    <!-- Step 1: Info -->
     @if(currentStep === 1) {
         <div class="card bg-base-100 shadow-xl border border-base-200">
             <div class="card-body">
@@ -54,10 +51,8 @@
         </div>
     }
 
-    <!-- Step 2: Items -->
     @if(currentStep === 2) {
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Left: Selector -->
             <div class="card bg-base-100 shadow-lg border border-base-200 h-fit">
                 <div class="card-body">
                     <h3 class="font-bold text-lg mb-4">Dodaj usługę do pakietu</h3>
@@ -102,7 +97,6 @@
                 </div>
             </div>
 
-            <!-- Right: Current List -->
             <div class="card bg-base-100 shadow-lg border border-base-200">
                 <div class="card-body">
                     <h3 class="font-bold text-lg mb-4">Wybrane usługi ({{ items.length }})</h3>
@@ -139,7 +133,6 @@
         </div>
     }
 
-    <!-- Step 3: Summary -->
     @if(currentStep === 3) {
         <div class="card bg-base-100 shadow-xl border border-base-200 max-w-2xl mx-auto">
             <div class="card-body">

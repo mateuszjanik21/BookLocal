@@ -21,7 +21,7 @@ export class BookBundleModalComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
 
   private availabilityService = inject(AvailabilityService);
-  private employeeService = inject(EmployeeService); // We need this to list employees
+  private employeeService = inject(EmployeeService);
   private toastr = inject(ToastrService);
 
   currentStep = 1;
@@ -30,15 +30,11 @@ export class BookBundleModalComponent implements OnInit {
   
   selectedDate: Date = new Date();
   availableSlots: string[] = [];
-  selectedSlot: string | null = null; // Formatting ISO string or just time? Backend returns DateTime ISO
+  selectedSlot: string | null = null;
 
   isLoadingSlots = false;
   isSaving = false;
-  @Input() isOwnerMode = true; // Default to owner mode for backward compat, or check usages? 
-  // Wait, existing usage in OwnerLayout does not pass isOwnerMode, so default true is safer? 
-  // Actually, I should check who uses it. OwnerDashboard uses it.
-  
-  // Let's set default to true for now, but explicit is better. I'll check usages later.
+  @Input() isOwnerMode = true;
   
   guestName = '';
   guestPhone = '';
@@ -124,12 +120,11 @@ export class BookBundleModalComponent implements OnInit {
             error: (err) => this.handleError(err)
           });
       } else {
-          // Customer Mode
           this.reservationService.createBundleReservation({
             serviceBundleId: this.bundle.serviceBundleId,
             employeeId: this.selectedEmployee.id,
             startTime: this.selectedSlot,
-            paymentMethod: 'Cash' // For now default or add selector? 
+            paymentMethod: 'Cash'
           }).subscribe({
              next: () => this.handleSuccess(),
              error: (err) => this.handleError(err)

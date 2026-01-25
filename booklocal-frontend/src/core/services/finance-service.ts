@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { DailyEmployeePerformance } from '../../types/report.model';
 
 export interface DailyFinancialReport {
   reportId: number;
   businessId: number;
-  reportDate: string; // DateOnly comes as string
+  reportDate: string;
   totalRevenue: number;
   tipsAmount: number;
   averageTicketValue: number;
@@ -21,6 +22,7 @@ export interface DailyFinancialReport {
   returningCustomersCount: number;
   occupancyRate: number;
   topSellingServiceName: string;
+  totalCommission: number;
 }
 
 @Injectable({
@@ -50,5 +52,14 @@ export class FinanceService {
       .set('month', month.toString())
       .set('year', year.toString());
     return this.http.get<DailyFinancialReport[]>(`${this.apiUrl}/businesses/${businessId}/finance/reports`, { params });
+  }
+
+  getEmployeePerformance(businessId: number, date?: string, startDate?: string, endDate?: string): Observable<DailyEmployeePerformance[]> {
+      let params = new HttpParams();
+      if (date) params = params.set('date', date);
+      if (startDate && endDate) {
+          params = params.set('startDate', startDate).set('endDate', endDate);
+      }
+    return this.http.get<DailyEmployeePerformance[]>(`${this.apiUrl}/businesses/${businessId}/finance/employee-performance`, { params });
   }
 }

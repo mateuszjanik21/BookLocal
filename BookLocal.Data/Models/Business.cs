@@ -36,7 +36,6 @@ namespace BookLocal.Data.Models
         public virtual ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
 
-        // Verification
         public bool IsVerified { get; set; } = false;
         public VerificationStatus VerificationStatus { get; set; } = VerificationStatus.Pending;
     }

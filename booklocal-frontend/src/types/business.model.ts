@@ -17,7 +17,7 @@ export interface Service {
   name: string;
   description?: string;
   serviceCategoryId: number;
-  businessId: number; // Required by frontend logic
+  businessId: number;
   isArchived: boolean;
   variants: ServiceVariant[];
 }
@@ -40,6 +40,7 @@ export interface Employee {
   instagramProfileUrl?: string;
   portfolioUrl?: string;
   isStudent: boolean;
+  isArchived: boolean;
 }
 
 export interface Business {

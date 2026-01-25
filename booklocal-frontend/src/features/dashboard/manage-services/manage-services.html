@@ -118,7 +118,6 @@
             </div>
           </div>
 
-          <!-- Cennik Header -->
           <div class="flex justify-between items-center mb-2">
              <h3 class="font-bold text-sm uppercase tracking-wider text-base-content/60">Cennik / Warianty</h3>
           </div>
@@ -135,7 +134,6 @@
                      <span>{{ service.name }}</span>
                      @if(service.isArchived) { <span class="badge badge-xs badge-ghost">Archiwum</span> }
                   </div>
-                  <!-- Primary price preview -->
                   <div class="text-sm font-normal opacity-70">
                      @if(service.variants.length > 0) {
                         {{ service.variants[0].price }} PLN

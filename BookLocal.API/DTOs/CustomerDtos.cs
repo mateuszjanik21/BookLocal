@@ -24,7 +24,7 @@ namespace BookLocal.API.DTOs
         public string? Allergies { get; set; }
         public string? Formulas { get; set; }
         public int NoShowCount { get; set; }
-        public int VisitCount { get; set; } // Calculated from Reservations
+        public int VisitCount { get; set; }
         public List<ReservationHistoryDto> History { get; set; } = new List<ReservationHistoryDto>();
     }
 

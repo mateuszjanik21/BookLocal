@@ -53,7 +53,6 @@ export class InvoicesListComponent implements OnInit {
     const doc = new jsPDF();
 
     try {
-        // Load font for Polish support
         const fontResponse = await fetch('/assets/fonts/Roboto-Regular.ttf');
         if (fontResponse.ok) {
              const fontBlob = await fontResponse.blob();
@@ -71,24 +70,20 @@ export class InvoicesListComponent implements OnInit {
         }
     } catch (e) { console.warn('Font load failed, using default'); }
 
-    // Invoice Header
     doc.setFontSize(22);
     doc.text('FAKTURA VAT', 14, 20);
     doc.setFontSize(12);
     doc.text(`Nr: ${invoice.invoiceNumber}`, 14, 28);
     
-    // Dates
     doc.setFontSize(10);
     doc.text(`Data wystawienia: ${new Date(invoice.issueDate).toLocaleDateString()}`, 140, 20);
     doc.text(`Data sprzedaży: ${new Date(invoice.saleDate).toLocaleDateString()}`, 140, 26);
 
-    // Parties
     doc.line(14, 35, 196, 35);
     
     doc.text('Sprzedawca:', 14, 42);
     doc.setFontSize(11);
     doc.text(this.businessName, 14, 48);
-    // TODO: Add Business Address/NIP if available in Business model
     
     doc.setFontSize(10);
     doc.text('Nabywca:', 110, 42);
@@ -96,7 +91,6 @@ export class InvoicesListComponent implements OnInit {
     doc.text(invoice.customerName, 110, 48);
     if (invoice.customerNip) doc.text(`NIP: ${invoice.customerNip}`, 110, 54);
 
-    // Items Table
     const tableData = invoice.items.map(item => [
         item.name,
         item.quantity,
@@ -118,7 +112,6 @@ export class InvoicesListComponent implements OnInit {
 
     const lastY = (doc as any).lastAutoTable.finalY + 10;
 
-    // Total
     doc.setFontSize(12);
     doc.text(`Do zapłaty: ${invoice.totalGross.toFixed(2)} PLN`, 140, lastY);
     doc.setFontSize(10);

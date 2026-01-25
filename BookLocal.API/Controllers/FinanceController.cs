@@ -70,7 +70,6 @@ namespace BookLocal.API.Controllers
 
         private async Task<DailyFinancialReport> GenerateDailyReportInternal(int businessId, DateOnly date)
         {
-            // Clean existing
             var existingReport = await _context.DailyFinancialReports
                 .FirstOrDefaultAsync(r => r.BusinessId == businessId && r.ReportDate == date);
 
@@ -96,12 +95,21 @@ namespace BookLocal.API.Controllers
                 .Where(p => completedReservationIds.Contains(p.ReservationId) && p.Status == PaymentStatus.Completed)
                 .ToListAsync();
 
+            var activeSubscription = await _context.BusinessSubscriptions
+                .Include(s => s.Plan)
+                .Where(s => s.BusinessId == businessId && s.StartDate <= date.ToDateTime(TimeOnly.MaxValue) && s.EndDate >= date.ToDateTime(TimeOnly.MinValue))
+                .OrderByDescending(s => s.SubscriptionId)
+                .FirstOrDefaultAsync();
+
+            decimal commRate = activeSubscription?.Plan?.CommissionPercentage ?? 0m;
+            decimal platformFee = payments.Sum(p => p.Amount) * (commRate / 100m);
+
             var report = new DailyFinancialReport
             {
                 BusinessId = businessId,
                 ReportDate = date,
-                TotalRevenue = payments.Sum(p => p.Amount), // Revenue based on actual payments
-                TipsAmount = 0, // Placeholder
+                TotalRevenue = payments.Sum(p => p.Amount),
+                TipsAmount = 0,
 
                 CashRevenue = payments
                     .Where(p => p.PaymentMethod == PaymentMethod.Cash)
@@ -115,7 +123,7 @@ namespace BookLocal.API.Controllers
                     .Where(p => p.PaymentMethod == PaymentMethod.Online)
                     .Sum(p => p.Amount),
 
-                TotalCommission = payments.Sum(p => p.CommissionAmount),
+                TotalCommission = platformFee,
 
                 TotalAppointments = reservations.Count,
                 CompletedAppointments = completedReservations.Count,
@@ -138,7 +146,6 @@ namespace BookLocal.API.Controllers
 
             report.TopSellingServiceName = topService?.Key;
 
-            // Advanced Metrics Implementation
             var customerIdsToday = completedReservations
                 .Where(r => r.CustomerId != null)
                 .Select(r => r.CustomerId)
@@ -179,6 +186,92 @@ namespace BookLocal.API.Controllers
                .ToListAsync();
 
             return Ok(reports);
+        }
+        [HttpGet("employee-performance")]
+        public async Task<ActionResult<IEnumerable<DTOs.DailyEmployeePerformanceDto>>> GetEmployeePerformance(
+            int businessId,
+            [FromQuery] DateOnly? date,
+            [FromQuery] DateOnly? startDate,
+            [FromQuery] DateOnly? endDate)
+        {
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId))
+                return Forbid();
+
+            DateTime startDateTime;
+            DateTime endDateTime;
+
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                startDateTime = startDate.Value.ToDateTime(TimeOnly.MinValue);
+                endDateTime = endDate.Value.ToDateTime(TimeOnly.MaxValue);
+            }
+            else if (date.HasValue)
+            {
+                startDateTime = date.Value.ToDateTime(TimeOnly.MinValue);
+                endDateTime = date.Value.ToDateTime(TimeOnly.MaxValue);
+            }
+            else
+            {
+                return BadRequest("Wymagana data lub zakres dat.");
+            }
+
+            var reservations = await _context.Reservations
+                .Include(r => r.Employee)
+                .Include(r => r.ServiceVariant)
+                .Where(r => r.BusinessId == businessId &&
+                            r.StartTime >= startDateTime &&
+                            r.StartTime <= endDateTime)
+                .ToListAsync();
+
+            var reservationIds = reservations.Select(r => r.ReservationId).ToList();
+            var reviews = await _context.Reviews
+                .Where(r => r.ReservationId.HasValue && reservationIds.Contains(r.ReservationId.Value))
+                .ToListAsync();
+
+            var performanceList = new List<DTOs.DailyEmployeePerformanceDto>();
+
+            var allEmployees = await _context.Employees
+                .Include(e => e.FinanceSettings)
+                .Where(e => e.BusinessId == businessId && !e.IsArchived)
+                .ToListAsync();
+
+            foreach (var emp in allEmployees)
+            {
+                var empReservations = reservations.Where(r => r.EmployeeId == emp.EmployeeId).ToList();
+
+                var completed = empReservations.Where(r => r.Status == ReservationStatus.Completed).ToList();
+                var cancelled = empReservations.Where(r => r.Status == ReservationStatus.Cancelled).ToList();
+
+                decimal revenue = completed.Sum(r => r.ServiceVariant.Price);
+
+                decimal empCommRate = emp.FinanceSettings?.CommissionPercentage ?? 0;
+                decimal commission = revenue * (empCommRate / 100m);
+
+                var empReservationIds = completed.Select(r => r.ReservationId).ToList();
+                var empReviews = reviews.Where(r => r.ReservationId.HasValue && empReservationIds.Contains(r.ReservationId.Value)).ToList();
+
+                double rating = 0;
+                if (empReviews.Any())
+                {
+                    rating = empReviews.Average(r => r.Rating);
+                }
+
+                performanceList.Add(new DTOs.DailyEmployeePerformanceDto
+                {
+                    EmployeeId = emp.EmployeeId,
+                    Date = startDate ?? date.Value,
+                    FullName = $"{emp.FirstName} {emp.LastName}",
+                    TotalAppointments = empReservations.Count,
+                    CompletedAppointments = completed.Count,
+                    CancelledAppointments = cancelled.Count,
+                    TotalRevenue = revenue,
+                    Commission = commission,
+                    AverageRating = rating
+                });
+            }
+
+            return Ok(performanceList);
         }
     }
 }

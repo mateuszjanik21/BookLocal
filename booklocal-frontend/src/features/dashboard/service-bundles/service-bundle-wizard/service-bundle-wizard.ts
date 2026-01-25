@@ -38,13 +38,11 @@ export class ServiceBundleWizardComponent implements OnInit {
   isSaving = false;
   businessId: number | null = null;
 
-  // Step 1 Data
   bundleName = '';
   bundleDescription = '';
   bundlePrice = 0;
   selectedFile: File | null = null;
 
-  // Step 2 Data
   categories: ServiceCategory[] = [];
   selectedCategory: ServiceCategory | null = null;
   selectedService: Service | null = null;
@@ -88,7 +86,7 @@ export class ServiceBundleWizardComponent implements OnInit {
   }
 
   onServiceChange() {
-      //
+
   }
 
   addVariant(variant: ServiceVariant) {

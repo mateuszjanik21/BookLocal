@@ -43,7 +43,8 @@ namespace BookLocal.API.Controllers
                     Specialization = e.EmployeeDetails != null ? e.EmployeeDetails.Specialization : null,
                     InstagramProfileUrl = e.EmployeeDetails != null ? e.EmployeeDetails.InstagramProfileUrl : null,
                     PortfolioUrl = e.EmployeeDetails != null ? e.EmployeeDetails.PortfolioUrl : null,
-                    IsStudent = e.FinanceSettings != null ? e.FinanceSettings.IsStudent : false
+                    IsStudent = e.FinanceSettings != null ? e.FinanceSettings.IsStudent : false,
+                    IsArchived = e.IsArchived
                 })
                 .ToListAsync();
 
@@ -234,7 +235,7 @@ namespace BookLocal.API.Controllers
 
         [HttpDelete("{employeeId}")]
         [Authorize(Roles = "owner")]
-        public async Task<IActionResult> DeleteEmployee(int businessId, int employeeId)
+        public async Task<IActionResult> ArchiveEmployee(int businessId, int employeeId)
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var employee = await _context.Employees
@@ -245,9 +246,19 @@ namespace BookLocal.API.Controllers
                 return NotFound("Pracownik nie został znaleziony lub nie masz do niego dostępu.");
             }
 
-            _context.Employees.Remove(employee);
+            employee.IsArchived = true;
+
+            var futureReservations = await _context.Reservations
+                .Where(r => r.EmployeeId == employeeId && r.StartTime > DateTime.UtcNow && r.Status != ReservationStatus.Cancelled && r.Status != ReservationStatus.Completed)
+                .ToListAsync();
+
+            foreach (var res in futureReservations)
+            {
+                res.Status = ReservationStatus.Cancelled;
+            }
+
             await _context.SaveChangesAsync();
-            return NoContent();
+            return Ok(new { message = $"Pracownik zarchiwizowany. Anulowano {futureReservations.Count} nadchodzących rezerwacji." });
         }
 
         [HttpGet("{employeeId}/details")]

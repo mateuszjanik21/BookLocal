@@ -57,12 +57,10 @@ export class AdminService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl + '/admin';
 
-  // --- STATS ---
   getStats(): Observable<AdminStats> {
     return this.http.get<AdminStats>(`${this.apiUrl}/stats`);
   }
 
-  // --- PLANS ---
   getPlans(): Observable<SubscriptionPlan[]> {
     return this.http.get<SubscriptionPlan[]>(`${this.apiUrl}/plans`);
   }
@@ -79,7 +77,6 @@ export class AdminService {
     return this.http.delete(`${this.apiUrl}/plans/${id}`);
   }
 
-  // --- BUSINESSES ---
   getBusinesses(status?: string): Observable<AdminBusinessListDto[]> {
     let params = new HttpParams();
     if (status) {

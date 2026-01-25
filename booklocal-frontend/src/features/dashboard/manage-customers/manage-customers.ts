@@ -36,7 +36,6 @@ export class ManageCustomersComponent implements OnInit {
   }
 
   get filteredCustomers() {
-      // Backend filtering is now used.
       return this.customers;
   }
 
@@ -51,7 +50,7 @@ export class ManageCustomersComponent implements OnInit {
       distinctUntilChanged()
     ).subscribe(term => {
       this.searchQuery = term;
-      this.page = 1; // Reset to first page
+      this.page = 1;
       this.loadCustomers();
     });
   }
@@ -94,10 +93,8 @@ export class ManageCustomersComponent implements OnInit {
   closeDetails(updatedCustomer: any) {
     this.selectedCustomer = null;
     if (updatedCustomer && this.businessId) {
-      // Update local list instead of full reload
       const index = this.customers.findIndex(c => c.profileId === updatedCustomer.profileId);
       if (index !== -1) {
-        // We update only fields that could have changed and are important for list view
         const existing = this.customers[index];
         this.customers[index] = {
             ...existing,

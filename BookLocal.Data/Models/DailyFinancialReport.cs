@@ -16,7 +16,6 @@ namespace BookLocal.Data.Models
         [Required]
         public DateOnly ReportDate { get; set; }
 
-        // --- FINANSE ---
         [Column(TypeName = "decimal(12, 2)")]
         public decimal TotalRevenue { get; set; }
 
@@ -29,7 +28,6 @@ namespace BookLocal.Data.Models
         [Column(TypeName = "decimal(12, 2)")]
         public decimal TotalCommission { get; set; }
 
-        // --- METODY PŁATNOŚCI ---
         [Column(TypeName = "decimal(12, 2)")]
         public decimal CashRevenue { get; set; }
 
@@ -39,7 +37,6 @@ namespace BookLocal.Data.Models
         [Column(TypeName = "decimal(12, 2)")]
         public decimal OnlineRevenue { get; set; }
 
-        // --- RUCH I KLINECI ---
         public int TotalAppointments { get; set; }
         public int CompletedAppointments { get; set; }
         public int CancelledAppointments { get; set; }
@@ -48,7 +45,6 @@ namespace BookLocal.Data.Models
         public int NewCustomersCount { get; set; }
         public int ReturningCustomersCount { get; set; }
 
-        // --- STATYSTYKI ---
         public double OccupancyRate { get; set; }
 
         [MaxLength(200)]

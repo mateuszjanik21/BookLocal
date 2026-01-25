@@ -10,9 +10,6 @@ export const superAdminGuard: CanActivateFn = (route, state) => {
   return authService.currentUser$.pipe(
     take(1),
     map(user => {
-      // Assuming 'superadmin' is one of the roles.
-      // Need to verify if AuthService exposes roles or if we check user properties.
-      // Current User model: id, email, firstName, lastName, roles: string[].
       if (user && user.roles && user.roles.includes('superadmin')) {
         return true;
       }

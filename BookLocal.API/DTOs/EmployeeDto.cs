@@ -25,6 +25,7 @@
         public string? InstagramProfileUrl { get; set; }
         public string? PortfolioUrl { get; set; }
         public bool IsStudent { get; set; }
+        public bool IsArchived { get; set; }
     }
 
     public class EmployeeDetailDto

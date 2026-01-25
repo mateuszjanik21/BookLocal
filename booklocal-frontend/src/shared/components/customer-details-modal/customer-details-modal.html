@@ -7,7 +7,6 @@
         <span class="loading loading-spinner loading-lg"></span>
       </div>
     } @else {
-      <!-- Header -->
       <div class="flex items-start gap-4 mb-6">
         <div class="avatar placeholder">
           <div class="bg-neutral text-neutral-content rounded-full w-20">
@@ -31,7 +30,6 @@
         </div>
       </div>
 
-      <!-- Stats Grid -->
       <div class="stats shadow w-full mb-6 bg-base-200">
         <div class="stat">
           <div class="stat-title">Wizyty</div>
@@ -61,10 +59,8 @@
         </div>
       </div>
 
-      <!-- Notes Form -->
       <form [formGroup]="notesForm" (submit)="saveNotes()">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Left Col: Private Notes -->
               <div class="form-control">
                   <label class="label"><span class="label-text font-bold">Notatki prywatne</span></label>
                   <textarea class="textarea textarea-bordered h-40" 
@@ -72,7 +68,6 @@
                             formControlName="privateNotes"></textarea>
               </div>
 
-               <!-- Right Col: Tech Specs -->
               <div class="flex flex-col gap-4">
                   <div class="form-control">
                       <label class="label"><span class="label-text font-bold">Alergie / Przeciwwskazania</span></label>
@@ -89,7 +84,6 @@
               </div>
           </div>
 
-          <!-- History -->
           <div class="mt-8">
               <h4 class="font-bold text-lg mb-4">Historia wizyt</h4>
               <div class="overflow-x-auto border rounded-lg">

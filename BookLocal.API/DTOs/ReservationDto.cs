@@ -19,7 +19,6 @@ namespace BookLocal.API.DTOs
         public DateTime EndTime { get; set; }
         public string Status { get; set; }
 
-        // Szczegóły usługi
         public int ServiceVariantId { get; set; }
         public string VariantName { get; set; }
         public string ServiceName { get; set; }
@@ -91,6 +90,6 @@ namespace BookLocal.API.DTOs
         [Required]
         public DateTime StartTime { get; set; }
         public string? DiscountCode { get; set; }
-        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash; // Default
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
     }
 }

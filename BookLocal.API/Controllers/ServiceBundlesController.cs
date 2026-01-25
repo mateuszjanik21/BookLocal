@@ -22,7 +22,6 @@ namespace BookLocal.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ServiceBundleDto>>> GetBundles(int businessId)
         {
-            // Allow anyone to see active bundles for a business
             var bundles = await _context.ServiceBundles
                 .Where(sb => sb.BusinessId == businessId && sb.IsActive)
                 .Include(sb => sb.BundleItems)
@@ -67,9 +66,6 @@ namespace BookLocal.API.Controllers
 
             if (bundle == null) return NotFound();
 
-            // Only show active bundles to non-owners (implied logic, or just show all if ID is known?)
-            // For now, let's keep it simple: if it exists, show it. 
-            // Ideally we might want to check if it's active if the user is not the owner, but let's stick to simple retrieval first.
 
             var dto = new ServiceBundleDto
             {
@@ -105,7 +101,6 @@ namespace BookLocal.API.Controllers
 
             if (business == null) return Forbid();
 
-            // Validate variants
             var variantIds = dto.Items.Select(i => i.ServiceVariantId).ToList();
             var variantsCount = await _context.ServiceVariants
                 .Where(v => variantIds.Contains(v.ServiceVariantId) && v.Service.BusinessId == businessId)
@@ -149,7 +144,6 @@ namespace BookLocal.API.Controllers
             if (bundle == null) return NotFound();
             if (bundle.Business.OwnerId != ownerId) return Forbid();
 
-            // Soft delete
             bundle.IsActive = false;
             await _context.SaveChangesAsync();
 

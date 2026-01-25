@@ -23,6 +23,7 @@ namespace BookLocal.Data.Models
 
         public string? Position { get; set; }
         public string? PhotoUrl { get; set; }
+        public bool IsArchived { get; set; } = false;
 
         [Required]
         public DateOnly DateOfBirth { get; set; }

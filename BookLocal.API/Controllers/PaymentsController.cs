@@ -34,8 +34,6 @@ namespace BookLocal.API.Controllers
 
             if (reservation == null) return NotFound("Nie znaleziono rezerwacji.");
 
-            // Only Owner of the business or the Customer can make payments (Customer logic simplified for now)
-            // For now, assume this endpoint is mostly for Owners adding payments manually
             if (reservation.Business.OwnerId != userId && reservation.CustomerId != userId)
                 return Forbid();
 
@@ -49,7 +47,6 @@ namespace BookLocal.API.Controllers
                 TransactionDate = DateTime.UtcNow
             };
 
-            // Calculate Commission for Online payments
             if (paymentDto.Method == PaymentMethod.Online)
             {
                 var activeSubscription = await _context.BusinessSubscriptions
@@ -63,7 +60,6 @@ namespace BookLocal.API.Controllers
                 }
             }
 
-            // Update Reservation PaymentMethod to match this payment (fix for Reports)
             reservation.PaymentMethod = paymentDto.Method;
 
             _context.Payments.Add(payment);

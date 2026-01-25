@@ -14,7 +14,7 @@ import { finalize } from 'rxjs';
 })
 export class VariantModalComponent implements OnChanges {
   @Input() service: Service | null = null;
-  @Input() variant: ServiceVariant | null = null; // If present, edit mode
+  @Input() variant: ServiceVariant | null = null;
   @Input() businessId!: number;
   @Output() closed = new EventEmitter<boolean>();
   @Input() isVisible: boolean = false;
@@ -55,18 +55,15 @@ export class VariantModalComponent implements OnChanges {
     this.isSubmitting = true;
     const formValue = this.variantForm.value;
 
-    // Clone current variants
     let updatedVariants = [...this.service.variants];
 
     if (this.variant) {
-      // Update existing
       updatedVariants = updatedVariants.map(v => 
         v.serviceVariantId === this.variant!.serviceVariantId 
           ? { ...v, ...formValue, serviceVariantId: v.serviceVariantId, isDefault: v.isDefault } as any
           : v
       );
     } else {
-      // Add new
       updatedVariants.push({
         name: formValue.name!,
         price: formValue.price!,

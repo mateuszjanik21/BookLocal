@@ -21,7 +21,6 @@ namespace BookLocal.API.Controllers
             _userManager = userManager;
         }
 
-        // --- SUBSCRIPTION PLANS ---
 
         [HttpGet("plans")]
         public async Task<ActionResult<IEnumerable<SubscriptionPlanDto>>> GetPlans()
@@ -105,14 +104,12 @@ namespace BookLocal.API.Controllers
             var plan = await _context.SubscriptionPlans.FindAsync(id);
             if (plan == null) return NotFound("Nie znaleziono planu.");
 
-            // Soft delete
             plan.IsActive = false;
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
-        // --- BUSINESS VERIFICATION ---
 
         [HttpGet("businesses")]
         public async Task<ActionResult<IEnumerable<AdminBusinessListDto>>> GetBusinesses([FromQuery] string? status = null)
@@ -123,17 +120,10 @@ namespace BookLocal.API.Controllers
 
             if (!string.IsNullOrEmpty(status) && Enum.TryParse<VerificationStatus>(status, true, out var statusEnum))
             {
-                // Note: VerificationStatus is property in Business now, not joined table logic for MVP
-                // But wait, we added VerificationStatus to Business model directly?
-                // Yes, in Step 2742 we added public VerificationStatus VerificationStatus { get; set; }
                 query = query.Where(b => b.VerificationStatus == statusEnum);
             }
 
             var businesses = await query.ToListAsync();
-
-            // We might want to join with active subscription to show Plan Name
-            // For now, let's just fetch it simply or do a manual join/lookup if generic
-            // Let's rely on BusinessSubscription table
 
             var businessIds = businesses.Select(b => b.BusinessId).ToList();
             var activeSubs = await _context.BusinessSubscriptions
@@ -169,7 +159,6 @@ namespace BookLocal.API.Controllers
             {
                 business.IsVerified = true;
                 business.VerificationStatus = VerificationStatus.Approved;
-                // Create Verification Record History
                 var verification = new BusinessVerification
                 {
                     BusinessId = id,
@@ -209,8 +198,6 @@ namespace BookLocal.API.Controllers
 
             var pendingVerifications = await _context.Businesses.CountAsync(b => b.VerificationStatus == VerificationStatus.Pending);
 
-            // Active Subscriptions that are NOT Free (Price > 0)
-            // Need to join Plans to check Price
             var paidSubs = await _context.BusinessSubscriptions
                 .Include(bs => bs.Plan)
                 .Where(bs => bs.IsActive && bs.Plan.PriceMonthly > 0)
@@ -218,8 +205,6 @@ namespace BookLocal.API.Controllers
 
             var activeSubsCount = paidSubs.Count;
 
-            // Allow simulation of revenue: Sum of monthly prices of active paid subs
-            // Ensure Plan is not null (Include used above)
             var monthlyRevenue = paidSubs.Sum(bs => bs.Plan.PriceMonthly);
 
             return Ok(new AdminStatsDto

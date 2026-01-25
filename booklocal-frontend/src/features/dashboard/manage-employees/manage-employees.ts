@@ -81,7 +81,7 @@ export class ManageEmployeesComponent implements OnInit {
   }
 
   onDeleteEmployee(employee: Employee) {
-    if (confirm(`Czy na pewno chcesz usunąć pracownika: ${employee.firstName} ${employee.lastName}?`)) {
+    if (confirm(`Czy na pewno chcesz zarchiwizować pracownika: ${employee.firstName} ${employee.lastName}? Ta operacja anuluje wszystkie jego przyszłe rezerwacje.`)) {
       if (this.business) {
         this.employeeService.deleteEmployee(this.business.id, employee.id).subscribe({
           next: () => {

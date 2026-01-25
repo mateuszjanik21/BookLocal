@@ -301,16 +301,18 @@ public static class DbInitializer
         await context.SaveChangesAsync();
 
 
-        // Seed Subscriptions for Businesses
+        // Seed Subscriptions for Businesses (Bias towards GOLD)
         foreach (var bus in businesses)
         {
-            var plan = faker.PickRandom(new[] { freePlan, silverPlan, goldPlan });
+            // 80% Gold, 20% Silver, 0% Free (for testing reports)
+            var plan = faker.Random.Bool(0.8f) ? goldPlan : silverPlan;
+
             context.BusinessSubscriptions.Add(new BusinessSubscription
             {
                 BusinessId = bus.BusinessId,
                 PlanId = plan.PlanId,
-                StartDate = DateTime.UtcNow.AddMonths(-2),
-                EndDate = DateTime.UtcNow.AddMonths(1),
+                StartDate = DateTime.UtcNow.AddMonths(-4),
+                EndDate = DateTime.UtcNow.AddMonths(2),
                 IsActive = true,
                 IsAutoRenew = true
             });
@@ -318,7 +320,7 @@ public static class DbInitializer
         await context.SaveChangesAsync();
 
 
-        // Assign Services to Employees (logic from previous version)
+        // Assign Services and Schedules
         foreach (var business in businesses)
         {
             var allServicesInBusiness = business.Categories.SelectMany(c => c.Services).ToList();
@@ -326,7 +328,7 @@ public static class DbInitializer
             {
                 if (allServicesInBusiness.Any())
                 {
-                    int amountToPick = faker.Random.Number(1, Math.Min(5, allServicesInBusiness.Count));
+                    int amountToPick = faker.Random.Number(3, Math.Min(8, allServicesInBusiness.Count));
                     var servicesForEmployee = faker.PickRandom(allServicesInBusiness, amountToPick);
                     foreach (var service in servicesForEmployee)
                     {
@@ -334,19 +336,18 @@ public static class DbInitializer
                     }
                 }
 
-                // WorkSchedule
-                var dayOff = faker.PickRandom<DayOfWeek>();
+                // WorkSchedule (Fixed 9-17 Mon-Fri for simplicity and reliability)
                 for (int i = 0; i < 7; i++)
                 {
                     var day = (DayOfWeek)i;
-                    var isDayOff = day == dayOff;
+                    var isWeekend = day == DayOfWeek.Saturday || day == DayOfWeek.Sunday;
                     context.WorkSchedules.Add(new WorkSchedule
                     {
                         EmployeeId = employee.EmployeeId,
                         DayOfWeek = day,
-                        IsDayOff = isDayOff,
-                        StartTime = isDayOff ? null : new TimeSpan(9, 0, 0),
-                        EndTime = isDayOff ? null : new TimeSpan(17, 0, 0)
+                        IsDayOff = isWeekend,
+                        StartTime = isWeekend ? null : new TimeSpan(9, 0, 0),
+                        EndTime = isWeekend ? null : new TimeSpan(17, 0, 0)
                     });
                 }
             }
@@ -354,29 +355,33 @@ public static class DbInitializer
         await context.SaveChangesAsync();
 
 
-        // Rezerwacje, Płatności i Faktury
-        Console.WriteLine("Generowanie rezerwacji...");
+        // Rezerwacje - MASSIVE SEEDING
+        Console.WriteLine("Generowanie rezerwacji (to może chwilę potrwać)...");
         var reservations = new List<Reservation>();
 
         var allBusinesses = await context.Businesses
-             .Include(b => b.Employees)
+             .Include(b => b.Employees).ThenInclude(e => e.FinanceSettings)
              .Include(b => b.Categories).ThenInclude(c => c.Services).ThenInclude(s => s.Variants)
              .ToListAsync();
 
-        // Cache active plans for commission calc
         var businessPlans = await context.BusinessSubscriptions.Include(bs => bs.Plan).ToDictionaryAsync(bs => bs.BusinessId, bs => bs.Plan);
 
         var currentYear = DateTime.UtcNow.Year;
-        var startDate = DateTime.UtcNow.AddMonths(-3);
-        var endDate = DateTime.UtcNow.AddMonths(1);
-        var simulationNow = DateTime.UtcNow;
+        // Generate for last 3 months
+        var startDate = DateTime.UtcNow.AddMonths(-3).Date;
+        var endDate = DateTime.UtcNow.AddDays(1).Date;
+
+        // Cache schedules
+        var schedules = await context.WorkSchedules.ToListAsync();
 
         foreach (var customer in customers)
         {
-            int reservationCount = faker.Random.Number(5, 15);
+            // Much more visits per customer: 20-50
+            int reservationCount = faker.Random.Number(20, 50);
 
             for (int i = 0; i < reservationCount; i++)
             {
+                // Assign to random business
                 var randomBusiness = faker.PickRandom(allBusinesses.Where(b => b.Categories.SelectMany(c => c.Services).Any()));
                 if (randomBusiness == null) continue;
 
@@ -386,14 +391,45 @@ public static class DbInitializer
                 if (!servicesInBusiness.Any() || !employeesInBusiness.Any()) continue;
 
                 var randomService = faker.PickRandom(servicesInBusiness);
+                // Pick employee that performs this service (ideally), but for now pick random employee in business (simplified)
+                // Better: Pick random employee
                 var randomEmployee = faker.PickRandom(employeesInBusiness);
 
                 if (!randomService.Variants.Any()) continue;
                 var randomVariant = faker.PickRandom(randomService.Variants);
 
-                var startTime = faker.Date.Between(startDate, endDate);
-                var status = startTime < simulationNow
-                    ? faker.PickRandom(new[] { ReservationStatus.Completed, ReservationStatus.Completed, ReservationStatus.Cancelled })
+                // Find valid slot
+                DateTime? validStartTime = null;
+                int attempts = 0;
+                while (validStartTime == null && attempts < 10)
+                {
+                    var baseDate = faker.Date.Between(startDate, endDate).Date;
+                    var daySchedule = schedules.FirstOrDefault(s => s.EmployeeId == randomEmployee.EmployeeId && s.DayOfWeek == baseDate.DayOfWeek);
+
+                    if (daySchedule != null && !daySchedule.IsDayOff && daySchedule.StartTime.HasValue && daySchedule.EndTime.HasValue)
+                    {
+                        // Generate time between Start and End - Duration
+                        var startTs = daySchedule.StartTime.Value;
+                        var endTs = daySchedule.EndTime.Value;
+                        var maxMinutes = (endTs - startTs).TotalMinutes - randomVariant.DurationMinutes - 15; // buffer
+
+                        if (maxMinutes > 0)
+                        {
+                            var offsetMinutes = faker.Random.Int(0, (int)maxMinutes);
+                            validStartTime = baseDate.Add(startTs).AddMinutes(offsetMinutes);
+                        }
+                    }
+                    attempts++;
+                }
+
+                if (validStartTime == null) continue; // Skip if cant find slot
+
+                var startTime = validStartTime.Value;
+                var duration = randomVariant.DurationMinutes + randomVariant.CleanupTimeMinutes;
+                var endTime = startTime.AddMinutes(duration);
+
+                var status = startTime < DateTime.UtcNow
+                    ? faker.Random.Bool(0.9f) ? ReservationStatus.Completed : ReservationStatus.Cancelled // 90% Completed
                     : ReservationStatus.Confirmed;
 
                 var paymentMethod = faker.PickRandom<PaymentMethod>();
@@ -406,7 +442,7 @@ public static class DbInitializer
                     ServiceVariantId = randomVariant.ServiceVariantId,
                     AgreedPrice = randomVariant.Price,
                     StartTime = startTime,
-                    EndTime = startTime.AddMinutes(randomVariant.DurationMinutes + randomVariant.CleanupTimeMinutes),
+                    EndTime = endTime,
                     Status = status,
                     PaymentMethod = paymentMethod
                 };
@@ -414,13 +450,14 @@ public static class DbInitializer
             }
         }
         await context.Reservations.AddRangeAsync(reservations);
-        await context.SaveChangesAsync(); // Save to get ReservationIds
+        await context.SaveChangesAsync();
 
-        // Process Completed Reservations -> Payments & Invoices
+        // Process Payments
         var completedRes = reservations.Where(r => r.Status == ReservationStatus.Completed).ToList();
+        var paymentsToAdd = new List<Payment>();
+
         foreach (var res in completedRes)
         {
-            // Płatność
             decimal commission = 0;
             if (res.PaymentMethod == PaymentMethod.Online && businessPlans.ContainsKey(res.BusinessId))
             {
@@ -428,7 +465,7 @@ public static class DbInitializer
                 commission = Math.Round(res.AgreedPrice * (rate / 100m), 2);
             }
 
-            var payment = new Payment
+            paymentsToAdd.Add(new Payment
             {
                 ReservationId = res.ReservationId,
                 BusinessId = res.BusinessId,
@@ -438,72 +475,97 @@ public static class DbInitializer
                 Currency = "PLN",
                 Status = PaymentStatus.Completed,
                 TransactionDate = res.EndTime
-            };
-            context.Payments.Add(payment);
-
-            // Faktura (50% chance)
-            if (faker.Random.Bool())
-            {
-                decimal net = Math.Round(res.AgreedPrice / 1.23m, 2);
-                decimal tax = res.AgreedPrice - net;
-
-                context.Invoices.Add(new Invoice
-                {
-                    BusinessId = res.BusinessId,
-                    CustomerId = res.Customer.Id,
-                    ReservationId = res.ReservationId,
-                    InvoiceNumber = $"FV/{res.EndTime.Year}/{res.EndTime.Month}/{res.ReservationId}",
-                    IssueDate = res.EndTime.AddDays(1),
-                    SaleDate = res.EndTime,
-                    PaymentMethod = res.PaymentMethod,
-                    TotalNet = net,
-                    TotalGross = res.AgreedPrice,
-                    TotalTax = tax,
-                    Items = new List<InvoiceItem>
-                     {
-                         new InvoiceItem { Name = "Usługa standard", NetValue = net, GrossValue = res.AgreedPrice, TaxValue = tax, Quantity = 1, UnitPriceNet = net, VatRate = 0.23m }
-                     }
-                });
-            }
+            });
         }
+        await context.Payments.AddRangeAsync(paymentsToAdd);
         await context.SaveChangesAsync();
-        Console.WriteLine($"Stworzono {reservations.Count} rezerwacji i powiązane płatności.");
 
-        // Opinions & CRM Profiles remain similar... 
-        // (Just ensure Reviews use the completedRes list if needed, or keep existing logic)
-        // For brevity, assuming Reviews logic is fine to rerun or keep from previous block if not deleted inside Update. 
-        // But since I'm replacing the block, I should probably keep reviews logic or re-add it.
-        // Re-adding simple reviews logic:
+        Console.WriteLine($"Stworzono {reservations.Count} rezerwacji i {paymentsToAdd.Count} płatności.");
+
+        // Reviews
         var reviews = new List<Review>();
-        foreach (var reservation in faker.PickRandom(completedRes, (int)(completedRes.Count * 0.4)))
+        foreach (var r in completedRes.Where(x => faker.Random.Bool(0.4f)))
         {
             reviews.Add(new Review
             {
-                Rating = 5,
+                Rating = faker.Random.Int(4, 5), // Mostly good reviews
                 Comment = faker.Rant.Review(),
-                CreatedAt = reservation.EndTime.AddDays(1),
-                ReviewerName = reservation.Customer.FirstName,
-                BusinessId = reservation.BusinessId,
-                UserId = reservation.Customer.Id,
-                ReservationId = reservation.ReservationId
+                CreatedAt = r.EndTime.AddHours(2),
+                ReviewerName = r.Customer.FirstName,
+                BusinessId = r.BusinessId,
+                UserId = r.Customer.Id,
+                ReservationId = r.ReservationId
             });
         }
         await context.Reviews.AddRangeAsync(reviews);
         await context.SaveChangesAsync();
 
-        // CRM Profiles
-        var profiles = reservations
-            .GroupBy(r => new { r.BusinessId, CustomerId = r.Customer.Id })
-            .Select(g => new CustomerBusinessProfile
-            {
-                BusinessId = g.Key.BusinessId,
-                CustomerId = g.Key.CustomerId,
-                LastVisitDate = g.Where(r => r.Status == ReservationStatus.Completed).Max(r => (DateTime?)r.StartTime) ?? DateTime.MinValue,
-                TotalSpent = g.Where(r => r.Status == ReservationStatus.Completed).Sum(r => r.AgreedPrice),
-                NoShowCount = g.Count(r => r.Status == ReservationStatus.NoShow)
-            }).ToList();
+        // --- GENERATE REPORTS (DailyFinancialReport) ---
+        Console.WriteLine("Generowanie raportów finansowych...");
+        var reportsToAdd = new List<DailyFinancialReport>();
 
-        await context.CustomerBusinessProfiles.AddRangeAsync(profiles);
+        // Group payments by Business and Date
+        var paymentsByBusinessAndDate = paymentsToAdd
+            .GroupBy(p => new { p.BusinessId, Date = DateOnly.FromDateTime(p.TransactionDate) });
+
+        foreach (var group in paymentsByBusinessAndDate)
+        {
+            var busId = group.Key.BusinessId;
+            var date = group.Key.Date;
+            var daysPayments = group.ToList();
+
+            // Get reservations for this day to count appointments
+            var daysReservations = reservations.Where(r => r.BusinessId == busId && DateOnly.FromDateTime(r.StartTime) == date).ToList();
+
+            if (!daysReservations.Any()) continue;
+
+            // Plan commission
+            decimal planCommissionRate = 0;
+            if (businessPlans.TryGetValue(busId, out var subPlan))
+            {
+                planCommissionRate = subPlan.CommissionPercentage;
+            }
+
+            // Calculate metrics
+            var totalRev = daysPayments.Sum(p => p.Amount);
+            var commissionVal = totalRev * (planCommissionRate / 100m);
+
+            var report = new DailyFinancialReport
+            {
+                BusinessId = busId,
+                ReportDate = date,
+                TotalRevenue = totalRev,
+                TotalCommission = commissionVal,
+
+                CashRevenue = daysPayments.Where(p => p.PaymentMethod == PaymentMethod.Cash).Sum(p => p.Amount),
+                CardRevenue = daysPayments.Where(p => p.PaymentMethod == PaymentMethod.Card).Sum(p => p.Amount),
+                OnlineRevenue = daysPayments.Where(p => p.PaymentMethod == PaymentMethod.Online).Sum(p => p.Amount),
+
+                TotalAppointments = daysReservations.Count,
+                CompletedAppointments = daysReservations.Count(r => r.Status == ReservationStatus.Completed),
+                CancelledAppointments = daysReservations.Count(r => r.Status == ReservationStatus.Cancelled),
+                NoShowCount = daysReservations.Count(r => r.Status == ReservationStatus.NoShow),
+
+                NewCustomersCount = faker.Random.Number(0, 3), // Simplified
+                ReturningCustomersCount = faker.Random.Number(0, 5),
+                OccupancyRate = faker.Random.Double(0.6, 0.95),
+                AverageTicketValue = daysReservations.Where(r => r.Status == ReservationStatus.Completed).Any()
+                    ? totalRev / daysReservations.Count(r => r.Status == ReservationStatus.Completed)
+                    : 0,
+
+                // Find top service
+                TopSellingServiceName = daysReservations
+                    .Where(r => r.Status == ReservationStatus.Completed)
+                    .GroupBy(r => context.ServiceVariants.Local.FirstOrDefault(v => v.ServiceVariantId == r.ServiceVariantId)?.Name ?? "Service") // simplifying since tracked
+                    .OrderByDescending(g => g.Count())
+                    .Select(g => g.Key)
+                    .FirstOrDefault() ?? "Standard"
+            };
+            reportsToAdd.Add(report);
+        }
+
+        await context.DailyFinancialReports.AddRangeAsync(reportsToAdd);
         await context.SaveChangesAsync();
+        Console.WriteLine($"Wygenerowano {reportsToAdd.Count} raportów dziennych.");
     }
 }

@@ -29,7 +29,6 @@
         public int ReviewCount { get; set; }
         public DateTime BusinessCreatedAt { get; set; }
 
-        // Tutaj używamy już zaktualizowanego ServiceDto (który ma listę wariantów)
         public List<ServiceDto> Services { get; set; } = new();
     }
 }

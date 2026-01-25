@@ -30,7 +30,6 @@ namespace BookLocal.API.Controllers
             [FromQuery] int pageSize = 20)
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            // Verify access
             var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
             if (business == null) return Forbid();
 
@@ -95,8 +94,6 @@ namespace BookLocal.API.Controllers
 
             if (profile == null)
             {
-                // If profile doesn't exist but user exists and has reservations, we should maybe create it?
-                // For now, return NotFound or create on the fly. Let's return NotFound.
                 return NotFound("Profil klienta nie istnieje w tej firmie.");
             }
 

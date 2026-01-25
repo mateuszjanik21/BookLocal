@@ -30,7 +30,6 @@ export class ReservationModalComponent implements OnChanges {
   isReserving = false;
   minDate: string;
 
-  // Discount logic
   isVerifyingDiscount = false;
   verifiedDiscount: VerifyDiscountResult | null = null;
   discountError: string | null = null;
@@ -43,7 +42,6 @@ export class ReservationModalComponent implements OnChanges {
     paymentMethod: ['Cash', Validators.required]
   });
 
-  // Payment Mock
   isProcessingPayment = false;
   paymentStatus: 'idle' | 'processing' | 'success' | 'failed' = 'idle';
 
@@ -137,7 +135,6 @@ export class ReservationModalComponent implements OnChanges {
       this.isProcessingPayment = true;
       this.paymentStatus = 'processing';
       
-      // MOCK Payment Gateway Delay
       setTimeout(() => {
           this.isProcessingPayment = false;
           this.paymentStatus = 'success';
@@ -169,7 +166,6 @@ export class ReservationModalComponent implements OnChanges {
       error: (err) => {
         this.toastr.error(err.error.message || err.error || 'Wystąpił błąd podczas rezerwacji.');
         this.isReserving = false;
-        // Reset payment status if error, to allow retry
         if (paymentMethod === 'Online') this.paymentStatus = 'idle'; 
       }
     });
