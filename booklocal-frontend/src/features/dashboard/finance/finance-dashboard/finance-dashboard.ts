@@ -117,9 +117,12 @@ export class FinanceDashboardComponent implements OnInit {
   }
 
   getStartOfWeek(d: Date): Date {
-      const day = d.getDay();
-      const diff = d.getDate() - day + (day == 0 ? -6 : 1);
-      return new Date(d.setDate(diff));
+      const date = new Date(d);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day == 0 ? -6 : 1);
+      date.setDate(diff);
+      date.setHours(0, 0, 0, 0);
+      return date;
   }
 
   loadData() {
@@ -427,7 +430,7 @@ export class FinanceDashboardComponent implements OnInit {
 
       const start = this.getStartOfWeek(new Date(this.currentDate));
       const end = new Date(start);
-      end.setDate(end.getDate() + 6);
+      end.setDate(end.getDate() + 7);
       return this.reports.filter(r => {
           const rd = new Date(r.reportDate);
           return rd >= start && rd <= end;

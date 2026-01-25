@@ -54,7 +54,7 @@ namespace BookLocal.API.Controllers
             }
 
             decimal vatRate = 0.23m;
-            decimal grossAmount = reservation.AgreedPrice; 
+            decimal grossAmount = reservation.AgreedPrice;
 
             decimal netAmount = Math.Round(grossAmount / (1 + vatRate), 2);
             decimal vatAmount = grossAmount - netAmount;
@@ -67,7 +67,7 @@ namespace BookLocal.API.Controllers
 
                 InvoiceNumber = invoiceNumber,
                 IssueDate = now,
-                SaleDate = reservation.EndTime, 
+                SaleDate = reservation.EndTime,
                 PaymentMethod = reservation.PaymentMethod,
                 TotalNet = netAmount,
                 TotalTax = vatAmount,
@@ -100,21 +100,37 @@ namespace BookLocal.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<InvoiceDto>>> GetInvoices(int businessId)
+        public async Task<ActionResult<PagedResultDto<InvoiceDto>>> GetInvoices(
+            int businessId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId))
                 return Forbid();
 
-            var invoices = await _context.Invoices
+            var query = _context.Invoices
                .Include(i => i.Items)
                .Include(i => i.Customer)
-               .Where(i => i.BusinessId == businessId)
+               .Where(i => i.BusinessId == businessId);
+
+            var totalCount = await query.CountAsync();
+
+            var invoices = await query
                .OrderByDescending(i => i.IssueDate)
+               .Skip((page - 1) * pageSize)
+               .Take(pageSize)
                .ToListAsync();
 
-            var dtos = invoices.Select(i => MapToDto(i, i.Customer.FirstName + " " + i.Customer.LastName));
-            return Ok(dtos);
+            var dtos = invoices.Select(i => MapToDto(i, i.Customer.FirstName + " " + i.Customer.LastName)).ToList();
+
+            return Ok(new PagedResultDto<InvoiceDto>
+            {
+                Items = dtos,
+                TotalCount = totalCount,
+                PageNumber = page,
+                PageSize = pageSize
+            });
         }
 
         private InvoiceDto MapToDto(Invoice i, string customerName)

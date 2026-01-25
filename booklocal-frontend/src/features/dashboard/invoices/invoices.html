@@ -50,5 +50,15 @@
         </table>
       </div>
     </div>
+    
+    @if (!isLoading && totalPages > 1) {
+        <div class="flex justify-center mt-4">
+            <div class="join">
+                <button class="join-item btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">«</button>
+                <button class="join-item btn no-animation">Strona {{currentPage}} z {{totalPages}}</button>
+                <button class="join-item btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">»</button>
+            </div>
+        </div>
+    }
   }
 </div>

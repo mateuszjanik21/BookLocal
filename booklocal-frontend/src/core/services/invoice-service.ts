@@ -35,7 +35,15 @@ export class InvoiceService {
     return this.http.post<InvoiceDto>(`${this.apiUrl}/businesses/${businessId}/invoices/generate`, { reservationId });
   }
 
-  getInvoices(businessId: number): Observable<InvoiceDto[]> {
-    return this.http.get<InvoiceDto[]>(`${this.apiUrl}/businesses/${businessId}/invoices`);
+  getInvoices(businessId: number, page: number = 1, pageSize: number = 10): Observable<PagedResult<InvoiceDto>> {
+    return this.http.get<PagedResult<InvoiceDto>>(`${this.apiUrl}/businesses/${businessId}/invoices?page=${page}&pageSize=${pageSize}`);
   }
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
 }

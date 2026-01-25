@@ -21,6 +21,11 @@ export class InvoicesListComponent implements OnInit {
   isLoading = true;
   businessId: number | null = null;
   businessName: string = '';
+  
+  currentPage = 1;
+  pageSize = 10;
+  totalCount = 0;
+  totalPages = 0;
 
   ngOnInit(): void {
     this.businessService.getMyBusiness().subscribe({
@@ -37,9 +42,11 @@ export class InvoicesListComponent implements OnInit {
   loadInvoices(): void {
     if (!this.businessId) return;
     this.isLoading = true;
-    this.invoiceService.getInvoices(this.businessId).subscribe({
+    this.invoiceService.getInvoices(this.businessId, this.currentPage, this.pageSize).subscribe({
       next: (data) => {
-        this.invoices = data;
+        this.invoices = data.items;
+        this.totalCount = data.totalCount;
+        this.totalPages = data.totalPages;
         this.isLoading = false;
       },
       error: () => {
@@ -47,6 +54,12 @@ export class InvoicesListComponent implements OnInit {
         this.isLoading = false;
       }
     });
+  }
+
+  changePage(newPage: number): void {
+      if (newPage < 1 || newPage > this.totalPages) return;
+      this.currentPage = newPage;
+      this.loadInvoices();
   }
 
   async downloadPdf(invoice: InvoiceDto): Promise<void> {

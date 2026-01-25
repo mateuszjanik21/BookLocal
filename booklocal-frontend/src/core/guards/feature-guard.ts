@@ -11,18 +11,7 @@ export const featureGuard: CanActivateFn = (route, state) => {
   return subService.getCurrentSubscription().pipe(
     take(1),
     map(sub => {
-        const hasMarketing = sub?.hasMarketingTools;
-        const hasReports = sub?.hasAdvancedReports;
-        
-        console.log('FeatureGuard Check:', { 
-            required: requiredFeature, 
-            plan: sub?.planName, 
-            hasMarketing, 
-            hasReports 
-        });
-
         if (!sub || !sub.isActive) {
-             console.log('FeatureGuard: No active subscription');
              return router.createUrlTree(['/dashboard/subscription']);
         }
 

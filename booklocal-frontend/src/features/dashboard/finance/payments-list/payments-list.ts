@@ -19,6 +19,11 @@ export class PaymentsListComponent implements OnInit {
 
   payments: PaymentDto[] = [];
   isLoading = true;
+  
+  currentPage = 1;
+  pageSize = 10;
+  totalCount = 0;
+  totalPages = 0;
 
   ngOnInit(): void {
     this.loadData();
@@ -29,16 +34,24 @@ export class PaymentsListComponent implements OnInit {
     
     this.businessService.getMyBusiness().pipe(
       switchMap(business => {
-        return this.paymentService.getBusinessPayments(business.id);
+        return this.paymentService.getBusinessPayments(business.id, this.currentPage, this.pageSize);
       }),
       finalize(() => this.isLoading = false)
     ).subscribe({
       next: (data) => {
-        this.payments = data;
+        this.payments = data.items;
+        this.totalCount = data.totalCount;
+        this.totalPages = data.totalPages;
       },
       error: () => {
         this.toastr.error('Nie udało się pobrać listy płatności.');
       }
     });
+  }
+
+  changePage(newPage: number): void {
+      if (newPage < 1 || newPage > this.totalPages) return;
+      this.currentPage = newPage;
+      this.loadData();
   }
 }

@@ -47,6 +47,7 @@ namespace BookLocal.API.Controllers
                 TransactionDate = DateTime.UtcNow
             };
 
+            // Calculate Commission for Online payments
             if (paymentDto.Method == PaymentMethod.Online)
             {
                 var activeSubscription = await _context.BusinessSubscriptions
@@ -71,7 +72,10 @@ namespace BookLocal.API.Controllers
         // GET: api/payments/business/5
         [HttpGet("business/{businessId}")]
         [Authorize(Roles = "owner")]
-        public async Task<ActionResult<IEnumerable<PaymentDto>>> GetBusinessPayments(int businessId)
+        public async Task<ActionResult<PagedResultDto<PaymentDto>>> GetBusinessPayments(
+            int businessId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var business = await _context.Businesses.FindAsync(businessId);
@@ -79,9 +83,15 @@ namespace BookLocal.API.Controllers
             if (business == null) return NotFound();
             if (business.OwnerId != userId) return Forbid();
 
-            var payments = await _context.Payments
-                .Where(p => p.BusinessId == businessId)
+            var query = _context.Payments
+                .Where(p => p.BusinessId == businessId);
+
+            var totalCount = await query.CountAsync();
+
+            var payments = await query
                 .OrderByDescending(p => p.TransactionDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(p => new PaymentDto
                 {
                     PaymentId = p.PaymentId,
@@ -95,7 +105,13 @@ namespace BookLocal.API.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(payments);
+            return Ok(new PagedResultDto<PaymentDto>
+            {
+                Items = payments,
+                TotalCount = totalCount,
+                PageNumber = page,
+                PageSize = pageSize
+            });
         }
 
         // GET: api/payments/reservation/10

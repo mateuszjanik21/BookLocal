@@ -7,7 +7,6 @@ import { ChatService } from '../../../core/services/chat';
 import { ReservationStatusPipe } from '../../../shared/pipes/reservation-status.pipe';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
-
 import { PaymentDto, PaymentService } from '../../../core/services/payment-service';
 import { InvoiceService } from '../../../core/services/invoice-service';
 

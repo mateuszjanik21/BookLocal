@@ -31,11 +31,19 @@ export class PaymentService {
     return this.http.post(`${this.apiUrl}/payments`, payment);
   }
 
-  getBusinessPayments(businessId: number): Observable<PaymentDto[]> {
-    return this.http.get<PaymentDto[]>(`${this.apiUrl}/payments/business/${businessId}`);
+  getBusinessPayments(businessId: number, page: number = 1, pageSize: number = 10): Observable<PagedResult<PaymentDto>> {
+    return this.http.get<PagedResult<PaymentDto>>(`${this.apiUrl}/payments/business/${businessId}?page=${page}&pageSize=${pageSize}`);
   }
 
   getReservationPayments(reservationId: number): Observable<PaymentDto[]> {
     return this.http.get<PaymentDto[]>(`${this.apiUrl}/payments/reservation/${reservationId}`);
   }
+}
+
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
 }
