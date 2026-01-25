@@ -1,81 +1,168 @@
-<div class="max-w-6xl mx-auto">
-    <div class="flex justify-between items-center mb-8">
+<div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 animate-fade-in">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
         <div>
-            <h2 class="text-3xl font-bold text-gray-900 font-display">Weryfikacja Firm</h2>
-            <p class="text-gray-500 mt-1">Zatwierdzaj nowe firmy dołączające do platformy.</p>
-        </div>
-        <div class="flex bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-            <button (click)="filterStatus = 'Pending'; loadBusinesses()" 
-                [class.bg-indigo-50]="filterStatus === 'Pending'" [class.text-indigo-600]="filterStatus === 'Pending'"
-                class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">
-                Oczekujące
-            </button>
-            <button (click)="filterStatus = 'Approved'; loadBusinesses()" 
-                [class.bg-indigo-50]="filterStatus === 'Approved'" [class.text-indigo-600]="filterStatus === 'Approved'"
-                class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">
-                Zatwierdzone
-            </button>
-            <button (click)="filterStatus = 'Rejected'; loadBusinesses()" 
-                 [class.bg-indigo-50]="filterStatus === 'Rejected'" [class.text-indigo-600]="filterStatus === 'Rejected'"
-                 class="px-4 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors">
-                Odrzucone
-            </button>
+            <h2 class="text-3xl font-bold text-base-content font-display tracking-tight">Weryfikacja Firm</h2>
+            <p class="text-base-content/70 mt-1">Zatwierdzaj nowe firmy dołączające do platformy.</p>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                    <th class="px-6 py-4">Firma</th>
-                    <th class="px-6 py-4">Właściciel</th>
-                    <th class="px-6 py-4">Data dołączenia</th>
-                    <th class="px-6 py-4">Plan</th>
-                    <th class="px-6 py-4">Status</th>
-                    <th class="px-6 py-4 text-right">Akcje</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-50">
-                <tr *ngFor="let business of businesses" class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4">
-                        <div class="font-medium text-gray-900">{{ business.name }}</div>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-600">{{ business.ownerEmail }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">{{ business.createdAt | date:'shortDate' }}</td>
-                    <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {{ business.subscriptionPlanName }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span [ngClass]="{
-                            'bg-yellow-100 text-yellow-800': business.verificationStatus === 'Pending',
-                            'bg-green-100 text-green-800': business.verificationStatus === 'Approved',
-                            'bg-red-100 text-red-800': business.verificationStatus === 'Rejected'
-                        }" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+    <div class="tabs tabs-boxed bg-base-100 p-1 w-full sm:w-fit mb-6 shadow-sm border border-base-200 grid grid-cols-3 sm:flex">
+        <a class="tab transition-all duration-200 flex-1 sm:flex-none" 
+           [class.tab-active]="filterStatus === 'Pending'"
+           [class.bg-warning]="filterStatus === 'Pending'"
+           [class.text-warning-content]="filterStatus === 'Pending'"
+           (click)="filterStatus = 'Pending'; loadBusinesses()">
+           Oczekujące
+        </a>
+        <a class="tab transition-all duration-200 flex-1 sm:flex-none" 
+           [class.tab-active]="filterStatus === 'Approved'"
+           [class.bg-success]="filterStatus === 'Approved'"
+           [class.text-success-content]="filterStatus === 'Approved'"
+           (click)="filterStatus = 'Approved'; loadBusinesses()">
+           Zatwierdzone
+        </a>
+        <a class="tab transition-all duration-200 flex-1 sm:flex-none" 
+           [class.tab-active]="filterStatus === 'Rejected'"
+           [class.bg-error]="filterStatus === 'Rejected'"
+           [class.text-error-content]="filterStatus === 'Rejected'"
+           (click)="filterStatus = 'Rejected'; loadBusinesses()">
+           Odrzucone
+        </a>
+    </div>
+
+    <div *ngIf="isLoading" class="flex flex-col gap-4">
+        <div class="skeleton h-24 w-full rounded-xl"></div>
+        <div class="skeleton h-24 w-full rounded-xl"></div>
+        <div class="skeleton h-24 w-full rounded-xl"></div>
+    </div>
+
+    <div *ngIf="!isLoading">
+        
+        <div *ngIf="businesses.length === 0" class="flex flex-col items-center justify-center py-16 text-base-content/50 bg-base-100 rounded-2xl border border-base-200 border-dashed">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mb-2 opacity-50"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" /></svg>
+            <span class="font-medium">Brak firm o statusie: {{ filterStatus }}</span>
+        </div>
+
+        <div class="hidden lg:block card bg-base-100 shadow-sm border border-base-200 overflow-hidden" *ngIf="businesses.length > 0">
+            <div class="overflow-x-auto">
+                <table class="table table-zebra w-full">
+                    <thead>
+                        <tr class="bg-base-200/50">
+                            <th>Firma</th>
+                            <th>Właściciel</th>
+                            <th>Data dołączenia</th>
+                            <th>Plan</th>
+                            <th>Status</th>
+                            <th class="text-right">Akcje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let business of businesses">
+                            <td>
+                                <div class="font-bold text-base-content">{{ business.name }}</div>
+                                <div class="text-xs text-base-content/50">ID: {{ business.businessId }}</div>
+                            </td>
+                            <td>
+                                <div class="text-sm">{{ business.ownerEmail }}</div>
+                            </td>
+                            <td class="text-base-content/70">
+                                {{ business.createdAt | date:'shortDate' }}
+                            </td>
+                            <td>
+                                <span class="badge badge-ghost badge-sm font-medium">
+                                    {{ business.subscriptionPlanName }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-sm gap-2" [ngClass]="{
+                                    'badge-warning': business.verificationStatus === 'Pending',
+                                    'badge-success': business.verificationStatus === 'Approved',
+                                    'badge-error': business.verificationStatus === 'Rejected'
+                                }">
+                                    {{ business.verificationStatus }}
+                                </span>
+                            </td>
+                            <td class="text-right">
+                                <div class="flex justify-end gap-2" *ngIf="business.verificationStatus === 'Pending'">
+                                    <button (click)="approve(business.businessId)" class="btn btn-success btn-xs text-white" title="Zatwierdź">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                                        Zatwierdź
+                                    </button>
+                                    <button (click)="reject(business.businessId)" class="btn btn-error btn-xs text-white" title="Odrzuć">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                </div>
+                                <span *ngIf="business.verificationStatus !== 'Pending'" class="text-xs text-base-content/40 italic">
+                                    Zakończono
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="lg:hidden grid grid-cols-1 gap-4" *ngIf="businesses.length > 0">
+            <div *ngFor="let business of businesses" class="card bg-base-100 shadow-sm border border-base-200">
+                <div class="card-body p-5">
+                    
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="font-bold text-lg text-base-content leading-tight">{{ business.name }}</h3>
+                            <span class="text-xs text-base-content/50 font-mono">ID: {{ business.businessId }}</span>
+                        </div>
+                        <span class="badge badge-sm ml-2 shrink-0" [ngClass]="{
+                            'badge-warning': business.verificationStatus === 'Pending',
+                            'badge-success': business.verificationStatus === 'Approved',
+                            'badge-error': business.verificationStatus === 'Rejected'
+                        }">
                             {{ business.verificationStatus }}
                         </span>
-                    </td>
-                    <td class="px-6 py-4 text-right space-x-2">
-                        <ng-container *ngIf="business.verificationStatus === 'Pending'">
-                            <button (click)="approve(business.businessId)" class="text-green-600 hover:text-green-800 font-medium text-sm">
-                                <i class="fas fa-check mr-1"></i> Zatwierdź
-                            </button>
-                            <button (click)="reject(business.businessId)" class="text-red-500 hover:text-red-700 font-medium text-sm">
-                                <i class="fas fa-times mr-1"></i> Odrzuć
-                            </button>
-                        </ng-container>
-                        <span *ngIf="business.verificationStatus !== 'Pending'" class="text-gray-400 text-sm italic">
-                            Zarządzane
+                    </div>
+
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-base-content/60"><path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" /><path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" /></svg>
+                            </div>
+                            <span class="text-base-content/80 truncate">{{ business.ownerEmail }}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-base-content/60"><path fill-rule="evenodd" d="M5.75 2a.75.75 0 01.75.75V4h7V2.75a.75.75 0 011.5 0V4h.25A2.75 2.75 0 0118 6.75v8.5A2.75 2.75 0 0115.25 18H4.75A2.75 2.75 0 012 15.25v-8.5A2.75 2.75 0 014.75 4H5V2.75A.75.75 0 015.75 2zm-1 5.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h10.5c.69 0 1.25-.56 1.25-1.25v-6.5c0-.69-.56-1.25-1.25-1.25H4.75z" clip-rule="evenodd" /></svg>
+                            </div>
+                            <span class="text-base-content/80">{{ business.createdAt | date:'shortDate' }}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-base-content/60"><path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
+                            </div>
+                            <span class="badge badge-ghost badge-sm">{{ business.subscriptionPlanName }}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-actions mt-6" *ngIf="business.verificationStatus === 'Pending'">
+                        <button (click)="approve(business.businessId)" class="btn btn-success btn-sm flex-1 text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                            Zatwierdź
+                        </button>
+                        <button (click)="reject(business.businessId)" class="btn btn-error btn-sm flex-1 text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                            Odrzuć
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-base-200 text-center" *ngIf="business.verificationStatus !== 'Pending'">
+                        <span class="text-xs text-base-content/40 italic flex items-center justify-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+                            Proces zakończony
                         </span>
-                    </td>
-                </tr>
-                <tr *ngIf="businesses.length === 0">
-                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                        Brak firm w tej kategorii.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject, HostListener } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -16,7 +16,6 @@ import { AddReservationOwnerModalComponent } from '../../../shared/components/ad
   imports: [
     CommonModule,
     RouterModule,
-    DatePipe,
     CalendarModule,
     AddReservationOwnerModalComponent
   ],
@@ -39,6 +38,47 @@ export class ManageReservationsComponent implements OnInit {
   isAddModalVisible = false;
   newReservationDetails: { date: Date, employee?: Employee } | null = null;
 
+  get viewTitle(): string {
+    const datePipe = new DatePipe('pl-PL');
+    
+    if (this.view === CalendarView.Month) {
+      return this.maximizeFirstLetter(datePipe.transform(this.viewDate, 'LLLL yyyy') || '');
+    } else if (this.view === CalendarView.Week) {
+      const startOfWeek = this.getStartOfWeek(this.viewDate);
+      const endOfWeek = this.getEndOfWeek(this.viewDate);
+      
+      const startDay = datePipe.transform(startOfWeek, 'd');
+      const endDay = datePipe.transform(endOfWeek, 'd');
+      const month = this.maximizeFirstLetter(datePipe.transform(endOfWeek, 'MMMM') || '');
+      
+      // Check if same month
+      if (startOfWeek.getMonth() === endOfWeek.getMonth()) {
+         return `${startDay} - ${endDay} ${month}`;
+      } else {
+         const startMonth = this.maximizeFirstLetter(datePipe.transform(startOfWeek, 'MMM') || '');
+         return `${startDay} ${startMonth} - ${endDay} ${month}`;
+      }
+    } else {
+      // Day
+      return this.maximizeFirstLetter(datePipe.transform(this.viewDate, 'd MMMM yyyy') || '');
+    }
+  }
+
+  private maximizeFirstLetter(string: string): string {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
+  private getStartOfWeek(date: Date): Date {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    return new Date(date.setDate(diff));
+  }
+  
+  private getEndOfWeek(date: Date): Date {
+    const start = this.getStartOfWeek(new Date(date));
+    return new Date(start.setDate(start.getDate() + 6));
+  }
+
   private statusColors: Record<string, { primary: string; secondary: string; }> = {
     Confirmed: {
       primary: '#3b82f6',
@@ -55,7 +95,19 @@ export class ManageReservationsComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    this.checkScreenSize();
     this.loadReservations();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize() {
+    if (window.innerWidth < 768) {
+      this.view = CalendarView.Day;
+    }
   }
 
   loadReservations(): void {

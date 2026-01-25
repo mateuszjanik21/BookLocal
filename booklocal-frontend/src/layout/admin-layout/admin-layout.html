@@ -1,115 +1,114 @@
-<div class="flex min-h-screen bg-gray-50 font-sans overflow-x-hidden">
+<div class="drawer lg:drawer-open">
+  <input id="admin-drawer" type="checkbox" class="drawer-toggle" [checked]="isMobileMenuOpen" (change)="toggleMobileMenu()" />
+
+  <div class="drawer-content flex flex-col bg-gray-50 min-h-screen">
     
-    <div *ngIf="isMobileMenuOpen" 
-         (click)="closeMobileMenu()" 
-         class="fixed inset-0 bg-gray-900/50 z-40 md:hidden backdrop-blur-sm transition-opacity animate-fade-in">
+    <div class="navbar bg-white border-b border-gray-200 sticky top-0 z-30 h-16 px-4 lg:px-8 shadow-sm">
+        <div class="flex-1 gap-4">
+            <label for="admin-drawer" class="btn btn-square btn-ghost lg:hidden text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </label>
+            
+            <div class="flex flex-col">
+                <h1 class="text-xl font-bold text-gray-800 tracking-tight leading-none">Panel Administratora</h1>
+            </div>
+        </div>
+        
+        <div class="flex-none gap-2">
+            <div class="dropdown dropdown-end">
+                <label tabindex="0" class="btn btn-ghost btn-circle avatar placeholder" (click)="toggleProfileMenu()">
+                    <div class="bg-indigo-600 text-white rounded-full w-10 shadow-none ring-2 ring-indigo-100">
+                        <span class="text-xs font-bold">SA</span>
+                    </div>
+                </label>
+                
+                <ul *ngIf="isProfileMenuOpen" tabindex="0" class="mt-3 z-[1] p-2 shadow-xl menu menu-sm dropdown-content bg-white rounded-xl w-56 border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+                    <li class="px-4 py-3 border-b border-gray-100 mb-2">
+                        <span class="font-bold text-gray-800 block">Super Admin</span>
+                        <span class="text-xs text-gray-500 font-normal">admin@booklocal.com</span>
+                    </li>
+                    <li class="mt-1"><a (click)="logout()" class="text-red-600 hover:bg-red-50 hover:text-red-700"><i class="fas fa-sign-out-alt w-4"></i> Wyloguj się</a></li>
+                </ul>
+                <div *ngIf="isProfileMenuOpen" (click)="closeProfileMenu()" class="fixed inset-0 z-0 cursor-default"></div>
+            </div>
+        </div>
     </div>
 
-    <aside [class.translate-x-0]="isMobileMenuOpen" 
-           [class.-translate-x-full]="!isMobileMenuOpen" 
-           class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] text-white transition-transform duration-300 ease-in-out md:translate-x-0 shadow-xl flex flex-col">
-        
-        <div class="h-16 flex items-center px-6 border-b border-white/10 shrink-0 justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-indigo-500/30">
-                    B
-                </div>
-                <div>
-                   <span class="text-lg font-bold tracking-tight block leading-none">BookLocal</span>
-                   <span class="text-[0.6rem] text-indigo-300 uppercase tracking-widest font-semibold">Admin Panel</span>
-                </div>
-            </div>
-            <button (click)="closeMobileMenu()" class="md:hidden text-gray-400 hover:text-white transition-colors p-1">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-  
-      <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1">
-        <div class="px-3 mb-2 text-xs font-bold text-gray-500 uppercase tracking-wider font-display">Zarządzanie</div>
-        
-        <a routerLink="/admin/dashboard" (click)="closeMobileMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer group">
-          <i class="fas fa-chart-line w-5 text-center group-hover:text-white transition-colors" routerLinkActive="text-white"></i>
-          <span class="font-medium">Pulpit</span>
-        </a>
-        
-        <a routerLink="/admin/plans" (click)="closeMobileMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer group">
-          <i class="fas fa-tags w-5 text-center group-hover:text-white transition-colors" routerLinkActive="text-white"></i>
-          <span class="font-medium">Plany Subskrypcyjne</span>
-        </a>
-  
-        <a routerLink="/admin/businesses" (click)="closeMobileMenu()" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200 cursor-pointer group">
-          <i class="fas fa-building w-5 text-center group-hover:text-white transition-colors" routerLinkActive="text-white"></i>
-          <span class="font-medium">Weryfikacja Firm</span>
-        </a>
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
 
-        <div class="mt-8 px-3 mb-2 text-xs font-bold text-gray-500 uppercase tracking-wider font-display">System</div>
-        
-        <button (click)="logout()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 cursor-pointer group">
-          <i class="fas fa-sign-out-alt w-5 text-center"></i>
-          <span class="font-medium">Wyloguj</span>
-        </button>
-      </nav>
+  <div class="drawer-side z-40">
+    <label for="admin-drawer" aria-label="close sidebar" class="drawer-overlay" (click)="closeMobileMenu()"></label>
+    
+    <div class="w-64 min-h-full bg-[#0f172a] text-slate-300 flex flex-col p-4 border-r border-slate-800">
       
-      <div class="p-4 border-t border-white/10 bg-black/20 shrink-0">
-          <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-white/10">SA</div>
-              <div class="overflow-hidden">
-                  <div class="text-sm font-semibold text-white truncate">Super Admin</div>
-                  <div class="text-xs text-green-400 flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> Online
-                  </div>
-              </div>
+      <div class="p-4 text-center border-b border-slate-800 mb-2">
+        <h2 class="text-xl font-bold text-white truncate tracking-tight">BookLocal</h2>
+        <span class="text-xs text-indigo-400 font-bold uppercase tracking-wider">Admin Panel</span>
+      </div>
+
+      <ul class="menu p-0 mt-2 flex-grow w-full space-y-1">
+        
+        <li class="menu-title text-slate-500 font-bold uppercase tracking-wider text-xs mb-1">Główne</li>
+        
+        <li>
+          <a routerLink="/admin/dashboard" 
+             (click)="closeMobileMenu()"
+             routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold rounded-lg" 
+             [routerLinkActiveOptions]="{exact: true}"
+             class="group hover:bg-slate-800 hover:text-white transition-all duration-200 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 group-hover:text-white transition-colors">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+            </svg>
+            <span class="font-medium">Pulpit</span>
+          </a>
+        </li>
+
+        <li class="menu-title text-slate-500 font-bold uppercase tracking-wider text-xs mb-1 mt-4">Zarządzanie</li>
+        
+        <li>
+          <a routerLink="/admin/plans" 
+             (click)="closeMobileMenu()"
+             routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold rounded-lg"
+             class="group hover:bg-slate-800 hover:text-white transition-all duration-200 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 group-hover:text-white transition-colors">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="font-medium">Plany Subskrypcyjne</span>
+          </a>
+        </li>
+  
+        <li>
+          <a routerLink="/admin/businesses" 
+             (click)="closeMobileMenu()"
+             routerLinkActive="bg-indigo-500/10 text-indigo-400 font-bold rounded-lg"
+             class="group hover:bg-slate-800 hover:text-white transition-all duration-200 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 group-hover:text-white transition-colors">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="font-medium">Weryfikacja Firm</span>
+          </a>
+        </li>
+
+        <li class="menu-title text-slate-500 font-bold uppercase tracking-wider text-xs mb-1 mt-4">System</li>
+        
+        <li>
+          <button (click)="logout()" class="w-full text-left group hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 rounded-lg flex items-center gap-2 p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 group-hover:text-red-400 transition-colors">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+            </svg>
+            <span class="font-medium">Wyloguj</span>
+          </button>
+        </li>
+      </ul>
+      
+      <div class="p-6 mt-auto border-t border-slate-800">
+          <div class="text-xs text-slate-500 text-center">
+              &copy; 2026 BookLocal
           </div>
       </div>
-    </aside>
-  
-    <main class="flex-1 transition-all duration-300 w-full min-h-screen flex flex-col md:ml-64">
-      
-      <header class="h-16 bg-white border-b border-gray-200 sticky top-0 z-30 px-4 md:px-8 flex items-center justify-between shadow-sm">
-           
-           <div class="flex items-center gap-4">
-               <button (click)="toggleMobileMenu()" class="md:hidden -ml-2 p-2 text-gray-600 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                   <i class="fas fa-bars text-xl"></i>
-               </button>
-               
-               <h1 class="text-lg md:text-xl font-bold text-gray-800 font-display truncate">
-                   Witaj, Admin
-               </h1>
-           </div>
-           
-           <div class="flex items-center gap-3 md:gap-4">
-               <button class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-colors relative focus:outline-none group">
-                   <i class="far fa-bell text-lg group-hover:text-gray-700"></i>
-                   <span class="absolute top-2.5 right-2.5 flex h-2.5 w-2.5"></span>
-               </button>
-
-               <div class="relative">
-                   <button (click)="toggleProfileMenu()" class="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold shadow-md hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 cursor-pointer">
-                       A
-                   </button>
-
-                   <div *ngIf="isProfileMenuOpen" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
-                       <div class="px-4 py-3 border-b border-gray-100">
-                           <p class="text-sm font-semibold text-gray-900">Super Admin</p>
-                           <p class="text-xs text-gray-500 truncate">admin@booklocal.com</p>
-                       </div>
-                       <div class="py-1">
-                           <a href="javascript:void(0)" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600">Ustawienia konta</a>
-                       </div>
-                       <div class="border-t border-gray-100 pt-1">
-                           <button (click)="logout()" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2">
-                               <i class="fas fa-sign-out-alt"></i> Wyloguj się
-                           </button>
-                       </div>
-                   </div>
-                   
-                   <div *ngIf="isProfileMenuOpen" (click)="closeProfileMenu()" class="fixed inset-0 z-40 bg-transparent cursor-default"></div>
-               </div>
-           </div>
-      </header>
-
-      <div class="p-4 md:p-8 overflow-x-hidden bg-gray-50 flex-1">
-        <router-outlet></router-outlet>
-      </div>
-    </main>
+    </div>
+  </div>
 </div>

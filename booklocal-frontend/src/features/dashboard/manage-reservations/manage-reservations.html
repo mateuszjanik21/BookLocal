@@ -1,70 +1,103 @@
-<div class="calendar-container">
-  <div class="p-4 sm:p-6 lg:p-8">
-    @if (isLoading) {
-      <div class="flex justify-center items-center p-16">
-        <span class="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    } @else {
-      <div class="card bg-base-100 shadow-xl">
-        <div class="card-body">
+<div class="calendar-container min-h-screen bg-base-200/30 p-4 sm:p-6 lg:p-8 animate-fade-in">
+  
+  <div class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-base-content font-display tracking-tight">Kalendarz Rezerwacji</h1>
+      <p class="mt-1 text-base-content/70">Zarządzaj grafikiem i wizytami klientów.</p>
+    </div>
+    
+    <button class="btn btn-primary gap-2 w-full md:w-auto no-animation" (click)="openAddReservationModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+      Nowa Rezerwacja
+    </button>
+  </div>
 
-          <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 p-2 rounded-lg bg-base-200">
-            <div class="flex items-center gap-4">
-              <div class="join">
-                <button class="join-item btn btn-sm" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">‹</button>
-                <button class="join-item btn btn-sm" mwlCalendarToday [(viewDate)]="viewDate">Dzisiaj</button>
-                <button class="join-item btn btn-sm" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">›</button>
-              </div>
-              <div class="join hidden md:inline-flex">
-                <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Month" (click)="setView(CalendarView.Month)">Miesiąc</button>
-                <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Week" (click)="setView(CalendarView.Week)">Tydzień</button>
-                <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Day" (click)="setView(CalendarView.Day)">Dzień</button>
-              </div>
-            </div>
-            
-            <h2 class="text-xl font-bold text-center order-first sm:order-none">{{ viewDate | date: 'LLLL yyyy' }}</h2>
-            
-            <div class="flex items-center gap-4">
-              <div class="join inline-flex md:hidden"> <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Month" (click)="setView(CalendarView.Month)">M</button>
-                <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Week" (click)="setView(CalendarView.Week)">T</button>
-                <button class="join-item btn btn-sm" [class.btn-active]="view === CalendarView.Day" (click)="setView(CalendarView.Day)">D</button>
-              </div>
-              <button class="btn btn-primary btn-sm" (click)="openAddReservationModal()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
-                Dodaj Rezerwację
-              </button>
-            </div>
+  @if (isLoading) {
+    <div class="flex flex-col items-center justify-center h-[60vh]">
+      <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
+      <p class="text-base-content/50 animate-pulse">Ładowanie grafiku...</p>
+    </div>
+  } @else {
+    <div class="card bg-base-100 shadow-xl border border-base-200 overflow-hidden max-w-7xl mx-auto">
+      <div class="card-body p-0 sm:p-4">
+
+        <div class="flex flex-col xl:flex-row justify-between items-center gap-4 p-4 border-b border-base-200 bg-base-100/50">
+          
+          <div class="join w-full justify-center xl:justify-start xl:w-auto shadow-sm">
+            <button class="join-item btn btn-sm btn-outline border-base-300 hover:bg-base-200 hover:text-base-content" 
+                    mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+            </button>
+            <button class="join-item btn btn-sm btn-outline border-base-300 hover:bg-base-200 hover:text-base-content min-w-[100px]" 
+                    mwlCalendarToday [(viewDate)]="viewDate">
+              Dzisiaj
+            </button>
+            <button class="join-item btn btn-sm btn-outline border-base-300 hover:bg-base-200 hover:text-base-content" 
+                    mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+            </button>
           </div>
-
-          <div [ngSwitch]="view">
-            <mwl-calendar-month-view
-              *ngSwitchCase="CalendarView.Month"
-              [viewDate]="viewDate"
-              [events]="events"
-              (dayClicked)="slotClicked($event.day.date)"
-              (eventClicked)="eventClicked($event)">
-            </mwl-calendar-month-view>
-
-            <mwl-calendar-week-view
-              *ngSwitchCase="CalendarView.Week"
-              [viewDate]="viewDate"
-              [events]="events"
-              (hourSegmentClicked)="slotClicked($event.date)"
-              (eventClicked)="eventClicked($event)">
-            </mwl-calendar-week-view>
-
-            <mwl-calendar-day-view
-              *ngSwitchCase="CalendarView.Day"
-              [viewDate]="viewDate"
-              [events]="events"
-              (hourSegmentClicked)="slotClicked($event.date)"
-              (eventClicked)="eventClicked($event)">
-            </mwl-calendar-day-view>
+          
+          <h2 class="text-xl font-bold text-base-content capitalize order-first xl:order-none">
+            {{ viewTitle }}
+          </h2>
+          
+          <div class="hidden md:flex join shadow-sm">
+            <button class="join-item btn btn-sm" 
+                    [class.btn-primary]="view === CalendarView.Month" 
+                    [class.btn-ghost]="view !== CalendarView.Month"
+                    (click)="setView(CalendarView.Month)">Miesiąc</button>
+            <button class="join-item btn btn-sm" 
+                    [class.btn-primary]="view === CalendarView.Week" 
+                    [class.btn-ghost]="view !== CalendarView.Week"
+                    (click)="setView(CalendarView.Week)">Tydzień</button>
+            <button class="join-item btn btn-sm" 
+                    [class.btn-primary]="view === CalendarView.Day" 
+                    [class.btn-ghost]="view !== CalendarView.Day"
+                    (click)="setView(CalendarView.Day)">Dzień</button>
+          </div>
+          
+          <div class="md:hidden badge badge-ghost font-mono text-xs">
+            Widok Dnia
           </div>
         </div>
+
+        <div [ngSwitch]="view" class="bg-base-100 min-h-[600px]">
+          
+          <mwl-calendar-month-view
+            *ngSwitchCase="CalendarView.Month"
+            [viewDate]="viewDate"
+            [events]="events"
+            [weekStartsOn]="1"
+            [activeDayIsOpen]="false"
+            (dayClicked)="slotClicked($event.day.date)"
+            (eventClicked)="eventClicked($event)">
+          </mwl-calendar-month-view>
+
+          <mwl-calendar-week-view
+            *ngSwitchCase="CalendarView.Week"
+            [viewDate]="viewDate"
+            [events]="events"
+            [weekStartsOn]="1"
+            [dayStartHour]="7"
+            [dayEndHour]="21"
+            (hourSegmentClicked)="slotClicked($event.date)"
+            (eventClicked)="eventClicked($event)">
+          </mwl-calendar-week-view>
+
+          <mwl-calendar-day-view
+            *ngSwitchCase="CalendarView.Day"
+            [viewDate]="viewDate"
+            [events]="events"
+            [dayStartHour]="7"
+            [dayEndHour]="21"
+            (hourSegmentClicked)="slotClicked($event.date)"
+            (eventClicked)="eventClicked($event)">
+          </mwl-calendar-day-view>
+        </div>
       </div>
-    }
-  </div>
+    </div>
+  }
 </div>
 
 @if(isAddModalVisible) {

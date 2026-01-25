@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { OwnerNavbarComponent } from '../owner-navbar/owner-navbar';
 import { NotificationService } from '../../core/services/notification';
 import { BusinessService } from '../../core/services/business-service';
@@ -19,34 +19,50 @@ export class OwnerLayoutComponent implements OnInit, OnDestroy {
   private businessService = inject(BusinessService);
   private subscriptionService = inject(SubscriptionService); // Inject
   public presenceService = inject(PresenceService);
+  private router = inject(Router);
 
   public businessName: string | null = null;
   public businessId: number | null = null;
-  
+
   // Capabilities
   public hasReports = false;
   public hasMarketing = false;
 
   ngOnInit(): void {
-    this.businessService.getMyBusiness().pipe(take(1)).subscribe(business => {
-      if (business) {
-        this.notificationService.startConnection(business.id);
-        this.businessName = business.name;
-        this.businessId = business.id;
-        
-        // Listen for subscription updates
-        this.subscriptionService.currentSubscription$.subscribe(sub => {
-             if (sub) {
-                const s = sub as any;
-                this.hasReports = !!s.hasAdvancedReports;
-                this.hasMarketing = !!s.hasMarketingTools;
-             }
-        });
-        
-        // Trigger initial load
-        this.subscriptionService.refreshSubscription();
-      }
+    this.businessService
+      .getMyBusiness()
+      .pipe(take(1))
+      .subscribe((business) => {
+        if (business) {
+          this.notificationService.startConnection(business.id);
+          this.businessName = business.name;
+          this.businessId = business.id;
+
+          // Listen for subscription updates
+          this.subscriptionService.currentSubscription$.subscribe((sub) => {
+            if (sub) {
+              const s = sub as any;
+              this.hasReports = !!s.hasAdvancedReports;
+              this.hasMarketing = !!s.hasMarketingTools;
+            }
+          });
+
+          // Trigger initial load
+          this.subscriptionService.refreshSubscription();
+        }
+      });
+
+    // Close drawer on navigation (mobile)
+    this.router.events.subscribe(() => {
+       this.closeDrawer();
     });
+  }
+
+  // Drawer state
+  isDrawerOpen = false;
+
+  closeDrawer() {
+    this.isDrawerOpen = false;
   }
 
   ngOnDestroy(): void {
