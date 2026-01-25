@@ -50,6 +50,13 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<LoyaltyProgramConfig> LoyaltyProgramConfigs { get; set; }
     public DbSet<LoyaltyTransaction> LoyaltyTransactions { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.ConfigureWarnings(warnings =>
+            warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.CoreEventId.PossibleIncorrectRequiredNavigationWithQueryFilterInteractionWarning));
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -71,6 +78,8 @@ public class AppDbContext : IdentityDbContext<User>
         }
 
         modelBuilder.Entity<Service>().HasQueryFilter(s => !s.IsArchived);
+        modelBuilder.Entity<ServiceVariant>().HasQueryFilter(v => !v.Service.IsArchived);
+        modelBuilder.Entity<EmployeeService>().HasQueryFilter(es => !es.Service.IsArchived);
 
         modelBuilder.Entity<EmployeeService>()
             .HasKey(es => new { es.EmployeeId, es.ServiceId });
