@@ -1,6 +1,4 @@
 ﻿using BookLocal.Data.Models;
-using System;
-using System.Collections.Generic;
 
 namespace BookLocal.API.DTOs
 {

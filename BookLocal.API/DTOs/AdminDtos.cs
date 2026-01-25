@@ -1,6 +1,4 @@
-﻿using BookLocal.Data.Models;
-
-namespace BookLocal.API.DTOs
+﻿namespace BookLocal.API.DTOs
 {
     public class AdminBusinessListDto
     {

@@ -63,4 +63,20 @@ export class EmployeeDetailComponent implements OnInit {
   error: () => this.toastr.error('Nie udało się załadować szczegółów pracownika.')
 });
   }
+  generateContract() {
+      if (!this.employee) return;
+      
+      this.businessService.generateContract(this.employee.id).subscribe({
+          next: (blob) => {
+              const url = window.URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `Umowa_${this.employee?.lastName}_${this.employee?.firstName}.docx`;
+              link.click();
+              window.URL.revokeObjectURL(url);
+              this.toastr.success('Pobrano umowę.');
+          },
+          error: () => this.toastr.error('Nie udało się wygenerować umowy. Upewnij się, że wgrano szablon.')
+      });
+  }
 }

@@ -21,7 +21,8 @@ namespace BookLocal.Data.Models
         [MaxLength(100)]
         public string LastName { get; set; }
 
-        public string? Position { get; set; }
+        [Required]
+        public string Position { get; set; }
         public string? PhotoUrl { get; set; }
         public bool IsArchived { get; set; } = false;
 

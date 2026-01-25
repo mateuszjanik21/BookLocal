@@ -1,5 +1,3 @@
-using System;
-
 namespace BookLocal.API.DTOs
 {
     public class CustomerListItemDto

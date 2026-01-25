@@ -36,6 +36,7 @@ import { AdminPlansComponent } from '../features/admin/plans/plans';
 import { AdminBusinessApprovalComponent } from '../features/admin/business-approval/business-approval';
 import { SubscriptionManagerComponent } from '../features/dashboard/subscription/subscription';
 import { UpgradeRequiredComponent } from '../features/dashboard/upgrade-required/upgrade-required';
+import { TemplatesComponent } from '../features/dashboard/templates/templates';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -71,7 +72,9 @@ export const routes: Routes = [
       { path: 'bundles', component: ServiceBundlesListComponent },
       { path: 'bundles/create', component: ServiceBundleWizardComponent },
       { path: 'subscription', component: SubscriptionManagerComponent },
-      { path: 'upgrade-required', component: UpgradeRequiredComponent }
+      { path: 'upgrade-required', component: UpgradeRequiredComponent },
+      { path: 'templates', component: TemplatesComponent },
+      
     ]
   },
   {

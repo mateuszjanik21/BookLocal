@@ -1,5 +1,4 @@
 ﻿using BookLocal.Data.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace BookLocal.API.DTOs
 {

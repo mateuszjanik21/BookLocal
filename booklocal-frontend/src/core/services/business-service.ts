@@ -74,4 +74,11 @@ export class BusinessService {
     
     return this.http.get<PagedResult<ServiceCategorySearchResult>>(`${this.apiUrl}/search/category-feed`, { params: httpParams });
   }
+  generateContract(employeeId: number): Observable<Blob> {
+      return this.http.get(`${this.apiUrl}/document/generate-contract/${employeeId}`, { responseType: 'blob' });
+  }
+
+  uploadTemplate(formData: FormData): Observable<any> {
+      return this.http.post(`${this.apiUrl}/document/upload-template`, formData);
+  }
 }

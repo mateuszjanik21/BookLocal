@@ -1,6 +1,7 @@
 using BookLocal.API.Configuration;
 using BookLocal.API.Data;
 using BookLocal.API.Hubs;
+using BookLocal.API.Services;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -97,7 +98,7 @@ namespace BookLocal.API
             });
 
 
-
+            builder.Services.AddScoped<IWordTemplateService, WordTemplateService>();
             builder.Services.AddSingleton<PresenceTracker>();
             builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
             builder.Services.AddScoped<IPhotoService, PhotoService>();
