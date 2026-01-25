@@ -82,7 +82,7 @@ public static class DbInitializer
             await context.SaveChangesAsync();
         }
 
-        // --- SUPER ADMIN SEEDING (Always Run) ---
+        // --- SUPER ADMIN ---
         var superAdmin = new User
         {
             FirstName = "Admin",
@@ -92,15 +92,12 @@ public static class DbInitializer
             PhotoUrl = "https://ui-avatars.com/api/?name=Admin+System&background=random"
         };
 
-        // Fix for "Cannot access disposed object" or context tracking issues if any? No, scoped.
-        // Actually, just FindByEmailAsync is enough.
         if (await userManager.FindByEmailAsync(superAdmin.Email) == null)
         {
             await userManager.CreateAsync(superAdmin, "Admin123!");
             await userManager.AddToRoleAsync(superAdmin, "superadmin");
         }
 
-        // Jeśli mamy więcej niż 1 użytkownika (czyli coś poza Adminem), nie seedujemy dalej
         if (await userManager.Users.CountAsync() > 1) return;
 
         Randomizer.Seed = new Random(42);
@@ -127,8 +124,6 @@ public static class DbInitializer
         await userManager.AddToRoleAsync(staticOwner, "owner");
         owners.Add(staticOwner);
 
-
-
         var customers = new List<User>();
         var customerFaker = new Faker<User>("pl")
             .RuleFor(u => u.UserName, f => f.Internet.Email())
@@ -149,18 +144,12 @@ public static class DbInitializer
         await userManager.AddToRoleAsync(staticCustomer, "customer");
         customers.Add(staticCustomer);
 
-
-        // Firmy, Usługi i Pracownicy
-
-        // ... (Existing Owners/Customers seeding remains) ...
-
         // Firmy, Usługi i Pracownicy
         var realisticDataStore = RealisticDataStore.GetData();
         var mainCategoriesFromDb = await context.MainCategories.ToListAsync();
         var availableMainCategories = mainCategoriesFromDb.Where(mc => realisticDataStore.ContainsKey(mc.Name)).ToList();
         var businesses = new List<Business>();
 
-        // Pre-fetch plans
         var subscriptionPlans = await context.SubscriptionPlans.ToListAsync();
         var freePlan = subscriptionPlans.First(p => p.Name == "Free");
         var silverPlan = subscriptionPlans.First(p => p.Name == "Silver");
@@ -184,7 +173,7 @@ public static class DbInitializer
                 .Generate();
             business.Owner = owner;
 
-            // Categories & Services (Existing logic) ...
+            // Categories & Services
             var businessCategories = new List<ServiceCategory>();
             var subCategoryNames = faker.PickRandom(realisticData.SubCategoryNames, faker.Random.Number(1, Math.Min(3, realisticData.SubCategoryNames.Count))).ToList();
 
@@ -260,7 +249,6 @@ public static class DbInitializer
                 {
                     Bio = faker.Lorem.Sentences(2),
                     Specialization = faker.PickRandom(realisticData.SubCategoryNames)
-                    // Removing Pesel, Address, BankAccountNumber as they are missing in Model
                 };
 
                 emp.FinanceSettings = new EmployeeFinanceSettings
@@ -270,7 +258,6 @@ public static class DbInitializer
                     HourlyRate = Math.Round(faker.Random.Decimal(25, 80), 2)
                 };
 
-                // Seed Contracts
                 context.EmploymentContracts.Add(new EmploymentContract
                 {
                     Employee = emp,
@@ -300,11 +287,8 @@ public static class DbInitializer
         await context.Businesses.AddRangeAsync(businesses);
         await context.SaveChangesAsync();
 
-
-        // Seed Subscriptions for Businesses (Bias towards GOLD)
         foreach (var bus in businesses)
         {
-            // 80% Gold, 20% Silver, 0% Free (for testing reports)
             var plan = faker.Random.Bool(0.8f) ? goldPlan : silverPlan;
 
             context.BusinessSubscriptions.Add(new BusinessSubscription
@@ -319,8 +303,6 @@ public static class DbInitializer
         }
         await context.SaveChangesAsync();
 
-
-        // Assign Services and Schedules
         foreach (var business in businesses)
         {
             var allServicesInBusiness = business.Categories.SelectMany(c => c.Services).ToList();
@@ -336,7 +318,6 @@ public static class DbInitializer
                     }
                 }
 
-                // WorkSchedule (Fixed 9-17 Mon-Fri for simplicity and reliability)
                 for (int i = 0; i < 7; i++)
                 {
                     var day = (DayOfWeek)i;
@@ -355,7 +336,7 @@ public static class DbInitializer
         await context.SaveChangesAsync();
 
 
-        // Rezerwacje - MASSIVE SEEDING
+        // Rezerwacje
         Console.WriteLine("Generowanie rezerwacji (to może chwilę potrwać)...");
         var reservations = new List<Reservation>();
 
@@ -367,21 +348,17 @@ public static class DbInitializer
         var businessPlans = await context.BusinessSubscriptions.Include(bs => bs.Plan).ToDictionaryAsync(bs => bs.BusinessId, bs => bs.Plan);
 
         var currentYear = DateTime.UtcNow.Year;
-        // Generate for last 3 months
         var startDate = DateTime.UtcNow.AddMonths(-3).Date;
         var endDate = DateTime.UtcNow.AddDays(1).Date;
 
-        // Cache schedules
         var schedules = await context.WorkSchedules.ToListAsync();
 
         foreach (var customer in customers)
         {
-            // Much more visits per customer: 20-50
             int reservationCount = faker.Random.Number(20, 50);
 
             for (int i = 0; i < reservationCount; i++)
             {
-                // Assign to random business
                 var randomBusiness = faker.PickRandom(allBusinesses.Where(b => b.Categories.SelectMany(c => c.Services).Any()));
                 if (randomBusiness == null) continue;
 
@@ -391,14 +368,11 @@ public static class DbInitializer
                 if (!servicesInBusiness.Any() || !employeesInBusiness.Any()) continue;
 
                 var randomService = faker.PickRandom(servicesInBusiness);
-                // Pick employee that performs this service (ideally), but for now pick random employee in business (simplified)
-                // Better: Pick random employee
                 var randomEmployee = faker.PickRandom(employeesInBusiness);
 
                 if (!randomService.Variants.Any()) continue;
                 var randomVariant = faker.PickRandom(randomService.Variants);
 
-                // Find valid slot
                 DateTime? validStartTime = null;
                 int attempts = 0;
                 while (validStartTime == null && attempts < 10)
@@ -408,10 +382,9 @@ public static class DbInitializer
 
                     if (daySchedule != null && !daySchedule.IsDayOff && daySchedule.StartTime.HasValue && daySchedule.EndTime.HasValue)
                     {
-                        // Generate time between Start and End - Duration
                         var startTs = daySchedule.StartTime.Value;
                         var endTs = daySchedule.EndTime.Value;
-                        var maxMinutes = (endTs - startTs).TotalMinutes - randomVariant.DurationMinutes - 15; // buffer
+                        var maxMinutes = (endTs - startTs).TotalMinutes - randomVariant.DurationMinutes - 15;
 
                         if (maxMinutes > 0)
                         {
@@ -422,14 +395,14 @@ public static class DbInitializer
                     attempts++;
                 }
 
-                if (validStartTime == null) continue; // Skip if cant find slot
+                if (validStartTime == null) continue;
 
                 var startTime = validStartTime.Value;
                 var duration = randomVariant.DurationMinutes + randomVariant.CleanupTimeMinutes;
                 var endTime = startTime.AddMinutes(duration);
 
                 var status = startTime < DateTime.UtcNow
-                    ? faker.Random.Bool(0.9f) ? ReservationStatus.Completed : ReservationStatus.Cancelled // 90% Completed
+                    ? faker.Random.Bool(0.9f) ? ReservationStatus.Completed : ReservationStatus.Cancelled
                     : ReservationStatus.Confirmed;
 
                 var paymentMethod = faker.PickRandom<PaymentMethod>();
@@ -452,7 +425,6 @@ public static class DbInitializer
         await context.Reservations.AddRangeAsync(reservations);
         await context.SaveChangesAsync();
 
-        // Process Payments
         var completedRes = reservations.Where(r => r.Status == ReservationStatus.Completed).ToList();
         var paymentsToAdd = new List<Payment>();
 
@@ -482,13 +454,12 @@ public static class DbInitializer
 
         Console.WriteLine($"Stworzono {reservations.Count} rezerwacji i {paymentsToAdd.Count} płatności.");
 
-        // Reviews
         var reviews = new List<Review>();
         foreach (var r in completedRes.Where(x => faker.Random.Bool(0.4f)))
         {
             reviews.Add(new Review
             {
-                Rating = faker.Random.Int(4, 5), // Mostly good reviews
+                Rating = faker.Random.Int(4, 5),
                 Comment = faker.Rant.Review(),
                 CreatedAt = r.EndTime.AddHours(2),
                 ReviewerName = r.Customer.FirstName,
@@ -500,11 +471,10 @@ public static class DbInitializer
         await context.Reviews.AddRangeAsync(reviews);
         await context.SaveChangesAsync();
 
-        // --- GENERATE REPORTS (DailyFinancialReport) ---
+        // --- GENERATE REPORTS ---
         Console.WriteLine("Generowanie raportów finansowych...");
         var reportsToAdd = new List<DailyFinancialReport>();
 
-        // Group payments by Business and Date
         var paymentsByBusinessAndDate = paymentsToAdd
             .GroupBy(p => new { p.BusinessId, Date = DateOnly.FromDateTime(p.TransactionDate) });
 
@@ -514,19 +484,16 @@ public static class DbInitializer
             var date = group.Key.Date;
             var daysPayments = group.ToList();
 
-            // Get reservations for this day to count appointments
             var daysReservations = reservations.Where(r => r.BusinessId == busId && DateOnly.FromDateTime(r.StartTime) == date).ToList();
 
             if (!daysReservations.Any()) continue;
 
-            // Plan commission
             decimal planCommissionRate = 0;
             if (businessPlans.TryGetValue(busId, out var subPlan))
             {
                 planCommissionRate = subPlan.CommissionPercentage;
             }
 
-            // Calculate metrics
             var totalRev = daysPayments.Sum(p => p.Amount);
             var commissionVal = totalRev * (planCommissionRate / 100m);
 
@@ -546,17 +513,16 @@ public static class DbInitializer
                 CancelledAppointments = daysReservations.Count(r => r.Status == ReservationStatus.Cancelled),
                 NoShowCount = daysReservations.Count(r => r.Status == ReservationStatus.NoShow),
 
-                NewCustomersCount = faker.Random.Number(0, 3), // Simplified
+                NewCustomersCount = faker.Random.Number(0, 3),
                 ReturningCustomersCount = faker.Random.Number(0, 5),
                 OccupancyRate = faker.Random.Double(0.6, 0.95),
                 AverageTicketValue = daysReservations.Where(r => r.Status == ReservationStatus.Completed).Any()
                     ? totalRev / daysReservations.Count(r => r.Status == ReservationStatus.Completed)
                     : 0,
 
-                // Find top service
                 TopSellingServiceName = daysReservations
                     .Where(r => r.Status == ReservationStatus.Completed)
-                    .GroupBy(r => context.ServiceVariants.Local.FirstOrDefault(v => v.ServiceVariantId == r.ServiceVariantId)?.Name ?? "Service") // simplifying since tracked
+                    .GroupBy(r => context.ServiceVariants.Local.FirstOrDefault(v => v.ServiceVariantId == r.ServiceVariantId)?.Name ?? "Service")
                     .OrderByDescending(g => g.Count())
                     .Select(g => g.Key)
                     .FirstOrDefault() ?? "Standard"
