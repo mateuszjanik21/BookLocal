@@ -1,199 +1,430 @@
-<div class="p-4 sm:p-6 lg:p-8 bg-base-200/30 min-h-screen">
-  <div class="max-w-4xl mx-auto">
-    
-    <div class="flex items-center gap-4 mb-8">
-        <button class="btn btn-circle btn-ghost" routerLink="../">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-            </svg>
-        </button>
-        <div>
-            <h1 class="text-2xl font-bold">Kreator Pakietu</h1>
-            <p class="text-base-content/70">Krok {{ currentStep }} z 3: {{ getStepTitle() }}</p>
-        </div>
-    </div>
+<div class="min-h-screen bg-base-200/30 pb-20">
+    <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
 
-    <ul class="steps w-full mb-8">
-        <li class="step" [class.step-primary]="currentStep >= 1">Podstawowe Info</li>
-        <li class="step" [class.step-primary]="currentStep >= 2">Wybór Usług</li>
-        <li class="step" [class.step-primary]="currentStep >= 3">Podsumowanie</li>
-    </ul>
-
-    @if(currentStep === 1) {
-        <div class="card bg-base-100 shadow-xl border border-base-200">
-            <div class="card-body">
-                <div class="form-control">
-                    <label class="label"><span class="label-text font-bold">Nazwa Pakietu</span></label>
-                    <input type="text" [(ngModel)]="bundleName" placeholder="np. Relaksujący Dzień SPA" class="input input-bordered" />
-                </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Opis</span></label>
-                    <textarea [(ngModel)]="bundleDescription" class="textarea textarea-bordered h-24" placeholder="Krótki opis pakietu..."></textarea>
-                </div>
-                
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Zdjęcie (opcjonalne)</span></label>
-                    <input type="file" (change)="onFileSelected($event)" class="file-input file-input-bordered w-full max-w-xs" accept="image/*" />
-                </div>
-
-                <div class="form-control">
-                    <label class="label"><span class="label-text font-bold">Cena Pakietu (PLN)</span></label>
-                    <input type="number" [(ngModel)]="bundlePrice" class="input input-bordered" placeholder="0.00" />
-                    <label class="label">
-                        <span class="label-text-alt text-warning" *ngIf="items.length > 0">Suma cen usług składowych: {{ calculateTotalItemsPrice() }} PLN</span>
-                    </label>
-                </div>
-                
-                <div class="card-actions justify-end mt-4">
-                    <button class="btn btn-primary" (click)="nextStep()" [disabled]="!bundleName || !bundlePrice">Dalej</button>
-                </div>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6 sm:mb-8">
+            <button class="btn btn-circle btn-ghost bg-base-100 shadow-sm" routerLink="/dashboard/bundles">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+            </button>
+            <div class="flex-1">
+                <h1 class="text-2xl sm:text-3xl font-bold text-base-content leading-tight">
+                    {{ isEditMode ? 'Edycja Pakietu' : 'Nowy Pakiet' }}
+                </h1>
+                <p class="text-sm sm:text-base text-base-content/70 mt-1">
+                    Krok {{ currentStep }} z 3: <span class="font-medium text-primary">{{ getStepTitle() }}</span>
+                </p>
             </div>
         </div>
-    }
 
-    @if(currentStep === 2) {
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="card bg-base-100 shadow-lg border border-base-200 h-fit">
-                <div class="card-body">
-                    <h3 class="font-bold text-lg mb-4">Dodaj usługę do pakietu</h3>
-                    
-                    <div class="form-control mb-4">
-                        <label class="label">Kategoria</label>
-                        <select class="select select-bordered" [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
-                            <option [ngValue]="null">Wybierz...</option>
-                            @for(cat of categories; track cat.serviceCategoryId) {
-                                <option [ngValue]="cat">{{ cat.name }}</option>
-                            }
-                        </select>
+        <div class="w-full mb-8 sm:mb-12 overflow-x-auto pb-2">
+            <ul class="steps steps-horizontal w-full min-w-[300px]">
+                <li class="step" [class.step-primary]="currentStep >= 1">
+                    <span class="text-xs sm:text-sm">Dane</span>
+                </li>
+                <li class="step" [class.step-primary]="currentStep >= 2">
+                    <span class="text-xs sm:text-sm">Usługi</span>
+                </li>
+                <li class="step" [class.step-primary]="currentStep >= 3">
+                    <span class="text-xs sm:text-sm">Podsumowanie</span>
+                </li>
+            </ul>
+        </div>
+
+        @if(currentStep === 1) {
+        <div class="card bg-base-100 shadow-xl border border-base-200 max-w-4xl mx-auto animate-fade-in">
+            <div class="card-body p-4 sm:p-8">
+                <h2 class="card-title text-xl sm:text-2xl mb-6">Informacje o pakiecie</h2>
+
+                <div class="form-control mb-6">
+                    <label class="label"><span class="label-text font-semibold text-lg">Nazwa Pakietu</span></label>
+                    <input type="text" [(ngModel)]="bundleName" placeholder="np. Relaksujący Dzień SPA"
+                        class="input input-bordered input-lg w-full focus:input-primary transition-all" />
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+                    <div class="form-control h-full order-2 lg:order-1">
+                        <label class="label"><span class="label-text font-semibold text-lg">Opis Pakietu</span></label>
+                        <textarea [(ngModel)]="bundleDescription"
+                            class="textarea textarea-bordered h-48 lg:h-full text-base focus:textarea-primary transition-all leading-relaxed resize-none"
+                            placeholder="Opisz co zawiera pakiet i dlaczego warto go wybrać..."></textarea>
                     </div>
 
-                    @if(selectedCategory) {
-                        <div class="form-control mb-4">
-                            <label class="label">Usługa</label>
-                            <select class="select select-bordered" [(ngModel)]="selectedService" (change)="onServiceChange()">
-                                <option [ngValue]="null">Wybierz...</option>
-                                @for(srv of selectedCategory.services; track srv.id) {
-                                    <option [ngValue]="srv">{{ srv.name }}</option>
+                    <div class="space-y-6 order-1 lg:order-2">
+                        <div class="form-control">
+                            <label class="label"><span class="label-text font-semibold text-lg">Zdjęcie w
+                                    tle</span></label>
+                            <div
+                                class="flex flex-col items-center gap-4 p-4 border-2 border-dashed border-base-300 rounded-xl bg-base-50 hover:bg-base-100 transition-colors cursor-pointer relative overflow-hidden group">
+
+                                @if(previewUrl) {
+                                <img [src]="previewUrl" class="h-48 w-full object-cover rounded-lg shadow-sm"
+                                    alt="Podgląd" />
+                                } @else if(existingPhotoUrl) {
+                                <img [src]="existingPhotoUrl" class="h-48 w-full object-cover rounded-lg shadow-sm"
+                                    alt="Obecne" />
+                                } @else {
+                                <div
+                                    class="h-48 w-full flex flex-col items-center justify-center text-base-content/30 bg-base-200/50 rounded-lg">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mb-2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                    </svg>
+                                    <span class="text-sm">Kliknij, aby dodać zdjęcie</span>
+                                </div>
                                 }
-                            </select>
-                        </div>
-                    }
 
-                    @if(selectedService) {
-                         <div class="space-y-2">
-                            <label class="label font-bold">Wybierz wariant:</label>
-                            @for(variant of selectedService.variants; track variant.serviceVariantId) {
-                                <div class="flex items-center justify-between p-3 border rounded-lg hover:bg-base-200 cursor-pointer" (click)="addVariant(variant)">
-                                    <div>
-                                        <div class="font-bold">{{ variant.name }}</div>
-                                        <div class="text-xs">{{ variant.durationMinutes }} min</div>
-                                    </div>
-                                    <div class="font-mono text-primary font-bold">{{ variant.price }} zł</div>
-                                    <button class="btn btn-xs btn-circle btn-primary">+</button>
+                                <input type="file" (change)="onFileSelected($event)"
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                    accept="image/*" />
+                            </div>
+                        </div>
+
+                        <div class="form-control bg-base-100 p-4 rounded-xl border border-base-200 shadow-sm">
+                            <label class="cursor-pointer label justify-between">
+                                <div>
+                                    <span class="label-text font-bold text-lg block">Pakiet Aktywny</span>
+                                    <span class="label-text-alt text-base-content/60">Widoczny dla klientów</span>
                                 </div>
-                            }
-                         </div>
-                    }
-                </div>
-            </div>
-
-            <div class="card bg-base-100 shadow-lg border border-base-200">
-                <div class="card-body">
-                    <h3 class="font-bold text-lg mb-4">Wybrane usługi ({{ items.length }})</h3>
-                    @if(items.length === 0) {
-                        <p class="text-base-content/50 italic text-center py-8">Brak usług. Dodaj coś z lewej strony.</p>
-                    } @else {
-                        <div class="space-y-2">
-                             @for(item of items; track $index) {
-                                <div class="flex items-center gap-3 p-3 bg-base-200 rounded-lg group">
-                                    <span class="badge badge-neutral shadow font-mono text-xs w-6 h-6 flex items-center justify-center">{{ $index + 1 }}</span>
-                                    <div class="flex-grow">
-                                        <div class="font-bold text-sm">{{ item.serviceName }}</div>
-                                        <div class="text-xs opacity-70">{{ item.variantName }} • {{ item.durationMinutes }} min</div>
-                                    </div>
-                                    <div class="flex gap-1">
-                                        <button class="btn btn-ghost btn-xs" (click)="moveItem(item, -1)" [disabled]="$first">⬆</button>
-                                        <button class="btn btn-ghost btn-xs" (click)="moveItem(item, 1)" [disabled]="$last">⬇</button>
-                                        <button class="btn btn-ghost btn-xs text-error" (click)="removeItem($index)">✕</button>
-                                    </div>
-                                </div>
-                             }
+                                <input type="checkbox" class="toggle toggle-success toggle-lg" [(ngModel)]="isActive" />
+                            </label>
                         </div>
-                        <div class="mt-4 text-xs text-center text-base-content/60">
-                            Użyj strzałek, aby ustalić kolejność wykonywania usług.
-                        </div>
-                    }
-
-                     <div class="card-actions justify-between mt-8">
-                        <button class="btn btn-ghost" (click)="currentStep = 1">Wróć</button>
-                        <button class="btn btn-primary" (click)="nextStep()" [disabled]="items.length === 0">Dalej</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-
-    @if(currentStep === 3) {
-        <div class="card bg-base-100 shadow-xl border border-base-200 max-w-2xl mx-auto">
-            <div class="card-body">
-                <h2 class="card-title text-2xl">{{ bundleName }}</h2>
-                <p>{{ bundleDescription }}</p>
-                <div class="divider"></div>
-                
-                 <div class="overflow-x-auto">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Usługa</th>
-                                <th>Czas</th>
-                                <th>Wartość</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for(item of items; track $index) {
-                                <tr>
-                                    <th>{{ $index + 1 }}</th>
-                                    <td>
-                                        <div class="font-bold">{{ item.serviceName }}</div>
-                                        <div class="text-xs opacity-50">{{ item.variantName }}</div>
-                                    </td>
-                                    <td>{{ item.durationMinutes }} min</td>
-                                    <td>{{ item.originalPrice }} zł</td>
-                                </tr>
-                            }
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="3" class="text-right">Suma wartości:</th>
-                                <th>{{ calculateTotalItemsPrice() }} zł</th>
-                            </tr>
-                            <tr>
-                                <th colspan="3" class="text-right text-lg text-primary">Cena Pakietu:</th>
-                                <th class="text-lg text-primary">{{ bundlePrice.toFixed(2) }} zł</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-
-                <div class="alert shadow-sm mt-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-info shrink-0 w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <div>
-                        <h3 class="font-bold">Zaoszczędzasz {{ (calculateTotalItemsPrice() - bundlePrice).toFixed(2) }} zł</h3>
-                        <div class="text-xs">Różnica między sumą cen usług a ceną pakietu.</div>
                     </div>
                 </div>
 
-                <div class="card-actions justify-between mt-8">
-                    <button class="btn btn-ghost" (click)="currentStep = 2">Wróć</button>
-                    <button class="btn btn-success text-white px-8" (click)="createBundle()" [disabled]="isSaving">
-                        @if(isSaving) { <span class="loading loading-spinner"></span> }
-                        Utwórz Pakiet
+                <div class="card-actions justify-end mt-8 pt-6 border-t border-base-200">
+                    <button class="btn btn-primary w-full sm:w-auto btn-lg text-white" (click)="nextStep()"
+                        [disabled]="!bundleName">
+                        Dalej
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-5 h-5 ml-2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                        </svg>
                     </button>
                 </div>
             </div>
         </div>
-    }
+        }
 
-  </div>
+        @if(currentStep === 2) {
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 animate-fade-in">
+
+            <div class="lg:col-span-5 space-y-6">
+                <div class="card bg-base-100 shadow-xl border border-base-200 h-full">
+                    <div class="card-body p-4 sm:p-6">
+                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2 text-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                                stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Katalog Usług
+                        </h3>
+
+                        <div class="form-control mb-3">
+                            <label class="label font-medium text-sm text-base-content/70">1. Kategoria</label>
+                            <select class="select select-bordered w-full" [(ngModel)]="selectedCategory"
+                                (change)="onCategoryChange()">
+                                <option [ngValue]="null" disabled selected>-- Wybierz kategorię --</option>
+                                @for(cat of categories; track cat.serviceCategoryId) {
+                                <option [ngValue]="cat">{{ cat.name }}</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-control mb-3">
+                            <label class="label font-medium text-sm text-base-content/70">2. Usługa</label>
+                            <select class="select select-bordered w-full" [(ngModel)]="selectedService"
+                                (change)="onServiceChange()" [disabled]="!selectedCategory">
+                                <option [ngValue]="null" disabled selected>-- Wybierz usługę --</option>
+                                @for(srv of selectedCategory?.services; track srv.id) {
+                                <option [ngValue]="srv">{{ srv.name }}</option>
+                                }
+                            </select>
+                        </div>
+
+                        @if(selectedService) {
+                        <div class="mt-4 flex-1 flex flex-col min-h-0">
+                            <label class="label font-medium text-sm text-base-content/70">3. Dostępne Warianty</label>
+                            <div class="space-y-2 overflow-y-auto custom-scrollbar max-h-[350px] pr-1">
+                                @for(variant of selectedService.variants; track variant.serviceVariantId) {
+                                <div (click)="addVariant(variant)"
+                                    class="group flex items-center justify-between p-3 border border-base-200 rounded-xl bg-base-50 hover:bg-base-100 hover:border-primary cursor-pointer transition-all shadow-sm">
+                                    <div>
+                                        <div class="font-bold text-sm">{{ variant.name }}</div>
+                                        <div class="text-xs text-base-content/60 flex items-center gap-2 mt-1">
+                                            <span class="flex items-center gap-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                {{ variant.durationMinutes }} min
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-bold text-primary">{{ variant.price | number:'1.2-2' }} zł
+                                        </div>
+                                        <span
+                                            class="text-[10px] uppercase font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">Dodaj
+                                            +</span>
+                                    </div>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        } @else {
+                        <div
+                            class="flex-1 flex items-center justify-center min-h-[150px] text-base-content/30 text-sm text-center italic p-4 border-2 border-dashed border-base-200 rounded-xl mt-4">
+                            Wybierz kategorię i usługę,<br>aby zobaczyć warianty.
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7">
+                <div class="card bg-base-100 shadow-xl border border-base-200 h-full">
+                    <div class="card-body p-4 sm:p-6 flex flex-col">
+                        <div class="flex justify-between items-end mb-4 border-b border-base-200 pb-4">
+                            <div>
+                                <h3 class="font-bold text-lg">Twój Pakiet</h3>
+                                <p class="text-xs text-base-content/60">Ustal kolejność wykonywania usług</p>
+                            </div>
+                            <span class="badge badge-lg badge-primary">{{ items.length }} usług</span>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto custom-scrollbar min-h-[300px]">
+                            @if(items.length === 0) {
+                            <div class="flex flex-col items-center justify-center h-full text-base-content/40 py-12">
+                                <div class="w-20 h-20 bg-base-200 rounded-full flex items-center justify-center mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                                    </svg>
+                                </div>
+                                <p class="text-center font-medium">Koszyk usług jest pusty</p>
+                            </div>
+                            } @else {
+                            <div class="space-y-3">
+                                @for(item of items; track $index) {
+                                <div
+                                    class="relative flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 bg-base-100 border border-base-200 rounded-xl shadow-sm hover:shadow-md transition-all group">
+
+                                    <div class="flex items-center gap-3 flex-grow">
+                                        <div
+                                            class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-neutral text-neutral-content font-bold text-sm">
+                                            {{ $index + 1 }}
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-base">{{ item.serviceName }}</div>
+                                            <div
+                                                class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs opacity-70 mt-1">
+                                                <span class="badge badge-sm badge-ghost">{{ item.variantName }}</span>
+                                                <span class="flex items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none"
+                                                        viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    {{ item.durationMinutes }} min
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-0 border-base-100">
+                                        <div class="font-mono font-bold text-base-content/80">{{ item.originalPrice |
+                                            number:'1.2-2' }} zł</div>
+
+                                        <div class="flex items-center gap-1">
+                                            <div class="join bg-base-200 rounded-lg p-0.5">
+                                                <button class="join-item btn btn-xs btn-square btn-ghost"
+                                                    (click)="moveItem(item, -1)"
+                                                    [disabled]="items.indexOf(item) === 0">▲</button>
+                                                <button class="join-item btn btn-xs btn-square btn-ghost"
+                                                    (click)="moveItem(item, 1)"
+                                                    [disabled]="items.indexOf(item) === items.length - 1">▼</button>
+                                            </div>
+                                            <button class="btn btn-sm btn-square btn-ghost text-error hover:bg-error/10"
+                                                (click)="removeItem($index)">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                    stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M19.75 9.75l-1.5 10.5a1.5 1.5 0 01-1.5 1.5h-9.5a1.5 1.5 0 01-1.5-1.5l-1.5-10.5m16.5 0h-16.5m16.5 0h-3a1.5 1.5 0 00-1.5-1.5h-6a1.5 1.5 0 00-1.5 1.5h-3" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                }
+                            </div>
+                            }
+                        </div>
+
+                        <div
+                            class="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-6 pt-4 border-t border-base-200">
+                            <button class="btn btn-ghost w-full sm:w-auto" (click)="currentStep = 1">
+                                Wróć
+                            </button>
+                            <button class="btn btn-primary w-full sm:w-auto px-8" (click)="nextStep()"
+                                [disabled]="items.length < 2">
+                                Dalej ({{ items.length }})
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+
+        @if(currentStep === 3) {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start animate-fade-in">
+
+            <div class="card bg-base-100 shadow-xl border border-base-200 overflow-hidden">
+                <figure class="relative h-56 bg-base-200">
+                    @if(previewUrl) {
+                    <img [src]="previewUrl" class="w-full h-full object-cover" alt="Podgląd" />
+                    } @else if(existingPhotoUrl) {
+                    <img [src]="existingPhotoUrl" class="w-full h-full object-cover" alt="Podgląd" />
+                    } @else {
+                    <div class="flex flex-col items-center justify-center h-full w-full text-base-content/30">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 opacity-50" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    }
+                    <div
+                        class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/70 to-transparent p-6 pt-12">
+                        <h2 class="text-white text-2xl font-bold drop-shadow-md">{{ bundleName }}</h2>
+                    </div>
+                </figure>
+
+                <div class="card-body p-6">
+                    <p class="text-base-content/80 text-sm mb-6 leading-relaxed">{{ bundleDescription || 'Brak opisu.'
+                        }}</p>
+
+                    <div class="divider text-xs font-bold text-base-content/40 uppercase tracking-widest mb-2">Zawartość
+                        Pakietu</div>
+
+                    <ul class="space-y-3">
+                        @for(item of items; track $index) {
+                        <li
+                            class="flex justify-between items-center p-3 rounded-lg bg-base-200/40 hover:bg-base-200 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <span
+                                    class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">{{
+                                    $index + 1 }}</span>
+                                <div>
+                                    <div class="font-bold text-base-content text-sm sm:text-base">{{ item.serviceName }}
+                                    </div>
+                                    <div class="text-xs text-base-content/60">{{ item.variantName }}</div>
+                                </div>
+                            </div>
+                            <span class="font-bold text-base-content whitespace-nowrap">{{ item.originalPrice |
+                                number:'1.2-2' }} zł</span>
+                        </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-primary/20 h-full">
+                <div class="card-body p-6 lg:p-8 flex flex-col">
+
+                    <h3 class="font-bold text-xl mb-6 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Ustal Cenę
+                    </h3>
+
+                    <div
+                        class="bg-base-200/40 rounded-xl p-5 border border-base-200 mb-6 flex justify-between items-center">
+                        <div>
+                            <div class="text-sm font-medium text-base-content/60 mb-1">Wartość katalogowa usług</div>
+                            <div
+                                class="text-2xl font-bold text-base-content/40 line-through decoration-base-content/30">
+                                {{ calculateTotalItemsPrice() | number:'1.2-2' }} zł
+                            </div>
+                        </div>
+                        @if(bundlePrice && bundlePrice < calculateTotalItemsPrice()) { <div
+                            class="badge badge-success badge-lg text-white font-bold p-4">
+                            -{{ ((calculateTotalItemsPrice() - bundlePrice) / calculateTotalItemsPrice() * 100) |
+                            number:'1.0-0' }}%
+                    </div>
+                    }
+                </div>
+
+                <div class="form-control mb-2">
+                    <label class="label">
+                        <span class="label-text font-semibold text-lg">Cena Pakietu</span>
+                    </label>
+                    <div class="join w-full shadow-sm">
+                        <input type="number" [(ngModel)]="bundlePrice"
+                            class="input input-bordered input-lg join-item w-full focus:input-primary font-bold text-lg"
+                            placeholder="0.00" />
+                        <div
+                            class="join-item bg-base-200 border border-base-200 px-4 flex items-center font-bold text-base-content/60">
+                            PLN
+                        </div>
+                    </div>
+
+                    <div class="label min-h-[1.5rem]">
+                        @if(bundlePrice && bundlePrice < calculateTotalItemsPrice()) { <span
+                            class="label-text-alt text-success font-medium flex items-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                            Klient oszczędza: {{ (calculateTotalItemsPrice() - (bundlePrice || 0)) | number:'1.2-2' }}
+                            zł
+                            </span>
+                            }
+                    </div>
+                </div>
+
+                @if(bundlePrice && bundlePrice > 0) {
+                @if(calculateTotalItemsPrice() <= (bundlePrice || 0)) { <div
+                    class="alert alert-warning shadow-sm mt-2 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div>
+                        <span class="font-bold">Uwaga:</span> Cena pakietu jest wyższa lub równa sumie usług.
+                    </div>
+            </div>
+            }
+            }
+
+            <div class="mt-auto pt-8 border-t border-base-200 flex justify-between items-center gap-4">
+                <button class="btn btn-ghost" (click)="currentStep = 2">Wróć</button>
+                <button class="btn btn-primary text-white flex-1 btn-lg shadow-lg hover:shadow-xl transition-all"
+                    (click)="createBundle()" [disabled]="!bundlePrice || isSaving">
+                    @if(isSaving) { <span class="loading loading-spinner"></span> }
+                    {{ isEditMode ? 'Zapisz Zmiany' : 'Utwórz Pakiet' }}
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+}
+
+</div>
 </div>

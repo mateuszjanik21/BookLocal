@@ -27,7 +27,7 @@ export class AddServiceModalComponent {
     description: [''],
     price: [null, [Validators.required, Validators.min(0)]],
     durationMinutes: [null, [Validators.required, Validators.min(1)]],
-    cleanupTimeMinutes: [0, [Validators.min(0)]]
+    cleanupTimeMinutes: [null as number | null, [Validators.min(0)]]
   });
 
   onSubmit() {

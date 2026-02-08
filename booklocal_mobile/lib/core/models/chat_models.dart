@@ -29,7 +29,7 @@ class ConversationDto {
 
 class MessageDto {
   final int id;
-  final String senderId; // <--- ZMIANA: int -> String
+  final String senderId;
   final String content;
   final DateTime messageSent;
   final bool isRead;
@@ -45,7 +45,6 @@ class MessageDto {
   factory MessageDto.fromJson(Map<String, dynamic> json) {
     return MessageDto(
       id: json['id'] ?? 0,
-      // Teraz bezpiecznie rzutujemy na String
       senderId: json['senderId'].toString(), 
       content: json['content'] ?? '',
       messageSent: DateTime.tryParse(json['messageSent'] ?? '') ?? DateTime.now(),

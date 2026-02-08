@@ -37,10 +37,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
     final chatService = Provider.of<ChatService>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
 
-    // 1. Pobierz moje ID (żeby wiedzieć, które dymki są moje)
     _currentUserId = authService.currentUser?.id ?? "";
 
-    // 2. Pobierz historię wiadomości (REST API)
     final history = await chatService.getMessageThread(widget.conversationId);
 
     if (mounted) {
@@ -51,10 +49,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
       _scrollToBottom();
     }
 
-    // 3. Połącz z SignalR (WebSockets)
     await chatService.startHubConnection(widget.conversationId);
-
-    // 4. Nasłuchuj na nowe wiadomości
     chatService.onMessageReceived = (newMessage) {
       if (mounted) {
         setState(() {
@@ -66,7 +61,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
   }
 
   void _scrollToBottom() {
-    // Przewiń na sam dół po krótkim opóźnieniu (żeby UI zdążyło się narysować)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -86,10 +80,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
     final chatService = Provider.of<ChatService>(context, listen: false);
     final authService = Provider.of<AuthService>(context, listen: false);
 
-    // 1. OPTYMISTYCZNE DODANIE WIADOMOŚCI (Żeby użytkownik widział ją od razu)
     final tempMessage = MessageDto(
-      id: 0, // Tymczasowe ID
-      senderId: authService.currentUser?.id ?? "", // Twoje ID (String)
+      id: 0,
+      senderId: authService.currentUser?.id ?? "",
       content: text,
       messageSent: DateTime.now(),
       isRead: false,
@@ -100,20 +93,10 @@ class _ConversationScreenState extends State<ConversationScreen> {
     });
     _scrollToBottom();
 
-    // 2. WYSŁANIE DO SERWERA
     try {
       await chatService.sendMessage(widget.conversationId, text);
       
-      // Uwaga: ChatHub odeśle do nas zdarzenie 'ReceiveMessage'.
-      // Ponieważ dodaliśmy wiadomość "ręcznie" powyżej, jak przyjdzie z serwera, 
-      // będziemy mieć dubla.
-      // 
-      // Rozwiązanie: W onMessageReceived (w initState) sprawdzaj, czy wiadomość już jest,
-      // albo po prostu nie dodawaj optymistycznie, jeśli wolisz pewność. 
-      // Ale przy optymistycznym UI, zazwyczaj podmienia się wiadomość tymczasową na tę z serwera.
-      
     } catch (e) {
-      // Jak błąd -> usuń tymczasową wiadomość i pokaż błąd
       setState(() {
         _messages.remove(tempMessage);
       });
@@ -124,7 +107,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   @override
   void dispose() {
-    // Rozłącz SignalR przy wyjściu z ekranu
     Provider.of<ChatService>(context, listen: false).stopHubConnection();
     _messageController.dispose();
     _scrollController.dispose();
@@ -143,7 +125,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
       ),
       body: Column(
         children: [
-          // LISTA WIADOMOŚCI
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -161,7 +142,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       ),
           ),
 
-          // PASEK WPROWADZANIA
           Container(
             padding: const EdgeInsets.all(10),
             color: Colors.white,
@@ -236,7 +216,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
             ),
             const SizedBox(height: 4),
            Text(
-              // DODANO: .toLocal() - to naprawi godzinę
               DateFormat('HH:mm').format(msg.messageSent.toLocal()),
               style: TextStyle(
                 color: isMe ? Colors.white.withOpacity(0.7) : Colors.grey,

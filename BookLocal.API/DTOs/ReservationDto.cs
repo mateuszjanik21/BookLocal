@@ -18,7 +18,6 @@ namespace BookLocal.API.DTOs
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string Status { get; set; }
-
         public int ServiceVariantId { get; set; }
         public string VariantName { get; set; }
         public string ServiceName { get; set; }
@@ -91,5 +90,26 @@ namespace BookLocal.API.DTOs
         public DateTime StartTime { get; set; }
         public string? DiscountCode { get; set; }
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+    }
+
+    public class ReservationSqlDto
+    {
+        public int ReservationId { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public string Status { get; set; }
+        public decimal AgreedPrice { get; set; }
+        public string PaymentMethod { get; set; }
+        public int ServiceVariantId { get; set; }
+        public string VariantName { get; set; }
+        public string ServiceName { get; set; }
+        public int BusinessId { get; set; }
+        public string BusinessName { get; set; }
+        public int EmployeeId { get; set; }
+        public string EmployeeFullName { get; set; }
+        public string? CustomerId { get; set; }
+        public string? CustomerFullName { get; set; }
+        public string? GuestName { get; set; }
+        public bool HasReview { get; set; }
     }
 }

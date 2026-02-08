@@ -26,4 +26,8 @@ export class ServiceBundleService {
   deleteBundle(businessId: number, bundleId: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${businessId}/bundles/${bundleId}`);
   }
+
+  updateBundle(businessId: number, bundleId: number, payload: CreateServiceBundlePayload): Observable<ServiceBundle> {
+    return this.http.put<ServiceBundle>(`${this.apiUrl}/${businessId}/bundles/${bundleId}`, payload);
+  }
 }

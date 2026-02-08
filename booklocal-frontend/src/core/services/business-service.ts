@@ -81,4 +81,8 @@ export class BusinessService {
   uploadTemplate(formData: FormData): Observable<any> {
       return this.http.post(`${this.apiUrl}/document/upload-template`, formData);
   }
+
+  getDashboardData(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/businesses/dashboard-data`);
+  }
 }

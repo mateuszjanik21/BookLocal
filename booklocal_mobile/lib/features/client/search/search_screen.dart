@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/models/business_list_item_dto.dart';
 import '../../../core/services/client_service.dart';
-import '../home/business_details_screen.dart'; // Żeby móc wejść w firmę z wyników
+import '../home/business_details_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -14,15 +14,12 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   
-  // Wszystkie firmy pobrane z API
   List<BusinessListItemDto> _allBusinesses = [];
-  // Firmy aktualnie wyświetlane (przefiltrowane)
   List<BusinessListItemDto> _filteredBusinesses = [];
   
   bool _isLoading = true;
   String _selectedCategory = 'Wszystkie';
 
-  // Lista dostępnych kategorii
   final List<String> _categories = [
     'Wszystkie',
     'Fryzjer',
@@ -39,30 +36,26 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _loadData() async {
-    // Pobieramy dane z serwisu
     final service = Provider.of<ClientService>(context, listen: false);
     final data = await service.getBusinesses();
 
     if (mounted) {
       setState(() {
         _allBusinesses = data;
-        _filteredBusinesses = data; // Na początku pokazujemy wszystko
+        _filteredBusinesses = data;
         _isLoading = false;
       });
     }
   }
 
-  // Główna logika filtrowania
   void _filterResults() {
     final query = _searchController.text.toLowerCase();
     
     setState(() {
       _filteredBusinesses = _allBusinesses.where((business) {
-        // 1. Sprawdź czy pasuje do kategorii (jeśli wybrana inna niż Wszystkie)
         final matchesCategory = _selectedCategory == 'Wszystkie' || 
                                 business.category == _selectedCategory;
         
-        // 2. Sprawdź czy pasuje do wpisanego tekstu (Nazwa LUB Miasto)
         final matchesQuery = business.name.toLowerCase().contains(query) || 
                              business.city.toLowerCase().contains(query);
 
@@ -87,12 +80,11 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Pasek wyszukiwania
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextField(
                 controller: _searchController,
-                onChanged: (value) => _filterResults(), // Filtruj przy każdej literce
+                onChanged: (value) => _filterResults(),
                 decoration: InputDecoration(
                   hintText: 'Szukaj (np. Barber, Wrocław)...',
                   prefixIcon: const Icon(Icons.search),
@@ -115,7 +107,6 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
 
-            // 2. Kategorie (Filtry poziome)
             SizedBox(
               height: 50,
               child: ListView.builder(
@@ -133,7 +124,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       selected: isSelected,
                       onSelected: (bool selected) {
                         setState(() {
-                          _selectedCategory = cat; // Zawsze wybieramy klikniętą (proste zachowanie)
+                          _selectedCategory = cat;
                           _filterResults();
                         });
                       },
@@ -149,7 +140,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           color: isSelected ? primaryColor : Colors.grey.shade300,
                         ),
                       ),
-                      showCheckmark: false, // Ukrywamy "ptaszka", zmieniamy tylko kolor
+                      showCheckmark: false,
                     ),
                   );
                 },
@@ -158,7 +149,6 @@ class _SearchScreenState extends State<SearchScreen> {
             
             const Divider(height: 30),
 
-            // 3. Lista Wyników
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -187,11 +177,9 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // Karta pojedynczego wyniku (mniejsza niż na Home)
   Widget _buildSearchResultItem(BusinessListItemDto business) {
     return GestureDetector(
       onTap: () {
-        // Przejście do szczegółów (tak samo jak z Home)
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -216,7 +204,6 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         child: Row(
           children: [
-            // Zdjęcie (Miniatura)
             Container(
               width: 80,
               height: 80,
@@ -232,7 +219,6 @@ class _SearchScreenState extends State<SearchScreen> {
                   : null,
             ),
             const SizedBox(width: 16),
-            // Opis
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

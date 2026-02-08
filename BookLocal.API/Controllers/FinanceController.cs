@@ -1,4 +1,5 @@
 ﻿using BookLocal.Data.Models;
+using BookLocal.API.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,30 @@ namespace BookLocal.API.Controllers
         {
             _context = context;
         }
+
+        [HttpGet("reports-live")]
+        public async Task<ActionResult<IEnumerable<FinanceReportSqlDto>>> GetLiveReports(
+            int businessId,
+            [FromQuery] DateOnly startDate,
+            [FromQuery] DateOnly endDate)
+        {
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId))
+                return Forbid();
+
+            var reports = await _context.Database
+                .SqlQueryRaw<FinanceReportSqlDto>(
+                    "EXEC GetFinanceReport @BusinessId, @StartDate, @EndDate",
+                    new Microsoft.Data.SqlClient.SqlParameter("@BusinessId", businessId),
+                    new Microsoft.Data.SqlClient.SqlParameter("@StartDate", startDate.ToDateTime(TimeOnly.MinValue)),
+                    new Microsoft.Data.SqlClient.SqlParameter("@EndDate", endDate.ToDateTime(TimeOnly.MaxValue))
+                )
+                .ToListAsync();
+
+            return Ok(reports);
+        }
+
+
 
         [HttpPost("generate-range")]
         public async Task<ActionResult> GenerateReportRange(int businessId, [FromQuery] DateOnly startDate, [FromQuery] DateOnly endDate)
@@ -225,6 +250,11 @@ namespace BookLocal.API.Controllers
                 .ToListAsync();
 
             var reservationIds = reservations.Select(r => r.ReservationId).ToList();
+
+            var payments = await _context.Payments
+                .Where(p => reservationIds.Contains(p.ReservationId) && p.Status == PaymentStatus.Completed)
+                .ToListAsync();
+
             var reviews = await _context.Reviews
                 .Where(r => r.ReservationId.HasValue && reservationIds.Contains(r.ReservationId.Value))
                 .ToListAsync();
@@ -243,7 +273,10 @@ namespace BookLocal.API.Controllers
                 var completed = empReservations.Where(r => r.Status == ReservationStatus.Completed).ToList();
                 var cancelled = empReservations.Where(r => r.Status == ReservationStatus.Cancelled).ToList();
 
-                decimal revenue = completed.Sum(r => r.ServiceVariant.Price);
+                var completedReservationIds = completed.Select(r => r.ReservationId).ToList();
+                decimal revenue = payments
+                    .Where(p => completedReservationIds.Contains(p.ReservationId))
+                    .Sum(p => p.Amount);
 
                 decimal empCommRate = emp.FinanceSettings?.CommissionPercentage ?? 0;
                 decimal commission = revenue * (empCommRate / 100m);

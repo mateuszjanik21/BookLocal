@@ -18,7 +18,6 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Gwiazdki
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (index) {
@@ -37,7 +36,6 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
             }),
           ),
           const SizedBox(height: 15),
-          // Pole tekstowe
           TextField(
             controller: _commentController,
             decoration: const InputDecoration(
@@ -50,12 +48,11 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context), // Anuluj -> null
+          onPressed: () => Navigator.pop(context),
           child: const Text("Anuluj", style: TextStyle(color: Colors.grey)),
         ),
         ElevatedButton(
           onPressed: () {
-            // Zwracamy mapę z danymi
             Navigator.pop(context, {
               'rating': _rating,
               'comment': _commentController.text.trim(),

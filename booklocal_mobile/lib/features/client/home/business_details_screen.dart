@@ -1,4 +1,4 @@
-import 'dart:ui'; // Potrzebne do ImageFilter
+import 'dart:ui';
 import 'package:booklocal_mobile/core/services/chat_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -89,15 +89,13 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Definiujemy kolory
     const primaryColor = Color(0xFF16a34a);
-    const backgroundColor = Color(0xFFF3F4F6); // Jasnoszary, jak w Angularze (bg-base-200)
+    const backgroundColor = Color(0xFFF3F4F6);
 
     return Scaffold(
       backgroundColor: backgroundColor,
       body: CustomScrollView(
         slivers: [
-          // 1. PROFESJONALNY HEADER (Banner z rozmyciem)
           SliverAppBar(
             expandedHeight: 320.0,
             floating: false,
@@ -108,12 +106,10 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Tło (Zdjęcie)
                   widget.business.photoUrl != null
                       ? Image.network(widget.business.photoUrl!, fit: BoxFit.cover)
                       : Container(color: Colors.grey[800]),
                   
-                  // Efekt rozmycia i przyciemnienia (Glassmorphism)
                   BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
                     child: Container(
@@ -121,13 +117,11 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                     ),
                   ),
 
-                  // Zawartość Headera (Avatar, Nazwa, Ocena)
                   Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 40), // Miejsce na status bar
-                        // Avatar z pierścieniem
+                        const SizedBox(height: 40),
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
@@ -146,7 +140,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                           ),
                         ),
                         const SizedBox(height: 15),
-                        // Nazwa
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Text(
@@ -161,13 +154,11 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                           ),
                         ),
                         const SizedBox(height: 5),
-                        // Miasto
                         Text(
                           widget.business.city,
                           style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 16),
                         ),
                         const SizedBox(height: 15),
-                        // Gwiazdki (Badge)
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
@@ -195,7 +186,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
             ),
           ),
 
-          // 2. KARTA "O NAS" (Description)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
@@ -206,7 +196,7 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Zapraszamy do naszego salonu w mieście ${widget.business.city}. Oferujemy profesjonalne usługi najwyższej jakości.", // Placeholder jeśli brak opisu w DTO
+                      "Zapraszamy do naszego salonu w mieście ${widget.business.city}. Oferujemy profesjonalne usługi najwyższej jakości.",
                       style: TextStyle(color: Colors.grey[700], height: 1.5),
                     ),
                     const SizedBox(height: 15),
@@ -231,7 +221,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
             ),
           ),
 
-          // 3. KARTA "CENNIK USŁUG"
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -253,7 +242,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
             ),
           ),
 
-          // 4. KARTA "OPINIE"
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
@@ -282,9 +270,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
     );
   }
 
-  // --- WIDGETY POMOCNICZE ---
-
-  // Ogólna biała karta sekcji (jak w Angularze 'card bg-base-100')
   Widget _buildSectionCard({required String title, required IconData icon, required Widget child}) {
     return Container(
       decoration: BoxDecoration(
@@ -321,7 +306,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
     );
   }
 
-  // Wiersz usługi (Service Row)
   Widget _buildServiceRow(ServiceDto service) {
     return Material(
       color: Colors.transparent,
@@ -342,7 +326,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           child: Row(
             children: [
-              // 1. Nazwa i czas trwania (Lewa strona)
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,7 +335,7 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
-                        color: Color(0xFF1F2937), // Ciemny grafit
+                        color: Color(0xFF1F2937),
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -370,7 +353,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                 ),
               ),
 
-              // 2. Cena i strzałka (Prawa strona)
               Row(
                 children: [
                   Text(
@@ -378,14 +360,14 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: Color(0xFF16a34a), // Twój zielony kolor firmowy
+                      color: Color(0xFF16a34a),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 14,
-                    color: Colors.grey[300], // Subtelna strzałka
+                    color: Colors.grey[300],
                   ),
                 ],
               ),
@@ -396,12 +378,10 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
     );
   }
 
-  // Karta Opinii (z dymkiem)
   Widget _buildReviewItem(ReviewDto review) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Avatar
         CircleAvatar(
           radius: 20,
           backgroundColor: Colors.grey[200],
@@ -412,7 +392,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
               : null,
         ),
         const SizedBox(width: 12),
-        // Treść
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,7 +407,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                 ],
               ),
               const SizedBox(height: 4),
-              // Gwiazdki
               Row(
                 children: List.generate(5, (index) {
                   return Icon(
@@ -439,13 +417,12 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                 }),
               ),
               const SizedBox(height: 8),
-              // Dymek z komentarzem (jak w Angularze)
               if (review.comment.isNotEmpty)
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100], // Szare tło (bg-base-200/50)
+                    color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

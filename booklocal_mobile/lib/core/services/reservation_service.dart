@@ -1,18 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart'; // Dodaj intl do pubspec.yaml jeśli nie masz
+import 'package:intl/intl.dart';
 import '../constants/api_config.dart';
 import '../models/reservation_models.dart';
-import 'auth_service.dart'; // Potrzebujemy tokena do rezerwacji
+import 'auth_service.dart';
 
 class ReservationService {
   final AuthService? _authService;
 
   ReservationService([this._authService]); 
 
-  // 1. Pobierz wolne sloty (godziny)
   Future<List<String>> getAvailableSlots(int employeeId, int serviceId, DateTime date) async {
-    // Format daty zgodny z backendem (yyyy-MM-dd)
     final dateStr = DateFormat('yyyy-MM-dd').format(date);
     
     final url = Uri.parse('${ApiConfig.baseUrl}/employees/$employeeId/availability?serviceId=$serviceId&date=$dateStr');
@@ -31,7 +29,6 @@ class ReservationService {
     }
   }
 
-  // 2. Utwórz rezerwację
   Future<bool> createReservation(int serviceId, int employeeId, DateTime fullDate) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/reservations');
     final token = _authService?.token;
@@ -63,11 +60,10 @@ class ReservationService {
   }
 
   Future<List<ReservationDto>> getMyReservations({String scope = 'upcoming'}) async {
-    // Dynamicznie podstawiamy scope do URL
     final uri = Uri.parse('${ApiConfig.baseUrl}/reservations/my-reservations').replace(queryParameters: {
-      'scope': scope, // 'upcoming' lub 'past'
+      'scope': scope,
       'pageNumber': '1',
-      'pageSize': '50', // Pobieramy więcej, żeby na razie pominąć paginację
+      'pageSize': '50',
     });
 
     final token = _authService?.token;
@@ -84,7 +80,6 @@ class ReservationService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         
-        // Wyciągamy dane z pola 'items' (PagedResult)
         if (jsonResponse.containsKey('items') && jsonResponse['items'] is List) {
           final List<dynamic> items = jsonResponse['items'];
           return items.map((json) => ReservationDto.fromJson(json)).toList();
@@ -111,7 +106,6 @@ class ReservationService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        // PATCH często nie wymaga body, jeśli ID jest w URL, ale czasem warto wysłać puste {}
         body: jsonEncode({}), 
       );
 

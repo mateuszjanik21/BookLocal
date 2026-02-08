@@ -26,9 +26,9 @@ export class VariantModalComponent implements OnChanges {
   isSubmitting = false;
   variantForm = this.fb.group({
     name: ['', Validators.required],
-    price: [0, [Validators.required, Validators.min(0)]],
-    durationMinutes: [30, [Validators.required, Validators.min(1)]],
-    cleanupTimeMinutes: [0, [Validators.min(0)]]
+    price: [null as number | null, [Validators.required, Validators.min(0)]],
+    durationMinutes: [null as number | null, [Validators.required, Validators.min(1)]],
+    cleanupTimeMinutes: [null as number | null, [Validators.min(0)]]
   });
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -42,9 +42,9 @@ export class VariantModalComponent implements OnChanges {
     } else if (changes['isVisible'] && this.isVisible && !this.variant) {
        this.variantForm.reset({
           name: '',
-          price: 0,
-          durationMinutes: 30,
-          cleanupTimeMinutes: 0
+          price: null,
+          durationMinutes: null,
+          cleanupTimeMinutes: null
        });
     }
   }
@@ -73,18 +73,25 @@ export class VariantModalComponent implements OnChanges {
       } as any);
     }
 
+    this.updateServiceVariants(updatedVariants, this.variant ? 'Wariant zaktualizowany!' : 'Dodano nowy wariant!');
+  }
+
+
+  private updateServiceVariants(variants: any[], successMessage: string) {
+    if (!this.service) return;
+
     const payload = {
       name: this.service.name,
       description: this.service.description,
       serviceCategoryId: this.service.serviceCategoryId,
-      variants: updatedVariants
+      variants: variants
     };
 
     this.serviceService.updateService(this.businessId, this.service.id, payload as any)
       .pipe(finalize(() => this.isSubmitting = false))
       .subscribe({
         next: () => {
-          this.toastr.success(this.variant ? 'Wariant zaktualizowany!' : 'Dodano nowy wariant!');
+          this.toastr.success(successMessage);
           this.closed.emit(true);
         },
         error: (err) => this.toastr.error(`Błąd: ${err.error.title || 'Sprawdź dane.'}`)

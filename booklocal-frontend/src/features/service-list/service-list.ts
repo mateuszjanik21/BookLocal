@@ -85,7 +85,9 @@ export class ServiceListComponent implements OnInit {
         price: item.price,
         durationMinutes: item.durationMinutes,
         cleanupTimeMinutes: 0,
-        isDefault: true
+        isDefault: true,
+        isActive: true,
+        favoritesCount: 0
       }]
     };
     this.selectedService = serviceForModal;

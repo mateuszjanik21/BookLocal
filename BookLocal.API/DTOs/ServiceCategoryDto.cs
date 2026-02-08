@@ -15,6 +15,7 @@ namespace BookLocal.API.DTOs
         public int ServiceCategoryId { get; set; }
         public required string Name { get; set; }
         public string? PhotoUrl { get; set; }
+        public bool IsArchived { get; set; }
         public List<ServiceDto> Services { get; set; } = new();
     }
 

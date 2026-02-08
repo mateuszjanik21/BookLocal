@@ -34,6 +34,8 @@ namespace BookLocal.API.DTOs
         public int DurationMinutes { get; set; }
         public int CleanupTimeMinutes { get; set; }
         public bool IsDefault { get; set; }
+        public bool IsActive { get; set; }
+        public int FavoritesCount { get; set; }
     }
 
     public class ServiceDto

@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/models/chat_models.dart';
 import 'conversation_screen.dart';
-// import 'conversation_screen.dart'; // To stworzymy za chwilę
 
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -19,7 +18,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   void initState() {
     super.initState();
-    // Pobierz rozmowy przy wejściu na ekran
     _conversationsFuture = Provider.of<ChatService>(context, listen: false).getMyConversations();
   }
 

@@ -1,8 +1,6 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { ReservationService } from '../../core/services/reservation';
 import { BusinessService } from '../../core/services/business-service';
 import { ReviewService } from '../../core/services/review';
@@ -18,10 +16,7 @@ import { BusinessDetail } from '../../types/business.model';
   templateUrl: './dashboard-home.html',
 })
 export class DashboardHomeComponent implements OnInit, OnDestroy {
-  private reservationService = inject(ReservationService);
   private businessService = inject(BusinessService);
-  private reviewService = inject(ReviewService);
-  private customerService = inject(CustomerService);
 
   public currentDate = new Date();
   private clockInterval: any;
@@ -30,9 +25,10 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   business: BusinessDetail | null = null;
   todaysReservations: Reservation[] = [];
   latestReviews: Review[] = [];
+  hasVariants = false;
 
   stats = {
-    upcomingCount: 0,
+    upcomingReservationsCount: 0,
     employeeCount: 0,
     serviceCount: 0,
     clientCount: 0
@@ -45,30 +41,14 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
     this.businessService.getMyBusiness().subscribe(businessDetails => {
       this.business = businessDetails;
+    });
 
-      forkJoin({
-        reservations: this.reservationService.getCalendarEvents(),
-        reviews: this.reviewService.getReviews(businessDetails.id, 1, 3),
-        customers: this.customerService.getCustomers(businessDetails.id, '', 1, 1)
-      }).pipe(
-        map(({ reservations, reviews, customers }) => {
-          const now = new Date();
-          const todayStart = new Date(now.setHours(0, 0, 0, 0));
-          const todayEnd = new Date(now.setHours(23, 59, 59, 999));
-
-          this.todaysReservations = reservations
-            .filter(r => new Date(r.startTime) >= todayStart && new Date(r.startTime) <= todayEnd)
-            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
-          this.latestReviews = reviews.items;
-          
-          this.stats.upcomingCount = reservations.filter(r => new Date(r.startTime) >= new Date()).length;
-          this.stats.employeeCount = businessDetails.employees.length;
-          this.stats.serviceCount = businessDetails.categories.flatMap(c => c.services).length;
-          this.stats.clientCount = customers.totalCount;
-        })
-      ).subscribe(() => {
+    this.businessService.getDashboardData().subscribe((data: any) => {
+        this.stats = data.stats;
+        this.todaysReservations = data.todaysReservations;
+        this.latestReviews = data.latestReviews;
+        this.hasVariants = data.stats.hasVariants;
         this.isLoading = false;
-      });
     });
   }
   

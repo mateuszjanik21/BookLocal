@@ -64,20 +64,49 @@
 
               <div class="space-y-2">
                 @for (service of category.services; track service.id) {
-                <div class="service-row flex justify-between items-center p-2 rounded-lg">
-                  <div>
-                    <p class="font-semibold">{{ service.name }}</p>
-                    <p class="text-sm text-base-content/60">{{ service.variants[0].durationMinutes }} min</p>
-                  </div>
-                  <div class="flex items-center gap-4">
-                    <span class="font-mono font-semibold">{{ service.variants[0].price }} zł</span>
-                    @if ((authService.currentUser$ | async); as user) {
-                    @if (user.roles.includes('customer')) {
-                    <button class="btn btn-secondary btn-sm"
-                      (click)="openReservationModal(service, reservation_modal)">Rezerwuj</button>
+                <div class="bg-base-100 rounded-lg p-3 border border-base-200">
+                    <div class="font-bold text-lg mb-2">{{ service.name }}</div>
+                    @if(service.description) {
+                        <p class="text-sm text-base-content/70 mb-3">{{ service.description }}</p>
                     }
-                    }
-                  </div>
+                    
+                    <div class="space-y-2">
+                        @for (variant of service.variants; track variant.serviceVariantId) {
+                            <div class="flex justify-between items-center p-2 hover:bg-base-200/50 rounded-lg transition-colors border border-transparent hover:border-base-200">
+                                <div>
+                                    <div class="font-medium">
+                                        {{ variant.name }}
+                                        @if(variant.isDefault) { <span class="badge badge-xs badge-neutral ml-2">Domyślny</span> }
+                                    </div>
+                                    <div class="text-xs text-base-content/60">{{ variant.durationMinutes }} min</div>
+                                </div>
+                                
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold">{{ variant.price }} zł</span>
+                                    
+                                     @if ((authService.currentUser$ | async); as user) {
+                                        @if (user.roles.includes('customer')) {
+                                            <button class="btn btn-sm btn-secondary" 
+                                                (click)="openReservationModal(service, variant, reservation_modal)">
+                                                Rezerwuj
+                                            </button>
+                                            
+                                            <button class="btn btn-ghost btn-circle btn-sm text-error" 
+                                                (click)="toggleFavorite(variant, $event)" 
+                                                title="Dodaj do ulubionych">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" 
+                                                    [attr.fill]="isFavorite(variant.serviceVariantId) ? 'currentColor' : 'none'" 
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                                </svg>
+                                            </button>
+                                        }
+                                     }
+                                </div>
+                            </div>
+                        }
+                    </div>
                 </div>
                 } @empty {
                 <p class="p-4 text-center text-base-content/70">Brak usług w tej kategorii.</p>
@@ -91,7 +120,6 @@
         </div>
       </div>
 
-      <!-- BUNDLES SECTION -->
       <div *ngIf="bundles.length > 0" class="card bg-base-100 shadow-xl p-6 fade-in-up">
         <h2 class="text-3xl font-bold mb-6 border-b pb-4">Pakiety Usług</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -107,7 +135,6 @@
                         </ul>
                          <div class="card-actions justify-end items-center mt-4">
                             <span class="text-xl font-bold">{{ bundle.totalPrice | currency:'PLN' }}</span>
-                            <!-- Show Book Button only for Customers -->
                              @if ((authService.currentUser$ | async); as user) {
                                 @if (user.roles.includes('customer')) {
                                     <button class="btn btn-primary" (click)="openBookBundleModal(bundle)">Rezerwuj Pakiet</button>

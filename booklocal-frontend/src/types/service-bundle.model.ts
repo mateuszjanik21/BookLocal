@@ -28,5 +28,6 @@ export interface CreateServiceBundlePayload {
   name: string;
   description?: string;
   totalPrice: number;
+  isActive: boolean;
   items: CreateServiceBundleItemPayload[];
 }

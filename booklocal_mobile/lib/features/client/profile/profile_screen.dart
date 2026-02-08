@@ -23,7 +23,6 @@ class ProfileScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Tu w przyszłości ustawienia
             },
           )
         ],
@@ -33,7 +32,6 @@ class ProfileScreen extends StatelessWidget {
           children: [
             const SizedBox(height: 30),
             
-            // 1. Sekcja Zdjęcia i Nazwy
             Center(
               child: Column(
                 children: [
@@ -64,7 +62,6 @@ class ProfileScreen extends StatelessWidget {
                             ? Icon(Icons.person, size: 60, color: Colors.grey[400])
                             : null,
                       ),
-                      // Przycisk edycji zdjęcia (na razie tylko UI)
                       Positioned(
                         bottom: 0,
                         right: 0,
@@ -95,7 +92,6 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // 2. Menu Opcji
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
@@ -112,8 +108,6 @@ class ProfileScreen extends StatelessWidget {
                   _buildProfileOption(Icons.lock_outline, "Zmiana hasła", () {}),
                   const Divider(height: 1),
                   _buildProfileOption(Icons.history, "Historia rezerwacji", () {
-                    // Przełącz na zakładkę rezerwacji (indeks 2)
-                    // Wymagałoby dostępu do MainScreen, na razie zostawmy puste
                   }),
                   const Divider(height: 1),
                   _buildProfileOption(Icons.notifications_outlined, "Powiadomienia", () {}),
@@ -123,13 +117,11 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // 3. Przycisk Wyloguj
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: TextButton(
                 onPressed: () async {
                   await authService.logout();
-                  // Po wylogowaniu przenosimy do LoginScreen
                   if (context.mounted) {
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (context) => const LoginScreen()),

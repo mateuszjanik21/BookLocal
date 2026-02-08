@@ -9,5 +9,6 @@ namespace BookLocal.Data.Models
         public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
         public string? PhotoUrl { get; set; }
         public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+        public virtual ICollection<UserFavoriteService> FavoriteServices { get; set; } = new List<UserFavoriteService>();
     }
 }

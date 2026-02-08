@@ -85,6 +85,12 @@ export class FinanceDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Restore saved view mode from localStorage
+    const savedViewMode = localStorage.getItem('finance-dashboard-viewMode');
+    if (savedViewMode && ['day', 'week', 'month'].includes(savedViewMode)) {
+        this.viewMode = savedViewMode as 'day' | 'week' | 'month';
+    }
+
     this.businessService.getMyBusiness().subscribe({
       next: (business) => {
         if (business) {
@@ -99,7 +105,8 @@ export class FinanceDashboardComponent implements OnInit {
 
   changeViewMode(mode: 'day' | 'week' | 'month') {
       this.viewMode = mode;
-      this.currentDate = new Date(); 
+      this.currentDate = new Date();
+      localStorage.setItem('finance-dashboard-viewMode', mode);
       this.loadData();
   }
 
@@ -149,17 +156,17 @@ export class FinanceDashboardComponent implements OnInit {
       }
 
       this.loadEmployeePerformance(start, end);
+      this.loadReports(start, end);
       
       this.selectedMonth = this.currentDate.getMonth() + 1;
       this.selectedYear = this.currentDate.getFullYear();
-      this.loadReports(); 
   }
 
-  loadReports(): void {
+  loadReports(start: string, end: string): void {
     if (!this.businessId) return;
 
     this.isLoading = true;
-    this.financeService.getReports(this.businessId, this.selectedMonth, this.selectedYear).subscribe({
+    this.financeService.getLiveReports(this.businessId, start, end).subscribe({
       next: (data) => {
         this.reports = data;
         this.isLoading = false;
@@ -269,7 +276,7 @@ export class FinanceDashboardComponent implements OnInit {
       this.financeService.deleteReport(this.businessId, date).subscribe({
           next: () => {
               this.toastr.success('Raport usunięty.');
-              this.loadReports();
+              this.loadData();
           },
           error: () => this.toastr.error('Nie udało się usunąć raportu.')
       });
@@ -438,29 +445,29 @@ export class FinanceDashboardComponent implements OnInit {
   }
 
   get monthTotalRevenue(): number {
-      return this.visibleReports.reduce((sum, r) => sum + r.totalRevenue, 0);
+      return this.reports.reduce((sum, r) => sum + r.totalRevenue, 0);
   }
   get monthCashRevenue(): number {
-    return this.visibleReports.reduce((sum, r) => sum + r.cashRevenue, 0);
+    return this.reports.reduce((sum, r) => sum + r.cashRevenue, 0);
   }
   get monthCardRevenue(): number {
-      return this.visibleReports.reduce((sum, r) => sum + r.cardRevenue, 0);
+      return this.reports.reduce((sum, r) => sum + r.cardRevenue, 0);
   }
   get monthOnlineRevenue(): number {
-    return this.visibleReports.reduce((sum, r) => sum + r.onlineRevenue, 0);
+    return this.reports.reduce((sum, r) => sum + r.onlineRevenue, 0);
   }
   get monthTotalAppointments(): number {
-      return this.visibleReports.reduce((sum, r) => sum + r.totalAppointments, 0);
+      return this.reports.reduce((sum, r) => sum + r.totalAppointments, 0);
   }
   get monthCompletedAppointments(): number {
-      return this.visibleReports.reduce((sum, r) => sum + r.completedAppointments, 0);
+      return this.reports.reduce((sum, r) => sum + r.completedAppointments, 0);
   }
   get monthTotalCommission(): number {
-      return this.visibleReports.reduce((sum, r) => sum + (r as any).totalCommission, 0);
+      return this.reports.reduce((sum, r) => sum + (r as any).totalCommission, 0);
   }
 
   get monthNewCustomers(): number {
-      return this.visibleReports.reduce((sum, r) => sum + r.newCustomersCount, 0);
+      return this.reports.reduce((sum, r) => sum + r.newCustomersCount, 0);
   }
 
   get monthAverageTicketValue(): number {

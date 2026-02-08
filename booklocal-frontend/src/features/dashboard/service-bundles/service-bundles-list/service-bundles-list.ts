@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ServiceBundleService } from '../../../../core/services/service-bundle';
 import { BusinessService } from '../../../../core/services/business-service';
-import { ServiceBundle } from '../../../../types/service-bundle.model';
+import { ServiceBundle, CreateServiceBundlePayload } from '../../../../types/service-bundle.model';
 import { ToastrService } from 'ngx-toastr';
 import { switchMap } from 'rxjs';
 
@@ -51,5 +51,35 @@ export class ServiceBundlesListComponent implements OnInit {
         },
         error: () => this.toastr.error('Wystąpił błąd podczas usuwania.')
     });
+  }
+
+  toggleActive(bundle: ServiceBundle) {
+      const newStatus = !bundle.isActive;
+      
+      const payload = this.mapToPayload(bundle);
+      payload.isActive = newStatus;
+
+      this.serviceBundleService.updateBundle(bundle.businessId, bundle.serviceBundleId, payload).subscribe({
+          next: () => {
+              bundle.isActive = newStatus;
+              this.toastr.success(newStatus ? 'Pakiet jest teraz aktywny.' : 'Pakiet został wyłączony.');
+          },
+          error: () => {
+              this.toastr.error('Nie udało się zmienić statusu.');
+          }
+      });
+  }
+
+  private mapToPayload(bundle: ServiceBundle): CreateServiceBundlePayload {
+      return {
+          name: bundle.name,
+          description: bundle.description,
+          totalPrice: bundle.totalPrice,
+          isActive: bundle.isActive,
+          items: bundle.items.map(item => ({
+              serviceVariantId: item.serviceVariantId,
+              sequenceOrder: item.sequenceOrder
+          }))
+      };
   }
 }

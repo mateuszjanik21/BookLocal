@@ -31,8 +31,11 @@ export class ReservationService {
     return this.http.get<PagedResult<Reservation>>(`${this.apiUrl}/reservations/my-reservations`, { params });
   }
 
-  getCalendarEvents(): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(`${this.apiUrl}/reservations/calendar`);
+  getCalendarEvents(start: string, end: string): Observable<Reservation[]> {
+    const params = new HttpParams()
+      .set('start', start)
+      .set('end', end);
+    return this.http.get<Reservation[]>(`${this.apiUrl}/reservations/calendar`, { params });
   }
 
   getReservationById(id: number): Observable<Reservation> {

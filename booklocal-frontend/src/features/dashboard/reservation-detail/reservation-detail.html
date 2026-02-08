@@ -61,7 +61,7 @@
                 }
               </div>
               
-              @if(reservation.status === 'Completed' && reservation.customerId) {
+              @if(reservation.status === 'Completed' && reservation.customerId && !reservation.isServiceArchived) {
                 <button 
                     class="btn btn-outline ml-2" 
                     (click)="generateInvoice()" 
@@ -92,6 +92,7 @@
        <div class="card-body">
          <div class="flex justify-between items-center mb-4">
              <h3 class="card-title text-xl">Płatności</h3>
+             @if(!reservation.isServiceArchived) {
              <div class="dropdown dropdown-end">
                  <label tabindex="0" class="btn btn-sm btn-outline btn-success" [class.loading]="isAddingPayment">
                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
@@ -105,6 +106,7 @@
                      <li><a (click)="addManualPayment('Other')">Inne</a></li>
                  </ul>
              </div>
+             }
          </div>
  
          <div class="overflow-x-auto">

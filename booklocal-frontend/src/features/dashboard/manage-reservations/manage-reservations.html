@@ -12,28 +12,29 @@
     </button>
   </div>
 
-  @if (isLoading) {
-    <div class="flex flex-col items-center justify-center h-[60vh]">
-      <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
-      <p class="text-base-content/50 animate-pulse">Ładowanie grafiku...</p>
-    </div>
-  } @else {
-    <div class="card bg-base-100 shadow-xl border border-base-200 overflow-hidden max-w-7xl mx-auto">
+    <div class="card bg-base-100 shadow-xl border border-base-200 overflow-hidden max-w-7xl mx-auto relative">
+      
+      @if (isLoading) {
+        <div class="absolute inset-0 bg-base-100/70 backdrop-blur-sm z-10 flex items-center justify-center">
+          <span class="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      }
+
       <div class="card-body p-0 sm:p-4">
 
         <div class="flex flex-col xl:flex-row justify-between items-center gap-4 p-4 border-b border-base-200 bg-base-100/50">
           
           <div class="join w-full justify-center xl:justify-start xl:w-auto shadow-sm">
             <button class="join-item btn btn-sm btn-outline border-base-300 hover:bg-base-200 hover:text-base-content" 
-                    mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">
+                    mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="dateChanged()">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
             </button>
             <button class="join-item btn btn-sm btn-outline border-base-300 hover:bg-base-200 hover:text-base-content min-w-[100px]" 
-                    mwlCalendarToday [(viewDate)]="viewDate">
+                    mwlCalendarToday [(viewDate)]="viewDate" (viewDateChange)="dateChanged()">
               Dzisiaj
             </button>
             <button class="join-item btn btn-sm btn-outline border-base-300 hover:bg-base-200 hover:text-base-content" 
-                    mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
+                    mwlCalendarNextView [view]="view" [(viewDate)]="viewDate" (viewDateChange)="dateChanged()">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
             </button>
           </div>
@@ -97,7 +98,6 @@
         </div>
       </div>
     </div>
-  }
 </div>
 
 @if(isAddModalVisible) {

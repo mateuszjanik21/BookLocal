@@ -43,6 +43,7 @@ public class AppDbContext : IdentityDbContext<User>
     public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
     public DbSet<BusinessSubscription> BusinessSubscriptions { get; set; }
     public DbSet<BusinessVerification> BusinessVerifications { get; set; }
+    public DbSet<UserFavoriteService> UserFavoriteServices { get; set; }
 
     public DbSet<CustomerBusinessProfile> CustomerBusinessProfiles { get; set; }
     public DbSet<Discount> Discounts { get; set; }
@@ -78,6 +79,7 @@ public class AppDbContext : IdentityDbContext<User>
         }
 
         modelBuilder.Entity<Service>().HasQueryFilter(s => !s.IsArchived);
+        modelBuilder.Entity<ServiceCategory>().HasQueryFilter(sc => !sc.IsArchived);
         modelBuilder.Entity<ServiceVariant>().HasQueryFilter(v => !v.Service.IsArchived);
         modelBuilder.Entity<EmployeeService>().HasQueryFilter(es => !es.Service.IsArchived);
 
@@ -111,5 +113,7 @@ public class AppDbContext : IdentityDbContext<User>
         modelBuilder.Entity<DailyFinancialReport>()
             .Property(r => r.TotalRevenue)
             .HasColumnType("decimal(12, 2)");
+
+
     }
 }

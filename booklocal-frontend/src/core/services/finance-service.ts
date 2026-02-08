@@ -54,6 +54,13 @@ export class FinanceService {
     return this.http.get<DailyFinancialReport[]>(`${this.apiUrl}/businesses/${businessId}/finance/reports`, { params });
   }
 
+  getLiveReports(businessId: number, startDate: string, endDate: string): Observable<DailyFinancialReport[]> {
+    const params = new HttpParams()
+      .set('startDate', startDate)
+      .set('endDate', endDate);
+    return this.http.get<DailyFinancialReport[]>(`${this.apiUrl}/businesses/${businessId}/finance/reports-live`, { params });
+  }
+
   getEmployeePerformance(businessId: number, date?: string, startDate?: string, endDate?: string): Observable<DailyEmployeePerformance[]> {
       let params = new HttpParams();
       if (date) params = params.set('date', date);

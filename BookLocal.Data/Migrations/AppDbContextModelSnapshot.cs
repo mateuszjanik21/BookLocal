@@ -1154,6 +1154,9 @@ namespace BookLocal.Data.Migrations
                     b.Property<int>("BusinessId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("bit");
+
                     b.Property<int>("MainCategoryId")
                         .HasColumnType("int");
 
@@ -1328,6 +1331,33 @@ namespace BookLocal.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("BookLocal.Data.Models.UserFavoriteService", b =>
+                {
+                    b.Property<int>("UserFavoriteServiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserFavoriteServiceId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ServiceVariantId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserFavoriteServiceId");
+
+                    b.HasIndex("ServiceVariantId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserFavoriteServices");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.WorkSchedule", b =>
@@ -2010,6 +2040,25 @@ namespace BookLocal.Data.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("BookLocal.Data.Models.UserFavoriteService", b =>
+                {
+                    b.HasOne("BookLocal.Data.Models.ServiceVariant", "ServiceVariant")
+                        .WithMany("UserFavoriteServices")
+                        .HasForeignKey("ServiceVariantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookLocal.Data.Models.User", "User")
+                        .WithMany("FavoriteServices")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ServiceVariant");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BookLocal.Data.Models.WorkSchedule", b =>
                 {
                     b.HasOne("BookLocal.Data.Models.Employee", "Employee")
@@ -2180,10 +2229,14 @@ namespace BookLocal.Data.Migrations
             modelBuilder.Entity("BookLocal.Data.Models.ServiceVariant", b =>
                 {
                     b.Navigation("Reservations");
+
+                    b.Navigation("UserFavoriteServices");
                 });
 
             modelBuilder.Entity("BookLocal.Data.Models.User", b =>
                 {
+                    b.Navigation("FavoriteServices");
+
                     b.Navigation("Messages");
 
                     b.Navigation("Reservations");

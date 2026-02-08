@@ -7,7 +7,7 @@ namespace BookLocal.Data.Models
     {
         [Key]
         public int ServiceVariantId { get; set; }
-        
+
         [Required]
         public int ServiceId { get; set; }
         [ForeignKey("ServiceId")]
@@ -31,5 +31,6 @@ namespace BookLocal.Data.Models
         public bool IsActive { get; set; } = true;
 
         public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+        public virtual ICollection<UserFavoriteService> UserFavoriteServices { get; set; } = new List<UserFavoriteService>();
     }
 }

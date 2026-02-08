@@ -13,6 +13,7 @@ import { ChatService } from '../../core/services/chat';
 import { ServiceBundleService } from '../../core/services/service-bundle';
 import { ServiceBundle } from '../../types/service-bundle.model';
 import { BookBundleModalComponent } from '../dashboard/service-bundles/book-bundle-modal/book-bundle-modal';
+import { FavoriteService } from '../../core/services/favourite-service';
 
 @Component({
   selector: 'app-business-detail',
@@ -57,6 +58,9 @@ export class BusinessDetailComponent implements OnInit {
   isBookBundleModalOpen = false;
 
   private serviceBundleService = inject(ServiceBundleService);
+  private favoriteService = inject(FavoriteService);
+
+  favoriteVariantIds = new Set<number>();
 
   ngOnInit(): void {
     const businessId = this.route.snapshot.paramMap.get('id');
@@ -75,6 +79,51 @@ export class BusinessDetailComponent implements OnInit {
         }
       });
     }
+    
+    this.authService.currentUser$.subscribe(user => {
+        if (user && user.roles.includes('customer')) {
+            this.loadFavorites();
+        }
+    });
+  }
+
+  loadFavorites() {
+      this.favoriteService.getFavorites().subscribe({
+          next: (favorites) => {
+              this.favoriteVariantIds.clear();
+              favorites.forEach(f => this.favoriteVariantIds.add(f.serviceVariantId));
+          },
+          error: (err) => console.error('Error loading favorites', err)
+      });
+  }
+
+  isFavorite(variantId: number): boolean {
+      return this.favoriteVariantIds.has(variantId);
+  }
+
+  toggleFavorite(variant: any, event: Event) {
+      event.stopPropagation();
+      const variantId = variant.serviceVariantId;
+
+      if (this.favoriteVariantIds.has(variantId)) {
+          this.favoriteService.removeFavorite(variantId).subscribe({
+              next: () => {
+                  this.favoriteVariantIds.delete(variantId);
+                  if (variant.favoritesCount > 0) variant.favoritesCount--;
+                  this.toastr.info('Usunięto z ulubionych');
+              },
+              error: () => this.toastr.error('Błąd podczas usuwania z ulubionych')
+          });
+      } else {
+          this.favoriteService.addFavorite(variantId).subscribe({
+              next: () => {
+                  this.favoriteVariantIds.add(variantId);
+                  variant.favoritesCount++;
+                  this.toastr.success('Dodano do ulubionych');
+              },
+              error: () => this.toastr.error('Błąd podczas dodawania do ulubionych')
+          });
+      }
   }
 
   loadReviews(businessId: number, loadMore = false): void {
@@ -140,9 +189,15 @@ export class BusinessDetailComponent implements OnInit {
     }
   }
 
-  openReservationModal(service: Service, modal: any): void {
+  openReservationModal(service: Service, pVariant: any, modal: any): void {
     if (this.business) {
-      this.selectedService = { ...service, businessId: this.business.id };
+      // Create a service copy with ONLY the selected variant to ensure modal uses it
+      this.selectedService = { 
+          ...service, 
+          businessId: this.business.id,
+          variants: [pVariant] 
+      };
+      
       this.businessService.getEmployeesForService(this.business.id, service.id).subscribe(employees => {
         this.filteredEmployees = employees;
         modal.showModal(); 

@@ -10,6 +10,8 @@ export interface ServiceVariant {
   durationMinutes: number;
   cleanupTimeMinutes: number;
   isDefault: boolean;
+  isActive: boolean;
+  favoritesCount: number;
 }
 
 export interface Service {
@@ -26,6 +28,7 @@ export interface ServiceCategory {
   serviceCategoryId: number;
   name: string;
   photoUrl?: string;
+  isArchived: boolean;
   services: Service[];
 }
 

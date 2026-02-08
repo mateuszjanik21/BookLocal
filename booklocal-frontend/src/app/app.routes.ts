@@ -37,6 +37,7 @@ import { AdminBusinessApprovalComponent } from '../features/admin/business-appro
 import { SubscriptionManagerComponent } from '../features/dashboard/subscription/subscription';
 import { UpgradeRequiredComponent } from '../features/dashboard/upgrade-required/upgrade-required';
 import { TemplatesComponent } from '../features/dashboard/templates/templates';
+import { ReviewsComponent } from '../features/dashboard/reviews/reviews';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
@@ -64,6 +65,7 @@ export const routes: Routes = [
       { path: 'profile', component: ManageProfileComponent },
       { path: 'employees/:id', component: EmployeeDetailComponent },
       { path: 'hr', component: ManageHrComponent },
+      { path: 'reviews', component: ReviewsComponent },
       { path: 'loyalty', component: LoyaltySettingsComponent, canActivate: [featureGuard], data: { feature: 'marketing' } },
       { path: 'discounts', component: DiscountManagerComponent, canActivate: [featureGuard], data: { feature: 'marketing' } },
       { path: 'finance', component: FinanceDashboardComponent, canActivate: [featureGuard], data: { feature: 'reports' } },
@@ -71,6 +73,7 @@ export const routes: Routes = [
       { path: 'payments', component: PaymentsListComponent },
       { path: 'bundles', component: ServiceBundlesListComponent },
       { path: 'bundles/create', component: ServiceBundleWizardComponent },
+      { path: 'bundles/edit/:id', component: ServiceBundleWizardComponent },
       { path: 'subscription', component: SubscriptionManagerComponent },
       { path: 'upgrade-required', component: UpgradeRequiredComponent },
       { path: 'templates', component: TemplatesComponent },

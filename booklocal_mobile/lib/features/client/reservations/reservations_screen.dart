@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// Upewnij się, że te importy pasują do Twojej struktury plików
 import '../../../core/models/reservation_models.dart';
 import '../../../core/services/reservation_service.dart';
 import '../../../core/services/review_service.dart';
@@ -8,8 +7,6 @@ import 'add_review_dialog.dart';
 
 class ReservationsScreen extends StatefulWidget {
   final int initialIndex;
-  // Ten parametr pozwala sterować, która zakładka jest aktywna (0=Nadchodzące, 1=Historia)
-  // Choć w DefaultTabController używa się initialIndex wewnątrz kontrolera, tu zostawiamy dla zgodności z nawigacją
   const ReservationsScreen({super.key, this.initialIndex = 0});
 
   @override
@@ -17,7 +14,6 @@ class ReservationsScreen extends StatefulWidget {
 }
 
 class _ReservationsScreenState extends State<ReservationsScreen> {
-  // ZAMIAST JEDNEGO _reservationsFuture MAMY TERAZ DWA:
   late Future<List<ReservationDto>> _upcomingFuture;
   late Future<List<ReservationDto>> _historyFuture;
 
@@ -30,13 +26,11 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
   void _loadReservations() {
     final service = Provider.of<ReservationService>(context, listen: false);
     setState(() {
-      // Pobieramy osobno nadchodzące i historię, używając parametru scope
       _upcomingFuture = service.getMyReservations(scope: 'upcoming');
       _historyFuture = service.getMyReservations(scope: 'past');
     });
   }
 
-  // --- LOGIKA OCENIANIA (REVIEW) ---
   Future<void> _showReviewDialog(int reservationId) async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -60,7 +54,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Dziękujemy za opinię! ⭐"), backgroundColor: Colors.green),
         );
-        _loadReservations(); // Odświeżamy listy
+        _loadReservations();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Błąd wysyłania opinii."), backgroundColor: Colors.red),
@@ -69,7 +63,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
     }
   }
 
-  // --- LOGIKA ANULOWANIA ---
   Future<void> _showCancelDialog(int reservationId) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -106,7 +99,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Rezerwacja została anulowana"), backgroundColor: Colors.green),
         );
-        _loadReservations(); // Odświeżamy listy
+        _loadReservations();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Błąd podczas anulowania"), backgroundColor: Colors.red),
@@ -115,13 +108,10 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
     }
   }
 
-  // --- GŁÓWNY WIDOK (BUILD) ---
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
-      // Jeśli chcesz, by aplikacja otwierała się na Historii, możesz tu użyć widget.initialIndex,
-      // ale zazwyczaj DefaultTabController startuje od 0.
       initialIndex: 0, 
       child: Scaffold(
         appBar: AppBar(
@@ -140,10 +130,8 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             ],
           ),
         ),
-        // ZMIANA: Usunięto FutureBuilder stąd. Teraz jest wewnątrz _buildTabContent
         body: TabBarView(
           children: [
-            // Przekazujemy konkretny Future do konkretnej zakładki
             _buildTabContent(_upcomingFuture, isHistory: false),
             _buildTabContent(_historyFuture, isHistory: true),
           ],
@@ -152,7 +140,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
     );
   }
 
-  // --- POMOCNICZY WIDOK ZAWARTOSCI ZAKLADKI ---
   Widget _buildTabContent(Future<List<ReservationDto>> future, {required bool isHistory}) {
     return FutureBuilder<List<ReservationDto>>(
       future: future,
@@ -189,9 +176,7 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
     );
   }
 
-  // --- KARTA REZERWACJI ---
   Widget _buildReservationCard(ReservationDto res) {
-    // Formatowanie godziny
     final timeStr = "${res.date.hour}:${res.date.minute.toString().padLeft(2, '0')}";
 
     Color statusColor;
@@ -238,7 +223,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
           children: [
             Row(
               children: [
-                // Data (Box po lewej)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
@@ -260,7 +244,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                 ),
                 const SizedBox(width: 16),
                 
-                // Dane firmy i usługi
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,7 +263,6 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
                   ),
                 ),
 
-                // Status (Chip)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -297,22 +279,18 @@ class _ReservationsScreenState extends State<ReservationsScreen> {
             const SizedBox(height: 12),
             const Divider(),
 
-            // Dolny pasek akcji
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 if (res.isUpcoming)
-                  // Dla nadchodzących: ANULUJ
                   TextButton(
                     onPressed: () => _showCancelDialog(res.reservationId),
                     style: TextButton.styleFrom(foregroundColor: Colors.red),
                     child: const Text("Anuluj"),
                   )
                 else
-                  // Dla historii: OCEŃ i UMÓW PONOWNIE
                   Row(
                     children: [
-                      // Pokaż przycisk Oceń tylko dla zakończonych, które nie mają jeszcze opinii
                       if (!res.hasReview && res.status.toLowerCase() == 'completed')
                         TextButton.icon(
                           onPressed: () => _showReviewDialog(res.reservationId),

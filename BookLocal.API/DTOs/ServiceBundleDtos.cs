@@ -37,6 +37,8 @@ namespace BookLocal.API.DTOs
         [Range(0, 100000)]
         public decimal TotalPrice { get; set; }
 
+        public bool IsActive { get; set; } = true;
+
         public List<CreateServiceBundleItemDto> Items { get; set; } = new List<CreateServiceBundleItemDto>();
     }
 

@@ -200,61 +200,45 @@ namespace BookLocal.API.Controllers
         // GET: api/reservations/calendar
         [HttpGet("calendar")]
         [Authorize(Roles = "owner")]
-        public async Task<ActionResult<IEnumerable<ReservationDto>>> GetCalendarEvents()
+        public async Task<ActionResult<IEnumerable<ReservationDto>>> GetCalendarEvents(
+            [FromQuery] DateTime? start,
+            [FromQuery] DateTime? end)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var now = DateTime.UtcNow;
 
-            var reservationsFromDb = await _context.Reservations
-                .Where(r => r.Business.OwnerId == userId)
-                .Include(r => r.Employee)
-                .Include(r => r.Customer)
-                .Include(r => r.Business)
-                .Include(r => r.Review)
-                .Include(r => r.ServiceVariant)
-                    .ThenInclude(v => v.Service)
+            var startDate = start ?? new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+            var endDate = end ?? startDate.AddMonths(1).AddDays(-1);
+
+            var sqlEvents = await _context.Database
+                .SqlQueryRaw<ReservationSqlDto>(
+                    "EXEC GetOwnerCalendarEvents @OwnerId, @StartDate, @EndDate",
+                    new Microsoft.Data.SqlClient.SqlParameter("@OwnerId", userId),
+                    new Microsoft.Data.SqlClient.SqlParameter("@StartDate", startDate),
+                    new Microsoft.Data.SqlClient.SqlParameter("@EndDate", endDate)
+                )
                 .ToListAsync();
 
-            var reservationsToUpdate = reservationsFromDb
-                .Where(r => r.EndTime < now && r.Status == ReservationStatus.Confirmed)
-                .ToList();
-
-            if (reservationsToUpdate.Any())
-            {
-                foreach (var reservation in reservationsToUpdate)
-                {
-                    reservation.Status = ReservationStatus.Completed;
-                    if (reservation.CustomerId != null)
-                    {
-                        await ProcessLoyaltyPoints(reservation.BusinessId, reservation.CustomerId, reservation.AgreedPrice, reservation.ReservationId);
-                        await EnsureCustomerProfile(reservation.BusinessId, reservation.CustomerId);
-                        await UpdateCustomerStats(reservation.BusinessId, reservation.CustomerId);
-                    }
-                }
-                await _context.SaveChangesAsync();
-            }
-
-            var reservationDtos = reservationsFromDb.Select(r => new ReservationDto
+            var reservationDtos = sqlEvents.Select(r => new ReservationDto
             {
                 ReservationId = r.ReservationId,
                 StartTime = r.StartTime,
                 EndTime = r.EndTime,
-                Status = r.Status.ToString(),
+                Status = r.Status,
 
                 ServiceVariantId = r.ServiceVariantId,
-                ServiceName = r.ServiceVariant?.Service?.Name ?? "Usunięta",
-                VariantName = r.ServiceVariant?.Name ?? "",
+                ServiceName = r.ServiceName,
+                VariantName = r.VariantName,
                 AgreedPrice = r.AgreedPrice,
 
-                BusinessName = r.Business.Name,
+                BusinessName = r.BusinessName,
                 BusinessId = r.BusinessId,
                 EmployeeId = r.EmployeeId,
-                EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
+                EmployeeFullName = r.EmployeeFullName,
                 CustomerId = r.CustomerId,
-                CustomerFullName = r.Customer != null ? $"{r.Customer.FirstName} {r.Customer.LastName}" : null,
+                CustomerFullName = r.CustomerFullName,
                 GuestName = r.GuestName,
-                HasReview = r.Review != null,
-                PaymentMethod = r.PaymentMethod.ToString()
+                HasReview = r.HasReview,
+                PaymentMethod = r.PaymentMethod
             }).ToList();
 
             return Ok(reservationDtos);
@@ -593,7 +577,6 @@ namespace BookLocal.API.Controllers
             var bundleItems = bundle.BundleItems.OrderBy(i => i.SequenceOrder).ToList();
             if (!bundleItems.Any()) return BadRequest("Pakiet nie zawiera żadnych usług.");
 
-
             var dayOfWeek = reservationDto.StartTime.DayOfWeek;
             var workSchedule = await _context.WorkSchedules
                 .AsNoTracking()
@@ -622,7 +605,6 @@ namespace BookLocal.API.Controllers
 
             var currentStartTime = reservationDto.StartTime;
             var reservationsToCreate = new List<Reservation>();
-
 
             decimal sumOfVariantsPrice = bundleItems.Sum(i => i.ServiceVariant.Price);
             decimal globalDiscountRatio = 1.0m;
@@ -663,6 +645,7 @@ namespace BookLocal.API.Controllers
                 _context.Reservations.AddRange(reservationsToCreate);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
             }
             catch (Exception)
             {

@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {'name': 'Kosmetyczka', 'icon': Icons.brush},
     {'name': 'Groomer', 'icon': Icons.pets},
     {'name': 'Tatuaż', 'icon': Icons.draw},
-    {'name': 'Medycyna Est.', 'icon': Icons.medical_services}, // Skróciłem nazwę dla lepszego wyglądu
+    {'name': 'Medycyna Est.', 'icon': Icons.medical_services},
     {'name': 'Trening', 'icon': Icons.directions_run},
   ];
 
@@ -69,10 +69,9 @@ class _HomeScreenState extends State<HomeScreen> {
         final matchesSearch = business.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
                               business.city.toLowerCase().contains(_searchQuery.toLowerCase());
         
-        // Dopasowanie kategorii (ignorujemy wielkość liter)
         final matchesCategory = _selectedCategory == null || 
                                 business.category.toLowerCase().contains(_selectedCategory!.toLowerCase()) || 
-                                (business.category == "Medycyna Estetyczna" && _selectedCategory == "Medycyna Est."); // Hack na skrót
+                                (business.category == "Medycyna Estetyczna" && _selectedCategory == "Medycyna Est.");
 
         return matchesSearch && matchesCategory;
       }).toList();
@@ -101,13 +100,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final primaryColor = const Color(0xFF16a34a);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Bardzo jasny szary, prawie biały
+      backgroundColor: const Color(0xFFF8F9FA),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
           child: Column(
             children: [
-              // --- SEKCJA GÓRNA ---
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 10),
                 child: Column(
@@ -123,8 +121,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               "Cześć, ${user?.firstName ?? 'Gościu'}! 👋",
                               style: const TextStyle(
                                 fontSize: 26,
-                                fontWeight: FontWeight.w800, // Grubsza czcionka
-                                color: Color(0xFF1F2937), // Ciemny grafit zamiast czystej czerni
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF1F2937),
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -135,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.all(2), // Obwódka
+                          padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(color: primaryColor.withOpacity(0.2), width: 2),
@@ -153,7 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Wyszukiwarka
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -181,14 +178,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // --- KATEGORIE ---
               SizedBox(
-                height: 110, // Trochę więcej miejsca
+                height: 110,
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   scrollDirection: Axis.horizontal,
                   itemCount: _categories.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 16), // Równe odstępy
+                  separatorBuilder: (context, index) => const SizedBox(width: 16),
                   itemBuilder: (context, index) {
                     final cat = _categories[index];
                     return _buildCategoryItem(
@@ -200,7 +196,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // --- LISTA WYNIKÓW ---
               Expanded(
                 child: _isLoading
                     ? Center(child: CircularProgressIndicator(color: primaryColor))
@@ -221,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         : ListView.separated(
                             padding: const EdgeInsets.fromLTRB(24, 10, 24, 30),
                             itemCount: _filteredBusinesses.length,
-                            separatorBuilder: (context, index) => const SizedBox(height: 20), // Odstęp między kartami
+                            separatorBuilder: (context, index) => const SizedBox(height: 20),
                             itemBuilder: (context, index) {
                               final business = _filteredBusinesses[index];
                               return _buildBusinessCard(business);
@@ -235,7 +230,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Poprawiony widget Kategorii
   Widget _buildCategoryItem(String name, IconData icon, {required bool isSelected}) {
     final primaryColor = const Color(0xFF16a34a);
 
@@ -250,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
             height: 65,
             decoration: BoxDecoration(
               color: isSelected ? primaryColor : Colors.white,
-              borderRadius: BorderRadius.circular(20), // Soft square (squircle) zamiast koła wygląda nowocześniej
+              borderRadius: BorderRadius.circular(20),
               border: isSelected ? null : Border.all(color: Colors.grey.shade200),
               boxShadow: isSelected
                   ? [BoxShadow(color: primaryColor.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 6))]
@@ -264,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 10),
           SizedBox(
-            width: 70, // Stała szerokość dla wyrównania tekstu
+            width: 70,
             child: Text(
               name,
               textAlign: TextAlign.center,
@@ -282,7 +276,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Profesjonalna Karta Firmy
   Widget _buildBusinessCard(BusinessListItemDto business) {
     return GestureDetector(
       onTap: () {
@@ -299,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1F2937).withOpacity(0.08), // Bardziej subtelny cień
+              color: const Color(0xFF1F2937).withOpacity(0.08),
               blurRadius: 20,
               offset: const Offset(0, 8),
               spreadRadius: -4,
@@ -309,11 +302,10 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ZDJĘCIE
             Stack(
               children: [
                 Container(
-                  height: 180, // Wyższe zdjęcie
+                  height: 180,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
@@ -326,7 +318,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? Center(child: Icon(Icons.store_mall_directory_outlined, size: 50, color: Colors.grey[300]))
                       : null,
                 ),
-                // Badge z oceną w rogu zdjęcia
                 Positioned(
                   top: 15,
                   right: 15,
@@ -342,10 +333,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.star_rounded, size: 16, color: Color(0xFFEAB308)), // Złoty kolor
+                        const Icon(Icons.star_rounded, size: 16, color: Color(0xFFEAB308)),
                         const SizedBox(width: 4),
                         Text(
-                          business.rating.toStringAsFixed(1), // Np. 4.8
+                          business.rating.toStringAsFixed(1),
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
                         ),
                       ],
@@ -355,7 +346,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             
-            // TREŚĆ
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -376,7 +366,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   
-                  // Wiersz Kategoria i Miasto
                   Row(
                     children: [
                       _buildTag(business.category, Icons.category_outlined),
@@ -393,7 +382,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Mały widget pomocniczy do tagów (np. Miasto, Kategoria)
   Widget _buildTag(String text, IconData icon) {
     return Row(
       children: [

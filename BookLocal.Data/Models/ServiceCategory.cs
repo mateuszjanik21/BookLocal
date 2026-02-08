@@ -25,6 +25,8 @@ namespace BookLocal.Data.Models
         [ForeignKey("MainCategoryId")]
         public virtual MainCategory MainCategory { get; set; }
 
+        public bool IsArchived { get; set; } = false;
+
         public virtual ICollection<Service> Services { get; set; } = new List<Service>();
     }
 }

@@ -115,7 +115,8 @@ namespace BookLocal.API.Controllers
                                 Price = v.Price,
                                 DurationMinutes = v.DurationMinutes,
                                 CleanupTimeMinutes = v.CleanupTimeMinutes,
-                                IsDefault = v.IsDefault
+                                IsDefault = v.IsDefault,
+                                FavoritesCount = v.UserFavoriteServices != null ? v.UserFavoriteServices.Count : 0
                             }).ToList()
                         }).ToList()
                 }).ToList(),
@@ -149,6 +150,7 @@ namespace BookLocal.API.Controllers
                 .Include(b => b.Categories)
                     .ThenInclude(c => c.Services)
                         .ThenInclude(s => s.Variants)
+                            .ThenInclude(v => v.UserFavoriteServices)
                 .Include(b => b.Employees)
                     .ThenInclude(e => e.FinanceSettings)
                 .Include(b => b.Owner)
@@ -196,7 +198,8 @@ namespace BookLocal.API.Controllers
                                 Name = v.Name,
                                 Price = v.Price,
                                 DurationMinutes = v.DurationMinutes,
-                                IsDefault = v.IsDefault
+                                IsDefault = v.IsDefault,
+                                FavoritesCount = v.UserFavoriteServices != null ? v.UserFavoriteServices.Count : 0
                             }).ToList()
                         }).ToList()
                 }).ToList(),
@@ -254,5 +257,72 @@ namespace BookLocal.API.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("dashboard-data")]
+        [Authorize(Roles = "owner")]
+        public async Task<ActionResult<DashboardDataDto>> GetDashboardData()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var ownerParam = new Microsoft.Data.SqlClient.SqlParameter("@OwnerId", userId);
+
+            var statsResult = await _context.Database
+                .SqlQueryRaw<DashboardStatsSqlDto>("EXEC GetDashboardStats @OwnerId", ownerParam)
+                .ToListAsync();
+
+            var stats = statsResult.FirstOrDefault() ?? new DashboardStatsSqlDto();
+
+            ownerParam = new Microsoft.Data.SqlClient.SqlParameter("@OwnerId", userId);
+            var todaysReservations = await _context.Database
+                .SqlQueryRaw<ReservationSqlDto>("EXEC GetTodaysReservations @OwnerId", ownerParam)
+                .ToListAsync();
+
+            ownerParam = new Microsoft.Data.SqlClient.SqlParameter("@OwnerId", userId);
+            var latestReviewsSql = await _context.Database
+                .SqlQueryRaw<ReviewSqlDto>("EXEC GetLatestReviews @OwnerId", ownerParam)
+                .ToListAsync();
+
+            var data = new DashboardDataDto
+            {
+                Stats = new DashboardStatsDto
+                {
+                    UpcomingReservationsCount = stats.UpcomingReservationsCount,
+                    ClientCount = stats.ClientCount,
+                    EmployeeCount = stats.EmployeeCount,
+                    ServiceCount = stats.ServiceCount,
+                    HasVariants = stats.HasVariants
+                },
+                TodaysReservations = todaysReservations.Select(r => new ReservationDto
+                {
+                    ReservationId = r.ReservationId,
+                    StartTime = r.StartTime,
+                    EndTime = r.EndTime,
+                    Status = r.Status,
+                    ServiceVariantId = r.ServiceVariantId,
+                    ServiceName = r.ServiceName,
+                    VariantName = r.VariantName,
+                    AgreedPrice = r.AgreedPrice,
+                    BusinessName = r.BusinessName,
+                    BusinessId = r.BusinessId,
+                    EmployeeId = r.EmployeeId,
+                    EmployeeFullName = r.EmployeeFullName,
+                    CustomerId = r.CustomerId,
+                    CustomerFullName = r.CustomerFullName,
+                    GuestName = r.GuestName,
+                    HasReview = r.HasReview,
+                    PaymentMethod = r.PaymentMethod
+                }).ToList(),
+                LatestReviews = latestReviewsSql.Select(r => new ReviewDto
+                {
+                    ReviewId = r.ReviewId,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    ReviewerName = r.ReviewerName,
+                    CreatedAt = r.CreatedAt
+                }).ToList()
+            };
+
+            return Ok(data);
+        }
+
     }
 }

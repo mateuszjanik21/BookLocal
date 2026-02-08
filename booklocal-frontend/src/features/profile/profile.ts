@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { PhotoService } from '../../core/services/photo';
 import { ImageUploadComponent } from '../../shared/components/image-upload/image-upload';
 import { RouterModule } from '@angular/router';
+import { FavoriteService, FavoriteServiceDto } from '../../core/services/favourite-service';
 
 @Component({
   selector: 'app-profile',
@@ -20,9 +21,11 @@ export class ProfileComponent implements OnInit {
   private photoService = inject(PhotoService);
   private fb = inject(FormBuilder);
   private toastr = inject(ToastrService);
+  private favoriteService = inject(FavoriteService);
 
   user$: Observable<UserDto | null> = this.authService.currentUser$;
   isUploading = false;
+  favorites: FavoriteServiceDto[] = [];
 
   passwordForm: FormGroup;
   profileForm: FormGroup;
@@ -46,6 +49,7 @@ export class ProfileComponent implements OnInit {
           firstName: user.firstName,
           lastName: user.lastName
         });
+        this.loadFavorites();
       }
     });
   }
@@ -96,5 +100,23 @@ export class ProfileComponent implements OnInit {
         this.isUploading = false;
       }
     });
+  }
+
+
+  loadFavorites() {
+      this.favoriteService.getFavorites().subscribe({
+          next: (favs) => this.favorites = favs,
+          error: () => this.toastr.error('Nie udało się pobrać ulubionych usług.')
+      });
+  }
+
+  removeFavorite(variantId: number) {
+      this.favoriteService.removeFavorite(variantId).subscribe({
+          next: () => {
+              this.favorites = this.favorites.filter(f => f.serviceVariantId !== variantId);
+              this.toastr.success('Usunięto z ulubionych');
+          },
+          error: () => this.toastr.error('Nie udało się usunąć z ulubionych')
+      });
   }
 }

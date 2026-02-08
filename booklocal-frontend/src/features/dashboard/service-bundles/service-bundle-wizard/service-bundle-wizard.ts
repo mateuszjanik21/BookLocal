@@ -1,14 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ServiceBundleService } from '../../../../core/services/service-bundle';
 import { BusinessService } from '../../../../core/services/business-service';
 import { CategoryService } from '../../../../core/services/category';
-import { CreateServiceBundleItemPayload, CreateServiceBundlePayload } from '../../../../types/service-bundle.model';
+import { CreateServiceBundlePayload } from '../../../../types/service-bundle.model';
 import { ServiceCategory, Service, ServiceVariant } from '../../../../types/business.model';
 import { ToastrService } from 'ngx-toastr';
-import { switchMap } from 'rxjs';
+import { switchMap, of, forkJoin } from 'rxjs';
 
 interface DraftItem {
     serviceVariantId: number;
@@ -33,15 +33,21 @@ export class ServiceBundleWizardComponent implements OnInit {
   private photoService = inject(PhotoService);
   private toastr = inject(ToastrService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   currentStep = 1;
   isSaving = false;
   businessId: number | null = null;
+  isEditMode = false;
+  bundleId: number | null = null;
 
   bundleName = '';
   bundleDescription = '';
-  bundlePrice = 0;
+  bundlePrice: number | null = null;
+  isActive = true;
   selectedFile: File | null = null;
+  existingPhotoUrl: string | null = null;
+  previewUrl: string | null = null;
 
   categories: ServiceCategory[] = [];
   selectedCategory: ServiceCategory | null = null;
@@ -50,14 +56,41 @@ export class ServiceBundleWizardComponent implements OnInit {
   items: DraftItem[] = [];
 
   ngOnInit() {
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.bundleId = +idParam;
+      this.isEditMode = true;
+    }
+
     this.businessService.getMyBusiness().pipe(
         switchMap(business => {
             this.businessId = business.id;
-            return this.categoryService.getCategories(business.id, false);
+            return forkJoin({
+                categories: this.categoryService.getCategories(business.id, false),
+                bundle: this.isEditMode && this.bundleId 
+                    ? this.serviceBundleService.getBundle(business.id, this.bundleId)
+                    : of(null)
+            });
         })
     ).subscribe({
-        next: (cats) => this.categories = cats,
-        error: () => this.toastr.error('Nie udało się pobrać usług.')
+        next: ({ categories, bundle }) => {
+            this.categories = categories;
+            if (bundle) {
+                this.bundleName = bundle.name;
+                this.bundleDescription = bundle.description || '';
+                this.bundlePrice = bundle.totalPrice;
+                this.isActive = bundle.isActive;
+                this.existingPhotoUrl = bundle.photoUrl || null;
+                this.items = bundle.items.map(item => ({
+                    serviceVariantId: item.serviceVariantId,
+                    variantName: item.variantName,
+                    serviceName: item.serviceName,
+                    durationMinutes: item.durationMinutes,
+                    originalPrice: item.originalPrice
+                }));
+            }
+        },
+        error: () => this.toastr.error('Nie udało się pobrać danych.')
     });
   }
 
@@ -78,6 +111,11 @@ export class ServiceBundleWizardComponent implements OnInit {
       const file = event.target.files[0];
       if (file) {
           this.selectedFile = file;
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+              this.previewUrl = e.target.result;
+          };
+          reader.readAsDataURL(file);
       }
   }
 
@@ -86,7 +124,7 @@ export class ServiceBundleWizardComponent implements OnInit {
   }
 
   onServiceChange() {
-
+      //
   }
 
   addVariant(variant: ServiceVariant) {
@@ -128,27 +166,32 @@ export class ServiceBundleWizardComponent implements OnInit {
       const payload: CreateServiceBundlePayload = {
           name: this.bundleName,
           description: this.bundleDescription,
-          totalPrice: this.bundlePrice,
+          totalPrice: this.bundlePrice || 0,
+          isActive: this.isActive,
           items: this.items.map((item, index) => ({
               serviceVariantId: item.serviceVariantId,
               sequenceOrder: index + 1
           }))
       };
 
-      this.serviceBundleService.createBundle(this.businessId, payload).pipe(
+      const saveOperation = this.isEditMode && this.bundleId
+          ? this.serviceBundleService.updateBundle(this.businessId, this.bundleId, payload)
+          : this.serviceBundleService.createBundle(this.businessId, payload);
+
+      saveOperation.pipe(
           switchMap(bundle => {
               if (this.selectedFile) {
                   return this.photoService.uploadBundlePhoto(bundle.serviceBundleId, this.selectedFile);
               }
-              return Promise.resolve(bundle);
+              return of(bundle);
           })
       ).subscribe({
           next: () => {
-              this.toastr.success('Pakiet został utworzony!');
+              this.toastr.success(this.isEditMode ? 'Pakiet został zaktualizowany!' : 'Pakiet został utworzony!');
               this.router.navigate(['/dashboard/bundles']);
           },
           error: (err) => {
-              this.toastr.error(err.error || 'Wystąpił błąd podczas tworzenia pakietu.');
+              this.toastr.error(err.error || 'Wystąpił błąd podczas zapisywania pakietu.');
               this.isSaving = false;
           }
       });

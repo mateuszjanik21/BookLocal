@@ -29,36 +29,47 @@ namespace BookLocal.API.Controllers
                 return Forbid();
             }
 
-            var categories = await _context.ServiceCategories
-                .Where(sc => sc.BusinessId == businessId)
-                .Include(sc => sc.Services)
-                    .ThenInclude(s => s.Variants)
-                .ToListAsync();
+            IQueryable<ServiceCategory> query = _context.ServiceCategories
+                .AsNoTracking()
+                .Where(sc => sc.BusinessId == businessId);
 
-            var categoryDtos = categories.Select(sc => new ServiceCategoryDto
+            if (!includeArchived)
             {
-                ServiceCategoryId = sc.ServiceCategoryId,
-                Name = sc.Name,
-                PhotoUrl = sc.PhotoUrl,
-                Services = sc.Services
-                    .Where(s => includeArchived || !s.IsArchived)
-                    .Select(s => new ServiceDto
-                    {
-                        Id = s.ServiceId,
-                        Name = s.Name,
-                        Description = s.Description,
-                        ServiceCategoryId = s.ServiceCategoryId,
-                        IsArchived = s.IsArchived,
-                        Variants = s.Variants.Select(v => new ServiceVariantDto
+                query = query.Where(sc => !sc.IsArchived);
+            }
+
+            var categoryDtos = await query
+                .Select(sc => new ServiceCategoryDto
+                {
+                    ServiceCategoryId = sc.ServiceCategoryId,
+                    Name = sc.Name,
+                    PhotoUrl = sc.PhotoUrl,
+                    IsArchived = sc.IsArchived,
+                    Services = sc.Services
+                        .Where(s => includeArchived || !s.IsArchived)
+                        .Select(s => new ServiceDto
                         {
-                            ServiceVariantId = v.ServiceVariantId,
-                            Name = v.Name,
-                            Price = v.Price,
-                            DurationMinutes = v.DurationMinutes,
-                            IsDefault = v.IsDefault
+                            Id = s.ServiceId,
+                            Name = s.Name,
+                            Description = s.Description,
+                            ServiceCategoryId = s.ServiceCategoryId,
+                            IsArchived = s.IsArchived,
+                            Variants = s.Variants
+                                .Where(v => includeArchived || v.IsActive)
+                                .Select(v => new ServiceVariantDto
+                                {
+                                    ServiceVariantId = v.ServiceVariantId,
+                                    Name = v.Name,
+                                    Price = v.Price,
+                                    DurationMinutes = v.DurationMinutes,
+                                    CleanupTimeMinutes = v.CleanupTimeMinutes,
+                                    IsDefault = v.IsDefault,
+                                    IsActive = v.IsActive,
+                                    FavoritesCount = _context.UserFavoriteServices.Count(ufs => ufs.ServiceVariantId == v.ServiceVariantId)
+                                }).ToList()
                         }).ToList()
-                    }).ToList()
-            }).ToList();
+                })
+                .ToListAsync();
 
             return Ok(categoryDtos);
         }
@@ -78,7 +89,8 @@ namespace BookLocal.API.Controllers
             {
                 Name = categoryDto.Name,
                 BusinessId = businessId,
-                MainCategoryId = categoryDto.MainCategoryId
+                MainCategoryId = categoryDto.MainCategoryId,
+                IsArchived = false
             };
 
             _context.ServiceCategories.Add(newCategory);
@@ -125,6 +137,7 @@ namespace BookLocal.API.Controllers
             var category = await _context.ServiceCategories
                 .Include(sc => sc.Business)
                 .Include(sc => sc.Services)
+                .ThenInclude(s => s.Variants)
                 .FirstOrDefaultAsync(sc => sc.ServiceCategoryId == categoryId && sc.BusinessId == businessId && sc.Business.OwnerId == ownerId);
 
             if (category == null)
@@ -132,12 +145,50 @@ namespace BookLocal.API.Controllers
                 return NotFound();
             }
 
-            if (category.Services.Any())
+            category.IsArchived = true;
+
+            foreach (var service in category.Services)
             {
-                return BadRequest("Nie można usunąć kategorii, która zawiera usługi. Najpierw usuń lub przenieś usługi.");
+                if (!service.IsArchived)
+                {
+                    var variantIds = service.Variants.Select(v => v.ServiceVariantId).ToList();
+                    var futureReservations = await _context.Reservations
+                        .Where(r => variantIds.Contains(r.ServiceVariantId) && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
+                        .ToListAsync();
+
+                    foreach (var reservation in futureReservations)
+                    {
+                        reservation.Status = ReservationStatus.Cancelled;
+                    }
+
+                    foreach (var variant in service.Variants)
+                    {
+                        variant.IsActive = false;
+                    }
+
+                    service.IsArchived = true;
+                }
             }
 
-            _context.ServiceCategories.Remove(category);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+        [HttpPatch("{categoryId}/restore")]
+        public async Task<IActionResult> RestoreCategory(int businessId, int categoryId)
+        {
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var category = await _context.ServiceCategories
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(sc => sc.ServiceCategoryId == categoryId && sc.BusinessId == businessId && sc.Business.OwnerId == ownerId);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            category.IsArchived = false;
             await _context.SaveChangesAsync();
 
             return NoContent();

@@ -21,4 +21,24 @@ export class ServiceService {
   deleteService(businessId: number, serviceId: number) {
     return this.http.delete(`${this.apiUrl}/businesses/${businessId}/services/${serviceId}`);
   }
+
+  deleteServiceVariant(businessId: number, serviceId: number, variantId: number) {
+    return this.http.delete(`${this.apiUrl}/businesses/${businessId}/services/${serviceId}/variants/${variantId}`);
+  }
+
+  restoreService(businessId: number, serviceId: number) {
+    return this.http.patch(`${this.apiUrl}/businesses/${businessId}/services/${serviceId}/restore`, {});
+  }
+
+  restoreServiceVariant(businessId: number, serviceId: number, variantId: number) {
+    return this.http.patch(`${this.apiUrl}/businesses/${businessId}/services/${serviceId}/variants/${variantId}/restore`, {});
+  }
+
+  restoreCategory(businessId: number, categoryId: number) {
+    return this.http.patch(`${this.apiUrl}/businesses/${businessId}/categories/${categoryId}/restore`, {});
+  }
+
+  deleteCategory(businessId: number, categoryId: number) {
+    return this.http.delete(`${this.apiUrl}/businesses/${businessId}/categories/${categoryId}`);
+  }
 }

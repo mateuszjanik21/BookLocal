@@ -68,7 +68,7 @@ export class ManageReservationsComponent implements OnInit {
 
   private getStartOfWeek(date: Date): Date {
     const day = date.getDay();
-    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); 
     return new Date(date.setDate(diff));
   }
   
@@ -110,7 +110,39 @@ export class ManageReservationsComponent implements OnInit {
 
   loadReservations(): void {
     this.isLoading = true;
-    this.reservationService.getCalendarEvents().pipe(
+
+    let start: Date;
+    let end: Date;
+
+    if (this.view === CalendarView.Month) {
+      start = new Date(this.viewDate.getFullYear(), this.viewDate.getMonth(), 1);
+      end = new Date(this.viewDate.getFullYear(), this.viewDate.getMonth() + 1, 0, 23, 59, 59);
+       
+       const startDay = start.getDay(); 
+       const diffStart = start.getDate() - startDay + (startDay === 0 ? -6 : 1);
+       start.setDate(diffStart); 
+
+       const endDay = end.getDay();
+       const diffEnd = 7 - (endDay === 0 ? 7 : endDay);
+       end.setDate(end.getDate() + diffEnd);
+    } else if (this.view === CalendarView.Week) {
+      start = this.getStartOfWeek(new Date(this.viewDate));
+      start.setHours(0, 0, 0, 0);
+      end = this.getEndOfWeek(new Date(this.viewDate));
+      end.setHours(23, 59, 59);
+    } else {
+      start = new Date(this.viewDate);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(this.viewDate);
+      end.setHours(23, 59, 59);
+    }
+
+    const toLocalISO = (date: Date): string => {
+        const offset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - offset).toISOString().slice(0, 19);
+    };
+
+    this.reservationService.getCalendarEvents(toLocalISO(start), toLocalISO(end)).pipe(
       finalize(() => this.isLoading = false)
     ).subscribe({
       next: (data) => {
@@ -140,6 +172,7 @@ export class ManageReservationsComponent implements OnInit {
 
   setView(view: CalendarView): void {
     this.view = view;
+    this.loadReservations();
   }
 
   eventClicked({ event }: { event: CalendarEvent }): void {
@@ -166,5 +199,6 @@ export class ManageReservationsComponent implements OnInit {
   }
 
   dateChanged(): void {
+    this.loadReservations();
   }
 }
