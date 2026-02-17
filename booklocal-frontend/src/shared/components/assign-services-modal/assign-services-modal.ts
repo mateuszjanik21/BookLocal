@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Service, Employee, ServiceCategory } from '../../../types/business.model';
@@ -11,11 +11,11 @@ import { ToastrService } from 'ngx-toastr';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './assign-services-modal.html',
 })
-export class AssignServicesModalComponent implements OnChanges {
+export class AssignServicesModalComponent implements OnInit {
   @Input() categories: ServiceCategory[] = [];
   @Input() employee: Employee | null = null;
   @Input() businessId: number | null = null;
-  @Output() closed = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<boolean>();
   
   private fb = inject(FormBuilder);
   private employeeService = inject(EmployeeService);
@@ -36,13 +36,15 @@ export class AssignServicesModalComponent implements OnChanges {
     });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['employee'] && changes['employee'].currentValue && this.businessId && this.categories.length > 0) {
-      this.isFormReady = false;
+  ngOnInit(): void {
+    if (!this.employee || !this.businessId || this.categories.length === 0) {
+      return;
+    }
 
-      this.allServices = this.categories.flatMap(category => category.services);
-      
-      this.employeeService.getAssignedServiceIds(this.businessId, this.employee!.id).subscribe(assignedIds => {
+    this.allServices = this.categories.flatMap(category => category.services);
+
+    this.employeeService.getAssignedServiceIds(this.businessId, this.employee.id).subscribe({
+      next: (assignedIds) => {
         const servicesFormArray = this.servicesForm.get('services') as FormArray;
         servicesFormArray.clear();
 
@@ -52,8 +54,11 @@ export class AssignServicesModalComponent implements OnChanges {
         });
 
         this.isFormReady = true;
-      });
-    }
+      },
+      error: () => {
+        this.toastr.error('Nie udało się załadować przypisanych usług.');
+      }
+    });
   }
   
   selectCategory(categoryId: number | null): void {
@@ -74,9 +79,19 @@ export class AssignServicesModalComponent implements OnChanges {
     this.employeeService.assignServices(this.businessId, this.employee.id, selectedServiceIds).subscribe({
       next: () => {
         this.toastr.success('Zaktualizowano usługi pracownika!');
-        this.closed.emit();
+        this.closed.emit(true);
       },
-      error: (err) => this.toastr.error('Wystąpił błąd podczas zapisywania.')
+      error: () => this.toastr.error('Wystąpił błąd podczas zapisywania.')
     });
+  }
+
+  cancel() {
+    this.closed.emit(false);
+  }
+
+  onBackdropClick(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('modal')) {
+      this.closed.emit(false);
+    }
   }
 }

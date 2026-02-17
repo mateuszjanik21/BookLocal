@@ -61,6 +61,74 @@ public class SchedulesController : ControllerBase
             return Forbid();
         }
 
+        var now = DateTime.Now;
+        var futureReservations = await _context.Reservations
+            .Where(r => r.EmployeeId == employeeId
+                && r.Status == ReservationStatus.Confirmed
+                && r.StartTime > now)
+            .ToListAsync();
+
+        if (futureReservations.Any())
+        {
+            var polishDays = new Dictionary<DayOfWeek, string>
+            {
+                { DayOfWeek.Monday, "Poniedziałek" },
+                { DayOfWeek.Tuesday, "Wtorek" },
+                { DayOfWeek.Wednesday, "Środa" },
+                { DayOfWeek.Thursday, "Czwartek" },
+                { DayOfWeek.Friday, "Piątek" },
+                { DayOfWeek.Saturday, "Sobota" },
+                { DayOfWeek.Sunday, "Niedziela" }
+            };
+
+            var conflicts = new List<string>();
+
+            foreach (var dayPayload in schedulePayload)
+            {
+                var reservationsOnDay = futureReservations
+                    .Where(r => r.StartTime.DayOfWeek == dayPayload.DayOfWeek)
+                    .ToList();
+
+                if (!reservationsOnDay.Any()) continue;
+
+                var dayName = polishDays.GetValueOrDefault(dayPayload.DayOfWeek, dayPayload.DayOfWeek.ToString());
+
+                if (dayPayload.IsDayOff)
+                {
+                    conflicts.Add($"{dayName} (dzień wolny)");
+                    continue;
+                }
+
+                TimeSpan? newStart = null, newEnd = null;
+                if (!string.IsNullOrEmpty(dayPayload.StartTime) && TimeSpan.TryParse(dayPayload.StartTime, out var ns))
+                    newStart = ns;
+                if (!string.IsNullOrEmpty(dayPayload.EndTime) && TimeSpan.TryParse(dayPayload.EndTime, out var ne))
+                    newEnd = ne;
+
+                if (newStart == null || newEnd == null) continue;
+
+                var hasConflict = reservationsOnDay.Any(r =>
+                {
+                    var resStart = r.StartTime.TimeOfDay;
+                    var resEnd = r.EndTime.TimeOfDay;
+                    return resStart < newStart.Value || resEnd > newEnd.Value;
+                });
+
+                if (hasConflict)
+                {
+                    conflicts.Add($"{dayName} (skrócenie godzin)");
+                }
+            }
+
+            if (conflicts.Any())
+            {
+                return Conflict(new
+                {
+                    message = $"Nie można zmienić grafiku. Pracownik ma potwierdzone wizyty kolidujące ze zmianami: {string.Join(", ", conflicts)}. Najpierw anuluj te wizyty."
+                });
+            }
+        }
+
         foreach (var dayPayload in schedulePayload)
         {
             var scheduleDay = employee.WorkSchedules.FirstOrDefault(ws => ws.DayOfWeek == dayPayload.DayOfWeek);

@@ -95,7 +95,11 @@ export class AddEmployeeModalComponent {
     });
   }
 
-  closeModal(event: MouseEvent) {
+  cancel() {
+    this.closed.emit(false);
+  }
+
+  onBackdropClick(event: MouseEvent) {
     if ((event.target as HTMLElement).classList.contains('modal')) {
       this.closed.emit(false);
     }

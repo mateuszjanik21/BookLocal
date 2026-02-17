@@ -170,7 +170,7 @@ namespace BookLocal.API.Controllers
                 ReservationId = r.ReservationId,
                 StartTime = r.StartTime,
                 EndTime = r.EndTime,
-                Status = r.StartTime < now && r.Status == ReservationStatus.Confirmed ? "Completed" : r.Status.ToString(),
+                Status = (r.StartTime < now && r.Status == ReservationStatus.Confirmed ? ReservationStatus.Completed : r.Status).ToString(),
                 ServiceVariantId = r.ServiceVariantId,
                 ServiceName = r.ServiceVariant?.Service?.Name ?? "Usługa usunięta",
                 VariantName = r.ServiceVariant?.Name ?? "",
@@ -257,6 +257,7 @@ namespace BookLocal.API.Controllers
                 .Include(r => r.Business)
                 .Include(r => r.ServiceVariant)
                     .ThenInclude(v => v.Service)
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.ReservationId == id);
 
@@ -280,7 +281,7 @@ namespace BookLocal.API.Controllers
                 BusinessName = reservation.Business.Name,
                 BusinessId = reservation.BusinessId,
                 EmployeeId = reservation.EmployeeId,
-                EmployeeFullName = $"{reservation.Employee.FirstName} {reservation.Employee.LastName}",
+                EmployeeFullName = reservation.Employee != null ? $"{reservation.Employee.FirstName} {reservation.Employee.LastName}" : "Usunięty pracownik",
                 CustomerId = reservation.CustomerId,
                 CustomerFullName = reservation.Customer != null ? $"{reservation.Customer.FirstName} {reservation.Customer.LastName}" : null,
                 GuestName = reservation.GuestName,
@@ -307,7 +308,7 @@ namespace BookLocal.API.Controllers
             if (reservation.Business.OwnerId != userId) return Forbid();
 
 
-            if (Enum.TryParse<ReservationStatus>(statusDto.Status, true, out var newStatus))
+            if (Enum.TryParse<ReservationStatus>(statusDto.Status, out var newStatus))
             {
                 reservation.Status = newStatus;
                 await _context.SaveChangesAsync();

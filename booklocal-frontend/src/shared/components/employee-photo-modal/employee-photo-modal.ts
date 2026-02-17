@@ -36,4 +36,10 @@ export class EmployeePhotoModalComponent {
       }
     });
   }
+
+  onBackdropClick(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('modal')) {
+      this.closed.emit();
+    }
+  }
 }

@@ -44,6 +44,10 @@ export interface Employee {
   portfolioUrl?: string;
   isStudent: boolean;
   isArchived: boolean;
+  assignedServicesCount?: number;
+  completedReservationsCount?: number;
+  activeContractType?: string;
+  estimatedMonthlyRevenue?: number;
 }
 
 export interface Business {

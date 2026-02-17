@@ -14,7 +14,7 @@ import { ToastrService } from 'ngx-toastr';
 export class EditEmployeeModalComponent implements OnChanges {
   @Input() employee: Employee | null = null;
   businessId = input.required<number>();
-  @Output() closed = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<boolean>();
 
   private fb = inject(FormBuilder);
   private employeeService = inject(EmployeeService);
@@ -45,9 +45,19 @@ export class EditEmployeeModalComponent implements OnChanges {
       .subscribe({
         next: () => {
           this.toastr.success('Dane pracownika zaktualizowane!');
-          this.closed.emit();
+          this.closed.emit(true);
         },
         error: (err) => this.toastr.error(`Błąd: ${err.error.title || 'Sprawdź dane.'}`)
       });
+  }
+
+  cancel() {
+    this.closed.emit(false);
+  }
+
+  onBackdropClick(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('modal')) {
+      this.closed.emit(false);
+    }
   }
 }

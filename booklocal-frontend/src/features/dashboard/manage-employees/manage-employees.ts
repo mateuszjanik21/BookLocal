@@ -2,14 +2,10 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BusinessService } from '../../../core/services/business-service';
-import { EmployeeService } from '../../../core/services/employee-service';
-import { BusinessDetail, Employee, Service } from '../../../types/business.model';
+import { BusinessDetail, Employee } from '../../../types/business.model';
 import { ToastrService } from 'ngx-toastr';
-import { AssignServicesModalComponent } from '../../../shared/components/assign-services-modal/assign-services-modal';
 import { AddEmployeeModalComponent } from '../../../shared/components/add-employee-modal/add-employee-modal';
-import { EditEmployeeModalComponent } from '../../../shared/components/edit-employee-modal/edit-employee-modal';
 import { EmployeePhotoModalComponent } from '../../../shared/components/employee-photo-modal/employee-photo-modal';
-import { ScheduleModalComponent } from '../../../shared/components/schedule-modal/schedule-modal';
 
 @Component({
   selector: 'app-manage-employees',
@@ -17,42 +13,19 @@ import { ScheduleModalComponent } from '../../../shared/components/schedule-moda
   imports: [
     CommonModule,
     RouterModule,
-    AssignServicesModalComponent,
     AddEmployeeModalComponent,
-    EditEmployeeModalComponent,
-    EmployeePhotoModalComponent,
-    ScheduleModalComponent
+    EmployeePhotoModalComponent
   ],
   templateUrl: './manage-employees.html',
 })
 export class ManageEmployeesComponent implements OnInit {
   private businessService = inject(BusinessService);
-  private employeeService = inject(EmployeeService);
   private toastr = inject(ToastrService);
 
   isLoading = true;
   business: BusinessDetail | null = null;
-  employeeToEdit: Employee | null = null;
   employeeForPhoto: Employee | null = null;
-  employeeToAssignServices: Employee | null = null;
   isAddEmployeeModalVisible = false;
-
-  employeeForSchedule: Employee | null = null;
-
-  onManageSchedule(employee: Employee) {
-    this.employeeForSchedule = employee;
-  }
-
-  closeScheduleModal() {
-    this.employeeForSchedule = null;
-  }
-
-  get allBusinessServices(): Service[] {
-    if (!this.business?.categories) {
-      return [];
-    }
-    return this.business.categories.flatMap(category => category.services);
-  }
 
   ngOnInit(): void {
     this.loadBusinessData();
@@ -72,28 +45,6 @@ export class ManageEmployeesComponent implements OnInit {
     });
   }
 
-  onEditEmployee(employee: Employee) {
-    this.employeeToEdit = employee;
-  }
-
-  onAssignServices(employee: Employee) {
-    this.employeeToAssignServices = employee;
-  }
-
-  onDeleteEmployee(employee: Employee) {
-    if (confirm(`Czy na pewno chcesz zarchiwizować pracownika: ${employee.firstName} ${employee.lastName}? Ta operacja anuluje wszystkie jego przyszłe rezerwacje.`)) {
-      if (this.business) {
-        this.employeeService.deleteEmployee(this.business.id, employee.id).subscribe({
-          next: () => {
-            this.toastr.success('Pracownik został usunięty.');
-            this.loadBusinessData();
-          },
-          error: (err) => this.toastr.error('Wystąpił błąd.')
-        });
-      }
-    }
-  }
-
   openPhotoModal(employee: Employee) {
     this.employeeForPhoto = employee;
   }
@@ -108,10 +59,20 @@ export class ManageEmployeesComponent implements OnInit {
     this.employeeForPhoto = null;
   }
 
-  closeModalAndRefresh() {
-    this.employeeToEdit = null;
-    this.employeeToAssignServices = null;
+  onAddModalClosed(saved: boolean) {
     this.isAddEmployeeModalVisible = false;
-    this.loadBusinessData();
+    if (saved) {
+      this.loadBusinessData();
+    }
+  }
+
+  translateContractType(type: string): string {
+    const map: Record<string, string> = {
+      'EmploymentContract': 'Umowa o pracę',
+      'B2B': 'B2B',
+      'MandateContract': 'Umowa zlecenie',
+      'Apprenticeship': 'Staż / Praktyka'
+    };
+    return map[type] || type;
   }
 }

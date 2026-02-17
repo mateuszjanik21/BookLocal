@@ -153,6 +153,14 @@ namespace BookLocal.API.Controllers
                             .ThenInclude(v => v.UserFavoriteServices)
                 .Include(b => b.Employees)
                     .ThenInclude(e => e.FinanceSettings)
+                .Include(b => b.Employees)
+                    .ThenInclude(e => e.EmployeeServices)
+                .Include(b => b.Employees)
+                    .ThenInclude(e => e.Contracts)
+                .Include(b => b.Employees)
+                    .ThenInclude(e => e.Reservations)
+                .Include(b => b.Employees)
+                    .ThenInclude(e => e.EmployeeDetails)
                 .Include(b => b.Owner)
                 .FirstOrDefaultAsync(b => b.OwnerId == userId);
 
@@ -163,6 +171,10 @@ namespace BookLocal.API.Controllers
 
             var isVerified = await _context.BusinessVerifications
                 .AnyAsync(v => v.BusinessId == business.BusinessId && v.Status == VerificationStatus.Approved);
+
+            var now = DateTime.Now;
+            var currentMonthStart = new DateTime(now.Year, now.Month, 1);
+            var currentMonthEnd = currentMonthStart.AddMonths(1);
 
             var businessDto = new BusinessDetailDto
             {
@@ -204,18 +216,36 @@ namespace BookLocal.API.Controllers
                         }).ToList()
                 }).ToList(),
 
-                Employees = business.Employees.Select(e => new EmployeeDto
-                {
-                    Id = e.EmployeeId,
-                    FirstName = e.FirstName,
-                    LastName = e.LastName,
-                    Position = e.Position,
-                    PhotoUrl = e.PhotoUrl,
-                    DateOfBirth = e.DateOfBirth,
-                    Specialization = e.EmployeeDetails != null ? e.EmployeeDetails.Specialization : null,
-                    InstagramProfileUrl = e.EmployeeDetails != null ? e.EmployeeDetails.InstagramProfileUrl : null,
-                    PortfolioUrl = e.EmployeeDetails != null ? e.EmployeeDetails.PortfolioUrl : null,
-                    IsStudent = e.FinanceSettings != null ? e.FinanceSettings.IsStudent : false
+                Employees = business.Employees.Select(e => {
+                    var activeContract = e.Contracts
+                        .Where(c => c.IsActive)
+                        .OrderByDescending(c => c.StartDate)
+                        .FirstOrDefault();
+
+                    var completedThisMonth = e.Reservations
+                        .Where(r => r.Status == ReservationStatus.Completed
+                            && r.StartTime >= currentMonthStart
+                            && r.StartTime < currentMonthEnd)
+                        .ToList();
+
+                    return new EmployeeDto
+                    {
+                        Id = e.EmployeeId,
+                        FirstName = e.FirstName,
+                        LastName = e.LastName,
+                        Position = e.Position,
+                        PhotoUrl = e.PhotoUrl,
+                        DateOfBirth = e.DateOfBirth,
+                        Specialization = e.EmployeeDetails != null ? e.EmployeeDetails.Specialization : null,
+                        InstagramProfileUrl = e.EmployeeDetails != null ? e.EmployeeDetails.InstagramProfileUrl : null,
+                        PortfolioUrl = e.EmployeeDetails != null ? e.EmployeeDetails.PortfolioUrl : null,
+                        IsStudent = e.FinanceSettings != null ? e.FinanceSettings.IsStudent : false,
+                        IsArchived = e.IsArchived,
+                        AssignedServicesCount = e.EmployeeServices.Count,
+                        CompletedReservationsCount = completedThisMonth.Count,
+                        ActiveContractType = activeContract?.ContractType.ToString(),
+                        EstimatedMonthlyRevenue = completedThisMonth.Sum(r => r.AgreedPrice)
+                    };
                 }).ToList()
             };
 

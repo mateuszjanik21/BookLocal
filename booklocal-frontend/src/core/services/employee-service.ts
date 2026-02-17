@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
-import { EmployeeDetail, EmployeePayload } from '../../types/employee.models';
+import { EmployeeDetail, EmployeePayload, EmployeeCertificateDto, ScheduleExceptionDto } from '../../types/employee.models';
 import { Employee } from '../../types/business.model';
 
 @Injectable({
@@ -38,5 +38,29 @@ export class EmployeeService {
 
   getEmployeeDetails(businessId: number, employeeId: number): Observable<EmployeeDetail> {
     return this.http.get<EmployeeDetail>(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}/details`);
+  }
+
+  addCertificate(businessId: number, employeeId: number, payload: { name: string; institution?: string; dateObtained: string; isVisibleToClient: boolean }): Observable<EmployeeCertificateDto> {
+    return this.http.post<EmployeeCertificateDto>(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}/certificates`, payload);
+  }
+
+  deleteCertificate(businessId: number, employeeId: number, certId: number) {
+    return this.http.delete(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}/certificates/${certId}`);
+  }
+
+  addAbsence(businessId: number, employeeId: number, payload: { dateFrom: string; dateTo: string; type: string; reason?: string; blocksCalendar: boolean }): Observable<ScheduleExceptionDto> {
+    return this.http.post<ScheduleExceptionDto>(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}/absences`, payload);
+  }
+
+  toggleAbsenceApproval(businessId: number, employeeId: number, absenceId: number) {
+    return this.http.patch(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}/absences/${absenceId}/approve`, {});
+  }
+
+  deleteAbsence(businessId: number, employeeId: number, absenceId: number) {
+    return this.http.delete(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}/absences/${absenceId}`);
+  }
+
+  updateFinanceSettings(businessId: number, employeeId: number, payload: any) {
+    return this.http.put(`${this.apiUrl}/businesses/${businessId}/employees/${employeeId}/finance-settings`, payload);
   }
 }

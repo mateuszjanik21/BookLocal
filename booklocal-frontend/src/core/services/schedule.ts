@@ -16,6 +16,6 @@ export class ScheduleService {
   }
 
   updateSchedule(employeeId: number, schedule: WorkSchedule[]): Observable<any> {
-    return this.http.post(`${this.apiUrl}/schedules/${employeeId}`, schedule);
+    return this.http.put(`${this.apiUrl}/schedules/${employeeId}`, schedule);
   }
 }

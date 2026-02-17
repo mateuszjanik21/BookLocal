@@ -1,35 +1,50 @@
-<div class="modal modal-open">
-  <div class="modal-box w-11/12 max-w-2xl">
-    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" (click)="closed.emit()">✕</button>
-    <h3 class="font-bold text-xl">Zarządzaj grafikiem dla: {{ employee.firstName }} {{ employee.lastName }}</h3>
-    
-    @if(isLoading) {
+<div class="modal modal-open" (click)="onBackdropClick($event)">
+  <div class="modal-box w-11/12 max-w-2xl p-0 overflow-hidden">
+    <div class="p-6 bg-base-200 flex items-center gap-4">
+      <div class="bg-primary rounded-full p-2 text-primary-content">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+        </svg>
+      </div>
+      <div>
+        <h3 class="font-bold text-lg">Grafik Pracy</h3>
+        <p class="text-sm text-base-content/60">{{ employee.firstName }} {{ employee.lastName }}</p>
+      </div>
+      <button type="button" class="btn btn-sm btn-circle btn-ghost ml-auto" (click)="cancel()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </div>
+
+    @if (isLoading) {
       <div class="flex justify-center p-16"><span class="loading loading-spinner loading-lg"></span></div>
     } @else {
-      <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="mt-6">
-        <div formArrayName="days" class="space-y-4">
-          @for(dayGroup of dayForms.controls; track $index; let i = $index) {
-            <div [formGroupName]="i" class="grid grid-cols-4 items-center gap-4 p-3 rounded-lg bg-base-200">
-              <label class="font-semibold col-span-1">{{ dayGroup.value.dayOfWeekDisplay  }}</label>
-              <div class="col-span-2 flex items-center gap-2">
+      <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="p-6">
+        <div formArrayName="days" class="space-y-2">
+          @for (dayGroup of dayForms.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="grid grid-cols-12 items-center gap-3 p-3 rounded-lg bg-base-200/50">
+              <label class="font-semibold text-sm col-span-3">{{ dayGroup.value.dayOfWeekDisplay }}</label>
+              <div class="col-span-6 flex items-center gap-2">
                 <input type="time" class="input input-sm input-bordered w-full" formControlName="startTime" />
-                <span>-</span>
+                <span class="text-base-content/40">—</span>
                 <input type="time" class="input input-sm input-bordered w-full" formControlName="endTime" />
               </div>
-              <div class="form-control col-span-1">
-                <label class="label cursor-pointer justify-end gap-2">
-                  <span class="label-text">Wolne</span> 
-                  <input type="checkbox" class="toggle toggle-primary" formControlName="isDayOff" />
+              <div class="form-control col-span-3">
+                <label class="label cursor-pointer justify-end gap-2 p-0">
+                  <span class="label-text text-xs">Wolne</span>
+                  <input type="checkbox" class="toggle toggle-sm toggle-primary" formControlName="isDayOff" />
                 </label>
               </div>
             </div>
           }
         </div>
-        <div class="modal-action mt-8">
-          <button type="button" class="btn btn-ghost" (click)="closed.emit()">Anuluj</button>
+
+        <div class="divider my-3"></div>
+
+        <div class="flex justify-end gap-3">
+          <button type="button" class="btn btn-ghost" (click)="cancel()">Anuluj</button>
           <button type="submit" class="btn btn-primary" [disabled]="isSaving">
-             @if(isSaving) { <span class="loading loading-spinner"></span> }
-            Zapisz zmiany
+            @if (isSaving) { <span class="loading loading-spinner loading-sm"></span> }
+            Zapisz grafik
           </button>
         </div>
       </form>

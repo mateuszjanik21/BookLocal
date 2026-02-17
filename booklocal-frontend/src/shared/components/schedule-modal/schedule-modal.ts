@@ -15,7 +15,7 @@ import { Subscription } from 'rxjs';
 })
 export class ScheduleModalComponent implements OnInit, OnDestroy {
   @Input() employee!: Employee;
-  @Output() closed = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<boolean>();
 
   private fb = inject(FormBuilder);
   private scheduleService = inject(ScheduleService);
@@ -88,13 +88,27 @@ export class ScheduleModalComponent implements OnInit, OnDestroy {
       next: () => {
         this.toastr.success('Grafik pracy został zaktualizowany.');
         this.isSaving = false;
-        this.closed.emit();
+        this.closed.emit(true);
       },
-      error: () => {
-        this.toastr.error('Wystąpił błąd podczas zapisu grafiku.');
+      error: (err: any) => {
+        if (err.status === 409 && err.error?.message) {
+          this.toastr.warning(err.error.message, 'Konflikt grafiku', { timeOut: 8000 });
+        } else {
+          this.toastr.error('Wystąpił błąd podczas zapisu grafiku.');
+        }
         this.isSaving = false;
       }
     });
+  }
+
+  cancel() {
+    this.closed.emit(false);
+  }
+
+  onBackdropClick(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('modal')) {
+      this.closed.emit(false);
+    }
   }
 
   ngOnDestroy(): void {

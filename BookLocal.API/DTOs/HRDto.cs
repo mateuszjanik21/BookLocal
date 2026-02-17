@@ -37,6 +37,15 @@ namespace BookLocal.API.DTOs
         public decimal TotalEmployerCost { get; set; }
         public PayrollStatus Status { get; set; }
         public DateOnly? PaidAt { get; set; }
+        public decimal BaseSalary { get; set; }
+        public decimal CommissionComponent { get; set; }
+        public decimal BonusComponent { get; set; }
+        public decimal PensionContribution { get; set; }
+        public decimal DisabilityContribution { get; set; }
+        public decimal SicknessContribution { get; set; }
+        public decimal HealthInsuranceContribution { get; set; }
+        public decimal TaxAdvance { get; set; }
+        public decimal PPKAmount { get; set; }
     }
 
     public class GeneratePayrollDto
