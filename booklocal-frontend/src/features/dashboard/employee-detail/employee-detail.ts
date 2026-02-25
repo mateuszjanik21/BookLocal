@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { EmployeeService } from '../../../core/services/employee-service';
@@ -27,6 +27,7 @@ import { EmployeePhotoModalComponent } from '../../../shared/components/employee
 export class EmployeeDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
   private employeeService = inject(EmployeeService);
   private businessService = inject(BusinessService);
   private toastr = inject(ToastrService);
@@ -105,7 +106,13 @@ export class EmployeeDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    if (tab) this.activeTab = tab;
     this.loadData();
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   loadData(): void {

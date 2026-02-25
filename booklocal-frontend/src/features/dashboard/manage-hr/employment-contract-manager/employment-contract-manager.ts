@@ -1,109 +1,100 @@
-import { Component, Input, inject, OnInit } from '@angular/core';
+import { Component, Input, ViewChild, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { HRService } from '../../../../core/services/hr-service';
-import { EmployeeService } from '../../../../core/services/employee-service';
 import { EmploymentContract, ContractType } from '../../../../types/hr.models';
 import { Employee } from '../../../../types/business.model';
 import { ToastrService } from 'ngx-toastr';
-import { finalize } from 'rxjs';
+import { ContractWizardModalComponent } from '../contract-wizard-modal/contract-wizard-modal';
 
 @Component({
   selector: 'app-employment-contract-manager',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ContractWizardModalComponent, FormsModule],
   templateUrl: './employment-contract-manager.html',
 })
 export class EmploymentContractManagerComponent implements OnInit {
   @Input() businessId!: number;
-  
-  private fb = inject(FormBuilder);
-  private hrService = inject(HRService);
-  private employeeService = inject(EmployeeService);
-  private toastr = inject(ToastrService);
+  @ViewChild('wizardModal') wizardModal!: ContractWizardModalComponent;
 
-  contracts: EmploymentContract[] = [];
-  employees: Employee[] = [];
-  isLoading = false;
-  isSubmitting = false;
+  private hrService      = inject(HRService);
+  private toastr         = inject(ToastrService);
+
+  allContracts: EmploymentContract[] = [];
+  employees:    Employee[]           = [];
+  isLoading     = false;
+  isArchiving   = false;
+  showArchived  = false;
 
   contractTypes = [
     { value: ContractType.EmploymentContract, label: 'Umowa o Pracę' },
-    { value: ContractType.B2B, label: 'B2B' },
-    { value: ContractType.MandateContract, label: 'Umowa Zlecenie' },
-    { value: ContractType.Apprenticeship, label: 'Praktyki' }
+    { value: ContractType.B2B,                label: 'B2B'           },
+    { value: ContractType.MandateContract,    label: 'Umowa Zlecenie' },
+    { value: ContractType.Apprenticeship,     label: 'Praktyki'       },
   ];
 
-  contractForm = this.fb.group({
-    employeeId: [null as number | null, Validators.required],
-    contractType: [ContractType.EmploymentContract, Validators.required],
-    baseSalary: [null, [Validators.required, Validators.min(0)]],
-    taxDeductibleExpenses: [250, [Validators.required, Validators.min(0)]],
-    startDate: ['', Validators.required],
-    endDate: ['']
-  });
+  searchQuery = '';
+
+  get displayedContracts(): EmploymentContract[] {
+    let filtered = this.showArchived
+      ? this.allContracts
+      : this.allContracts.filter(c => c.isActive);
+
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(c => c.employeeName.toLowerCase().includes(q));
+    }
+
+    return filtered;
+  }
+
+  get archivedCount(): number {
+    return this.allContracts.filter(c => !c.isActive).length;
+  }
 
   ngOnInit(): void {
-    if(this.businessId) {
-        this.loadData();
-    }
+    if (this.businessId) this.loadData();
   }
 
   loadData() {
     this.isLoading = true;
     this.hrService.getContracts(this.businessId).subscribe({
-        next: (data) => this.contracts = data,
-        error: () => this.toastr.error('Błąd ładowania umów.')
+      next: (data) => { this.allContracts = data; this.isLoading = false; },
+      error: () => { this.toastr.error('Błąd ładowania umów.'); this.isLoading = false; }
     });
-
-    this.employeeService.getEmployees(this.businessId).subscribe({
-        next: (data) => this.employees = data,
-        complete: () => this.isLoading = false
+    this.hrService.getEmployeesForHr(this.businessId).subscribe({
+      next: (data) => this.employees = data,
     });
   }
 
-  onSubmit() {
-    if (this.contractForm.invalid) return;
+  openWizard() { this.wizardModal.open(); }
 
-    this.isSubmitting = true;
-    const formValue = this.contractForm.value;
+  onWizardClosed(refresh: boolean) { if (refresh) this.loadData(); }
 
-    const payload = {
-        employeeId: Number(formValue.employeeId),
-        contractType: Number(formValue.contractType),
-        baseSalary: formValue.baseSalary!,
-        taxDeductibleExpenses: formValue.taxDeductibleExpenses!,
-        startDate: formValue.startDate!,
-        endDate: formValue.endDate || undefined
-    };
-
-    this.hrService.createContract(this.businessId, payload)
-        .pipe(finalize(() => this.isSubmitting = false))
-        .subscribe({
-            next: (newContract) => {
-                this.toastr.success('Umowa dodana pomyślnie!');
-                this.contracts = [...this.contracts, newContract];
-                this.contractForm.reset({ contractType: ContractType.EmploymentContract });
-                this.loadData();
-            },
-            error: (err) => this.toastr.error('Błąd dodawania umowy.')
-        });
+  archiveContract(event: Event, contractId: number) {
+    event.stopPropagation();
+    event.preventDefault();
+    if (!confirm('Czy na pewno chcesz zarchiwizować tę umowę?')) return;
+    this.isArchiving = true;
+    this.hrService.archiveContract(this.businessId, contractId).subscribe({
+      next: () => { this.toastr.success('Umowa zarchiwizowana.'); this.loadData(); this.isArchiving = false; },
+      error: () => { this.toastr.error('Błąd archiwizacji umowy.'); this.isArchiving = false; }
+    });
   }
 
   getContractTypeLabel(type: ContractType | number | string): string {
     let val = type;
     if (typeof type === 'string') {
-        const typeMap: Record<string, number> = {
-            'EmploymentContract': ContractType.EmploymentContract,
-            'B2B': ContractType.B2B,
-            'MandateContract': ContractType.MandateContract,
-            'Apprenticeship': ContractType.Apprenticeship
-        };
-        if (type in typeMap) {
-            val = typeMap[type];
-        }
+      const typeMap: Record<string, number> = {
+        'EmploymentContract': ContractType.EmploymentContract,
+        'B2B':                ContractType.B2B,
+        'MandateContract':    ContractType.MandateContract,
+        'Apprenticeship':     ContractType.Apprenticeship
+      };
+      if (type in typeMap) val = typeMap[type];
     }
-    const found = this.contractTypes.find(t => t.value == val); 
+    const found = this.contractTypes.find(t => t.value == val);
     return found ? found.label : `Nieznany (${type})`;
   }
 }

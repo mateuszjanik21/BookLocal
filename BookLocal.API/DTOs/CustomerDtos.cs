@@ -1,5 +1,32 @@
+using System;
+using System.Collections.Generic;
+
 namespace BookLocal.API.DTOs
 {
+    public enum CustomerStatusFilter
+    {
+        All = 0,
+        VIP = 1,
+        Banned = 2,
+        Standard = 3
+    }
+
+    public enum CustomerHistoryFilter
+    {
+        All = 0,
+        WithHistory = 1,
+        WithoutHistory = 2
+    }
+
+    public enum CustomerSpentFilter
+    {
+        All = 0,
+        Any = 1,
+        Over100 = 2,
+        Over500 = 3,
+        Over1000 = 4
+    }
+
     public class CustomerListItemDto
     {
         public int ProfileId { get; set; }
@@ -7,6 +34,7 @@ namespace BookLocal.API.DTOs
         public string FullName { get; set; }
         public string? PhoneNumber { get; set; }
         public string? Email { get; set; }
+        public string? PhotoUrl { get; set; }
         public DateTime LastVisitDate { get; set; }
         public DateTime? NextVisitDate { get; set; }
         public decimal TotalSpent { get; set; }

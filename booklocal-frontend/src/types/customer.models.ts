@@ -4,13 +4,14 @@ export interface CustomerListItem {
   fullName: string;
   phoneNumber?: string;
   email?: string;
-  lastVisitDate: string;
+  photoUrl?: string;
+  lastVisitDate: string; 
   nextVisitDate?: string;
   totalSpent: number;
-  cancelledCount: number;
-  pointsBalance: number;
   isVIP: boolean;
   isBanned: boolean;
+  cancelledCount: number;
+  pointsBalance: number;
 }
 
 export interface CustomerDetail extends CustomerListItem {
@@ -40,4 +41,25 @@ export interface UpdateCustomerNotePayload {
 export interface UpdateCustomerStatusPayload {
   isVIP: boolean;
   isBanned: boolean;
+}
+
+export enum CustomerStatusFilter {
+    All = 0,
+    VIP = 1,
+    Banned = 2,
+    Standard = 3
+}
+
+export enum CustomerHistoryFilter {
+    All = 0,
+    WithHistory = 1,
+    WithoutHistory = 2
+}
+
+export enum CustomerSpentFilter {
+    All = 0,
+    Any = 1,
+    Over100 = 2,
+    Over500 = 3,
+    Over1000 = 4
 }

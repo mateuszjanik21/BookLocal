@@ -26,6 +26,9 @@ namespace BookLocal.API.Controllers
         public async Task<ActionResult<PagedResultDto<CustomerListItemDto>>> GetCustomers(
             int businessId,
             [FromQuery] string? search,
+            [FromQuery] CustomerStatusFilter status = CustomerStatusFilter.All,
+            [FromQuery] CustomerHistoryFilter history = CustomerHistoryFilter.All,
+            [FromQuery] CustomerSpentFilter spent = CustomerSpentFilter.All,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
         {
@@ -36,6 +39,11 @@ namespace BookLocal.API.Controllers
             var query = from p in _context.CustomerBusinessProfiles
                         where p.BusinessId == businessId
                         let loyalty = _context.LoyaltyPoints.FirstOrDefault(lp => lp.BusinessId == businessId && lp.CustomerId == p.CustomerId)
+                        let nextVisit = _context.Reservations
+                                        .Where(r => r.BusinessId == businessId && r.CustomerId == p.CustomerId && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
+                                        .OrderBy(r => r.StartTime)
+                                        .Select(r => (DateTime?)r.StartTime)
+                                        .FirstOrDefault()
                         select new CustomerListItemDto
                         {
                             ProfileId = p.ProfileId,
@@ -43,8 +51,9 @@ namespace BookLocal.API.Controllers
                             FullName = p.Customer.FirstName + " " + p.Customer.LastName,
                             PhoneNumber = p.Customer.PhoneNumber,
                             Email = p.Customer.Email,
+                            PhotoUrl = p.Customer.PhotoUrl,
                             LastVisitDate = p.LastVisitDate,
-                            NextVisitDate = p.NextVisitDate,
+                            NextVisitDate = nextVisit,
                             CancelledCount = p.CancelledCount,
                             TotalSpent = p.TotalSpent,
                             IsVIP = p.IsVIP,
@@ -60,6 +69,30 @@ namespace BookLocal.API.Controllers
                     (c.Email != null && c.Email.ToLower().Contains(term)) ||
                     (c.PhoneNumber != null && c.PhoneNumber.Contains(term))
                 );
+            }
+
+            if (status != CustomerStatusFilter.All)
+            {
+                if (status == CustomerStatusFilter.VIP) query = query.Where(c => c.IsVIP);
+                else if (status == CustomerStatusFilter.Banned) query = query.Where(c => c.IsBanned);
+                else if (status == CustomerStatusFilter.Standard) query = query.Where(c => !c.IsVIP && !c.IsBanned);
+            }
+
+            if (history != CustomerHistoryFilter.All)
+            {
+                var defaultDate = new DateTime(1, 1, 1, 0, 0, 0);
+                if (history == CustomerHistoryFilter.WithHistory)
+                    query = query.Where(c => c.LastVisitDate != defaultDate);
+                else if (history == CustomerHistoryFilter.WithoutHistory)
+                    query = query.Where(c => c.LastVisitDate == defaultDate);
+            }
+
+            if (spent != CustomerSpentFilter.All)
+            {
+                if (spent == CustomerSpentFilter.Any) query = query.Where(c => c.TotalSpent > 0);
+                else if (spent == CustomerSpentFilter.Over100) query = query.Where(c => c.TotalSpent >= 100);
+                else if (spent == CustomerSpentFilter.Over500) query = query.Where(c => c.TotalSpent >= 500);
+                else if (spent == CustomerSpentFilter.Over1000) query = query.Where(c => c.TotalSpent >= 1000);
             }
 
             var totalCount = await query.CountAsync();
@@ -107,6 +140,7 @@ namespace BookLocal.API.Controllers
                 FullName = profile.Customer.FirstName + " " + profile.Customer.LastName,
                 PhoneNumber = profile.Customer.PhoneNumber,
                 Email = profile.Customer.Email,
+                PhotoUrl = profile.Customer.PhotoUrl,
                 LastVisitDate = profile.LastVisitDate,
                 NextVisitDate = await _context.Reservations
                     .Where(r => r.BusinessId == businessId && r.CustomerId == customerId && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)

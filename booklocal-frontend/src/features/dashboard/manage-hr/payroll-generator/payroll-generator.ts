@@ -1,8 +1,8 @@
 import { Component, Input, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { HRService } from '../../../../core/services/hr-service';
-import { EmployeeService } from '../../../../core/services/employee-service';
 import { Employee } from '../../../../types/business.model';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
@@ -11,25 +11,34 @@ import { EmployeePayroll, PayrollStatus } from '../../../../types/hr.models';
 @Component({
   selector: 'app-payroll-generator',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './payroll-generator.html',
 })
 export class PayrollGeneratorComponent implements OnInit {
   @Input() businessId!: number;
 
-  private fb = inject(FormBuilder);
   private hrService = inject(HRService);
-  private employeeService = inject(EmployeeService);
   private toastr = inject(ToastrService);
 
   payrolls: EmployeePayroll[] = [];
   employees: Employee[] = [];
   isLoading = false;
   isGenerating = false;
+  isDeleting: { [id: number]: boolean } = {};
 
   today = new Date();
-  currentMonth = this.today.getMonth() + 1;
-  currentYear = this.today.getFullYear();
+  filterMonth: number | undefined = this.today.getMonth() + 1;
+  filterYear: number = this.today.getFullYear();
+  selectedEmployeeId: number | undefined = undefined;
+
+  private lastMonth = this.today.getMonth() === 0
+    ? { month: 12, year: this.today.getFullYear() - 1 }
+    : { month: this.today.getMonth(), year: this.today.getFullYear() };
+
+  get lastMonthLabel(): string {
+    const m = this.months.find(x => x.value === this.lastMonth.month);
+    return `${m?.label} ${this.lastMonth.year}`;
+  }
 
   months = [
     { value: 1, label: 'Styczeń' }, { value: 2, label: 'Luty' }, { value: 3, label: 'Marzec' },
@@ -38,58 +47,83 @@ export class PayrollGeneratorComponent implements OnInit {
     { value: 10, label: 'Październik' }, { value: 11, label: 'Listopad' }, { value: 12, label: 'Grudzień' }
   ];
 
-  generateForm = this.fb.group({
-    employeeId: [null as number | null, Validators.required],
-    month: [this.currentMonth, Validators.required],
-    year: [this.currentYear, Validators.required]
-  });
-
-  filterForm = this.fb.group({
-    month: [this.currentMonth],
-    year: [this.currentYear]
-  });
-
   ngOnInit(): void {
-    if(this.businessId) {
-        this.loadEmployees();
-        this.loadPayrolls();
+    if (this.businessId) {
+      this.loadEmployees();
+      this.loadPayrolls();
     }
   }
 
   loadEmployees() {
-    this.employeeService.getEmployees(this.businessId).subscribe(data => this.employees = data);
+    this.hrService.getEmployeesForHr(this.businessId).subscribe(data => this.employees = data);
   }
 
   loadPayrolls() {
     this.isLoading = true;
-    const { month, year } = this.filterForm.value;
-    
-    this.hrService.getPayrolls(this.businessId, month || undefined, year || undefined)
-        .pipe(finalize(() => this.isLoading = false))
-        .subscribe({
-            next: (data) => this.payrolls = data,
-            error: () => this.toastr.error('Błąd ładowania list płac.')
-        });
+    this.hrService.getPayrolls(this.businessId, this.filterMonth, this.filterYear)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (data) => this.payrolls = data,
+        error: () => this.toastr.error('Błąd ładowania list płac.')
+      });
   }
 
-  onGenerate() {
-    if (this.generateForm.invalid) return;
+  generatePayroll() {
+    if (!this.filterMonth || !this.filterYear) {
+      this.toastr.warning('Wybierz miesiąc i rok, dla których chcesz wygenerować listę płac.');
+      return;
+    }
+
+    let targetEmployeeIds: number[] = [];
+    
+    if (this.selectedEmployeeId) {
+      targetEmployeeIds = [Number(this.selectedEmployeeId)];
+    } else {
+      if (this.employees.length === 0) {
+        this.toastr.warning('Brak pracowników do wygenerowania płac.');
+        return;
+      }
+      targetEmployeeIds = this.employees.map(e => e.id);
+    }
 
     this.isGenerating = true;
-    const formValue = this.generateForm.value;
 
-    this.hrService.generatePayroll(this.businessId, {
-        employeeId: Number(formValue.employeeId),
-        month: Number(formValue.month),
-        year: Number(formValue.year)
-    })
+    this.hrService.generatePayrollForAll(
+      this.businessId,
+      targetEmployeeIds,
+      this.filterMonth,
+      this.filterYear
+    )
     .pipe(finalize(() => this.isGenerating = false))
     .subscribe({
-        next: (newPayroll) => {
-            this.toastr.success('Lista płac wygenerowana!');
-            this.loadPayrolls();
-        },
-        error: (err) => this.toastr.error('Błąd generowania. Sprawdź czy pracownik ma umowę.')
+      next: (results) => {
+        const generatedCount = results.filter(r => r !== null).length;
+        if (generatedCount > 0) {
+          this.toastr.success(`Wygenerowano ${generatedCount} nowych list płac za ${this.filterMonth}/${this.filterYear}!`);
+        } else {
+          this.toastr.info(`Wszystkie możliwe płace za ten miesiąc zostały już wygenerowane.`);
+        }
+        this.loadPayrolls();
+      },
+      error: () => this.toastr.error('Wystąpił nieoczekiwany błąd serwera.')
+    });
+  }
+
+  deletePayroll(event: Event, payroll: EmployeePayroll) {
+    event.stopPropagation();
+    if (!confirm('Czy na pewno chcesz usunąć tę listę płac? Będziesz mógł wygenerować ją ponownie.')) return;
+    
+    this.isDeleting[payroll.payrollId] = true;
+    this.hrService.deletePayroll(this.businessId, payroll.payrollId).pipe(
+      finalize(() => delete this.isDeleting[payroll.payrollId])
+    ).subscribe({
+      next: () => {
+        this.toastr.success('Płaca została pomyślnie usunięta.');
+        this.loadPayrolls();
+      },
+      error: () => {
+        this.toastr.error('Wystąpił błąd podczas usuwania płacy.');
+      }
     });
   }
 

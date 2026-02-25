@@ -7,54 +7,64 @@
         <span class="loading loading-spinner loading-lg"></span>
       </div>
     } @else {
-      <div class="flex items-start gap-4 mb-6">
+      <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-6 text-center sm:text-left">
         <div class="avatar placeholder">
-          <div class="bg-neutral text-neutral-content rounded-full w-20">
-            <span class="text-3xl">{{ customer.fullName.charAt(0) }}</span>
+          <div class="bg-neutral text-neutral-content rounded-full w-24 h-24 sm:w-20 sm:h-20 shadow-sm border-2 border-base-200 relative overflow-hidden">
+            @if (customer.photoUrl) {
+              <img [src]="customer.photoUrl" alt="Avatar" class="object-cover w-full h-full" />
+            } @else {
+              <span class="text-3xl font-bold">{{ customer.fullName.charAt(0) }}</span>
+            }
           </div>
         </div>
-        <div class="flex-1">
-          <h3 class="font-bold text-2xl pt-2">{{ customer.fullName }}</h3>
-          <div class="text-sm opacity-70 flex gap-4 mt-1">
-            <span *ngIf="customer.phoneNumber">📞 {{ customer.phoneNumber }}</span>
-            <span *ngIf="customer.email">✉️ {{ customer.email }}</span>
+        <div class="flex-1 mt-2 sm:mt-0">
+          <h3 class="font-bold text-2xl sm:pt-2">{{ customer.fullName }}</h3>
+          <div class="text-sm opacity-70 flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2 justify-center sm:justify-start">
+            <span *ngIf="customer.phoneNumber" class="flex items-center gap-1.5 justify-center sm:justify-start">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" /></svg>
+              {{ customer.phoneNumber }}
+            </span>
+            <span *ngIf="customer.email" class="flex items-center gap-1.5 justify-center sm:justify-start">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
+              {{ customer.email }}
+            </span>
           </div>
         </div>
         <div class="flex flex-col gap-2">
             <button class="btn btn-sm" [class.btn-warning]="customer.isVIP" (click)="toggleVIP()">
-                {{ customer.isVIP ? '⭐ VIP' : 'Oznacz jako VIP' }}
+                {{ customer.isVIP ? 'VIP' : 'Oznacz jako VIP' }}
             </button>
              <button class="btn btn-sm" [class.btn-error]="customer.isBanned" (click)="toggleBan()">
-                {{ customer.isBanned ? '🚫 Zablokowany' : 'Zablokuj' }}
+                {{ customer.isBanned ? 'Zablokowany' : 'Zablokuj' }}
             </button>
         </div>
       </div>
 
-      <div class="stats shadow w-full mb-6 bg-base-200">
-        <div class="stat">
-          <div class="stat-title">Wizyty</div>
-          <div class="stat-value">{{ customer.visitCount }}</div>
-          <div class="stat-desc">Zrealizowane</div>
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <div class="stat bg-base-200 rounded-xl p-4 shadow-sm">
+          <div class="stat-title text-xs lg:text-sm">Wizyty</div>
+          <div class="stat-value text-2xl lg:text-3xl">{{ customer.visitCount }}</div>
+          <div class="stat-desc text-[10px] lg:text-xs">Zrealizowane</div>
         </div>
-         <div class="stat">
-          <div class="stat-title">Nieobecności</div>
-          <div class="stat-value text-error">{{ customer.noShowCount }}</div>
-          <div class="stat-desc">No-Show</div>
+        <div class="stat bg-base-200 rounded-xl p-4 shadow-sm">
+          <div class="stat-title text-xs lg:text-sm">Nieobecności</div>
+          <div class="stat-value text-error text-2xl lg:text-3xl">{{ customer.noShowCount }}</div>
+          <div class="stat-desc text-[10px] lg:text-xs">No-Show</div>
         </div>
-        <div class="stat">
-          <div class="stat-title">Wydano łącznie</div>
-          <div class="stat-value text-primary">{{ customer.totalSpent | number:'1.2-2' }} zł</div>
+        <div class="stat bg-base-200 rounded-xl p-4 shadow-sm">
+          <div class="stat-title text-xs lg:text-sm">Obrót</div>
+          <div class="stat-value text-primary text-xl lg:text-2xl">{{ customer.totalSpent | number:'1.0-0' }} <span class="text-sm">zł</span></div>
         </div>
-        <div class="stat">
-          <div class="stat-title">Punkty</div>
-          <div class="stat-value text-accent">{{ customer.pointsBalance }}</div>
-          <div class="stat-desc">Zgromadzone</div>
+        <div class="stat bg-base-200 rounded-xl p-4 shadow-sm">
+          <div class="stat-title text-xs lg:text-sm">Punkty</div>
+          <div class="stat-value text-accent text-2xl lg:text-3xl">{{ customer.pointsBalance }}</div>
+          <div class="stat-desc text-[10px] lg:text-xs">Zgromadzone</div>
         </div>
-        <div class="stat">
-          <div class="stat-title">Ostatnia wizyta</div>
-          <div class="stat-desc mt-1 font-bold text-sm">
-             <span *ngIf="customer.lastVisitDate !== '0001-01-01T00:00:00'">{{ customer.lastVisitDate | date:'mediumDate' }}</span>
-             <span *ngIf="customer.lastVisitDate === '0001-01-01T00:00:00'">Brak</span>
+        <div class="stat bg-base-200 rounded-xl p-4 shadow-sm col-span-2 lg:col-span-1 border-t lg:border-t-0 border-base-300">
+          <div class="stat-title text-xs lg:text-sm">Ostatnio</div>
+          <div class="stat-value text-lg mt-1 font-bold">
+             <span *ngIf="customer.lastVisitDate !== '0001-01-01T00:00:00'">{{ customer.lastVisitDate | date:'shortDate' }}</span>
+             <span *ngIf="customer.lastVisitDate === '0001-01-01T00:00:00'" class="opacity-50 text-sm">Brak</span>
           </div>
         </div>
       </div>

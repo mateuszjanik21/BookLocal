@@ -1,94 +1,143 @@
 <div class="card bg-base-100 shadow-xl border border-base-200">
   <div class="card-body">
-    <h2 class="card-title text-2xl mb-4">Zarządzanie Umowami</h2>
-
-    <form [formGroup]="contractForm" (ngSubmit)="onSubmit()" class="bg-base-200 p-4 rounded-lg mb-6">
-      <h3 class="font-bold text-lg mb-4">Nowa Umowa</h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="form-control">
-          <label class="label"><span class="label-text">Pracownik</span></label>
-          <select class="select select-bordered w-full" formControlName="employeeId">
-            <option [ngValue]="null" disabled>Wybierz pracownika</option>
-            @for(emp of employees; track emp.id) {
-              <option [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="form-control">
-          <label class="label"><span class="label-text">Typ Umowy</span></label>
-          <select class="select select-bordered w-full" formControlName="contractType">
-            @for(type of contractTypes; track type.value) {
-              <option [value]="type.value">{{ type.label }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="form-control">
-          <label class="label"><span class="label-text">Wynagrodzenie Podstawowe (Brutto)</span></label>
-          <input type="number" class="input input-bordered w-full" formControlName="baseSalary" placeholder="0.00" />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">Koszty Uzyskania Przychodu (PLN)</span>
-            <span class="label-text-alt text-xs text-base-content/60">Standard: 250, Dojazdy: 300</span>
-          </label>
-          <input type="number" class="input input-bordered w-full" formControlName="taxDeductibleExpenses" placeholder="250.00" />
-        </div>
-
-        <div class="form-control">
-            <label class="label"><span class="label-text">Data Rozpoczęcia</span></label>
-            <input type="date" class="input input-bordered w-full" formControlName="startDate" />
-        </div>
-
-         <div class="form-control">
-            <label class="label"><span class="label-text">Data Zakończenia (Opcjonalnie)</span></label>
-            <input type="date" class="input input-bordered w-full" formControlName="endDate" />
-        </div>
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
+      <div>
+        <h2 class="card-title text-2xl">Zarządzanie Umowami</h2>
+        <p class="text-sm text-base-content/60 mt-0.5">Kliknij wiersz, aby przejść do profilu pracownika.</p>
       </div>
+      <div class="flex flex-wrap gap-3 items-center w-full sm:w-auto mt-2 sm:mt-0">
+        <div class="relative w-full sm:w-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input type="text" placeholder="Szukaj pracownika..." 
+                 class="input input-sm input-bordered w-full sm:w-48 pl-9" 
+                 [(ngModel)]="searchQuery" />
+        </div>
 
-      <div class="mt-4 flex justify-end">
-        <button type="submit" class="btn btn-primary" [disabled]="contractForm.invalid || isSubmitting">
-            <span *ngIf="isSubmitting" class="loading loading-spinner"></span>
-            Dodaj Umowę
+        @if (archivedCount > 0) {
+          <label class="flex items-center gap-2 cursor-pointer text-sm select-none">
+            <input type="checkbox" class="toggle toggle-sm toggle-warning"
+              [(ngModel)]="showArchived" />
+            <span class="text-base-content/70">Archiwalne ({{ archivedCount }})</span>
+          </label>
+        }
+        <button class="btn btn-primary sm:btn-sm w-full sm:w-auto" (click)="openWizard()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          Nowa umowa
         </button>
       </div>
-    </form>
-
-    <div class="overflow-x-auto">
-      <table class="table w-full">
-        <thead>
-          <tr>
-            <th>Pracownik</th>
-            <th>Typ</th>
-            <th>Płaca</th>
-            <th>Od</th>
-            <th>Do</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for(contract of contracts; track contract.contractId) {
-            <tr class="hover">
-              <td class="font-bold">{{ contract.employeeName }}</td>
-              <td>{{ getContractTypeLabel(contract.contractType) }}</td>
-              <td>{{ contract.baseSalary | number:'1.2-2' }} zł</td>
-              <td>{{ contract.startDate }}</td>
-              <td>{{ contract.endDate || '-' }}</td>
-              <td>
-                <span class="badge" [class.badge-success]="contract.isActive" [class.badge-ghost]="!contract.isActive">
-                    {{ contract.isActive ? 'Aktywna' : 'Archiwalna' }}
-                </span>
-              </td>
-            </tr>
-          } @empty {
-             <tr>
-                <td colspan="6" class="text-center">Brak zdefiniowanych umów.</td>
-             </tr>
-          }
-        </tbody>
-      </table>
     </div>
+
+    @if (isLoading) {
+      <div class="flex justify-center py-8"><span class="loading loading-spinner loading-md"></span></div>
+    } @else {
+
+      <div class="sm:hidden space-y-3">
+        @for (contract of displayedContracts; track contract.contractId) {
+          <div class="rounded-xl border p-4 transition-colors"
+            [class.border-base-200]="contract.isActive"
+            [class.border-warning]="!contract.isActive"
+            [class.bg-warning]="!contract.isActive">
+            <div class="flex flex-col gap-2">
+              <div class="flex justify-between items-start gap-2">
+                <div class="cursor-pointer flex-1 min-w-0"
+                  [routerLink]="['/dashboard/employees', contract.employeeId]"
+                  [queryParams]="{tab: 'contracts'}">
+                  <p class="font-bold truncate">{{ contract.employeeName }}</p>
+                  <p class="text-sm text-base-content/60 truncate">{{ getContractTypeLabel(contract.contractType) }}</p>
+                </div>
+                <div class="flex flex-col items-end gap-1 shrink-0">
+                  <span class="badge badge-sm"
+                    [class.badge-success]="contract.isActive"
+                    [class.badge-ghost]="!contract.isActive">
+                    {{ contract.isActive ? 'Aktywna' : 'Archiwalna' }}
+                  </span>
+                  @if (contract.isActive) {
+                    <button class="btn btn-ghost btn-xs text-warning px-0" title="Archiwizuj"
+                      (click)="archiveContract($event, contract.contractId)" [disabled]="isArchiving">
+                      Archiwizuj
+                    </button>
+                  }
+                </div>
+              </div>
+              <div class="flex flex-col sm:flex-row sm:gap-4 text-sm text-base-content/70 border-t border-base-200/50 pt-2 mt-1">
+                <span class="font-medium">{{ contract.baseSalary | number:'1.0-0' }} zł brutto</span>
+                <span class="text-xs sm:text-sm text-base-content/50">od {{ contract.startDate }}</span>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="text-center py-8 text-base-content/40">
+            <p class="text-4xl mb-2"></p>
+            <p>{{ showArchived ? 'Brak umów.' : 'Brak aktywnych umów.' }}</p>
+          </div>
+        }
+      </div>
+
+      <div class="hidden sm:block overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>Pracownik</th>
+              <th>Typ</th>
+              <th>Brutto / mies.</th>
+              <th>Od</th>
+              <th>Do</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (contract of displayedContracts; track contract.contractId) {
+              <tr class="hover cursor-pointer"
+                [class.opacity-60]="!contract.isActive"
+                [routerLink]="['/dashboard/employees', contract.employeeId]"
+                [queryParams]="{tab: 'contracts'}">
+                <td class="font-bold">{{ contract.employeeName }}</td>
+                <td>{{ getContractTypeLabel(contract.contractType) }}</td>
+                <td>{{ contract.baseSalary | number:'1.2-2' }} zł</td>
+                <td>{{ contract.startDate }}</td>
+                <td>{{ contract.endDate || '∞' }}</td>
+                <td>
+                  <span class="badge badge-sm"
+                    [class.badge-success]="contract.isActive"
+                    [class.badge-ghost]="!contract.isActive">
+                    {{ contract.isActive ? 'Aktywna' : 'Archiwalna' }}
+                  </span>
+                </td>
+                <td>
+                  @if (contract.isActive) {
+                    <button class="btn btn-ghost btn-xs text-warning"
+                      title="Archiwizuj umowę"
+                      (click)="archiveContract($event, contract.contractId)"
+                      [disabled]="isArchiving">
+                      Archiwizuj
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center py-6 text-base-content/40">
+                  {{ showArchived ? 'Brak umów.' : 'Brak aktywnych umów.' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    }
   </div>
 </div>
+
+<app-contract-wizard-modal
+  #wizardModal
+  [businessId]="businessId"
+  [employees]="employees"
+  [existingContracts]="allContracts"
+  (closed)="onWizardClosed($event)">
+</app-contract-wizard-modal>

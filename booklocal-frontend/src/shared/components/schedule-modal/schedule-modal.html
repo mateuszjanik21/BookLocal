@@ -1,6 +1,6 @@
 <div class="modal modal-open" (click)="onBackdropClick($event)">
-  <div class="modal-box w-11/12 max-w-2xl p-0 overflow-hidden">
-    <div class="p-6 bg-base-200 flex items-center gap-4">
+  <div class="modal-box w-11/12 max-w-2xl p-0 flex flex-col max-h-[90vh]">
+    <div class="p-6 bg-base-200 flex items-center gap-4 shrink-0">
       <div class="bg-primary rounded-full p-2 text-primary-content">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
@@ -18,19 +18,26 @@
     @if (isLoading) {
       <div class="flex justify-center p-16"><span class="loading loading-spinner loading-lg"></span></div>
     } @else {
-      <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="p-6">
-        <div formArrayName="days" class="space-y-2">
+      <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="p-4 sm:p-6 overflow-y-auto custom-scrollbar">
+        <div formArrayName="days" class="space-y-3">
           @for (dayGroup of dayForms.controls; track $index; let i = $index) {
-            <div [formGroupName]="i" class="grid grid-cols-12 items-center gap-3 p-3 rounded-lg bg-base-200/50">
-              <label class="font-semibold text-sm col-span-3">{{ dayGroup.value.dayOfWeekDisplay }}</label>
-              <div class="col-span-6 flex items-center gap-2">
-                <input type="time" class="input input-sm input-bordered w-full" formControlName="startTime" />
-                <span class="text-base-content/40">—</span>
-                <input type="time" class="input input-sm input-bordered w-full" formControlName="endTime" />
+            <div [formGroupName]="i" class="flex flex-col sm:grid sm:grid-cols-12 items-start sm:items-center gap-2 sm:gap-3 p-3 sm:p-2 rounded-xl border sm:border-0 border-base-200 sm:bg-base-200/50 shadow-sm sm:shadow-none">
+              <label class="font-bold text-sm sm:col-span-3 w-full text-base-content/80">{{ dayGroup.value.dayOfWeekDisplay }}</label>
+              
+              <div class="sm:col-span-6 flex items-center gap-2 w-full my-1 sm:my-0"
+                   [class.opacity-40]="dayGroup.value.isDayOff"
+                   [class.pointer-events-none]="dayGroup.value.isDayOff">
+                <input type="time" class="input input-sm input-bordered w-full font-mono text-center" formControlName="startTime" />
+                <span class="text-base-content/40 font-bold">—</span>
+                <input type="time" class="input input-sm input-bordered w-full font-mono text-center" formControlName="endTime" />
               </div>
-              <div class="form-control col-span-3">
-                <label class="label cursor-pointer justify-end gap-2 p-0">
-                  <span class="label-text text-xs">Wolne</span>
+              
+              <div class="form-control sm:col-span-3 w-full mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-base-200 border-dashed sm:border-0">
+                <label class="label cursor-pointer justify-between sm:justify-end gap-3 p-0 hover:bg-transparent">
+                  <span class="label-text text-xs font-bold uppercase tracking-wider" 
+                        [ngClass]="dayGroup.value.isDayOff ? 'text-primary' : 'text-base-content/50'">
+                    Dzień wolny
+                  </span>
                   <input type="checkbox" class="toggle toggle-sm toggle-primary" formControlName="isDayOff" />
                 </label>
               </div>

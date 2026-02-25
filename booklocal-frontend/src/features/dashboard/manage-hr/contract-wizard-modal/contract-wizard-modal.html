@@ -1,0 +1,178 @@
+<dialog #wizardDialog class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box w-11/12 max-w-3xl p-0 overflow-hidden">
+
+    <div class="bg-base-200 px-6 pt-5 pb-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Nowa Umowa</h3>
+        <button class="btn btn-ghost btn-sm btn-circle" (click)="close()">✕</button>
+      </div>
+      <ul class="steps steps-horizontal w-full text-xs">
+        <li class="step" [class.step-primary]="currentStep >= 1">Pracownik</li>
+        <li class="step" [class.step-primary]="currentStep >= 2">Warunki</li>
+        <li class="step" [class.step-primary]="currentStep >= 3">Daty & Podgląd</li>
+      </ul>
+    </div>
+
+    <div class="p-6">
+
+      <div [hidden]="currentStep !== 1">
+        <p class="text-sm text-base-content/60 mb-4">Wybierz pracownika, dla którego tworzysz umowę.</p>
+        <div [hidden]="!isLoading" class="flex justify-center py-8">
+          <span class="loading loading-spinner loading-md"></span>
+        </div>
+        <div [hidden]="isLoading" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-1">
+          @for (emp of employees; track emp.id) {
+            <div
+              class="flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all duration-150 hover:border-primary/50 hover:bg-primary/5"
+              [ngClass]="selectedEmployeeId === emp.id ? 'border-primary bg-primary/10' : 'border-base-300'"
+              (click)="selectEmployee(emp.id)">
+              <div class="avatar shrink-0">
+                <div class="rounded-full w-11 h-11">
+                  @if (emp.photoUrl) {
+                    <img [src]="emp.photoUrl" [alt]="emp.firstName" class="object-cover rounded-full w-11 h-11" />
+                  } @else {
+                    <div class="rounded-full w-11 h-11 flex items-center justify-center text-sm font-bold"
+                      [ngClass]="selectedEmployeeId === emp.id ? 'bg-primary text-primary-content' : 'bg-base-300 text-base-content'">
+                      {{ emp.firstName[0] }}{{ emp.lastName[0] }}
+                    </div>
+                  }
+                </div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="font-semibold text-sm truncate">{{ emp.firstName }} {{ emp.lastName }}</p>
+                <p class="text-xs truncate"
+                  [ngClass]="getActiveContract(emp.id) ? 'text-warning' : 'text-base-content/40'">
+                  {{ getActiveContract(emp.id) ? ('Aktywna: ' + getContractTypeLabel(getActiveContract(emp.id)!.contractType)) : 'Brak aktywnej umowy' }}
+                </p>
+              </div>
+              @if (selectedEmployeeId === emp.id) {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div [hidden]="currentStep !== 2" class="space-y-5">
+        <div>
+          <p class="text-sm font-semibold mb-2">Typ umowy</p>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            @for (ct of contractTypes; track ct.value) {
+              <div
+                class="flex flex-col items-center gap-1 p-3 rounded-xl border-2 cursor-pointer text-center transition-all duration-150 hover:border-primary/50"
+                [ngClass]="form.contractType === ct.value ? 'border-primary bg-primary/10' : 'border-base-300'"
+                (click)="selectContractType(ct.value)">
+                <span class="text-sm font-semibold leading-tight">{{ ct.label }}</span>
+                <span class="text-xs text-base-content/50 leading-tight">{{ ct.hint }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div>
+          <p class="text-sm font-semibold mb-2">Wynagrodzenie brutto</p>
+          <div class="flex rounded-lg overflow-hidden border border-base-300 w-fit mb-3">
+            <button type="button" class="px-4 py-1.5 text-sm transition-colors"
+              [ngClass]="salaryMode === 'monthly' ? 'bg-primary text-primary-content' : 'bg-base-100'"
+              (click)="setSalaryMode('monthly')">Miesięczna</button>
+            <button type="button" class="px-4 py-1.5 text-sm transition-colors"
+              [ngClass]="salaryMode === 'hourly' ? 'bg-primary text-primary-content' : 'bg-base-100'"
+              (click)="setSalaryMode('hourly')">Godzinowa</button>
+          </div>
+
+          <div [hidden]="salaryMode !== 'monthly'">
+            <label class="input input-bordered flex items-center gap-2 w-full">
+              <input type="number" placeholder="0.00" class="grow" [(ngModel)]="form.baseSalary" [min]="isApprentice ? 0 : 1" step="100" />
+              <span class="text-base-content/50">PLN / mies.</span>
+            </label>
+            @if (isApprentice) {
+              <p class="text-xs text-info mt-1">Praktyki &mdash; stawka może wynosić 0 zł.</p>
+            }
+          </div>
+          <div [hidden]="salaryMode !== 'hourly'" class="flex gap-3 items-end">
+            <label class="input input-bordered flex items-center gap-2 flex-1">
+              <input type="number" placeholder="0.00" class="grow" [(ngModel)]="form.hourlyRate" min="0" step="5"
+                (ngModelChange)="recalcFromHourly()" />
+              <span class="text-base-content/50">PLN/h</span>
+            </label>
+            <div class="text-sm text-base-content/60 pb-2 shrink-0">
+              × 168h = <span class="font-bold text-base-content">{{ form.baseSalary | number:'1.0-0' }} PLN/mies.</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="flex items-center justify-between mb-1">
+            <span class="text-sm font-semibold">Koszty uzysk. przychodu (PLN)</span>
+            <span class="text-xs text-base-content/50">UoP=250, Dojazdy=300, B2B=0</span>
+          </label>
+          <label class="input input-bordered flex items-center gap-2 w-full">
+            <input type="number" placeholder="250" class="grow" [(ngModel)]="form.taxDeductibleExpenses" min="0" />
+            <span class="text-base-content/50">PLN</span>
+          </label>
+        </div>
+      </div>
+
+      <div [hidden]="currentStep !== 3" class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-semibold block mb-1">Data rozpoczęcia *</label>
+            <input type="date" class="input input-bordered w-full" [(ngModel)]="form.startDate" />
+          </div>
+          <div>
+            <label class="text-sm font-semibold block mb-1">Data zakończenia</label>
+            <input type="date" class="input input-bordered w-full" [(ngModel)]="form.endDate" [disabled]="form.isIndefinite" />
+            <label class="flex items-center gap-2 mt-1.5 cursor-pointer">
+              <input type="checkbox" class="checkbox checkbox-sm checkbox-primary" [(ngModel)]="form.isIndefinite" />
+              <span class="text-xs text-base-content/60">Bezterminowa</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
+          <p class="font-bold text-sm text-primary uppercase tracking-wide mb-3">Podgląd umowy</p>
+          <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <div class="text-base-content/60">Pracownik</div>
+            <div class="font-semibold">{{ getEmployeeName(selectedEmployeeId) }}</div>
+
+            <div class="text-base-content/60">Typ umowy</div>
+            <div class="font-semibold">{{ getContractTypeLabel(form.contractType) }}</div>
+
+            <div class="text-base-content/60">Wynagrodzenie brutto</div>
+            <div class="font-semibold">{{ form.baseSalary | number:'1.2-2' }} PLN / mies.</div>
+
+            <div class="text-base-content/60" [hidden]="salaryMode !== 'hourly'">Stawka godzinowa</div>
+            <div class="font-semibold" [hidden]="salaryMode !== 'hourly'">{{ form.hourlyRate | number:'1.2-2' }} PLN/h</div>
+
+            <div class="text-base-content/60">KUP</div>
+            <div class="font-semibold">{{ form.taxDeductibleExpenses }} PLN</div>
+
+            <div class="text-base-content/60">Okres</div>
+            <div class="font-semibold">
+              {{ form.startDate || '—' }}
+              {{ form.isIndefinite ? '→ bezterminowo' : (form.endDate ? '→ ' + form.endDate : '') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="flex items-center justify-between px-6 pb-5 pt-2">
+      <button class="btn btn-ghost btn-sm" (click)="prevStep()" [disabled]="currentStep === 1">
+        ← Cofnij
+      </button>
+      <div class="flex gap-2">
+        <button [hidden]="currentStep >= 3" class="btn btn-primary btn-sm" (click)="nextStep()" [disabled]="!canProceed()">
+          Dalej →
+        </button>
+        <button [hidden]="currentStep < 3" class="btn btn-primary" (click)="submit()" [disabled]="!canSubmit() || isSubmitting">
+          <span [hidden]="!isSubmitting" class="loading loading-spinner loading-xs"></span>
+          Utwórz umowę
+        </button>
+      </div>
+    </div>
+
+  </div>
+  <div class="modal-backdrop" (click)="close()"></div>
+</dialog>

@@ -1,744 +1,1047 @@
 @if (isLoading) {
-  <div class="p-4 sm:p-6 lg:p-8 min-h-screen bg-base-200">
-    <div class="max-w-5xl mx-auto space-y-6">
-      <div class="skeleton h-8 w-32"></div>
-      
-      <div class="card bg-base-100 shadow-xl">
-        <div class="card-body flex flex-col md:flex-row gap-6 items-center md:items-start">
-          <div class="skeleton w-32 h-32 rounded-full shrink-0"></div>
-          <div class="flex-1 space-y-3 w-full">
-            <div class="skeleton h-8 w-3/4 mx-auto md:mx-0"></div>
-            <div class="skeleton h-4 w-1/2 mx-auto md:mx-0"></div>
-            <div class="skeleton h-4 w-full"></div>
-            <div class="flex gap-2 justify-center md:justify-start pt-2">
-              <div class="skeleton h-10 w-24"></div>
-              <div class="skeleton h-10 w-24"></div>
-            </div>
+<div class="p-4 sm:p-6 lg:p-8 bg-base-200/30 min-h-screen">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex items-center gap-4 mb-8">
+      <div class="skeleton w-12 h-12 rounded-full"></div>
+      <div class="space-y-2">
+        <div class="skeleton h-8 w-48"></div>
+        <div class="skeleton h-4 w-32"></div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl border border-base-200">
+      <div class="card-body flex flex-col md:flex-row gap-6 items-center md:items-start">
+        <div class="skeleton w-32 h-32 rounded-full shrink-0"></div>
+        <div class="flex-1 space-y-3 w-full">
+          <div class="skeleton h-8 w-3/4 mx-auto md:mx-0"></div>
+          <div class="skeleton h-4 w-1/2 mx-auto md:mx-0"></div>
+          <div class="skeleton h-4 w-full"></div>
+          <div class="flex gap-2 justify-center md:justify-start pt-2">
+            <div class="skeleton h-10 w-24"></div>
+            <div class="skeleton h-10 w-24"></div>
           </div>
         </div>
       </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="skeleton h-24 rounded-xl"></div>
-        <div class="skeleton h-24 rounded-xl"></div>
-        <div class="skeleton h-24 rounded-xl"></div>
-      </div>
-
-      <div class="skeleton h-96 rounded-xl"></div>
     </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="skeleton h-28 rounded-2xl"></div>
+      <div class="skeleton h-28 rounded-2xl"></div>
+      <div class="skeleton h-28 rounded-2xl"></div>
+    </div>
+
+    <div class="skeleton h-96 rounded-2xl"></div>
   </div>
+</div>
 }
 
 @if (!isLoading && employee) {
-  <div class="min-h-screen bg-base-200 pb-12">
-    <div class="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
+<div class="min-h-screen bg-base-200/30 p-4 sm:p-6 lg:p-8 pb-12">
+  <div class="max-w-6xl mx-auto">
 
-      <div class="mb-4">
-        <a routerLink="/dashboard/employees" class="btn btn-ghost btn-sm gap-2 px-0 hover:bg-transparent text-base-content/70">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
-          Powrót do listy
-        </a>
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8">
+      <button (click)="goBack()"
+        class="btn btn-circle btn-ghost bg-base-100 shadow-sm border border-base-200 hover:bg-base-200 transition-all"
+        title="Wstecz">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+      </button>
+      <div>
+        <h1 class="text-3xl font-bold text-base-content">Profil Pracownika</h1>
+        <p class="text-base-content/70 mt-1">Zarządzaj ustawieniami, grafikiem i historią</p>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl border border-base-200 mb-6 overflow-hidden">
+      <div class="h-28 bg-gradient-to-r from-primary/10 via-base-200/50 to-base-100 w-full border-b border-base-200/50">
       </div>
 
-      <div class="card bg-base-100 shadow-xl mb-6 overflow-hidden">
-        <div class="h-24 bg-gradient-to-r from-primary/10 to-base-200 w-full"></div>
-        
-        <div class="card-body pt-0 relative">
-          <div class="flex flex-col md:flex-row gap-6 items-center md:items-start -mt-12">
-            
-            <div class="avatar cursor-pointer shrink-0 group" (click)="openPhotoModal(employee)">
-              <div class="w-28 md:w-32 rounded-full ring-4 ring-base-100 ring-offset-2 ring-offset-base-200 shadow-lg relative bg-base-100">
-                <img [src]="employee.photoUrl || 'assets/placeholder.svg'" class="object-cover" alt="Zdjęcie pracownika" />
-                <div class="absolute inset-0 bg-black/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
-                </div>
+      <div class="card-body pt-0 relative px-6 sm:px-8 pb-8">
+        <div class="flex flex-col md:flex-row gap-6 items-center md:items-start -mt-14">
+
+          <div class="avatar cursor-pointer shrink-0 group z-10" (click)="openPhotoModal(employee)">
+            <div
+              class="w-28 md:w-32 rounded-full ring-4 ring-base-100 ring-offset-2 shadow-xl bg-base-200 transition-transform group-hover:scale-105 duration-300">
+              <img [src]="employee.photoUrl || 'assets/placeholder.svg'" class="object-cover"
+                alt="Zdjęcie pracownika" />
+              <div
+                class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white backdrop-blur-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                </svg>
+              </div>
+            </div>
+            @if (!employee.isArchived) {
+            <div class="absolute bottom-2 right-2 w-5 h-5 bg-success rounded-full ring-4 ring-base-100 animate-pulse"
+              title="Aktywny"></div>
+            } @else {
+            <div class="absolute bottom-2 right-2 w-5 h-5 bg-base-300 rounded-full ring-4 ring-base-100"
+              title="Zarchiwizowany"></div>
+            }
+          </div>
+
+          <div class="flex-1 min-w-0 w-full text-center md:text-left mt-2 md:mt-14">
+            <div class="flex flex-col md:flex-row justify-between items-center md:items-start gap-4">
+              <div>
+                <h2 class="text-2xl md:text-3xl font-bold text-base-content">{{ employee.firstName }} {{
+                  employee.lastName }}</h2>
+                <p class="text-base-content/60 font-medium text-lg">{{ employee.position || 'Brak stanowiska' }}</p>
+              </div>
+
+              <div class="flex flex-wrap justify-center gap-2 mt-2 md:mt-0">
+                <button class="btn btn-sm btn-primary shadow-sm" (click)="openEditModal(employee)">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" />
+                  </svg>
+                  Edytuj
+                </button>
+                @if (!employee.isArchived) {
+                <button class="btn btn-sm btn-outline btn-error hover:bg-error hover:text-white"
+                  (click)="archiveEmployee()">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                  </svg>
+                  Archiwizuj
+                </button>
+                }
               </div>
             </div>
 
-            <div class="flex-1 min-w-0 w-full text-center md:text-left mt-2 md:mt-12">
-              <div class="flex flex-col md:flex-row justify-between items-center md:items-start gap-4">
-                <div>
-                  <h1 class="text-2xl md:text-3xl font-bold">{{ employee.firstName }} {{ employee.lastName }}</h1>
-                  <p class="text-base-content/60 font-medium">{{ employee.position || 'Brak stanowiska' }}</p>
+            <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
+              @if (employee.specialization) {
+              <span class="badge badge-primary badge-outline bg-primary/5 border-primary/30">{{ employee.specialization
+                }}</span>
+              }
+              @if (employee.isStudent) {
+              <span class="badge badge-accent badge-outline bg-accent/5 border-accent/30">Student</span>
+              }
+              @if (employee.isArchived) {
+              <span class="badge badge-error gap-1 bg-error/10 border-error/30">
+                Zarchiwizowany
+              </span>
+              }
+              @if (getActiveContract(); as contract) {
+              <span class="badge badge-neutral badge-outline bg-neutral/5 border-neutral/30">{{
+                contractTypeTranslations[contract.contractType] || contract.contractType }}</span>
+              }
+              <span class="badge badge-ghost bg-base-200">{{ calculateAge(employee.dateOfBirth) }} lat</span>
+            </div>
+
+            <div class="mt-4 space-y-3">
+              @if (employee.instagramProfileUrl || employee.portfolioUrl) {
+              <div class="flex justify-center md:justify-start gap-4 text-sm font-medium">
+                @if (employee.instagramProfileUrl) {
+                <a [href]="employee.instagramProfileUrl" target="_blank"
+                  class="link link-hover text-primary flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                  </svg>
+                  Instagram
+                </a>
+                }
+                @if (employee.portfolioUrl) {
+                <a [href]="employee.portfolioUrl" target="_blank"
+                  class="link link-hover text-primary flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path
+                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                    </path>
+                  </svg>
+                  Portfolio
+                </a>
+                }
+              </div>
+              }
+
+              @if (employee.bio) {
+              <p class="text-sm text-base-content/70 text-center md:text-left max-w-3xl leading-relaxed">{{ employee.bio
+                }}</p>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+      <div class="card bg-base-100 shadow-md border border-base-200">
+        <div class="card-body p-5 flex-row items-center gap-4">
+          <div class="p-3 bg-primary/10 text-primary rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current"
+              stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <div class="text-xs uppercase font-bold text-base-content/50 tracking-wider">Szacowany Przychód</div>
+            <div class="text-2xl font-bold text-primary">{{ employee.estimatedRevenue | currency:'PLN' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-md border border-base-200">
+        <div class="card-body p-5 flex-row items-center gap-4">
+          <div class="p-3 bg-secondary/10 text-secondary rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current"
+              stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <div class="text-xs uppercase font-bold text-base-content/50 tracking-wider">Rezerwacje</div>
+            <div class="text-2xl font-bold text-base-content">{{ employee.completedReservationsCount }}</div>
+            <div class="text-xs text-base-content/50 mt-0.5">Zakończone</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-100 shadow-md border border-base-200">
+        <div class="card-body p-5 flex-row items-center gap-4">
+          <div class="p-3 bg-accent/10 text-accent rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current"
+              stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M14.25 7.756a4.5 4.5 0 100 8.488M7.5 10.5h5.25m-5.25 3h5.25M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <div class="text-xs uppercase font-bold text-base-content/50 tracking-wider">Usługi</div>
+            <div class="text-2xl font-bold text-base-content">{{ employee.assignedServices.length }}</div>
+            <div class="text-xs text-base-content/50 mt-0.5">Przypisane warianty</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="mb-6 sticky top-0 z-20 bg-base-200/90 backdrop-blur-md py-3 -mx-4 px-4 sm:static sm:mx-0 sm:bg-transparent sm:p-0 transition-all">
+      <div class="flex overflow-x-auto scrollbar-hide w-full">
+        <div class="bg-base-100 p-1.5 flex flex-nowrap w-max shadow-sm border border-base-200 rounded-xl gap-1">
+          @for (tab of tabs; track tab.id) {
+          <button
+            class="px-5 py-2.5 sm:py-2 flex items-center transition-all duration-300 whitespace-nowrap gap-2 font-medium rounded-lg"
+            [class.bg-base-200]="activeTab === tab.id" [class.text-base-content]="activeTab === tab.id"
+            [class.shadow-sm]="activeTab === tab.id" [class.text-base-content]="activeTab !== tab.id"
+            [class.opacity-60]="activeTab !== tab.id" [class.hover:bg-base-200]="activeTab !== tab.id"
+            (click)="setTab(tab.id)">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="tab.icon" />
+            </svg>
+            <span class="text-sm">{{ tab.label }}</span>
+          </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl border border-base-200 min-h-[400px]">
+      <div class="card-body p-5 sm:p-8">
+
+        @if (activeTab === 'schedule') {
+        <div class="animate-fade-in">
+          <div
+            class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-base-200">
+            <div>
+              <h2 class="text-xl font-bold text-base-content">Grafik Pracy</h2>
+              @if (totalWeeklyHours > 0) {
+              <p class="text-sm text-base-content/60 mt-1">Suma godzin: <span class="font-bold text-primary">{{
+                  totalWeeklyHours | number:'1.0-0' }}h</span> / tydzień</p>
+              }
+            </div>
+            <button class="btn btn-primary shadow-sm w-full sm:w-auto" (click)="openScheduleModal(employee)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edytuj grafik
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            @for (ws of employee.workSchedules; track ws.dayOfWeek) {
+            <div class="rounded-xl border border-base-200 overflow-hidden bg-base-50/50 flex flex-col transition-all"
+              [ngClass]="{'opacity-70 bg-base-200/30': ws.isDayOff}">
+
+              <div class="p-4 flex items-center justify-between gap-3 border-b border-base-200 bg-base-100">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg"
+                    [ngClass]="ws.isDayOff ? 'bg-base-200 text-base-content/40' : 'bg-primary/10 text-primary'">
+                    {{ dayOfWeekShort[ws.dayOfWeek] }}
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-bold text-base">{{ dayOfWeekTranslations[ws.dayOfWeek] }}</span>
+                    <span class="text-sm text-base-content/60 font-medium mt-0.5">
+                      {{ ws.isDayOff ? 'Dzień wolny' : ws.startTime + ' - ' + ws.endTime }}
+                    </span>
+                  </div>
                 </div>
-                
-                <div class="flex flex-wrap justify-center gap-2">
-                  <button class="btn btn-sm btn-primary" (click)="openEditModal(employee)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg>
-                    Edytuj
-                  </button>
-                  @if (!employee.isArchived) {
-                    <button class="btn btn-sm btn-outline btn-warning" (click)="archiveEmployee()">Archiwizuj</button>
+                @if (!ws.isDayOff) {
+                <div class="badge badge-ghost font-medium">{{ getDailyHours(ws) | number:'1.0-0' }}h</div>
+                }
+              </div>
+
+              @if (!ws.isDayOff) {
+              <div class="flex-1 p-3">
+                @let dayReservations = getReservationsForDay(ws.dayOfWeek);
+                @if (dayReservations.length > 0) {
+                <div class="space-y-2">
+                  @for (res of dayReservations; track res.reservationId) {
+                  <div
+                    class="flex items-center p-3 rounded-lg bg-base-100 hover:bg-base-200 transition-colors gap-3 border border-base-200 shadow-sm">
+                    <div
+                      class="flex flex-col items-center justify-center bg-base-200/50 rounded-md px-2 py-1 text-xs font-mono border border-base-200/50 min-w-[50px]">
+                      <span class="font-bold text-base-content">{{ res.startTime | date:'HH:mm' }}</span>
+                      <span class="text-[10px] opacity-60">{{ res.endTime | date:'HH:mm' }}</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-bold truncate text-base-content">{{ res.serviceName }}</p>
+                      @if (res.customerName) {
+                      <p class="text-xs text-base-content/60 truncate flex items-center gap-1 mt-0.5 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20"
+                          fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                            clip-rule="evenodd" />
+                        </svg>
+                        {{ res.customerName }}
+                      </p>
+                      }
+                    </div>
+                    <div class="font-mono font-bold text-sm text-primary">{{ res.agreedPrice |
+                      currency:'PLN':'symbol':'1.0-0' }}</div>
+                  </div>
                   }
                 </div>
-              </div>
-
-              <div class="flex flex-wrap justify-center md:justify-start gap-2 mt-4">
-                @if (employee.specialization) {
-                  <span class="badge badge-primary badge-outline">{{ employee.specialization }}</span>
-                }
-                @if (employee.isStudent) {
-                  <span class="badge badge-accent badge-outline">Student</span>
-                }
-                @if (employee.isArchived) {
-                  <span class="badge badge-error gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
-                    Zarchiwizowany
-                  </span>
-                }
-                @if (getActiveContract(); as contract) {
-                  <span class="badge badge-neutral badge-outline">{{ contractTypeTranslations[contract.contractType] || contract.contractType }}</span>
-                }
-                <span class="badge badge-ghost">{{ calculateAge(employee.dateOfBirth) }} lat</span>
-              </div>
-
-              <div class="mt-4 space-y-2">
-                @if (employee.instagramProfileUrl || employee.portfolioUrl) {
-                  <div class="flex justify-center md:justify-start gap-4 text-sm">
-                    @if (employee.instagramProfileUrl) {
-                      <a [href]="employee.instagramProfileUrl" target="_blank" class="link link-hover flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                        Instagram
-                      </a>
-                    }
-                    @if (employee.portfolioUrl) {
-                      <a [href]="employee.portfolioUrl" target="_blank" class="link link-hover flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                        Portfolio
-                      </a>
-                    }
-                  </div>
-                }
-
-                @if (employee.bio) {
-                  <p class="text-sm text-base-content/70 text-center md:text-left max-w-2xl">{{ employee.bio }}</p>
+                } @else {
+                <div class="h-full flex items-center justify-center py-6 text-sm text-base-content/40 font-medium">
+                  Brak zaplanowanych wizyt
+                </div>
                 }
               </div>
+              }
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div class="stat bg-base-100 shadow rounded-box py-3 px-4">
-          <div class="stat-figure text-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          </div>
-          <div class="stat-title text-xs uppercase tracking-wide">Przychód</div>
-          <div class="stat-value text-primary text-xl lg:text-2xl">{{ employee.estimatedRevenue | currency:'PLN' }}</div>
-          <div class="stat-desc">Szacowany</div>
-        </div>
-        
-        <div class="stat bg-base-100 shadow rounded-box py-3 px-4">
-          <div class="stat-figure text-secondary">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-          </div>
-          <div class="stat-title text-xs uppercase tracking-wide">Rezerwacje</div>
-          <div class="stat-value text-xl lg:text-2xl">{{ employee.completedReservationsCount }}</div>
-          <div class="stat-desc">Zakończone</div>
-        </div>
-        
-        <div class="stat bg-base-100 shadow rounded-box py-3 px-4">
-          <div class="stat-figure text-accent">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-          </div>
-          <div class="stat-title text-xs uppercase tracking-wide">Usługi</div>
-          <div class="stat-value text-xl lg:text-2xl">{{ employee.assignedServices.length }}</div>
-          <div class="stat-desc">Przypisane</div>
-        </div>
-      </div>
-
-      <div class="mb-6 sticky top-0 z-20 bg-base-200/95 backdrop-blur py-2 -mx-4 px-4 sm:static sm:mx-0 sm:bg-transparent sm:p-0">
-        <div class="flex overflow-x-auto pb-2 sm:pb-0 scrollbar-hide gap-2 sm:gap-0">
-          <div class="tabs tabs-boxed bg-base-100 p-1 flex-nowrap w-max sm:w-auto shadow-sm">
-            @for (tab of tabs; track tab.id) {
-              <button class="tab h-10 px-4 transition-all duration-200 whitespace-nowrap gap-2" 
-                      [class.tab-active]="activeTab === tab.id" 
-                      (click)="setTab(tab.id)">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="tab.icon" />
-                </svg>
-                {{ tab.label }}
-              </button>
             }
           </div>
         </div>
-      </div>
+        }
 
-      <div class="card bg-base-100 shadow-xl min-h-[400px]">
-        <div class="card-body p-4 sm:p-6">
+        @if (activeTab === 'services') {
+        <div class="animate-fade-in">
+          <div class="flex justify-between items-center mb-6 pb-4 border-b border-base-200">
+            <h2 class="text-xl font-bold text-base-content">Usługi ({{employee.assignedServices.length}})</h2>
+            <button class="btn btn-sm btn-primary shadow-sm" (click)="openAssignServicesModal(employee)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <span class="hidden sm:inline">Zarządzaj usługami</span>
+              <span class="sm:hidden">Edytuj</span>
+            </button>
+          </div>
 
-          @if (activeTab === 'schedule') {
-            <div class="animate-fade-in">
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div>
-                  <h2 class="card-title text-lg sm:text-xl">Grafik Pracy</h2>
-                  @if (totalWeeklyHours > 0) {
-                    <p class="text-sm text-base-content/60 mt-1">Suma godzin: <span class="font-bold text-primary">{{ totalWeeklyHours | number:'1.0-0' }}h</span> / tydzień</p>
+          @if (employee.assignedServices.length > 0) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            @for (service of employee.assignedServices; track service.id) {
+            <div
+              class="card bg-base-50 border border-base-200 hover:border-primary/40 hover:shadow-md transition-all group">
+              <div class="card-body p-4 flex-row items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M14.121 15.536c-1.171 1.952-3.07 1.952-4.242 0-1.172-1.953-1.172-5.119 0-7.072 1.171-1.952 3.07-1.952 4.242 0M8 10.5h4m-4 3h4m9-1.5a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <p class="font-bold text-base text-base-content truncate">{{ service.name }}</p>
+                  @if (service.variants.length) {
+                  <p class="text-sm text-base-content/60 font-medium mt-0.5">
+                    Od <span class="text-primary">{{ service.variants[0].price | currency:'PLN' }}</span> • {{
+                    service.variants[0].durationMinutes }} min
+                  </p>
                   }
                 </div>
-                <button class="btn btn-primary w-full sm:w-auto" (click)="openScheduleModal(employee)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                  Edytuj grafik
-                </button>
-              </div>
-
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                @for (ws of employee.workSchedules; track ws.dayOfWeek) {
-                  <div class="rounded-xl border border-base-200 overflow-hidden bg-base-100 flex flex-col" [ngClass]="{'opacity-60 bg-base-200/30': ws.isDayOff}">
-                    
-                    <div class="p-3 sm:p-4 flex items-center justify-between gap-3 border-b border-base-100">
-                      <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg" 
-                             [ngClass]="ws.isDayOff ? 'bg-base-300 text-base-content/50' : 'bg-primary/10 text-primary'">
-                          {{ dayOfWeekShort[ws.dayOfWeek] }}
-                        </div>
-                        <div class="flex flex-col">
-                          <span class="font-bold text-sm sm:text-base">{{ dayOfWeekTranslations[ws.dayOfWeek] }}</span>
-                          <span class="text-xs text-base-content/60">
-                             {{ ws.isDayOff ? 'Wolne' : ws.startTime + ' - ' + ws.endTime }}
-                          </span>
-                        </div>
-                      </div>
-                      @if (!ws.isDayOff) {
-                         <div class="badge badge-ghost text-xs">{{ getDailyHours(ws) | number:'1.0-0' }}h</div>
-                      }
-                    </div>
-
-                    @if (!ws.isDayOff) {
-                      <div class="flex-1 bg-base-100 p-3">
-                        @let dayReservations = getReservationsForDay(ws.dayOfWeek);
-                        @if (dayReservations.length > 0) {
-                          <div class="space-y-2">
-                             @for (res of dayReservations; track res.reservationId) {
-                               <div class="flex items-center p-2 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors gap-3 border border-base-200/50">
-                                  <div class="flex flex-col items-center justify-center bg-base-100 rounded px-2 py-1 text-xs font-mono border border-base-200">
-                                    <span class="font-bold">{{ res.startTime | date:'HH:mm' }}</span>
-                                    <span class="text-[10px] opacity-60">{{ res.endTime | date:'HH:mm' }}</span>
-                                  </div>
-                                  <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium truncate">{{ res.serviceName }}</p>
-                                    @if (res.customerName) {
-                                      <p class="text-xs text-base-content/60 truncate flex items-center gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
-                                        {{ res.customerName }}
-                                      </p>
-                                    }
-                                  </div>
-                                  <div class="badge badge-sm badge-outline">{{ res.agreedPrice | currency:'PLN':'symbol':'1.0-0' }}</div>
-                               </div>
-                             }
-                          </div>
-                        } @else {
-                          <div class="h-full flex items-center justify-center py-4 text-xs text-base-content/40 italic">
-                             Brak zaplanowanych wizyt
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
               </div>
             </div>
+            }
+          </div>
+          } @else {
+          <div
+            class="flex flex-col items-center justify-center py-16 text-base-content/40 bg-base-200/30 rounded-2xl border-2 border-dashed border-base-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-50" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <p class="font-medium text-lg">Brak przypisanych usług</p>
+            <p class="text-sm mt-1">Pracownik nie może przyjmować rezerwacji</p>
+          </div>
           }
-
-          @if (activeTab === 'services') {
-            <div class="animate-fade-in">
-              <div class="flex justify-between items-center mb-6">
-                <h2 class="card-title text-lg sm:text-xl">Usługi ({{employee.assignedServices.length}})</h2>
-                <button class="btn btn-sm btn-primary" (click)="openAssignServicesModal(employee)">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                  <span class="hidden sm:inline">Przypisz usługi</span>
-                  <span class="sm:hidden">Edytuj</span>
-                </button>
-              </div>
-
-              @if (employee.assignedServices.length > 0) {
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                  @for (service of employee.assignedServices; track service.id) {
-                    <div class="card bg-base-200/40 border border-base-200 hover:border-primary/50 transition-colors">
-                      <div class="card-body p-4 flex-row items-center gap-3">
-                        <div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 15.536c-1.171 1.952-3.07 1.952-4.242 0-1.172-1.953-1.172-5.119 0-7.072 1.171-1.952 3.07-1.952 4.242 0M8 10.5h4m-4 3h4m9-1.5a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        </div>
-                        <div class="min-w-0">
-                          <p class="font-bold text-sm truncate">{{ service.name }}</p>
-                          @if (service.variants.length) {
-                             <p class="text-xs text-base-content/60">{{ service.variants[0].price | currency:'PLN' }} • {{ service.variants[0].durationMinutes }} min</p>
-                          }
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <div class="text-center py-12 text-base-content/50 bg-base-200/20 rounded-xl border border-dashed border-base-300">
-                   Brak przypisanych usług
-                </div>
-              }
-            </div>
-          }
-
-          @if (activeTab === 'finance') {
-            <div class="animate-fade-in space-y-6">
-              
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                 <div class="tabs tabs-boxed bg-base-200 p-1 w-full sm:w-auto">
-                    <button class="tab tab-sm flex-1 sm:flex-none" [class.tab-active]="financeSubTab === 'config'" (click)="financeSubTab = 'config'">
-                       Konfiguracja
-                    </button>
-                    <button class="tab tab-sm flex-1 sm:flex-none" [class.tab-active]="financeSubTab === 'history'" (click)="financeSubTab = 'history'">
-                       Historia
-                    </button>
-                 </div>
-                 
-                 @if (financeSubTab === 'config') {
-                    <button class="btn btn-primary btn-sm w-full sm:w-auto" (click)="openFinanceModal()">
-                      Edytuj ustawienia
-                    </button>
-                 }
-              </div>
-
-              @if (financeSubTab === 'config') {
-                <div class="animate-fade-in-down">
-                  @if (employee.financeSettings) {
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                       <div class="card bg-base-100 border border-base-200 shadow-sm">
-                          <div class="card-body p-5">
-                             <h3 class="text-xs font-bold uppercase opacity-50 mb-4">Stawki</h3>
-                             <div class="flex justify-between items-center border-b border-base-200 pb-3 mb-3">
-                                <span class="text-sm">Godzinowa</span>
-                                <span class="font-mono font-bold text-lg text-primary">{{ employee.financeSettings.hourlyRate | currency:'PLN' }}</span>
-                             </div>
-                             <div class="flex justify-between items-center">
-                                <span class="text-sm">Prowizja</span>
-                                <span class="font-mono font-bold text-lg">{{ employee.financeSettings.commissionPercentage }}%</span>
-                             </div>
-                          </div>
-                       </div>
-
-                       <div class="card bg-base-100 border border-base-200 shadow-sm">
-                          <div class="card-body p-5">
-                             <h3 class="text-xs font-bold uppercase opacity-50 mb-4">Podatki i ZUS</h3>
-                             <ul class="space-y-3 text-sm">
-                                <li class="flex justify-between">
-                                   <span>PIT-2</span>
-                                   <span class="badge badge-sm" [ngClass]="employee.financeSettings.hasPit2Filed ? 'badge-success' : 'badge-ghost'">{{ employee.financeSettings.hasPit2Filed ? 'Tak' : 'Nie' }}</span>
-                                </li>
-                                <li class="flex justify-between">
-                                   <span>Emeryt/Rencista</span>
-                                   <span class="badge badge-sm" [ngClass]="employee.financeSettings.isPensionRetired ? 'badge-success' : 'badge-ghost'">{{ employee.financeSettings.isPensionRetired ? 'Tak' : 'Nie' }}</span>
-                                </li>
-                                <li class="flex justify-between">
-                                   <span>Chorobowe</span>
-                                   <span class="badge badge-sm" [ngClass]="employee.financeSettings.voluntarySicknessInsurance ? 'badge-success' : 'badge-ghost'">{{ employee.financeSettings.voluntarySicknessInsurance ? 'Tak' : 'Nie' }}</span>
-                                </li>
-                             </ul>
-                          </div>
-                       </div>
-                       
-                       <div class="card bg-base-100 border border-base-200 shadow-sm">
-                          <div class="card-body p-5">
-                             <h3 class="text-xs font-bold uppercase opacity-50 mb-4">PPK</h3>
-                             <div class="flex justify-between items-center mb-3">
-                                <span class="text-sm">Uczestnictwo</span>
-                                <span class="badge badge-sm" [ngClass]="employee.financeSettings.participatesInPPK ? 'badge-success' : 'badge-ghost'">{{ employee.financeSettings.participatesInPPK ? 'Tak' : 'Nie' }}</span>
-                             </div>
-                             @if (employee.financeSettings.participatesInPPK) {
-                                <div class="text-xs text-base-content/60 bg-base-200 p-2 rounded">
-                                   <p>Pracownik: <span class="font-bold">{{ employee.financeSettings.ppkEmployeeRate }}%</span></p>
-                                   <p>Pracodawca: <span class="font-bold">{{ employee.financeSettings.ppkEmployerRate }}%</span></p>
-                                </div>
-                             }
-                          </div>
-                       </div>
-                    </div>
-                  } @else {
-                    <div class="alert alert-warning shadow-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-                      <div>
-                        <h3 class="font-bold">Brak konfiguracji!</h3>
-                        <div class="text-xs">Ustaw dane finansowe, aby generować listę płac.</div>
-                      </div>
-                      <button class="btn btn-sm" (click)="openFinanceModal()">Konfiguruj</button>
-                    </div>
-                  }
-                </div>
-              }
-
-              @if (financeSubTab === 'history') {
-                <div class="animate-fade-in-down">
-                  @if (employee.payrolls.length > 0) {
-                    
-                    <div class="hidden sm:block overflow-x-auto border border-base-200 rounded-lg">
-                       <table class="table table-zebra w-full">
-                          <thead class="bg-base-200">
-                             <tr>
-                                <th class="w-10"></th>
-                                <th>Okres</th>
-                                <th class="text-right">Brutto</th>
-                                <th class="text-right">Netto</th>
-                                <th class="text-right">Koszt pracodawcy</th>
-                                <th class="text-center">Status</th>
-                             </tr>
-                          </thead>
-                          <tbody>
-                             @for (payroll of employee.payrolls; track payroll.payrollId) {
-                                <tr class="hover cursor-pointer" (click)="togglePayroll(payroll.payrollId)">
-                                   <td>
-                                      <button class="btn btn-ghost btn-xs btn-circle">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-200" [class.rotate-90]="openPayrollId === payroll.payrollId" viewBox="0 0 20 20" fill="currentColor">
-                                           <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                                        </svg>
-                                      </button>
-                                   </td>
-                                   <td class="font-medium">{{ monthNames[payroll.periodMonth] }} {{ payroll.periodYear }}</td>
-                                   <td class="text-right font-mono">{{ payroll.grossAmount | currency:'PLN' }}</td>
-                                   <td class="text-right font-mono font-bold text-success">{{ payroll.netAmount | currency:'PLN' }}</td>
-                                   <td class="text-right font-mono opacity-70">{{ payroll.totalEmployerCost | currency:'PLN' }}</td>
-                                   <td class="text-center">
-                                      <span class="badge badge-sm" [ngClass]="getPayrollStatusClass(payroll.status)">{{ payrollStatusTranslations[payroll.status] }}</span>
-                                   </td>
-                                </tr>
-                                @if (openPayrollId === payroll.payrollId) {
-                                   <tr>
-                                      <td colspan="6" class="p-0 bg-base-100 border-b border-base-200">
-                                         <div class="p-6 grid grid-cols-3 gap-6 animate-fade-in-down">
-                                            <ng-container *ngTemplateOutlet="payrollDetails; context: {$implicit: payroll}"></ng-container>
-                                         </div>
-                                      </td>
-                                   </tr>
-                                }
-                             }
-                          </tbody>
-                       </table>
-                    </div>
-
-                    <div class="sm:hidden space-y-3">
-                       @for (payroll of employee.payrolls; track payroll.payrollId) {
-                          <div class="card bg-base-100 border border-base-200 shadow-sm">
-                             <div class="card-body p-4">
-                                <div class="flex justify-between items-start mb-2" (click)="togglePayroll(payroll.payrollId)">
-                                   <div>
-                                      <h3 class="font-bold">{{ monthNames[payroll.periodMonth] }} {{ payroll.periodYear }}</h3>
-                                      <span class="badge badge-sm mt-1" [ngClass]="getPayrollStatusClass(payroll.status)">{{ payrollStatusTranslations[payroll.status] }}</span>
-                                   </div>
-                                   <div class="text-right">
-                                      <div class="text-xl font-bold text-success font-mono">{{ payroll.netAmount | currency:'PLN' }}</div>
-                                      <div class="text-xs text-base-content/50">Netto</div>
-                                   </div>
-                                </div>
-                                
-                                <button class="btn btn-xs btn-ghost w-full" (click)="togglePayroll(payroll.payrollId)">
-                                   {{ openPayrollId === payroll.payrollId ? 'Ukryj szczegóły' : 'Pokaż szczegóły' }}
-                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform" [class.rotate-180]="openPayrollId === payroll.payrollId" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                                </button>
-
-                                @if (openPayrollId === payroll.payrollId) {
-                                   <div class="mt-4 pt-4 border-t border-base-200 grid grid-cols-1 gap-4 animate-fade-in">
-                                      <ng-container *ngTemplateOutlet="payrollDetails; context: {$implicit: payroll}"></ng-container>
-                                   </div>
-                                }
-                             </div>
-                          </div>
-                       }
-                    </div>
-
-                  } @else {
-                    <div class="text-center py-12 bg-base-200/20 rounded-xl border border-dashed border-base-300">
-                       Brak historii wypłat
-                    </div>
-                  }
-                </div>
-              }
-            </div>
-          }
-
-          @if (activeTab === 'contracts') {
-             <div class="animate-fade-in">
-                <div class="flex justify-between items-center mb-4">
-                   <h2 class="card-title text-lg sm:text-xl">Umowy</h2>
-                   <button class="btn btn-sm btn-outline" (click)="openContractModal(employee)">+ Generuj</button>
-                </div>
-
-                @if (employee.contracts.length > 0) {
-                   <div class="space-y-3">
-                      @for (contract of employee.contracts; track contract.contractId) {
-                         <div class="p-4 rounded-xl border bg-base-100 flex flex-col sm:flex-row justify-between sm:items-center gap-2" 
-                              [class.border-primary]="contract.isActive" 
-                              [class.shadow-md]="contract.isActive"
-                              [class.bg-primary-content]="contract.isActive && false"
-                              [class.border-base-200]="!contract.isActive">
-                            <div>
-                               <div class="flex items-center gap-2">
-                                  <span class="font-bold">{{ contractTypeTranslations[contract.contractType] || contract.contractType }}</span>
-                                  @if (contract.isActive) { <span class="badge badge-primary badge-sm">Aktywna</span> }
-                               </div>
-                               <div class="text-sm opacity-70 mt-1 flex items-center gap-1">
-                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                  {{ contract.startDate | date:'dd.MM.yyyy' }} - {{ contract.endDate ? (contract.endDate | date:'dd.MM.yyyy') : 'Czas nieokreślony' }}
-                               </div>
-                            </div>
-                            <div class="flex justify-between sm:block items-center border-t sm:border-t-0 border-base-200 pt-2 sm:pt-0 mt-2 sm:mt-0 text-right">
-                               <span class="sm:hidden text-sm">Stawka:</span>
-                               <span class="font-mono font-bold text-lg">{{ contract.baseSalary | currency:'PLN' }}</span>
-                            </div>
-                         </div>
-                      }
-                   </div>
-                } @else {
-                   <div class="text-center py-10 opacity-50">Brak umów</div>
-                }
-             </div>
-          }
-
-          @if (activeTab === 'certificates') {
-             <div class="animate-fade-in">
-                <div class="flex justify-between items-center mb-4">
-                   <h2 class="card-title text-lg">Certyfikaty</h2>
-                   <button class="btn btn-sm btn-primary" (click)="showCertForm = !showCertForm">
-                     {{ showCertForm ? 'Anuluj' : 'Dodaj' }}
-                   </button>
-                </div>
-                
-                @if (showCertForm) {
-                   <div class="p-4 bg-base-200/50 rounded-lg mb-4 animate-fade-in-down">
-                      <div class="grid grid-cols-1 gap-3">
-                         <input type="text" class="input input-bordered w-full" placeholder="Nazwa" [(ngModel)]="newCert.name" />
-                         <input type="text" class="input input-bordered w-full" placeholder="Instytucja" [(ngModel)]="newCert.institution" />
-                         <input type="date" class="input input-bordered w-full" [(ngModel)]="newCert.dateObtained" />
-                         <label class="label cursor-pointer justify-start gap-2">
-                           <input type="checkbox" class="checkbox checkbox-sm" [(ngModel)]="newCert.isVisibleToClient" />
-                           <span class="label-text">Widoczny dla klienta</span>
-                         </label>
-                         <button class="btn btn-primary w-full" (click)="addCertificate()">Zapisz</button>
-                      </div>
-                   </div>
-                }
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                   @for (cert of employee.certificates; track cert.certificateId) {
-                      <div class="card bg-base-100 border border-base-200 shadow-sm relative">
-                         <div class="card-body p-4">
-                            <h3 class="font-bold truncate pr-6">{{ cert.name }}</h3>
-                            <p class="text-sm opacity-70 truncate">{{ cert.institution }}</p>
-                            <p class="text-xs opacity-50 mt-1">{{ cert.dateObtained | date:'dd.MM.yyyy' }}</p>
-                            <button class="btn btn-ghost btn-xs btn-circle absolute top-2 right-2 text-error" (click)="deleteCertificate(cert.certificateId)">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
-                         </div>
-                      </div>
-                   }
-                </div>
-                @if (employee.certificates.length === 0 && !showCertForm) {
-                   <div class="text-center py-10 opacity-50">Brak certyfikatów</div>
-                }
-             </div>
-          }
-
-          @if (activeTab === 'absences') {
-             <div class="animate-fade-in">
-                <div class="flex justify-between items-center mb-4">
-                   <h2 class="card-title text-lg">Nieobecności</h2>
-                   <button class="btn btn-sm btn-primary" (click)="showAbsenceForm = !showAbsenceForm">{{ showAbsenceForm ? 'Anuluj' : 'Dodaj' }}</button>
-                </div>
-                
-                @if (showAbsenceForm) {
-                   <div class="bg-base-200 p-4 rounded-xl mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-fade-in-down">
-                      <div class="form-control"><label class="label text-xs">Od</label><input type="date" [(ngModel)]="newAbsence.dateFrom" class="input input-bordered w-full"/></div>
-                      <div class="form-control"><label class="label text-xs">Do</label><input type="date" [(ngModel)]="newAbsence.dateTo" class="input input-bordered w-full"/></div>
-                      <select class="select select-bordered w-full sm:col-span-2" [(ngModel)]="newAbsence.type">
-                         <option value="Vacation">Urlop wypoczynkowy</option>
-                         <option value="SickLeave">Zwolnienie lekarskie</option>
-                         <option value="UnpaidLeave">Urlop bezpłatny</option>
-                         <option value="Other">Inne</option>
-                      </select>
-                      <button class="btn btn-primary sm:col-span-2" (click)="addAbsence()">Zapisz</button>
-                   </div>
-                }
-
-                <div class="space-y-2">
-                   @for (absence of employee.scheduleExceptions; track absence.exceptionId) {
-                      <div class="alert bg-base-100 border border-base-200 py-3 px-4 flex-col sm:flex-row items-start sm:items-center gap-2">
-                         <div class="flex-1 w-full">
-                            <div class="flex justify-between items-center w-full">
-                               <span class="font-bold text-sm">{{ absenceTypeTranslations[absence.type] }}</span>
-                               <span class="badge badge-sm" [class.badge-success]="absence.isApproved" [class.badge-warning]="!absence.isApproved">{{ absence.isApproved ? 'Zatwierdzona' : 'Cofnięta' }}</span>
-                            </div>
-                            <div class="text-xs opacity-70 mt-1 flex items-center gap-2">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                               {{ absence.dateFrom | date:'dd.MM' }} - {{ absence.dateTo | date:'dd.MM.yyyy' }}
-                            </div>
-                         </div>
-                         <div class="flex gap-2 w-full sm:w-auto justify-end mt-2 sm:mt-0">
-                            <button class="btn btn-xs" [class.btn-warning]="absence.isApproved" [class.btn-success]="!absence.isApproved" (click)="toggleAbsenceApproval(absence.exceptionId)">
-                               {{ absence.isApproved ? 'Cofnij' : 'Zatwierdź' }}
-                            </button>
-                            <button class="btn btn-xs btn-error btn-outline" (click)="deleteAbsence(absence.exceptionId)">Usuń</button>
-                         </div>
-                      </div>
-                   }
-                </div>
-             </div>
-          }
-
         </div>
+        }
+        @if (activeTab === 'finance') {
+        <div class="animate-fade-in space-y-6">
+
+          <div
+            class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-base-200 pb-4">
+            <div class="tabs tabs-boxed bg-base-200 p-1 w-full sm:w-auto shadow-sm">
+              <button class="tab px-6 flex-1 sm:flex-none" [class.bg-base-100]="financeSubTab === 'config'"
+                [class.shadow-sm]="financeSubTab === 'config'" [class.font-bold]="financeSubTab === 'config'"
+                (click)="financeSubTab = 'config'">
+                Konfiguracja
+              </button>
+              <button class="tab px-6 flex-1 sm:flex-none" [class.bg-base-100]="financeSubTab === 'history'"
+                [class.shadow-sm]="financeSubTab === 'history'" [class.font-bold]="financeSubTab === 'history'"
+                (click)="financeSubTab = 'history'">
+                Historia Wypłat
+              </button>
+            </div>
+
+            @if (financeSubTab === 'config') {
+            <button class="btn btn-outline btn-sm w-full sm:w-auto shadow-sm" (click)="openFinanceModal()">
+              Zmień parametry
+            </button>
+            }
+          </div>
+
+          @if (financeSubTab === 'config') {
+          <div class="animate-fade-in-down">
+            @if (employee.financeSettings) {
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div class="card bg-base-50 border border-base-200 shadow-sm">
+                <div class="card-body p-6">
+                  <h3 class="text-sm font-bold uppercase text-base-content/50 tracking-wider mb-5">Podstawowe Stawki
+                  </h3>
+                  <div class="flex justify-between items-center border-b border-base-200 pb-3 mb-4">
+                    <span class="font-medium text-base-content/80">Stawka Godzinowa</span>
+                    <span class="font-mono font-bold text-xl text-primary">{{ employee.financeSettings.hourlyRate |
+                      currency:'PLN' }}</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="font-medium text-base-content/80">Prowizja od usług</span>
+                    <span class="font-mono font-bold text-xl text-secondary">{{
+                      employee.financeSettings.commissionPercentage }}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card bg-base-50 border border-base-200 shadow-sm">
+                <div class="card-body p-6">
+                  <h3 class="text-sm font-bold uppercase text-base-content/50 tracking-wider mb-5">Parametry ZUS / US
+                  </h3>
+                  <ul class="space-y-4 text-base">
+                    <li class="flex justify-between items-center">
+                      <span class="font-medium text-base-content/80">Ulga PIT-2</span>
+                      <span class="badge"
+                        [ngClass]="employee.financeSettings.hasPit2Filed ? 'badge-success text-white' : 'badge-ghost'">{{
+                        employee.financeSettings.hasPit2Filed ? 'Złożono' : 'Brak' }}</span>
+                    </li>
+                    <li class="flex justify-between items-center">
+                      <span class="font-medium text-base-content/80">Status Emeryt/Rencista</span>
+                      <span class="badge"
+                        [ngClass]="employee.financeSettings.isPensionRetired ? 'badge-info text-white' : 'badge-ghost'">{{
+                        employee.financeSettings.isPensionRetired ? 'Tak' : 'Nie' }}</span>
+                    </li>
+                    <li class="flex justify-between items-center">
+                      <span class="font-medium text-base-content/80">Ubezp. Chorobowe</span>
+                      <span class="badge"
+                        [ngClass]="employee.financeSettings.voluntarySicknessInsurance ? 'badge-success text-white' : 'badge-ghost'">{{
+                        employee.financeSettings.voluntarySicknessInsurance ? 'Tak' : 'Nie' }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="card bg-base-50 border border-base-200 shadow-sm">
+                <div class="card-body p-6">
+                  <h3 class="text-sm font-bold uppercase text-base-content/50 tracking-wider mb-5">Program PPK</h3>
+                  <div class="flex justify-between items-center mb-4">
+                    <span class="font-medium text-base-content/80">Uczestnictwo</span>
+                    <span class="badge font-bold"
+                      [ngClass]="employee.financeSettings.participatesInPPK ? 'badge-primary' : 'badge-ghost'">{{
+                      employee.financeSettings.participatesInPPK ? 'Aktywne' : 'Zrezygnowano' }}</span>
+                  </div>
+                  @if (employee.financeSettings.participatesInPPK) {
+                  <div class="bg-base-100 border border-base-200 p-4 rounded-xl space-y-2 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-base-content/70">Wpłata pracownika:</span>
+                      <span class="font-bold font-mono">{{ employee.financeSettings.ppkEmployeeRate }}%</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-base-content/70">Wpłata pracodawcy:</span>
+                      <span class="font-bold font-mono">{{ employee.financeSettings.ppkEmployerRate }}%</span>
+                    </div>
+                  </div>
+                  }
+                </div>
+              </div>
+            </div>
+            } @else {
+            <div class="alert alert-warning shadow-md mt-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              <div>
+                <h3 class="font-bold text-lg">Brak konfiguracji finansowej!</h3>
+                <div class="text-sm mt-1">Ustaw dane finansowe, aby system mógł automatycznie generować listy płac.
+                </div>
+              </div>
+              <button class="btn btn-neutral shadow-sm" (click)="openFinanceModal()">Konfiguruj teraz</button>
+            </div>
+            }
+          </div>
+          }
+
+          @if (financeSubTab === 'history') {
+          <div class="animate-fade-in-down">
+            @if (employee.payrolls.length > 0) {
+            <div class="hidden sm:block overflow-x-auto border border-base-200 rounded-xl shadow-sm bg-base-50">
+              <table class="table w-full">
+                <thead class="bg-base-200/80 text-base-content/70 text-sm">
+                  <tr>
+                    <th class="w-12 text-center">Detale</th>
+                    <th>Okres Rozliczeniowy</th>
+                    <th class="text-right">Kwota Brutto</th>
+                    <th class="text-right">Kwota Netto</th>
+                    <th class="text-right">Koszt Całkowity</th>
+                    <th class="text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (payroll of employee.payrolls; track payroll.payrollId) {
+                  <tr class="hover cursor-pointer border-b border-base-200 transition-colors"
+                    (click)="togglePayroll(payroll.payrollId)">
+                    <td class="text-center">
+                      <button class="btn btn-ghost btn-sm btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-200"
+                          [class.rotate-90]="openPayrollId === payroll.payrollId" viewBox="0 0 20 20"
+                          fill="currentColor">
+                          <path fill-rule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                            clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </td>
+                    <td class="font-bold text-base-content">{{ monthNames[payroll.periodMonth] }} {{ payroll.periodYear
+                      }}</td>
+                    <td class="text-right font-mono text-base-content/80">{{ payroll.grossAmount | currency:'PLN' }}
+                    </td>
+                    <td class="text-right font-mono font-bold text-success text-lg">{{ payroll.netAmount |
+                      currency:'PLN' }}</td>
+                    <td class="text-right font-mono text-base-content/50">{{ payroll.totalEmployerCost | currency:'PLN'
+                      }}</td>
+                    <td class="text-center">
+                      <span class="badge badge-sm font-semibold" [ngClass]="getPayrollStatusClass(payroll.status)">{{
+                        payrollStatusTranslations[payroll.status] }}</span>
+                    </td>
+                  </tr>
+                  @if (openPayrollId === payroll.payrollId) {
+                  <tr class="bg-base-200/30">
+                    <td colspan="6" class="p-0 border-b border-base-300">
+                      <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-down shadow-inner">
+                        <ng-container *ngTemplateOutlet="payrollDetails; context: {$implicit: payroll}"></ng-container>
+                      </div>
+                    </td>
+                  </tr>
+                  }
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div class="sm:hidden space-y-4">
+              @for (payroll of employee.payrolls; track payroll.payrollId) {
+              <div class="card bg-base-50 border border-base-200 shadow-sm">
+                <div class="card-body p-5">
+                  <div class="flex justify-between items-start mb-3 cursor-pointer"
+                    (click)="togglePayroll(payroll.payrollId)">
+                    <div>
+                      <h3 class="font-bold text-lg">{{ monthNames[payroll.periodMonth] }} {{ payroll.periodYear }}</h3>
+                      <span class="badge badge-sm mt-1" [ngClass]="getPayrollStatusClass(payroll.status)">{{
+                        payrollStatusTranslations[payroll.status] }}</span>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-2xl font-bold text-success font-mono">{{ payroll.netAmount | currency:'PLN' }}
+                      </div>
+                      <div class="text-xs text-base-content/50 uppercase tracking-wider font-semibold mt-1">Netto</div>
+                    </div>
+                  </div>
+
+                  <button class="btn btn-sm btn-ghost w-full bg-base-200/50" (click)="togglePayroll(payroll.payrollId)">
+                    {{ openPayrollId === payroll.payrollId ? 'Ukryj szczegóły' : 'Pokaż szczegóły' }}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2 transition-transform"
+                      [class.rotate-180]="openPayrollId === payroll.payrollId" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </button>
+
+                  @if (openPayrollId === payroll.payrollId) {
+                  <div class="mt-4 pt-4 border-t border-base-200 grid grid-cols-1 gap-4 animate-fade-in">
+                    <ng-container *ngTemplateOutlet="payrollDetails; context: {$implicit: payroll}"></ng-container>
+                  </div>
+                  }
+                </div>
+              </div>
+              }
+            </div>
+
+            } @else {
+            <div
+              class="flex flex-col items-center justify-center py-16 text-base-content/40 bg-base-200/30 rounded-2xl border-2 border-dashed border-base-300">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-3 opacity-50" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="font-medium text-lg">Brak historii wypłat</p>
+              <p class="text-sm mt-1">System nie wygenerował jeszcze żadnych list płac.</p>
+            </div>
+            }
+          </div>
+          }
+        </div>
+        }
+
+        @if (activeTab === 'contracts') {
+        <div class="animate-fade-in">
+          <div class="flex justify-between items-center mb-6 pb-4 border-b border-base-200">
+            <h2 class="text-xl font-bold text-base-content">Umowy</h2>
+            <button class="btn btn-sm btn-outline shadow-sm" (click)="openContractModal(employee)">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Generuj dokument
+            </button>
+          </div>
+
+          @if (employee.contracts.length > 0) {
+          <div class="space-y-4">
+            @for (contract of employee.contracts; track contract.contractId) {
+            <div
+              class="p-5 rounded-xl border bg-base-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all"
+              [class.border-primary]="contract.isActive" [class.shadow-md]="contract.isActive"
+              [class.bg-base-100]="contract.isActive" [class.border-base-200]="!contract.isActive">
+              <div>
+                <div class="flex items-center gap-3 mb-1">
+                  <span class="font-bold text-lg text-base-content">{{ contractTypeTranslations[contract.contractType]
+                    || contract.contractType }}</span>
+                  @if (contract.isActive) { <span class="badge badge-primary font-semibold">Aktywna</span> }
+                </div>
+                <div class="text-sm text-base-content/60 font-medium flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {{ contract.startDate | date:'dd.MM.yyyy' }} - {{ contract.endDate ? (contract.endDate |
+                  date:'dd.MM.yyyy') : 'Czas nieokreślony' }}
+                </div>
+              </div>
+              <div
+                class="flex justify-between sm:block items-center border-t sm:border-t-0 border-base-200 pt-3 sm:pt-0 mt-2 sm:mt-0 text-right">
+                <span class="sm:hidden text-sm font-medium text-base-content/60">Stawka bazowa:</span>
+                <span class="font-mono font-bold text-xl text-base-content">{{ contract.baseSalary | currency:'PLN'
+                  }}</span>
+              </div>
+            </div>
+            }
+          </div>
+          } @else {
+          <div
+            class="text-center py-12 text-base-content/50 bg-base-200/30 rounded-xl border border-dashed border-base-300 font-medium">
+            Brak wprowadzonych umów
+          </div>
+          }
+        </div>
+        }
+
+@if (activeTab === 'certificates') {
+        <div class="animate-fade-in">
+          <div class="flex justify-between items-center mb-6 pb-4 border-b border-base-200">
+            <h2 class="text-xl font-bold text-base-content">Certyfikaty i Szkolenia</h2>
+            <button class="btn btn-sm btn-primary shadow-sm" (click)="showCertForm = !showCertForm">
+              {{ showCertForm ? 'Anuluj dodawanie' : 'Dodaj certyfikat' }}
+            </button>
+          </div>
+
+          @if (showCertForm) {
+          <div class="p-4 sm:p-6 bg-base-200/50 rounded-xl mb-6 border border-base-200 animate-fade-in-down shadow-inner">
+            <h3 class="font-bold text-lg mb-4">Nowy certyfikat</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              <div class="form-control sm:col-span-2">
+                <label class="label text-xs font-bold uppercase text-base-content/60 pb-1">Nazwa szkolenia / certyfikatu</label>
+                <input type="text" class="input input-bordered w-full" placeholder="np. Kurs strzyżenia zaawansowanego" [(ngModel)]="newCert.name" />
+              </div>
+              
+              <div class="form-control">
+                <label class="label text-xs font-bold uppercase text-base-content/60 pb-1">Instytucja wydająca</label>
+                <input type="text" class="input input-bordered w-full" placeholder="np. Akademia Fryzjerska" [(ngModel)]="newCert.institution" />
+              </div>
+              
+              <div class="form-control">
+                <label class="label text-xs font-bold uppercase text-base-content/60 pb-1">Data uzyskania</label>
+                <input type="date" class="input input-bordered w-full" [(ngModel)]="newCert.dateObtained" />
+              </div>
+              
+              <div class="form-control sm:col-span-2 mt-2">
+                <label class="label cursor-pointer justify-start items-start sm:items-center gap-3 w-full sm:w-auto bg-base-100 p-3 sm:pr-6 rounded-xl border border-base-200 hover:bg-base-200 transition-colors">
+                  <input type="checkbox" class="checkbox checkbox-primary shrink-0 mt-1 sm:mt-0" [(ngModel)]="newCert.isVisibleToClient" />
+                  <span class="label-text font-semibold whitespace-normal text-left">Widoczny na publicznym profilu dla klientów</span>
+                </label>
+              </div>
+              
+              <div class="sm:col-span-2 flex flex-col sm:flex-row justify-end gap-3 mt-4 pt-4 border-t border-base-200">
+                <button class="btn btn-ghost w-full sm:w-auto order-2 sm:order-1" (click)="showCertForm = false">Anuluj</button>
+                <button class="btn btn-primary px-8 w-full sm:w-auto shadow-sm order-1 sm:order-2" (click)="addCertificate()">Zapisz certyfikat</button>
+              </div>
+
+            </div>
+          </div>
+          }
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            @for (cert of employee.certificates; track cert.certificateId) {
+            <div class="card bg-base-50 border border-base-200 shadow-sm relative group hover:shadow-md transition-all">
+              <div class="card-body p-5">
+                <div class="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center mb-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                  </svg>
+                </div>
+                <h3 class="font-bold text-base-content line-clamp-2 pr-6 leading-tight">{{ cert.name }}</h3>
+                <p class="text-sm text-base-content/60 font-medium truncate mt-1">{{ cert.institution }}</p>
+                <p class="text-xs text-base-content/40 mt-2">{{ cert.dateObtained | date:'dd.MM.yyyy' }}</p>
+
+                <button class="btn btn-ghost btn-sm btn-circle absolute top-2 right-2 text-error opacity-0 group-hover:opacity-100 transition-opacity"
+                  (click)="deleteCertificate(cert.certificateId)" title="Usuń certyfikat">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            }
+          </div>
+          @if (employee.certificates.length === 0 && !showCertForm) {
+          <div class="text-center py-12 text-base-content/50 bg-base-200/30 rounded-xl border border-dashed border-base-300 font-medium">
+            Brak przypisanych certyfikatów
+          </div>
+          }
+        </div>
+        }
+
+        @if (activeTab === 'absences') {
+        <div class="animate-fade-in">
+          <div class="flex justify-between items-center mb-6 pb-4 border-b border-base-200">
+            <h2 class="text-xl font-bold text-base-content">Nieobecności i Urlopy</h2>
+            <button class="btn btn-sm btn-primary shadow-sm" (click)="showAbsenceForm = !showAbsenceForm">
+              {{ showAbsenceForm ? 'Anuluj dodawanie' : 'Zgłoś nieobecność' }}
+            </button>
+          </div>
+
+          @if (showAbsenceForm) {
+          <div class="bg-base-200/50 p-4 sm:p-6 rounded-xl mb-6 border border-base-200 animate-fade-in-down shadow-inner">
+            <h3 class="font-bold text-lg mb-4">Nowa nieobecność</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="form-control">
+                <label class="label text-xs font-bold uppercase text-base-content/60 pb-1">Od dnia</label>
+                <input type="date" [(ngModel)]="newAbsence.dateFrom" class="input input-bordered w-full" />
+              </div>
+              <div class="form-control">
+                <label class="label text-xs font-bold uppercase text-base-content/60 pb-1">Do dnia</label>
+                <input type="date" [(ngModel)]="newAbsence.dateTo" class="input input-bordered w-full" />
+              </div>
+              <div class="form-control sm:col-span-2">
+                <label class="label text-xs font-bold uppercase text-base-content/60 pb-1">Typ nieobecności</label>
+                <select class="select select-bordered w-full" [(ngModel)]="newAbsence.type">
+                  <option value="Vacation">Urlop wypoczynkowy</option>
+                  <option value="SickLeave">Zwolnienie lekarskie</option>
+                  <option value="UnpaidLeave">Urlop bezpłatny</option>
+                  <option value="Training">Szkolenie</option>
+                  <option value="Other">Inne</option>
+                </select>
+              </div>
+              
+              <div class="sm:col-span-2 flex flex-col sm:flex-row justify-end gap-3 mt-4 pt-4 border-t border-base-200">
+                <button class="btn btn-ghost w-full sm:w-auto order-2 sm:order-1" (click)="showAbsenceForm = false">Anuluj</button>
+                <button class="btn btn-primary px-8 w-full sm:w-auto shadow-sm order-1 sm:order-2" (click)="addAbsence()">Zapisz nieobecność</button>
+              </div>
+            </div>
+          </div>
+          }
+
+          @if (employee.scheduleExceptions.length > 0) {
+          <div class="space-y-3">
+            @for (absence of employee.scheduleExceptions; track absence.exceptionId) {
+            
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 rounded-xl bg-base-50 border border-base-200 shadow-sm transition-all hover:shadow-md">
+              
+              <div class="flex-1 w-full min-w-0">
+                <div class="flex flex-wrap items-center gap-3 mb-1.5">
+                  <span class="font-bold text-base md:text-lg text-base-content break-words">{{ absenceTypeTranslations[absence.type] }}</span>
+                  <span class="badge whitespace-nowrap font-medium shadow-sm" 
+                        [class.badge-success]="absence.isApproved" 
+                        [class.badge-warning]="!absence.isApproved" 
+                        [class.text-white]="absence.isApproved">
+                    {{ absence.isApproved ? 'Zatwierdzona' : 'Oczekująca / Cofnięta' }}
+                  </span>
+                </div>
+                
+                <div class="text-sm font-medium text-base-content/60 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {{ absence.dateFrom | date:'dd.MM.yyyy' }} - {{ absence.dateTo | date:'dd.MM.yyyy' }}
+                </div>
+              </div>
+
+              <div class="flex gap-2 w-full md:w-auto justify-end border-t md:border-t-0 border-base-200 pt-3 md:pt-0 mt-2 md:mt-0 shrink-0">
+                <button class="btn btn-sm shadow-sm flex-1 md:flex-none" 
+                        [class.btn-warning]="absence.isApproved" 
+                        [class.btn-success]="!absence.isApproved" 
+                        (click)="toggleAbsenceApproval(absence.exceptionId)">
+                  {{ absence.isApproved ? 'Cofnij akceptację' : 'Zatwierdź' }}
+                </button>
+                <button class="btn btn-sm btn-outline btn-error shrink-0" (click)="deleteAbsence(absence.exceptionId)" title="Usuń">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+
+            </div>
+            }
+          </div>
+          } @else {
+            <div class="text-center py-12 text-base-content/50 bg-base-200/30 rounded-xl border border-dashed border-base-300 font-medium">
+              Brak historii urlopów i nieobecności
+            </div>
+          }
+        </div>
+        }
+
       </div>
     </div>
   </div>
+</div>
 }
 
 <ng-template #payrollDetails let-payroll>
-  <div class="bg-base-200/50 rounded-lg p-3 border border-base-200">
-    <h4 class="text-xs font-bold uppercase opacity-50 mb-2">Składniki</h4>
-    <div class="space-y-1 text-sm">
-      <div class="flex justify-between"><span>Podstawa:</span> <span class="font-mono">{{ payroll.baseSalary | currency:'PLN' }}</span></div>
-      <div class="flex justify-between"><span>Prowizja:</span> <span class="font-mono text-primary">{{ payroll.commissionComponent | currency:'PLN' }}</span></div>
+  <div class="bg-base-100 rounded-xl p-4 border border-base-200 shadow-sm">
+    <h4 class="text-xs font-bold uppercase text-base-content/50 tracking-wider mb-3">Składniki Wynagrodzenia</h4>
+    <div class="space-y-2 text-sm font-medium">
+      <div class="flex justify-between"><span class="text-base-content/70">Podstawa:</span> <span class="font-mono">{{
+          payroll.baseSalary | currency:'PLN' }}</span></div>
+      <div class="flex justify-between"><span class="text-base-content/70">Prowizja:</span> <span
+          class="font-mono text-primary">{{ payroll.commissionComponent | currency:'PLN' }}</span></div>
       @if (payroll.bonusComponent > 0) {
-        <div class="flex justify-between"><span>Premia:</span> <span class="font-mono text-secondary">{{ payroll.bonusComponent | currency:'PLN' }}</span></div>
+      <div class="flex justify-between"><span class="text-base-content/70">Premia:</span> <span
+          class="font-mono text-secondary">{{ payroll.bonusComponent | currency:'PLN' }}</span></div>
       }
-      <div class="border-t border-base-300 pt-1 mt-1 flex justify-between font-bold"><span>Brutto:</span> <span>{{ payroll.grossAmount | currency:'PLN' }}</span></div>
+      <div class="border-t border-base-200 pt-2 mt-2 flex justify-between font-bold text-base"><span>Suma Brutto:</span>
+        <span>{{ payroll.grossAmount | currency:'PLN' }}</span></div>
     </div>
   </div>
 
-  <div class="bg-base-200/50 rounded-lg p-3 border border-base-200">
-    <h4 class="text-xs font-bold uppercase opacity-50 mb-2">Potrącenia</h4>
-    <div class="space-y-1 text-sm">
-      <div class="flex justify-between"><span>ZUS:</span> <span class="font-mono text-error">-{{ payroll.pensionContribution | currency:'PLN' }}</span></div>
-      <div class="flex justify-between"><span>Zdrowotna:</span> <span class="font-mono text-error">-{{ payroll.healthInsuranceContribution | currency:'PLN' }}</span></div>
-      <div class="flex justify-between"><span>PIT:</span> <span class="font-mono text-error">-{{ payroll.taxAdvance | currency:'PLN' }}</span></div>
+  <div class="bg-base-100 rounded-xl p-4 border border-base-200 shadow-sm">
+    <h4 class="text-xs font-bold uppercase text-base-content/50 tracking-wider mb-3">Potrącenia Skarbowe</h4>
+    <div class="space-y-2 text-sm font-medium">
+      <div class="flex justify-between"><span class="text-base-content/70">Ubezp. Społeczne:</span> <span
+          class="font-mono text-error">-{{ payroll.pensionContribution | currency:'PLN' }}</span></div>
+      <div class="flex justify-between"><span class="text-base-content/70">Ubezp. Zdrowotne:</span> <span
+          class="font-mono text-error">-{{ payroll.healthInsuranceContribution | currency:'PLN' }}</span></div>
+      <div class="flex justify-between"><span class="text-base-content/70">Zaliczka na podatek:</span> <span
+          class="font-mono text-error">-{{ payroll.taxAdvance | currency:'PLN' }}</span></div>
     </div>
   </div>
 
-  <div class="bg-base-100 rounded-lg p-3 border-2 border-primary/20 flex flex-col justify-center text-center">
-    <div class="text-xs opacity-50 uppercase">Do Wypłaty</div>
-    <div class="text-xl font-bold text-success font-mono">{{ payroll.netAmount | currency:'PLN' }}</div>
-    <div class="text-[10px] opacity-50 mt-1">Koszt pracodawcy: {{ payroll.totalEmployerCost | currency:'PLN' }}</div>
+  <div
+    class="bg-primary/5 rounded-xl p-4 border-2 border-primary/20 flex flex-col justify-center text-center shadow-sm">
+    <div class="text-xs font-bold uppercase text-base-content/50 tracking-wider mb-1">Do Wypłaty (Netto)</div>
+    <div class="text-3xl font-black text-success font-mono">{{ payroll.netAmount | currency:'PLN' }}</div>
+    <div class="divider my-2 opacity-30"></div>
+    <div class="text-xs font-medium text-base-content/60">Koszt pracodawcy: <span class="font-bold text-base-content">{{
+        payroll.totalEmployerCost | currency:'PLN' }}</span></div>
   </div>
 </ng-template>
 
 
 @if (isEditModalVisible && employeeAsBase) {
-  <app-edit-employee-modal [businessId]="businessId!" [employee]="employeeAsBase" (closed)="onEditModalClosed($event)"></app-edit-employee-modal>
+<app-edit-employee-modal [businessId]="businessId!" [employee]="employeeAsBase"
+  (closed)="onEditModalClosed($event)"></app-edit-employee-modal>
 }
 @if (isScheduleModalVisible && employeeAsBase) {
-  <app-schedule-modal [employee]="employeeAsBase" (closed)="onScheduleModalClosed($event)"></app-schedule-modal>
+<app-schedule-modal [employee]="employeeAsBase" (closed)="onScheduleModalClosed($event)"></app-schedule-modal>
 }
 @if (isAssignServicesModalVisible && employeeAsBase) {
-  <app-assign-services-modal [businessId]="businessId!" [employee]="employeeAsBase" [categories]="categories" (closed)="onAssignServicesModalClosed($event)"></app-assign-services-modal>
+<app-assign-services-modal [businessId]="businessId!" [employee]="employeeAsBase" [categories]="categories"
+  (closed)="onAssignServicesModalClosed($event)"></app-assign-services-modal>
 }
 @if (employeeForPhoto && businessId) {
-  <app-employee-photo-modal [employee]="employeeForPhoto" (closed)="closePhotoModalAndRefresh(!!$event)"></app-employee-photo-modal>
+<app-employee-photo-modal [employee]="employeeForPhoto"
+  (closed)="closePhotoModalAndRefresh(!!$event)"></app-employee-photo-modal>
 }
 
 @if (showFinanceSettingsModal) {
-<div class="modal modal-open modal-bottom sm:modal-middle">
-  <div class="modal-box w-full sm:w-11/12 max-w-2xl bg-base-100 p-4 sm:p-6">
-    <h3 class="font-bold text-lg mb-4">Konfiguracja Finansowa</h3>
-    
+<div class="modal modal-open modal-bottom sm:modal-middle backdrop-blur-sm">
+  <div
+    class="modal-box w-full sm:w-11/12 max-w-2xl bg-base-100 p-4 sm:p-6 sm:rounded-2xl border border-base-200 shadow-2xl">
+
+    <div class="flex justify-between items-center mb-6 pb-4 border-b border-base-200">
+      <h3 class="font-bold text-xl flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Konfiguracja Finansowa
+      </h3>
+      <button class="btn btn-sm btn-circle btn-ghost" (click)="closeFinanceModal()">✕</button>
+    </div>
+
     <div class="flex flex-wrap gap-2 mb-4">
       @if (getActiveContractType()) {
-        <span class="badge badge-outline">{{ contractTypeTranslations[getActiveContractType()!] || getActiveContractType() }}</span>
+      <span class="badge badge-outline border-base-300 font-medium">{{
+        contractTypeTranslations[getActiveContractType()!] || getActiveContractType() }}</span>
       }
-      <span class="badge badge-ghost">{{ getEmployeeAge() }} lat</span>
-      @if (employee?.isStudent) { <span class="badge badge-accent">Student</span> }
+      <span class="badge badge-ghost font-medium">{{ getEmployeeAge() }} lat</span>
+      @if (employee?.isStudent) { <span class="badge badge-accent font-medium">Student</span> }
     </div>
 
     @if (isStudentZusExempt()) {
-      <div class="alert alert-info text-xs py-2 mb-3 shadow-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        <span>Student <26 lat (Zlecenie) = Zwolniony z ZUS.</span>
-      </div>
+    <div class="alert alert-info bg-info/10 text-info border-info/20 text-sm py-3 mb-4 shadow-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span class="font-medium">Student poniżej 26. roku życia zatrudniony na umowę zlecenie jest automatycznie
+        zwolniony ze składek ZUS.</span>
+    </div>
     }
 
-    <form [formGroup]="financeForm" class="space-y-4 overflow-y-auto max-h-[60vh] px-1">
-      
+    <form [formGroup]="financeForm" class="space-y-6 overflow-y-auto max-h-[60vh] px-1 custom-scrollbar">
+
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="form-control">
-          <label class="label"><span class="label-text">Stawka godzinowa</span></label>
+          <label class="label"><span class="label-text font-bold text-base-content/80">Stawka godzinowa</span></label>
           <div class="relative">
-             <input type="number" formControlName="hourlyRate" class="input input-bordered w-full pr-8" />
-             <span class="absolute right-3 top-3 text-xs opacity-50">PLN</span>
+            <input type="number" formControlName="hourlyRate"
+              class="input input-bordered w-full pr-12 font-mono text-lg" />
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-base-content/40">PLN</span>
           </div>
         </div>
         <div class="form-control">
-          <label class="label"><span class="label-text">Prowizja</span></label>
+          <label class="label"><span class="label-text font-bold text-base-content/80">Prowizja od usług</span></label>
           <div class="relative">
-             <input type="number" formControlName="commissionPercentage" class="input input-bordered w-full pr-8" />
-             <span class="absolute right-3 top-3 text-xs opacity-50">%</span>
+            <input type="number" formControlName="commissionPercentage"
+              class="input input-bordered w-full pr-10 font-mono text-lg" />
+            <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-base-content/40">%</span>
           </div>
         </div>
       </div>
 
-      <div class="divider text-xs font-bold opacity-50">Podatki i ZUS</div>
+      <div>
+        <h4 class="text-sm font-bold uppercase text-base-content/50 tracking-wider mb-3">Parametry Podatkowe i ZUS</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div
+            class="form-control bg-base-200/50 border border-base-200 rounded-xl p-3 hover:bg-base-200 transition-colors">
+            <label class="cursor-pointer flex items-start gap-3">
+              <input type="checkbox" formControlName="hasPit2Filed" class="checkbox checkbox-primary mt-1" />
+              <div>
+                <span class="label-text font-bold block mb-0.5">Ulga PIT-2 (Kwota wolna)</span>
+                <span class="text-xs text-base-content/60 block leading-tight">Pomniejsza zaliczkę na podatek o 300 zł
+                  miesięcznie</span>
+              </div>
+            </label>
+          </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div class="form-control bg-base-200/50 rounded-lg p-2">
-           <label class="label cursor-pointer justify-start gap-3">
-             <input type="checkbox" formControlName="hasPit2Filed" class="checkbox checkbox-primary" />
-             <div>
-               <span class="label-text font-semibold">PIT-2 (Kwota wolna)</span>
-               <p class="text-xs text-base-content/60">Pomniejsza zaliczkę o 300 zł</p>
-             </div>
-           </label>
-        </div>
+          <div
+            class="form-control bg-base-200/50 border border-base-200 rounded-xl p-3 hover:bg-base-200 transition-colors"
+            [class.opacity-50]="isUoP() || isStudentZusExempt()">
+            <label class="cursor-pointer flex items-start gap-3">
+              <input type="checkbox" formControlName="voluntarySicknessInsurance"
+                class="checkbox checkbox-primary mt-1" />
+              <div>
+                <span class="label-text font-bold block mb-0.5">Ubezp. Chorobowe</span>
+                <span class="text-xs text-base-content/60 block leading-tight">
+                  @if (isUoP()) { Obowiązkowe przy UoP }
+                  @else if (isStudentZusExempt()) { Zwolniony (status Studenta) }
+                  @else { Dobrowolne (składka 2,45%) }
+                </span>
+              </div>
+            </label>
+          </div>
 
-        <div class="form-control bg-base-200/50 rounded-lg p-2" [class.opacity-50]="isUoP() || isStudentZusExempt()">
-           <label class="label cursor-pointer justify-start gap-3">
-             <input type="checkbox" formControlName="voluntarySicknessInsurance" class="checkbox checkbox-primary" />
-             <div>
-               <span class="label-text font-semibold">Chorobowe</span>
-               <p class="text-xs text-base-content/60">
-                 @if (isUoP()) { Obowiązkowe na UoP }
-                 @else if (isStudentZusExempt()) { Zwolniony (Student) }
-                 @else { Dobrowolne (2,45%) }
-               </p>
-             </div>
-           </label>
-        </div>
-        
-        <div class="form-control bg-base-200/50 rounded-lg p-2">
-           <label class="label cursor-pointer justify-start gap-3">
-             <input type="checkbox" formControlName="isPensionRetired" class="checkbox checkbox-primary" />
-             <span class="label-text font-semibold">Emeryt / Rencista</span>
-           </label>
-        </div>
+          <div
+            class="form-control bg-base-200/50 border border-base-200 rounded-xl p-3 hover:bg-base-200 transition-colors">
+            <label class="cursor-pointer flex items-center gap-3 h-full">
+              <input type="checkbox" formControlName="isPensionRetired" class="checkbox checkbox-primary" />
+              <span class="label-text font-bold">Status Emeryta / Rencisty</span>
+            </label>
+          </div>
 
-        <div class="form-control">
-           <select formControlName="commuteType" class="select select-bordered w-full">
-             <option [ngValue]="0">KUP: Lokalne (250 zł)</option>
-             <option [ngValue]="1">KUP: Dojazd (300 zł)</option>
-           </select>
+          <div class="form-control bg-base-200/50 border border-base-200 rounded-xl p-3">
+            <label class="label p-0 mb-2"><span class="label-text font-bold text-xs">Koszty Uzyskania Przychodu
+                (KUP)</span></label>
+            <select formControlName="commuteType" class="select select-sm select-bordered w-full font-medium">
+              <option [ngValue]="0">Lokalne (250 zł / msc)</option>
+              <option [ngValue]="1">Dojazd spoza miasta (300 zł / msc)</option>
+            </select>
+          </div>
         </div>
       </div>
-      
-      <div class="bg-base-200/30 p-3 rounded-lg border border-base-200">
-          <label class="label cursor-pointer justify-start gap-3 mb-2">
-            <input type="checkbox" formControlName="participatesInPPK" class="checkbox checkbox-primary" />
-            <span class="label-text font-bold">Uczestnictwo w PPK</span>
-          </label>
-          
-          @if (financeForm.get('participatesInPPK')?.value) {
-            <div class="grid grid-cols-2 gap-3 animate-fade-in">
-               <div class="form-control">
-                 <label class="label text-xs">Pracownik %</label>
-                 <input type="number" step="0.1" formControlName="ppkEmployeeRate" class="input input-bordered input-sm" />
-               </div>
-               <div class="form-control">
-                 <label class="label text-xs">Pracodawca %</label>
-                 <input type="number" step="0.1" formControlName="ppkEmployerRate" class="input input-bordered input-sm" />
-               </div>
-            </div>
-          }
-       </div>
+
+      <div class="bg-base-50 p-4 rounded-xl border border-base-200">
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" formControlName="participatesInPPK" class="toggle toggle-primary" />
+          <span class="label-text font-bold text-base">Uczestnictwo w PPK (Pracownicze Plany Kapitałowe)</span>
+        </label>
+
+        @if (financeForm.get('participatesInPPK')?.value) {
+        <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-base-200 animate-fade-in">
+          <div class="form-control">
+            <label class="label"><span class="label-text font-semibold text-xs">Składka pracownika (%)</span></label>
+            <input type="number" step="0.1" formControlName="ppkEmployeeRate" class="input input-bordered" />
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text font-semibold text-xs">Składka pracodawcy (%)</span></label>
+            <input type="number" step="0.1" formControlName="ppkEmployerRate" class="input input-bordered" />
+          </div>
+        </div>
+        }
+      </div>
 
     </form>
 
-    <div class="modal-action">
+    <div class="modal-action mt-6 pt-4 border-t border-base-200">
       <button class="btn btn-ghost" (click)="closeFinanceModal()">Anuluj</button>
-      <button class="btn btn-primary" (click)="saveFinanceSettings()">Zapisz</button>
+      <button class="btn btn-primary px-8" (click)="saveFinanceSettings()">Zapisz Ustawienia</button>
     </div>
   </div>
-  <div class="modal-backdrop" (click)="closeFinanceModal()"></div>
+  <div class="modal-backdrop bg-neutral/40 backdrop-blur-sm" (click)="closeFinanceModal()"></div>
 </div>
 }

@@ -1,4 +1,3 @@
-/* Ukrywanie scrollbara w zakładkach, ale pozwalanie na przewijanie */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
@@ -7,7 +6,6 @@
     scrollbar-width: none;
 }
 
-/* Animacje wejścia */
 .animate-fade-in {
     animation: fadeIn 0.3s ease-in-out;
 }
@@ -17,7 +15,6 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Dostosowanie tabelek na bardzo małych ekranach */
 @media (max-width: 640px) {
     .table th, .table td {
         padding: 0.5rem;
