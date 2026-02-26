@@ -3,11 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { finalize, of, switchMap } from 'rxjs';
-
 import { EmployeeService } from '../../../core/services/employee-service';
 import { PhotoService } from '../../../core/services/photo';
-import { EmployeePayload } from '../../../types/employee.models';
 import { Employee } from '../../../types/business.model';
+import { EmployeePayload } from '../../../types/employee.models';
 
 @Component({
   selector: 'app-add-employee-modal',
@@ -39,8 +38,7 @@ export class AddEmployeeModalComponent {
       specialization: [''],
       instagramProfileUrl: [''],
       portfolioUrl: [''],
-      photo: [null as File | null],
-      isStudent: [false]
+      photo: [null as File | null]
     });
   }
 
@@ -69,8 +67,7 @@ export class AddEmployeeModalComponent {
       bio: this.employeeForm.get('bio')?.value || '',
       specialization: this.employeeForm.get('specialization')?.value || '',
       instagramProfileUrl: this.employeeForm.get('instagramProfileUrl')?.value || '',
-      portfolioUrl: this.employeeForm.get('portfolioUrl')?.value || '',
-      isStudent: this.employeeForm.get('isStudent')?.value || false
+      portfolioUrl: this.employeeForm.get('portfolioUrl')?.value || ''
     };
     
     const photoFile = this.employeeForm.get('photo')?.value as File | null;

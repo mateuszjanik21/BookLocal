@@ -28,8 +28,7 @@ export class EditEmployeeModalComponent implements OnChanges {
     bio: [''],
     specialization: [''],
     instagramProfileUrl: [''],
-    portfolioUrl: [''],
-    isStudent: [false]
+    portfolioUrl: ['']
   });
   
   ngOnChanges(changes: SimpleChanges): void {

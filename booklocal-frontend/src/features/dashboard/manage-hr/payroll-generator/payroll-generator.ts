@@ -27,8 +27,9 @@ export class PayrollGeneratorComponent implements OnInit {
   isDeleting: { [id: number]: boolean } = {};
 
   today = new Date();
-  filterMonth: number | undefined = this.today.getMonth() + 1;
+  filterMonth: number | undefined = undefined;
   filterYear: number = this.today.getFullYear();
+  filterDay: number | undefined = undefined;
   selectedEmployeeId: number | undefined = undefined;
 
   private lastMonth = this.today.getMonth() === 0
@@ -46,6 +47,16 @@ export class PayrollGeneratorComponent implements OnInit {
     { value: 7, label: 'Lipiec' }, { value: 8, label: 'Sierpień' }, { value: 9, label: 'Wrzesień' },
     { value: 10, label: 'Październik' }, { value: 11, label: 'Listopad' }, { value: 12, label: 'Grudzień' }
   ];
+
+  get availableMonths() {
+    if (this.filterYear < this.today.getFullYear()) {
+      return this.months;
+    } else if (this.filterYear === this.today.getFullYear()) {
+      return this.months.filter(m => m.value <= this.today.getMonth() + 1);
+    } else {
+      return [];
+    }
+  }
 
   ngOnInit(): void {
     if (this.businessId) {
@@ -92,7 +103,8 @@ export class PayrollGeneratorComponent implements OnInit {
       this.businessId,
       targetEmployeeIds,
       this.filterMonth,
-      this.filterYear
+      this.filterYear,
+      this.filterDay
     )
     .pipe(finalize(() => this.isGenerating = false))
     .subscribe({

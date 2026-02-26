@@ -31,6 +31,7 @@ export interface EmploymentContractUpsert {
   taxDeductibleExpenses: number;
   startDate: string;
   endDate?: string;
+  isStudent?: boolean;
 }
 
 export interface EmployeePayroll {
@@ -50,4 +51,5 @@ export interface GeneratePayrollRequest {
   employeeId: number;
   month: number;
   year: number;
+  day?: number;
 }

@@ -42,7 +42,6 @@ export interface Employee {
   specialization?: string;
   instagramProfileUrl?: string;
   portfolioUrl?: string;
-  isStudent: boolean;
   isArchived: boolean;
   assignedServicesCount?: number;
   completedReservationsCount?: number;

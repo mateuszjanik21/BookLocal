@@ -96,6 +96,7 @@ export class EmployeeDetailComponent implements OnInit {
   financeForm = this.fb.group({
     commissionPercentage: [0],
     hourlyRate: [0],
+    isStudent: [false],
     hasPit2Filed: [true],
     isPensionRetired: [false],
     voluntarySicknessInsurance: [true],
@@ -106,6 +107,7 @@ export class EmployeeDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    // Read ?tab= query param to open the right tab when navigating from payroll/contract lists
     const tab = this.route.snapshot.queryParamMap.get('tab');
     if (tab) this.activeTab = tab;
     this.loadData();
@@ -147,6 +149,7 @@ export class EmployeeDetailComponent implements OnInit {
           this.financeForm.patchValue({
              commissionPercentage: this.employee.financeSettings.commissionPercentage,
              hourlyRate: this.employee.financeSettings.hourlyRate,
+             isStudent: this.employee.financeSettings.isStudent,
              hasPit2Filed: this.employee.financeSettings.hasPit2Filed,
              isPensionRetired: this.employee.financeSettings.isPensionRetired,
              voluntarySicknessInsurance: this.employee.financeSettings.voluntarySicknessInsurance,
@@ -199,14 +202,22 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   isStudentZusExempt(): boolean {
-    return !!this.employee?.isStudent && this.getEmployeeAge() < 26
+    const isStudent = this.financeForm.get('isStudent')?.value ?? false;
+    return isStudent && this.getEmployeeAge() < 26
       && this.getActiveContractType() === 'MandateContract';
   }
 
   private applyFinanceFormRules() {
     const contractType = this.getActiveContractType();
     const age = this.getEmployeeAge();
-    const isStudent = this.employee?.isStudent ?? false;
+    const isStudent = this.financeForm.get('isStudent')?.value ?? false;
+
+    if (!this.isStudentEligible()) {
+      this.financeForm.get('isStudent')?.setValue(false);
+      this.financeForm.get('isStudent')?.disable();
+    } else {
+      this.financeForm.get('isStudent')?.enable();
+    }
 
     if (contractType === 'EmploymentContract') {
       this.financeForm.get('voluntarySicknessInsurance')?.setValue(true);
@@ -322,7 +333,6 @@ export class EmployeeDetailComponent implements OnInit {
       specialization: this.employee.specialization,
       instagramProfileUrl: this.employee.instagramProfileUrl,
       portfolioUrl: this.employee.portfolioUrl,
-      isStudent: this.employee.isStudent,
       isArchived: this.employee.isArchived
     };
   }

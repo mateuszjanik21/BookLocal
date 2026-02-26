@@ -23,6 +23,7 @@ namespace BookLocal.API.DTOs
         public decimal TaxDeductibleExpenses { get; set; } = 250.00m;
         public DateOnly StartDate { get; set; }
         public DateOnly? EndDate { get; set; }
+        public bool? IsStudent { get; set; }
     }
 
     public class EmployeePayrollDto
@@ -53,5 +54,6 @@ namespace BookLocal.API.DTOs
         public int EmployeeId { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
+        public int? Day { get; set; }
     }
 }

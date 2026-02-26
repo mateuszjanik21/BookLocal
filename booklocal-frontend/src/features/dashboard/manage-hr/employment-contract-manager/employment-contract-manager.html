@@ -39,8 +39,9 @@
         @for (contract of displayedContracts; track contract.contractId) {
           <div class="rounded-xl border p-4 transition-colors"
             [class.border-base-200]="contract.isActive"
-            [class.border-warning]="!contract.isActive"
-            [class.bg-warning]="!contract.isActive">
+            [class.border-base-300]="!contract.isActive"
+            [class.bg-base-200]="!contract.isActive"
+            [class.bg-opacity-50]="!contract.isActive">
             <div class="flex flex-col gap-2">
               <div class="flex justify-between items-start gap-2">
                 <div class="cursor-pointer flex-1 min-w-0"
@@ -56,10 +57,16 @@
                     {{ contract.isActive ? 'Aktywna' : 'Archiwalna' }}
                   </span>
                   @if (contract.isActive) {
-                    <button class="btn btn-ghost btn-xs text-warning px-0" title="Archiwizuj"
-                      (click)="archiveContract($event, contract.contractId)" [disabled]="isArchiving">
-                      Archiwizuj
-                    </button>
+                    <div class="flex items-center gap-1">
+                      <button class="btn btn-ghost btn-xs text-primary px-1" title="Edytuj umowę"
+                        (click)="editContract($event, contract)">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                      </button>
+                      <button class="btn btn-ghost btn-xs text-warning px-1" title="Archiwizuj"
+                        (click)="archiveContract($event, contract.contractId)" [disabled]="isArchiving">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+                      </button>
+                    </div>
                   }
                 </div>
               </div>
@@ -110,12 +117,17 @@
                 </td>
                 <td>
                   @if (contract.isActive) {
-                    <button class="btn btn-ghost btn-xs text-warning"
-                      title="Archiwizuj umowę"
-                      (click)="archiveContract($event, contract.contractId)"
-                      [disabled]="isArchiving">
-                      Archiwizuj
-                    </button>
+                    <div class="flex items-center gap-2">
+                       <button class="btn btn-ghost btn-xs text-primary" title="Edytuj umowę" (click)="editContract($event, contract)">
+                         Edytuj
+                       </button>
+                       <button class="btn btn-ghost btn-xs text-warning"
+                         title="Archiwizuj umowę"
+                         (click)="archiveContract($event, contract.contractId)"
+                         [disabled]="isArchiving">
+                         Archiwizuj
+                       </button>
+                    </div>
                   }
                 </td>
               </tr>

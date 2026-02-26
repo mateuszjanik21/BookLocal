@@ -1,6 +1,6 @@
 <div class="modal modal-open" (click)="onBackdropClick($event)">
-  <div class="modal-box max-w-lg p-0 max-h-[90vh] flex flex-col">
-    <div class="p-6 bg-base-200 flex items-center gap-4 shrink-0">
+  <div class="modal-box max-w-lg p-0 animated-modal border border-base-200">
+    <div class="sticky top-0 z-50 p-6 bg-base-200 flex items-center gap-4 border-b border-base-300">
       <div class="bg-primary rounded-full p-2 text-primary-content">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
           <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
@@ -18,7 +18,7 @@
     </div>
 
     @if (employee) {
-      <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4 overflow-y-auto custom-scrollbar">
+      <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="form-control">
             <label class="label"><span class="label-text">Imię</span></label>
@@ -60,13 +60,6 @@
             <label class="label"><span class="label-text">Portfolio URL</span></label>
             <input type="text" placeholder="Link do portfolio" class="input input-bordered w-full" formControlName="portfolioUrl" />
           </div>
-        </div>
-
-        <div class="form-control">
-          <label class="label cursor-pointer justify-start gap-4">
-            <input type="checkbox" class="checkbox checkbox-primary" formControlName="isStudent" />
-            <span class="label-text">Status Studenta (&lt; 26 lat)</span>
-          </label>
         </div>
 
         <div class="divider my-1"></div>

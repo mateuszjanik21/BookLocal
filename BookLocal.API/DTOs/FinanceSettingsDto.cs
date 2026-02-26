@@ -4,6 +4,7 @@
     {
         public decimal? CommissionPercentage { get; set; }
         public decimal HourlyRate { get; set; }
+        public bool IsStudent { get; set; }
         public bool HasPit2Filed { get; set; }
         public bool UseMiddleClassRelief { get; set; }
         public bool IsPensionRetired { get; set; }

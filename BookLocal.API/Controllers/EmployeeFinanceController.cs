@@ -98,8 +98,10 @@ namespace BookLocal.API.Controllers
         [HttpPost("contracts")]
         public async Task<ActionResult<EmploymentContractDto>> CreateContract(int businessId, EmploymentContractUpsertDto dto)
         {
-            var exists = await _context.Employees.AnyAsync(e => e.EmployeeId == dto.EmployeeId && e.BusinessId == businessId);
-            if (!exists) return BadRequest("Pracownik nie należy do tej firmy.");
+            var emp = await _context.Employees
+                .Include(e => e.FinanceSettings)
+                .FirstOrDefaultAsync(e => e.EmployeeId == dto.EmployeeId && e.BusinessId == businessId);
+            if (emp == null) return BadRequest("Pracownik nie należy do tej firmy.");
 
             if (dto.ContractType != ContractType.Apprenticeship && dto.BaseSalary <= 0)
                 return BadRequest("Wynagrodzenie brutto musi być większe niż 0 dla tego rodzaju umowy.");
@@ -111,7 +113,15 @@ namespace BookLocal.API.Controllers
                 .Where(c => c.EmployeeId == dto.EmployeeId && c.IsActive)
                 .ToListAsync();
 
-            foreach (var c in activeContracts) c.IsActive = false;
+            var newStartDate = dto.StartDate;
+            foreach (var c in activeContracts)
+            {
+                c.IsActive = false;
+                if (!c.EndDate.HasValue || c.EndDate.Value >= newStartDate)
+                {
+                    c.EndDate = newStartDate.AddDays(-1);
+                }
+            }
 
             var contract = new EmploymentContract
             {
@@ -125,9 +135,18 @@ namespace BookLocal.API.Controllers
             };
 
             _context.EmploymentContracts.Add(contract);
-            await _context.SaveChangesAsync();
 
-            var emp = await _context.Employees.FindAsync(dto.EmployeeId);
+            if (dto.IsStudent.HasValue)
+            {
+                if (emp.FinanceSettings == null)
+                {
+                    emp.FinanceSettings = new EmployeeFinanceSettings { EmployeeId = dto.EmployeeId };
+                    _context.EmployeeFinanceSettings.Add(emp.FinanceSettings);
+                }
+                emp.FinanceSettings.IsStudent = dto.IsStudent.Value;
+            }
+
+            await _context.SaveChangesAsync();
 
             return Ok(new EmploymentContractDto
             {
@@ -156,6 +175,54 @@ namespace BookLocal.API.Controllers
             contract.IsActive = false;
             await _context.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpPut("contracts/{contractId}")]
+        public async Task<ActionResult<EmploymentContractDto>> UpdateContract(int businessId, int contractId, EmploymentContractUpsertDto dto)
+        {
+            var contract = await _context.EmploymentContracts
+                .Include(c => c.Employee)
+                .FirstOrDefaultAsync(c => c.ContractId == contractId && c.Employee.BusinessId == businessId);
+
+            if (contract == null) return NotFound("Umowa nie istnieje.");
+
+            if (dto.ContractType != ContractType.Apprenticeship && dto.BaseSalary <= 0)
+                return BadRequest("Wynagrodzenie brutto musi być większe niż 0 dla tego rodzaju umowy.");
+
+            if (dto.EndDate.HasValue && dto.EndDate.Value <= dto.StartDate)
+                return BadRequest("Data zakończenia musi być późniejsza niż data rozpoczęcia.");
+
+            contract.ContractType = dto.ContractType;
+            contract.BaseSalary = dto.BaseSalary;
+            contract.TaxDeductibleExpenses = dto.TaxDeductibleExpenses;
+            contract.StartDate = dto.StartDate;
+            contract.EndDate = dto.EndDate;
+
+            if (dto.IsStudent.HasValue)
+            {
+                var financeSettings = await _context.EmployeeFinanceSettings.FirstOrDefaultAsync(fs => fs.EmployeeId == contract.EmployeeId);
+                if (financeSettings == null)
+                {
+                    financeSettings = new EmployeeFinanceSettings { EmployeeId = contract.EmployeeId };
+                    _context.EmployeeFinanceSettings.Add(financeSettings);
+                }
+                financeSettings.IsStudent = dto.IsStudent.Value;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new EmploymentContractDto
+            {
+                ContractId = contract.ContractId,
+                EmployeeId = contract.EmployeeId,
+                EmployeeName = $"{contract.Employee.FirstName} {contract.Employee.LastName}",
+                ContractType = contract.ContractType,
+                BaseSalary = contract.BaseSalary,
+                TaxDeductibleExpenses = contract.TaxDeductibleExpenses,
+                StartDate = contract.StartDate,
+                EndDate = contract.EndDate,
+                IsActive = contract.IsActive
+            });
         }
 
 
@@ -197,8 +264,19 @@ namespace BookLocal.API.Controllers
                 return BadRequest("Płaca za ten miesiąc została już wygenerowana.");
             }
 
+            var serverNow = DateTime.Now;
+            if (dto.Year > serverNow.Year || (dto.Year == serverNow.Year && dto.Month > serverNow.Month))
+            {
+                return BadRequest("Nie można generować list płac za przyszłe miesiące.");
+            }
+
+            if (dto.Day.HasValue && (dto.Day.Value < 1 || dto.Day.Value > DateTime.DaysInMonth(dto.Year, dto.Month)))
+            {
+                return BadRequest("Nieprawidłowy dzień miesiąca.");
+            }
+
             var startOfPeriod = new DateOnly(dto.Year, dto.Month, 1);
-            var endOfPeriod = new DateOnly(dto.Year, dto.Month, DateTime.DaysInMonth(dto.Year, dto.Month));
+            var endOfPeriod = new DateOnly(dto.Year, dto.Month, dto.Day ?? DateTime.DaysInMonth(dto.Year, dto.Month));
 
             var contracts = await _context.EmploymentContracts
                .Where(c => c.EmployeeId == dto.EmployeeId && c.StartDate <= endOfPeriod && (c.EndDate == null || c.EndDate >= startOfPeriod))
@@ -217,31 +295,14 @@ namespace BookLocal.API.Controllers
             if (employee == null) return NotFound("Pracownik nie istnieje.");
 
             var totalDaysInMonth = DateTime.DaysInMonth(dto.Year, dto.Month);
+
             decimal totalGross = 0;
-
-            foreach (var c in contracts)
-            {
-                var activeStart = c.StartDate > startOfPeriod ? c.StartDate : startOfPeriod;
-                var activeEnd = c.EndDate.HasValue && c.EndDate.Value < endOfPeriod ? c.EndDate.Value : endOfPeriod;
-                var activeDays = (activeEnd.DayNumber - activeStart.DayNumber) + 1;
-
-                // Avoid dividing by zero or negative days (shouldn't happen with correct DB data, but safe)
-                if (activeDays > 0)
-                {
-                    totalGross += Math.Round(c.BaseSalary * (activeDays / (decimal)totalDaysInMonth), 2);
-                }
-            }
-
-            // The latest contract dictates the tax rules 
-            var latestContract = contracts.First();
-            decimal gross = totalGross;
-            decimal net = 0;
-            decimal employerCost = 0;
-
-            decimal socialSecurity = 0;
-            decimal healthInsurance = 0;
-            decimal incomeTax = 0;
-            decimal employerZus = 0;
+            decimal totalNet = 0;
+            decimal totalEmployerCost = 0;
+            decimal totalSocialSecurity = 0;
+            decimal totalHealthInsurance = 0;
+            decimal totalIncomeTax = 0;
+            decimal totalEmployerZus = 0;
 
             var age = 0;
             if (employee.DateOfBirth != DateOnly.MinValue)
@@ -252,68 +313,95 @@ namespace BookLocal.API.Controllers
             bool isUnder26 = age < 26;
             bool isStudent = employee.FinanceSettings?.IsStudent ?? false;
 
-            switch (latestContract.ContractType)
+            foreach (var c in contracts)
             {
-                case ContractType.EmploymentContract:
-                    decimal zusRate = 0.1371m;
-                    decimal healthRate = 0.09m;
-                    decimal taxRate = isUnder26 ? 0.0m : 0.17m;
+                var activeStart = c.StartDate > startOfPeriod ? c.StartDate : startOfPeriod;
+                var activeEnd = c.EndDate.HasValue && c.EndDate.Value < endOfPeriod ? c.EndDate.Value : endOfPeriod;
+                var activeDays = (activeEnd.DayNumber - activeStart.DayNumber) + 1;
 
-                    socialSecurity = Math.Round(gross * zusRate, 2);
-                    healthInsurance = Math.Round((gross - socialSecurity) * healthRate, 2);
+                if (activeDays <= 0) continue;
 
-                    if (!isUnder26)
-                    {
-                        decimal taxBase = Math.Round(gross - socialSecurity - latestContract.TaxDeductibleExpenses, 0);
-                        incomeTax = Math.Round(taxBase * taxRate, 2) - 300.00m;
-                        if (incomeTax < 0) incomeTax = 0;
-                    }
+                decimal contractGross = Math.Round(c.BaseSalary * (activeDays / (decimal)totalDaysInMonth), 2);
+                totalGross += contractGross;
 
-                    net = gross - socialSecurity - incomeTax - healthInsurance;
-                    employerZus = Math.Round(gross * 0.2048m, 2);
-                    employerCost = gross + employerZus;
-                    break;
+                decimal contractNet = 0;
+                decimal contractEmployerCost = 0;
+                decimal contractSocialSecurity = 0;
+                decimal contractHealthInsurance = 0;
+                decimal contractIncomeTax = 0;
+                decimal contractEmployerZus = 0;
 
-                case ContractType.MandateContract:
-                    if (isStudent && isUnder26)
-                    {
-                        net = gross;
-                        employerCost = gross;
-                    }
-                    else
-                    {
-                        decimal zusRateUz = 0.1126m;
-                        zusRateUz = 0.1371m;
+                switch (c.ContractType)
+                {
+                    case ContractType.EmploymentContract:
+                        decimal zusRate = 0.1371m;
+                        decimal healthRate = 0.09m;
+                        decimal taxRate = isUnder26 ? 0.0m : 0.17m;
 
-                        socialSecurity = Math.Round(gross * zusRateUz, 2);
-                        healthInsurance = Math.Round((gross - socialSecurity) * 0.09m, 2);
-
-                        decimal taxRateUz = isUnder26 ? 0.0m : 0.12m;
-                        decimal taxBaseUz = Math.Round(gross - socialSecurity - (gross * 0.20m), 0);
+                        contractSocialSecurity = Math.Round(contractGross * zusRate, 2);
+                        contractHealthInsurance = Math.Round((contractGross - contractSocialSecurity) * healthRate, 2);
 
                         if (!isUnder26)
                         {
-                            incomeTax = Math.Round(taxBaseUz * 0.12m, 2);
+                            decimal taxBase = Math.Round(contractGross - contractSocialSecurity - c.TaxDeductibleExpenses, 0);
+                            contractIncomeTax = Math.Round(taxBase * taxRate, 2) - 300.00m;
+                            if (contractIncomeTax < 0) contractIncomeTax = 0;
                         }
 
-                        net = gross - socialSecurity - healthInsurance - incomeTax;
-                        employerZus = Math.Round(gross * 0.2048m, 2);
-                        employerCost = gross + employerZus;
-                    }
-                    break;
+                        contractNet = contractGross - contractSocialSecurity - contractIncomeTax - contractHealthInsurance;
+                        contractEmployerZus = Math.Round(contractGross * 0.2048m, 2);
+                        contractEmployerCost = contractGross + contractEmployerZus;
+                        break;
 
-                case ContractType.B2B:
-                    net = gross;
-                    employerCost = gross;
-                    break;
+                    case ContractType.MandateContract:
+                        if (isStudent && isUnder26)
+                        {
+                            contractNet = contractGross;
+                            contractEmployerCost = contractGross;
+                        }
+                        else
+                        {
+                            decimal zusRateUz = 0.1371m;
 
-                default:
-                    net = gross * 0.7m;
-                    employerCost = gross * 1.2m;
-                    break;
+                            contractSocialSecurity = Math.Round(contractGross * zusRateUz, 2);
+                            contractHealthInsurance = Math.Round((contractGross - contractSocialSecurity) * 0.09m, 2);
+
+                            decimal taxRateUz = isUnder26 ? 0.0m : 0.12m;
+                            decimal taxBaseUz = Math.Round(contractGross - contractSocialSecurity - (contractGross * 0.20m), 0);
+
+                            if (!isUnder26)
+                            {
+                                contractIncomeTax = Math.Round(taxBaseUz * 0.12m, 2);
+                            }
+
+                            contractNet = contractGross - contractSocialSecurity - contractHealthInsurance - contractIncomeTax;
+                            contractEmployerZus = Math.Round(contractGross * 0.2048m, 2);
+                            contractEmployerCost = contractGross + contractEmployerZus;
+                        }
+                        break;
+
+                    case ContractType.B2B:
+                        contractNet = contractGross;
+                        contractEmployerCost = contractGross;
+                        break;
+
+                    default:
+                        contractNet = contractGross * 0.7m;
+                        contractEmployerCost = contractGross * 1.2m;
+                        break;
+                }
+
+                if (contractNet < 0) contractNet = 0;
+
+                totalNet += contractNet;
+                totalEmployerCost += contractEmployerCost;
+                totalSocialSecurity += contractSocialSecurity;
+                totalHealthInsurance += contractHealthInsurance;
+                totalIncomeTax += contractIncomeTax;
+                totalEmployerZus += contractEmployerZus;
             }
 
-            if (net < 0) net = 0;
+            var latestContract = contracts.First();
 
             var payroll = new EmployeePayroll
             {
@@ -323,15 +411,15 @@ namespace BookLocal.API.Controllers
                 BaseSalaryComponent = latestContract.BaseSalary,
                 CommissionComponent = 0,
                 BonusComponent = 0,
-                GrossAmount = gross,
-                SocialSecurityTax = socialSecurity,
-                HealthInsuranceTax = healthInsurance,
-                IncomeTaxAdvance = incomeTax,
+                GrossAmount = totalGross,
+                SocialSecurityTax = totalSocialSecurity,
+                HealthInsuranceTax = totalHealthInsurance,
+                IncomeTaxAdvance = totalIncomeTax,
                 OtherDeductions = 0,
-                NetAmount = net,
-                EmployerSocialSecurityTax = employerZus,
+                NetAmount = totalNet,
+                EmployerSocialSecurityTax = totalEmployerZus,
                 EmployerPPKContribution = 0,
-                TotalEmployerCost = employerCost,
+                TotalEmployerCost = totalEmployerCost,
                 Status = PayrollStatus.Draft,
                 GeneratedAt = DateOnly.FromDateTime(DateTime.Now)
             };

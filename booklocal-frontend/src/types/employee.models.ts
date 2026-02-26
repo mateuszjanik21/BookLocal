@@ -9,7 +9,6 @@ export interface EmployeePayload {
   specialization?: string;
   instagramProfileUrl?: string;
   portfolioUrl?: string;
-  isStudent: boolean;
 }
 
 export interface EmployeeDetail {
@@ -25,7 +24,6 @@ export interface EmployeeDetail {
   hobbies?: string;
   instagramProfileUrl?: string;
   portfolioUrl?: string;
-  isStudent: boolean;
   estimatedRevenue: number;
   completedReservationsCount: number;
   assignedServices: Service[];
@@ -41,6 +39,7 @@ export interface EmployeeDetail {
 export interface FinanceSettingsDto {
   commissionPercentage?: number;
   hourlyRate: number;
+  isStudent: boolean;
   hasPit2Filed: boolean;
   useMiddleClassRelief: boolean;
   isPensionRetired: boolean;

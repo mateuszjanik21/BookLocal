@@ -25,6 +25,10 @@ export class HRService {
     return this.http.post<EmploymentContract>(`${this.apiUrl}/businesses/${businessId}/hr/contracts`, payload);
   }
 
+  updateContract(businessId: number, contractId: number, payload: EmploymentContractUpsert): Observable<EmploymentContract> {
+    return this.http.put<EmploymentContract>(`${this.apiUrl}/businesses/${businessId}/hr/contracts/${contractId}`, payload);
+  }
+
   getPayrolls(businessId: number, month?: number, year?: number): Observable<EmployeePayroll[]> {
     let params = new HttpParams();
     if (month) params = params.set('month', month);
@@ -36,9 +40,9 @@ export class HRService {
     return this.http.post<EmployeePayroll>(`${this.apiUrl}/businesses/${businessId}/hr/payrolls/generate`, payload);
   }
 
-  generatePayrollForAll(businessId: number, employeeIds: number[], month: number, year: number): Observable<(EmployeePayroll | null)[]> {
+  generatePayrollForAll(businessId: number, employeeIds: number[], month: number, year: number, day?: number): Observable<(EmployeePayroll | null)[]> {
     const requests = employeeIds.map(id =>
-      this.generatePayroll(businessId, { employeeId: id, month, year }).pipe(
+      this.generatePayroll(businessId, { employeeId: id, month, year, day }).pipe(
         catchError(() => of(null))
       )
     );

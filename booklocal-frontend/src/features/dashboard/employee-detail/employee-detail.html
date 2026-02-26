@@ -120,9 +120,6 @@
               <span class="badge badge-primary badge-outline bg-primary/5 border-primary/30">{{ employee.specialization
                 }}</span>
               }
-              @if (employee.isStudent) {
-              <span class="badge badge-accent badge-outline bg-accent/5 border-accent/30">Student</span>
-              }
               @if (employee.isArchived) {
               <span class="badge badge-error gap-1 bg-error/10 border-error/30">
                 Zarchiwizowany
@@ -929,7 +926,6 @@
         contractTypeTranslations[getActiveContractType()!] || getActiveContractType() }}</span>
       }
       <span class="badge badge-ghost font-medium">{{ getEmployeeAge() }} lat</span>
-      @if (employee?.isStudent) { <span class="badge badge-accent font-medium">Student</span> }
     </div>
 
     @if (isStudentZusExempt()) {
@@ -1001,6 +997,16 @@
             <label class="cursor-pointer flex items-center gap-3 h-full">
               <input type="checkbox" formControlName="isPensionRetired" class="checkbox checkbox-primary" />
               <span class="label-text font-bold">Status Emeryta / Rencisty</span>
+            </label>
+          </div>
+
+          <div
+            class="form-control bg-base-200/50 border border-base-200 rounded-xl p-3 hover:bg-base-200 transition-colors"
+            [class.opacity-50]="!isStudentEligible()"
+            [title]="!isStudentEligible() ? 'Pracownik ma 26 lat lub więcej, nie przysługuje mu ulga studencka.' : ''">
+            <label class="cursor-pointer flex items-center gap-3 h-full" [class.cursor-not-allowed]="!isStudentEligible()">
+              <input type="checkbox" formControlName="isStudent" class="checkbox checkbox-primary" />
+              <span class="label-text font-bold">Status Studenta</span>
             </label>
           </div>
 

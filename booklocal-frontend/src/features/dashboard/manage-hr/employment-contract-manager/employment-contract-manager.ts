@@ -72,6 +72,12 @@ export class EmploymentContractManagerComponent implements OnInit {
 
   onWizardClosed(refresh: boolean) { if (refresh) this.loadData(); }
 
+  editContract(event: Event, contract: EmploymentContract) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.wizardModal.open(contract);
+  }
+
   archiveContract(event: Event, contractId: number) {
     event.stopPropagation();
     event.preventDefault();

@@ -3,7 +3,7 @@
 
     <div class="bg-base-200 px-6 pt-5 pb-4">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold">Nowa Umowa</h3>
+        <h3 class="text-xl font-bold">{{ contractToEdit ? 'Edytuj umowę' : 'Nowa Umowa' }}</h3>
         <button class="btn btn-ghost btn-sm btn-circle" (click)="close()">✕</button>
       </div>
       <ul class="steps steps-horizontal w-full text-xs">
@@ -68,6 +68,18 @@
             }
           </div>
         </div>
+
+        @if (form.contractType === 2) {
+          <div class="form-control bg-accent/10 border border-accent/20 rounded-xl p-3 mb-4"
+               [class.opacity-50]="!isStudentEligible()"
+               [title]="!isStudentEligible() ? 'Pracownik ma 26 lat lub więcej, nie przysługuje mu ulga studencka.' : ''">
+            <label class="cursor-pointer flex items-center gap-3" [class.cursor-not-allowed]="!isStudentEligible()">
+              <input type="checkbox" [(ngModel)]="form.isStudent" class="checkbox checkbox-accent"
+                     [disabled]="!isStudentEligible()" />
+              <span class="label-text font-bold text-accent-content">Oświadczam, że posiadam status ucznia/studenta i nie ukończyłem 26. roku życia</span>
+            </label>
+          </div>
+        }
 
         <div>
           <p class="text-sm font-semibold mb-2">Wynagrodzenie brutto</p>
@@ -168,7 +180,7 @@
         </button>
         <button [hidden]="currentStep < 3" class="btn btn-primary" (click)="submit()" [disabled]="!canSubmit() || isSubmitting">
           <span [hidden]="!isSubmitting" class="loading loading-spinner loading-xs"></span>
-          Utwórz umowę
+          {{ contractToEdit ? 'Zapisz zmiany' : 'Utwórz umowę' }}
         </button>
       </div>
     </div>

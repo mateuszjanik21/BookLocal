@@ -15,6 +15,7 @@ interface WizardForm {
   startDate: string;
   endDate: string;
   isIndefinite: boolean;
+  isStudent: boolean;
 }
 
 @Component({
@@ -42,6 +43,7 @@ export class ContractWizardModalComponent implements OnInit, OnChanges {
   salaryMode: 'monthly' | 'hourly' = 'monthly';
 
   selectedEmployeeId: number | null = null;
+  contractToEdit: EmploymentContract | null = null;
 
   form: WizardForm = {
     contractType: ContractType.EmploymentContract,
@@ -51,6 +53,7 @@ export class ContractWizardModalComponent implements OnInit, OnChanges {
     startDate: '',
     endDate: '',
     isIndefinite: true,
+    isStudent: false
   };
 
   contractTypes = [
@@ -68,9 +71,37 @@ export class ContractWizardModalComponent implements OnInit, OnChanges {
     }
   }
 
-  open() {
+  open(contract?: EmploymentContract) {
     this.resetWizard();
-    if (this.preselectedEmployeeId) {
+    if (contract) {
+      this.contractToEdit = contract;
+      this.selectedEmployeeId = contract.employeeId;
+      this.currentStep = 2;
+
+      let ctype = ContractType.EmploymentContract;
+      if (typeof contract.contractType === 'string') {
+        const typeMap: Record<string, number> = {
+          'EmploymentContract': ContractType.EmploymentContract,
+          'B2B':                ContractType.B2B,
+          'MandateContract':    ContractType.MandateContract,
+          'Apprenticeship':     ContractType.Apprenticeship,
+        };
+        ctype = typeMap[contract.contractType] ?? ContractType.EmploymentContract;
+      } else {
+        ctype = contract.contractType;
+      }
+
+      this.form = {
+        contractType: ctype,
+        baseSalary: contract.baseSalary,
+        hourlyRate: Math.round((contract.baseSalary / 168) * 100) / 100,
+        taxDeductibleExpenses: contract.taxDeductibleExpenses,
+        startDate: contract.startDate,
+        endDate: contract.endDate || '',
+        isIndefinite: !contract.endDate,
+        isStudent: false, // will let user re-check if needed, or backend preserves it
+      };
+    } else if (this.preselectedEmployeeId) {
       this.selectedEmployeeId = this.preselectedEmployeeId;
       this.currentStep = 2;
     }
@@ -86,6 +117,7 @@ export class ContractWizardModalComponent implements OnInit, OnChanges {
     this.currentStep = 1;
     this.selectedEmployeeId = null;
     this.salaryMode = 'monthly';
+    this.contractToEdit = null;
     this.form = {
       contractType: ContractType.EmploymentContract,
       baseSalary: 0,
@@ -94,11 +126,15 @@ export class ContractWizardModalComponent implements OnInit, OnChanges {
       startDate: new Date().toISOString().split('T')[0],
       endDate: '',
       isIndefinite: true,
+      isStudent: false,
     };
   }
 
   selectEmployee(id: number) {
     this.selectedEmployeeId = id;
+    if (!this.isStudentEligible()) {
+      this.form.isStudent = false;
+    }
   }
 
   selectContractType(type: ContractType) {
@@ -145,6 +181,21 @@ export class ContractWizardModalComponent implements OnInit, OnChanges {
     return emp?.photoUrl ?? null;
   }
 
+  isStudentEligible(): boolean {
+    if (!this.selectedEmployeeId) return false;
+    const emp = this.employees.find(e => e.id === this.selectedEmployeeId);
+    if (!emp || !emp.dateOfBirth) return false;
+
+    const dob = new Date(emp.dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age < 26;
+  }
+
   nextStep() {
     if (this.canProceed() && this.currentStep < 3) this.currentStep++;
   }
@@ -188,17 +239,22 @@ export class ContractWizardModalComponent implements OnInit, OnChanges {
       taxDeductibleExpenses: this.form.taxDeductibleExpenses,
       startDate: this.form.startDate,
       endDate: this.form.isIndefinite ? undefined : (this.form.endDate || undefined),
+      isStudent: this.form.isStudent,
     };
 
-    this.hrService.createContract(this.businessId, payload)
+    const request = this.contractToEdit
+      ? this.hrService.updateContract(this.businessId, this.contractToEdit.contractId, payload)
+      : this.hrService.createContract(this.businessId, payload);
+
+    request
       .pipe(finalize(() => this.isSubmitting = false))
       .subscribe({
         next: () => {
-          this.toastr.success('Umowa została utworzona!');
+          this.toastr.success(this.contractToEdit ? 'Umowa zaktualizowana!' : 'Umowa została utworzona!');
           this.dialogRef.nativeElement.close();
           this.closed.emit(true);
         },
-        error: () => this.toastr.error('Błąd tworzenia umowy.')
+        error: () => this.toastr.error(this.contractToEdit ? 'Błąd aktualizacji umowy.' : 'Błąd tworzenia umowy.')
       });
   }
 }

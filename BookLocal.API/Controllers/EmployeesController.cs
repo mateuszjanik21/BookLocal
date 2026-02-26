@@ -478,7 +478,7 @@ namespace BookLocal.API.Controllers
                 dto.VoluntarySicknessInsurance = true;
             }
 
-            if ((employee.FinanceSettings?.IsStudent ?? false) && isUnder26 && activeContract?.ContractType == ContractType.MandateContract)
+            if (dto.IsStudent && isUnder26 && activeContract?.ContractType == ContractType.MandateContract)
             {
                 dto.VoluntarySicknessInsurance = false;
                 dto.IsPensionRetired = false;
@@ -498,6 +498,7 @@ namespace BookLocal.API.Controllers
 
             employee.FinanceSettings.CommissionPercentage = dto.CommissionPercentage;
             employee.FinanceSettings.HourlyRate = dto.HourlyRate;
+            employee.FinanceSettings.IsStudent = dto.IsStudent;
             employee.FinanceSettings.HasPit2Filed = dto.HasPit2Filed;
             employee.FinanceSettings.UseMiddleClassRelief = dto.UseMiddleClassRelief;
             employee.FinanceSettings.IsPensionRetired = dto.IsPensionRetired;

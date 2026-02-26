@@ -17,8 +17,8 @@
       <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center w-full lg:w-auto">
         <p class="text-sm font-semibold shrink-0">Okres:</p>
         <select class="select select-sm select-bordered w-full sm:w-auto" [(ngModel)]="filterMonth" (ngModelChange)="loadPayrolls()">
-          <option [ngValue]="undefined">Wszystkie miesiące</option>
-          @for (m of months; track m.value) {
+          <option [ngValue]="undefined">Wybierz miesiąc</option>
+          @for (m of availableMonths; track m.value) {
             <option [value]="m.value">{{ m.label }}</option>
           }
         </select>
@@ -35,6 +35,13 @@
             <option [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
           }
         </select>
+      </div>
+
+      <div class="hidden lg:block divider lg:divider-horizontal m-0"></div>
+
+      <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center w-full lg:w-auto">
+        <p class="text-sm font-semibold shrink-0" title="Pole opcjonalne. Pozwala wygenerować płacę proporcjonalną do danego dnia.">Licz do dnia:</p>
+        <input type="number" placeholder="DD" class="input input-sm input-bordered w-full sm:w-20" [(ngModel)]="filterDay" min="1" max="31" />
       </div>
     </div>
 
