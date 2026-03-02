@@ -8,6 +8,7 @@ export interface Review {
   reviewerPhotoUrl?: string;
   serviceName?: string;
   employeeFullName?: string;
+  reservationDate?: string;
 }
 
 export interface CreateReviewPayload {

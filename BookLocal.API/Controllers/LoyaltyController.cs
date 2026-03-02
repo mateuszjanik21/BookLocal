@@ -56,6 +56,35 @@ namespace BookLocal.API.Controllers
             return Ok(config);
         }
 
+        [HttpGet("stats")]
+        [Authorize(Roles = "owner")]
+        public async Task<ActionResult<LoyaltyStatsDto>> GetStats(int businessId)
+        {
+            var activeCustomersCount = await _context.LoyaltyPoints
+                .Where(lp => lp.BusinessId == businessId && (lp.PointsBalance > 0 || lp.TotalPointsEarned > 0))
+                .CountAsync();
+
+            var pointsIssued = await _context.LoyaltyTransactions
+                .Where(t => t.LoyaltyPoint.BusinessId == businessId && t.Type == LoyaltyTransactionType.Earned)
+                .SumAsync(t => (int?)t.PointsAmount) ?? 0;
+
+            var pointsRedeemed = await _context.LoyaltyTransactions
+                .Where(t => t.LoyaltyPoint.BusinessId == businessId && t.Type == LoyaltyTransactionType.Redeemed)
+                .SumAsync(t => (int?)t.PointsAmount) ?? 0;
+
+            var pendingLiability = await _context.LoyaltyPoints
+                .Where(lp => lp.BusinessId == businessId)
+                .SumAsync(lp => (int?)lp.PointsBalance) ?? 0;
+
+            return Ok(new LoyaltyStatsDto
+            {
+                TotalActiveCustomers = activeCustomersCount,
+                TotalPointsIssued = pointsIssued,
+                TotalPointsRedeemed = pointsRedeemed,
+                PendingPointsLiability = pendingLiability
+            });
+        }
+
         [HttpGet("customer/{customerId}")]
         public async Task<ActionResult<object>> GetCustomerLoyalty(int businessId, string customerId)
         {

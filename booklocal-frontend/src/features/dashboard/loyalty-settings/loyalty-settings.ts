@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { LoyaltyService } from '../../../core/services/loyalty-service';
+import { LoyaltyService, LoyaltyStats } from '../../../core/services/loyalty-service';
 import { BusinessService } from '../../../core/services/business-service';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
@@ -21,6 +21,7 @@ export class LoyaltySettingsComponent implements OnInit {
   businessId: number | null = null;
   isLoading = false;
   isSaving = false;
+  stats: LoyaltyStats | null = null;
 
   configForm = this.fb.group({
     isActive: [false],
@@ -31,6 +32,7 @@ export class LoyaltySettingsComponent implements OnInit {
     this.businessService.getMyBusiness().subscribe(b => {
       this.businessId = b.id;
       this.loadConfig();
+      this.loadStats();
     });
   }
 
@@ -49,6 +51,16 @@ export class LoyaltySettingsComponent implements OnInit {
         this.toastr.error('Błąd ładowania konfiguracji.');
         this.isLoading = false;
       }
+    });
+  }
+
+  loadStats() {
+    if (!this.businessId) return;
+    this.loyaltyService.getStats(this.businessId).subscribe({
+      next: (stats) => {
+        this.stats = stats;
+      },
+      error: () => console.error('Failed to load loyalty stats')
     });
   }
 

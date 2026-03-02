@@ -13,6 +13,7 @@ namespace BookLocal.API.DTOs
         public string? ReviewerPhotoUrl { get; set; }
         public string? ServiceName { get; set; }
         public string? EmployeeFullName { get; set; }
+        public DateTime? ReservationDate { get; set; }
     }
 
     public class CreateReviewDto

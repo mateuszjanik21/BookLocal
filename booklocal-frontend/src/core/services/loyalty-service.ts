@@ -26,6 +26,13 @@ export interface CustomerLoyaltyData {
   transactions: LoyaltyTransaction[];
 }
 
+export interface LoyaltyStats {
+  totalActiveCustomers: number;
+  totalPointsIssued: number;
+  totalPointsRedeemed: number;
+  pendingPointsLiability: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -47,5 +54,9 @@ export class LoyaltyService {
 
   recalculatePoints(businessId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/businesses/${businessId}/loyalty/recalculate`, {});
+  }
+
+  getStats(businessId: number): Observable<LoyaltyStats> {
+    return this.http.get<LoyaltyStats>(`${this.apiUrl}/businesses/${businessId}/loyalty/stats`);
   }
 }

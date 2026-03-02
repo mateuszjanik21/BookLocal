@@ -20,4 +20,12 @@
         public string Description { get; set; }
         public DateTime CreatedAt { get; set; }
     }
+
+    public class LoyaltyStatsDto
+    {
+        public int TotalActiveCustomers { get; set; }
+        public int TotalPointsIssued { get; set; }
+        public int TotalPointsRedeemed { get; set; }
+        public int PendingPointsLiability { get; set; }
+    }
 }

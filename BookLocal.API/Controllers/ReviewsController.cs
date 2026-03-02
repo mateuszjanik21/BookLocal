@@ -20,15 +20,38 @@ namespace BookLocal.API.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<PagedResultDto<ReviewDto>>> GetReviews(int businessId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5)
+        public async Task<ActionResult<PagedResultDto<ReviewDto>>> GetReviews(int businessId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5, [FromQuery] int? rating = null, [FromQuery] string? search = null, [FromQuery] string? sortBy = "newest")
         {
             if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId))
                 return NotFound("Firma nie istnieje.");
 
             var query = _context.Reviews
                 .Where(r => r.BusinessId == businessId)
-                .OrderByDescending(r => r.CreatedAt)
                 .AsQueryable();
+
+            if (rating.HasValue && rating.Value > 0)
+            {
+                query = query.Where(r => r.Rating == rating.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var lowerSearch = search.ToLower();
+                query = query.Where(r =>
+                    r.ReviewerName.ToLower().Contains(lowerSearch) ||
+                    (r.Comment != null && r.Comment.ToLower().Contains(lowerSearch)) ||
+                    (r.Reservation != null && r.Reservation.Employee.FirstName.ToLower().Contains(lowerSearch)) ||
+                    (r.Reservation != null && r.Reservation.Employee.LastName.ToLower().Contains(lowerSearch)) ||
+                    (r.Reservation != null && r.Reservation.ServiceVariant != null && r.Reservation.ServiceVariant.Service.Name.ToLower().Contains(lowerSearch))
+                );
+            }
+
+            query = sortBy switch
+            {
+                "highest" => query.OrderByDescending(r => r.Rating).ThenByDescending(r => r.CreatedAt),
+                "lowest" => query.OrderBy(r => r.Rating).ThenByDescending(r => r.CreatedAt),
+                _ => query.OrderByDescending(r => r.CreatedAt)
+            };
 
             var totalCount = await query.CountAsync();
 
@@ -53,7 +76,8 @@ namespace BookLocal.API.Controllers
                     ServiceName = r.Reservation != null && r.Reservation.ServiceVariant != null
                         ? $"{r.Reservation.ServiceVariant.Service.Name} ({r.Reservation.ServiceVariant.Name})"
                         : "Usługa nieznana",
-                    EmployeeFullName = r.Reservation != null ? $"{r.Reservation.Employee.FirstName} {r.Reservation.Employee.LastName}" : null
+                    EmployeeFullName = r.Reservation != null ? $"{r.Reservation.Employee.FirstName} {r.Reservation.Employee.LastName}" : null,
+                    ReservationDate = r.Reservation != null ? r.Reservation.StartTime : (DateTime?)null
                 })
                 .ToListAsync();
 

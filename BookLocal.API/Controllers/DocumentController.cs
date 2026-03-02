@@ -1,5 +1,4 @@
 ﻿using BookLocal.API.Services;
-using BookLocal.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
