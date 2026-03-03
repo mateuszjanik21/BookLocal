@@ -31,9 +31,13 @@ namespace BookLocal.API.DTOs
 
         public int EmployeeId { get; set; }
         public string EmployeeFullName { get; set; }
+        public string? EmployeePhotoUrl { get; set; }
+        public string? EmployeePhoneNumber { get; set; }
 
         public string CustomerId { get; set; }
         public string? CustomerFullName { get; set; }
+        public string? CustomerPhotoUrl { get; set; }
+        public string? CustomerPhoneNumber { get; set; }
         public string? GuestName { get; set; }
 
         public bool IsServiceArchived { get; set; }

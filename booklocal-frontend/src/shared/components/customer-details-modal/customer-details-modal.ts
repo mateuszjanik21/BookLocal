@@ -98,6 +98,6 @@ export class CustomerDetailsModalComponent implements OnInit {
   }
 
   closeModal() {
-    this.closed.emit(this.customer);
+    this.closed.emit(null);
   }
 }

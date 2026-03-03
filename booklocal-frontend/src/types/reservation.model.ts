@@ -19,19 +19,23 @@ export interface Reservation {
   startTime: string; 
   endTime: string;
   status: string;
-  
+
   serviceVariantId: number;
   serviceName: string;
   variantName: string;
-  agreedPrice: number; 
+  agreedPrice: number;
 
   employeeFullName: string;
+  employeePhotoUrl?: string;
+  employeePhoneNumber?: string;
   employeeId: number;
 
   customerFullName?: string;
+  customerPhotoUrl?: string;
+  customerPhoneNumber?: string;
   guestName?: string;
   businessName: string;
-  
+
   isServiceArchived: boolean;
   hasReview: boolean;
   paymentMethod: string;

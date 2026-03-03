@@ -49,7 +49,6 @@
               </div>
             }
 
-            <!-- Summary & Discount -->
              @if(reservationForm.get('startTime')?.value) {
                 <div class="divider"></div>
                 <div class="bg-base-200 p-4 rounded-lg space-y-3">
@@ -97,7 +96,6 @@
                     <h3 class="text-lg font-semibold">Wybierz metodę płatności</h3>
                     
                     <div class="grid grid-cols-1 gap-4">
-                        <!-- Option 1: Salon -->
                         <label class="relative flex items-center justify-between p-4 cursor-pointer rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:border-primary/50 group"
                                [class.border-primary]="reservationForm.get('paymentMethod')?.value === 'Cash'"
                                [class.bg-primary-content]="reservationForm.get('paymentMethod')?.value === 'Cash'"
@@ -117,7 +115,6 @@
                             <input type="radio" formControlName="paymentMethod" value="Cash" class="radio radio-primary" />
                         </label>
 
-                        <!-- Option 2: Online -->
                         <label class="relative flex items-center justify-between p-4 cursor-pointer rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:border-primary/50 group"
                                [class.border-primary]="reservationForm.get('paymentMethod')?.value === 'Online'"
                                [class.bg-primary-content]="reservationForm.get('paymentMethod')?.value === 'Online'"

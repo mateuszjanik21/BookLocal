@@ -165,9 +165,7 @@
                   przeszłości, możesz kliknąć poniższy przycisk. System przeanalizuje wszystkie zakończone rezerwacje
                   wstecz i wygeneruje za nie należne punkty lojalnościowe opierając się na ustawionym wyżej mnożniku.
                 </p>
-                <button type="button" class="btn btn-sm btn-info text-info-content" (click)="recalculatePoints()"
-                  [disabled]="isRecalculating">
-                  @if(isRecalculating) { <span class="loading loading-spinner loading-xs"></span> }
+                <button type="button" class="btn btn-sm btn-info text-info-content" (click)="openModal()">
                   Skonwertuj poprzednie wizyty na punkty
                 </button>
               </div>
@@ -179,4 +177,28 @@
     </div>
   </div>
   }
+
+  <dialog class="modal" [class.modal-open]="isModalOpen">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg text-info flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        Potwierdź przeliczanie
+      </h3>
+      <p class="py-4 text-base-content/80 leading-relaxed">
+        Zostaną przeliczone wszystkie historyczne wizyty klientów według bazowej konfiguracji 
+        <span class="font-bold">({{ configForm.value.spendAmountForOnePoint }} PLN = 1 pkt)</span>.<br><br>
+        Ta operacja jest <span class="font-bold">jednorazowa i nieodwracalna</span> dla poddanych jej wizyt (system nie naliczy im punktów ponownie). Upewnij się, że dobrze sparametryzowałeś konfigurację punktową. 
+      </p>
+      <div class="modal-action">
+        <button type="button" class="btn" (click)="closeModal()" [disabled]="isRecalculating">Anuluj</button>
+        <button type="button" class="btn btn-info text-info-content" (click)="recalculatePoints()" [disabled]="isRecalculating">
+            @if(isRecalculating) { <span class="loading loading-spinner loading-xs"></span> }
+            Tak, kontynuuj
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button (click)="closeModal()" [disabled]="isRecalculating">close</button>
+    </form>
+  </dialog>
 </div>

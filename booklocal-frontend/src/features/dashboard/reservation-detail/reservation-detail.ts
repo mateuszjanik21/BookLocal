@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReservationService } from '../../../core/services/reservation';
 import { Reservation } from '../../../types/reservation.model';
@@ -7,13 +8,15 @@ import { ChatService } from '../../../core/services/chat';
 import { ReservationStatusPipe } from '../../../shared/pipes/reservation-status.pipe';
 import { ToastrService } from 'ngx-toastr';
 import { finalize } from 'rxjs';
+
 import { PaymentDto, PaymentService } from '../../../core/services/payment-service';
 import { InvoiceService } from '../../../core/services/invoice-service';
+import { CustomerDetailsModalComponent } from '../../../shared/components/customer-details-modal/customer-details-modal';
 
 @Component({
   selector: 'app-reservation-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReservationStatusPipe],
+  imports: [CommonModule, RouterModule, ReservationStatusPipe, FormsModule, CustomerDetailsModalComponent],
   templateUrl: './reservation-detail.html',
 })
 export class ReservationDetailComponent implements OnInit {
@@ -63,51 +66,60 @@ export class ReservationDetailComponent implements OnInit {
       });
   }
 
-  addManualPayment(method: string): void {
-      if (!this.reservation) return;
+  isPaymentModalOpen = false;
+  selectedPaymentMethod = 'Cash';
+  paymentAmountInput = 0;
+
+  isCustomerModalOpen = false;
+
+  openCustomerModal() {
+      this.isCustomerModalOpen = true;
+  }
+
+  closeCustomerModal() {
+      this.isCustomerModalOpen = false;
+  }
+
+  get remainingAmountToPay(): number {
+      if(!this.reservation) return 0;
+      const rem = this.reservation.agreedPrice - this.totalPayments;
+      return rem > 0 ? rem : 0;
+  }
+
+  openPaymentModal(): void {
+      if(!this.reservation) return;
+      this.selectedPaymentMethod = 'Card';
+      this.paymentAmountInput = this.remainingAmountToPay;
+      this.isPaymentModalOpen = true;
+  }
+
+  closePaymentModal(): void {
+      this.isPaymentModalOpen = false;
+      this.paymentAmountInput = 0;
+  }
+
+  onPaymentAmountChange(amount: number) {
+      this.paymentAmountInput = amount;
+  }
+
+  confirmManualPayment(): void {
+      if (!this.reservation || this.paymentAmountInput <= 0) return;
       
-      const reservationId = this.reservation.reservationId;
-      const totalPaid = this.totalPayments;
-      const agreedPrice = this.reservation.agreedPrice;
-      let remainingAmount = agreedPrice - totalPaid;
-
-      if (remainingAmount < 0) remainingAmount = 0;
-
-      let defaultAmount = remainingAmount > 0 
-          ? remainingAmount.toFixed(2).replace('.', ',') 
-          : '0,00';
-
-      const amountStr = prompt(
-          `Podaj kwotę wpłaty (${method}):\nPozostało do zapłaty: ${remainingAmount.toFixed(2)} PLN`, 
-          defaultAmount
-      );
-      
-      if (!amountStr) return;
-      
-      const amount = parseFloat(amountStr.replace(',', '.'));
-      if (isNaN(amount) || amount <= 0) {
-        this.toastr.warning('Podano nieprawidłową kwotę.');
-        return;
-      }
-
-      if (totalPaid + amount > agreedPrice) {
-          if (!confirm(`Kwota przewyższa ustaloną cenę (${agreedPrice} PLN). Czy na pewno chcesz dodać nadpłatę/napiwek?`)) {
-              return;
-          }
-      }
-
       this.isAddingPayment = true;
       this.paymentService.createPayment({
-          reservationId: reservationId,
-          method: method,
-          amount: amount
+          reservationId: this.reservation.reservationId,
+          method: this.selectedPaymentMethod,
+          amount: this.paymentAmountInput
       }).pipe(finalize(() => this.isAddingPayment = false))
       .subscribe({
           next: () => {
               this.toastr.success('Płatność została dodana.');
-              this.loadPayments(reservationId);
+              this.loadPayments(this.reservation!.reservationId);
+              this.closePaymentModal();
           },
-          error: () => this.toastr.error('Błąd dodawania płatności.')
+          error: () => {
+              this.toastr.error('Błąd dodawania płatności.');
+          }
       });
   }
 

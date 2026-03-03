@@ -165,12 +165,40 @@ namespace BookLocal.API.Controllers
                 .AsNoTracking()
                 .ToListAsync();
 
+            var reservationsToComplete = reservations.Where(r => r.EndTime <= now && r.Status == ReservationStatus.Confirmed).ToList();
+            if (reservationsToComplete.Any())
+            {
+                var idsToComplete = reservationsToComplete.Select(r => r.ReservationId).ToList();
+                var trackedReservations = await _context.Reservations.Where(r => idsToComplete.Contains(r.ReservationId)).ToListAsync();
+
+                foreach (var tr in trackedReservations)
+                {
+                    tr.Status = ReservationStatus.Completed;
+                    if (tr.CustomerId != null)
+                    {
+                        await ProcessLoyaltyPoints(tr.BusinessId, tr.CustomerId, tr.AgreedPrice, tr.ReservationId);
+                        await EnsureCustomerProfile(tr.BusinessId, tr.CustomerId);
+                        await UpdateCustomerStats(tr.BusinessId, tr.CustomerId);
+                    }
+                }
+
+                if (trackedReservations.Any())
+                {
+                    await _context.SaveChangesAsync();
+                }
+
+                foreach (var r in reservationsToComplete)
+                {
+                    r.Status = ReservationStatus.Completed;
+                }
+            }
+
             var reservationDtos = reservations.Select(r => new ReservationDto
             {
                 ReservationId = r.ReservationId,
                 StartTime = r.StartTime,
                 EndTime = r.EndTime,
-                Status = (r.StartTime < now && r.Status == ReservationStatus.Confirmed ? ReservationStatus.Completed : r.Status).ToString(),
+                Status = r.Status.ToString(),
                 ServiceVariantId = r.ServiceVariantId,
                 ServiceName = r.ServiceVariant?.Service?.Name ?? "Usługa usunięta",
                 VariantName = r.ServiceVariant?.Name ?? "",
@@ -263,6 +291,31 @@ namespace BookLocal.API.Controllers
 
             if (reservation == null) return NotFound();
 
+            var now = DateTime.UtcNow;
+            var pastConfirmedReservations = await _context.Reservations
+                .Where(r => r.BusinessId == reservation.BusinessId && r.Status == ReservationStatus.Confirmed && r.EndTime <= now)
+                .ToListAsync();
+
+            if (pastConfirmedReservations.Any())
+            {
+                foreach (var tracked in pastConfirmedReservations)
+                {
+                    tracked.Status = ReservationStatus.Completed;
+                    if (tracked.CustomerId != null)
+                    {
+                        await ProcessLoyaltyPoints(tracked.BusinessId, tracked.CustomerId, tracked.AgreedPrice, tracked.ReservationId);
+                        await EnsureCustomerProfile(tracked.BusinessId, tracked.CustomerId);
+                        await UpdateCustomerStats(tracked.BusinessId, tracked.CustomerId);
+                    }
+                }
+                await _context.SaveChangesAsync();
+
+                if (reservation.EndTime <= now && reservation.Status == ReservationStatus.Confirmed)
+                {
+                    reservation.Status = ReservationStatus.Completed;
+                }
+            }
+
             var isOwner = User.IsInRole("owner") && reservation.Business.OwnerId == userId;
             if (reservation.CustomerId != userId && !isOwner) return Forbid();
 
@@ -282,8 +335,12 @@ namespace BookLocal.API.Controllers
                 BusinessId = reservation.BusinessId,
                 EmployeeId = reservation.EmployeeId,
                 EmployeeFullName = reservation.Employee != null ? $"{reservation.Employee.FirstName} {reservation.Employee.LastName}" : "Usunięty pracownik",
+                EmployeePhotoUrl = reservation.Employee?.PhotoUrl,
+                EmployeePhoneNumber = null,
                 CustomerId = reservation.CustomerId,
                 CustomerFullName = reservation.Customer != null ? $"{reservation.Customer.FirstName} {reservation.Customer.LastName}" : null,
+                CustomerPhotoUrl = reservation.Customer?.PhotoUrl,
+                CustomerPhoneNumber = reservation.Customer?.PhoneNumber ?? reservation.GuestPhoneNumber,
                 GuestName = reservation.GuestName,
                 HasReview = await _context.Reviews.AnyAsync(r => r.ReservationId == id),
                 IsServiceArchived = reservation.ServiceVariant?.Service?.IsArchived ?? true,

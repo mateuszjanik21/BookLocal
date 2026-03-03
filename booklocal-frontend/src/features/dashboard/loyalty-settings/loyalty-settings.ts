@@ -82,6 +82,16 @@ export class LoyaltySettingsComponent implements OnInit {
   }
 
   isRecalculating = false;
+  isModalOpen = false;
+
+  openModal() {
+      this.isModalOpen = true;
+  }
+
+  closeModal() {
+      if (this.isRecalculating) return;
+      this.isModalOpen = false;
+  }
 
   recalculatePoints() {
       if (!this.businessId) return;
@@ -90,8 +100,15 @@ export class LoyaltySettingsComponent implements OnInit {
       this.loyaltyService.recalculatePoints(this.businessId)
         .pipe(finalize(() => this.isRecalculating = false))
         .subscribe({
-            next: (res) => this.toastr.success(res.message || 'Punkty przeliczone.'),
-            error: (err) => this.toastr.error(err.error || 'Wystąpił błąd.')
+            next: (res) => {
+                this.toastr.success(res.message || 'Punkty przeliczone.');
+                this.loadStats();
+                this.closeModal();
+            },
+            error: (err) => {
+                this.toastr.error(err.error || 'Wystąpił błąd.');
+                this.closeModal();
+            }
         });
   }
 }
