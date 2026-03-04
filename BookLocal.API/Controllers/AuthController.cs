@@ -12,17 +12,20 @@ public class AuthController : ControllerBase
     private readonly SignInManager<User> _signInManager;
     private readonly AppDbContext _context;
     private readonly TokenService _tokenService;
+    private readonly BookLocal.API.Services.ILazyStateService _lazyStateService;
 
     public AuthController(
         UserManager<User> userManager,
         SignInManager<User> signInManager,
         AppDbContext context,
-        TokenService tokenService)
+        TokenService tokenService,
+        BookLocal.API.Services.ILazyStateService lazyStateService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _context = context;
         _tokenService = tokenService;
+        _lazyStateService = lazyStateService;
     }
 
     [HttpPost("login")]
@@ -152,6 +155,8 @@ public class AuthController : ControllerBase
         if (user == null) return Unauthorized();
         var roles = await _userManager.GetRolesAsync(user);
 
+        await _lazyStateService.SyncUserStateAsync(user.Id, roles.FirstOrDefault() ?? "customer");
+
         return new UserDto
         {
             Id = user.Id,
@@ -195,6 +200,9 @@ public class AuthController : ControllerBase
     private async Task<AuthResponseDto> CreateAuthResponse(User user)
     {
         var roles = await _userManager.GetRolesAsync(user);
+
+        await _lazyStateService.SyncUserStateAsync(user.Id, roles.FirstOrDefault() ?? "customer");
+
         var userDto = new UserDto
         {
             Id = user.Id,

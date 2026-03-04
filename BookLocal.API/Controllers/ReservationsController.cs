@@ -74,7 +74,7 @@ namespace BookLocal.API.Controllers
 
             if (!string.IsNullOrEmpty(reservationDto.DiscountCode))
             {
-                var discountResult = await ApplyDiscount(service.BusinessId, reservationDto.DiscountCode, variant.Price, service.ServiceId);
+                var discountResult = await ApplyDiscount(service.BusinessId, reservationDto.DiscountCode, variant.Price, service.ServiceId, userId);
                 if (discountResult.error != null)
                 {
                     return BadRequest(discountResult.error);
@@ -585,7 +585,7 @@ namespace BookLocal.API.Controllers
 
             if (!string.IsNullOrEmpty(reservationDto.DiscountCode))
             {
-                var discountResult = await ApplyDiscount(variant.Service.BusinessId, reservationDto.DiscountCode, variant.Price, variant.Service.ServiceId);
+                var discountResult = await ApplyDiscount(variant.Service.BusinessId, reservationDto.DiscountCode, variant.Price, variant.Service.ServiceId, reservationDto.GuestPhoneNumber);
                 if (discountResult.error != null)
                 {
                     return BadRequest(discountResult.error);
@@ -766,7 +766,7 @@ namespace BookLocal.API.Controllers
             }
         }
 
-        private async Task<(decimal discountAmount, int? discountId, string? error)> ApplyDiscount(int businessId, string code, decimal originalPrice, int? serviceId)
+        private async Task<(decimal discountAmount, int? discountId, string? error)> ApplyDiscount(int businessId, string code, decimal originalPrice, int? serviceId, string? customerId = null)
         {
             if (string.IsNullOrWhiteSpace(code)) return (0, null, null);
 
@@ -777,6 +777,20 @@ namespace BookLocal.API.Controllers
 
             if (discount.MaxUses.HasValue && discount.UsedCount >= discount.MaxUses.Value)
                 return (0, null, "Limit użycia tego kodu został wyczerpany.");
+
+            if (discount.MaxUsesPerCustomer.HasValue && !string.IsNullOrEmpty(customerId))
+            {
+                var userUses = await _context.Reservations
+                    .CountAsync(r => r.CustomerId == customerId &&
+                                     r.DiscountId == discount.DiscountId &&
+                                     r.Status != ReservationStatus.Cancelled &&
+                                     r.Status != ReservationStatus.NoShow);
+
+                if (userUses >= discount.MaxUsesPerCustomer.Value)
+                {
+                    return (0, null, "Osiągnięto limit użyć tego kodu dla Twojego konta.");
+                }
+            }
 
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
             if (discount.ValidFrom.HasValue && today < discount.ValidFrom.Value)
@@ -847,6 +861,25 @@ namespace BookLocal.API.Controllers
 
             _context.LoyaltyTransactions.Add(transaction);
             await _context.SaveChangesAsync();
+        }
+
+        [HttpGet("{id}/adjacent")]
+        [Authorize]
+        public async Task<ActionResult> GetAdjacentReservations(int id)
+        {
+            var current = await _context.Reservations.FindAsync(id);
+            if (current == null) return NotFound();
+            var prev = await _context.Reservations
+                .Where(r => r.BusinessId == current.BusinessId && r.StartTime < current.StartTime)
+                .OrderByDescending(r => r.StartTime)
+                .Select(r => r.ReservationId)
+                .FirstOrDefaultAsync();
+            var next = await _context.Reservations
+                .Where(r => r.BusinessId == current.BusinessId && r.StartTime > current.StartTime)
+                .OrderBy(r => r.StartTime)
+                .Select(r => r.ReservationId)
+                .FirstOrDefaultAsync();
+            return Ok(new { PreviousId = prev > 0 ? prev : (int?)null, NextId = next > 0 ? next : (int?)null });
         }
     }
 }

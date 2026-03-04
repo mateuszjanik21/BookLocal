@@ -4,8 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { DailyFinancialReport, FinanceService } from '../../../../core/services/finance-service';
 import { BusinessService } from '../../../../core/services/business-service';
 import { ToastrService } from 'ngx-toastr';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { DailyEmployeePerformance } from '../../../../types/report.model';
 
 @Component({
@@ -85,12 +83,6 @@ export class FinanceDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Restore saved view mode from localStorage
-    const savedViewMode = localStorage.getItem('finance-dashboard-viewMode');
-    if (savedViewMode && ['day', 'week', 'month'].includes(savedViewMode)) {
-        this.viewMode = savedViewMode as 'day' | 'week' | 'month';
-    }
-
     this.businessService.getMyBusiness().subscribe({
       next: (business) => {
         if (business) {
@@ -105,8 +97,7 @@ export class FinanceDashboardComponent implements OnInit {
 
   changeViewMode(mode: 'day' | 'week' | 'month') {
       this.viewMode = mode;
-      this.currentDate = new Date();
-      localStorage.setItem('finance-dashboard-viewMode', mode);
+      this.currentDate = new Date(); 
       this.loadData();
   }
 
@@ -132,6 +123,13 @@ export class FinanceDashboardComponent implements OnInit {
       return date;
   }
 
+  private formatDateLocal(d: Date): string {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+  }
+
   loadData() {
       if (!this.businessId) return;
 
@@ -139,20 +137,20 @@ export class FinanceDashboardComponent implements OnInit {
       let end: string;
 
       if (this.viewMode === 'day') {
-          const dateStr = this.currentDate.toISOString().split('T')[0];
+          const dateStr = this.formatDateLocal(this.currentDate);
           start = dateStr;
           end = dateStr;
       } else if (this.viewMode === 'month') {
           const y = this.currentDate.getFullYear();
           const m = this.currentDate.getMonth();
-          start = new Date(y, m, 1).toISOString().split('T')[0];
-          end = new Date(y, m + 1, 0).toISOString().split('T')[0];
+          start = this.formatDateLocal(new Date(y, m, 1));
+          end = this.formatDateLocal(new Date(y, m + 1, 0));
       } else {
           const s = this.getStartOfWeek(new Date(this.currentDate));
           const e = new Date(s);
           e.setDate(e.getDate() + 6);
-          start = s.toISOString().split('T')[0];
-          end = e.toISOString().split('T')[0];
+          start = this.formatDateLocal(s);
+          end = this.formatDateLocal(e);
       }
 
       this.loadEmployeePerformance(start, end);
@@ -180,6 +178,23 @@ export class FinanceDashboardComponent implements OnInit {
   
   employeePerformance: DailyEmployeePerformance[] = [];
   isLoadingPerformance = false;
+  currentPerformanceIndex = 0;
+
+  nextPerformance() {
+    if (this.currentPerformanceIndex < this.employeePerformance.length - 1) {
+      this.currentPerformanceIndex++;
+    } else {
+      this.currentPerformanceIndex = 0;
+    }
+  }
+
+  prevPerformance() {
+    if (this.currentPerformanceIndex > 0) {
+      this.currentPerformanceIndex--;
+    } else {
+      this.currentPerformanceIndex = this.employeePerformance.length - 1;
+    }
+  }
 
   loadEmployeePerformance(start: string, end: string) {
       if (!this.businessId) return;
@@ -188,6 +203,7 @@ export class FinanceDashboardComponent implements OnInit {
       this.financeService.getEmployeePerformance(this.businessId, undefined, start, end).subscribe({
           next: (data) => {
               this.employeePerformance = data;
+              this.currentPerformanceIndex = 0;
               this.isLoadingPerformance = false;
           },
           error: () => this.isLoadingPerformance = false
@@ -283,6 +299,9 @@ export class FinanceDashboardComponent implements OnInit {
   }
 
   async downloadFinancialPdf(): Promise<void> {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
     const doc = new jsPDF();
     await this.setupPdfFont(doc);
 
@@ -345,6 +364,9 @@ export class FinanceDashboardComponent implements OnInit {
   }
 
   async downloadPerformancePdf(): Promise<void> {
+      const { default: jsPDF } = await import('jspdf');
+      const { default: autoTable } = await import('jspdf-autotable');
+
       const doc = new jsPDF();
       await this.setupPdfFont(doc);
 
@@ -405,7 +427,7 @@ export class FinanceDashboardComponent implements OnInit {
       doc.save(`Raport_Wydajnosci_${this.currentDate.toISOString().slice(0,10)}.pdf`);
   }
 
-  private async setupPdfFont(doc: jsPDF) {
+  private async setupPdfFont(doc: any) {
       try {
         const fontResponse = await fetch('/assets/fonts/Roboto-Regular.ttf');
         if (fontResponse.ok) {
@@ -428,46 +450,54 @@ export class FinanceDashboardComponent implements OnInit {
   }
 
   get visibleReports(): DailyFinancialReport[] {
+      if (!this.reports || this.reports.length === 0) return [];
+      
       if (this.viewMode === 'month') return this.reports;
 
+      const d = this.formatDateLocal(this.currentDate);
+
       if (this.viewMode === 'day') {
-          const d = this.currentDate.toISOString().split('T')[0];
-          return this.reports.filter(r => r.reportDate === d);
+          return this.reports.filter(r => {
+             if (!r.reportDate) return false;
+             const rd = new Date(r.reportDate as any);
+             return this.formatDateLocal(rd) === d;
+          });
       }
 
       const start = this.getStartOfWeek(new Date(this.currentDate));
       const end = new Date(start);
       end.setDate(end.getDate() + 7);
       return this.reports.filter(r => {
+          if (!r.reportDate) return false;
           const rd = new Date(r.reportDate);
           return rd >= start && rd <= end;
       });
   }
 
   get monthTotalRevenue(): number {
-      return this.reports.reduce((sum, r) => sum + r.totalRevenue, 0);
+      return this.visibleReports.reduce((sum, r) => sum + r.totalRevenue, 0);
   }
   get monthCashRevenue(): number {
-    return this.reports.reduce((sum, r) => sum + r.cashRevenue, 0);
+    return this.visibleReports.reduce((sum, r) => sum + r.cashRevenue, 0);
   }
   get monthCardRevenue(): number {
-      return this.reports.reduce((sum, r) => sum + r.cardRevenue, 0);
+      return this.visibleReports.reduce((sum, r) => sum + r.cardRevenue, 0);
   }
   get monthOnlineRevenue(): number {
-    return this.reports.reduce((sum, r) => sum + r.onlineRevenue, 0);
+    return this.visibleReports.reduce((sum, r) => sum + r.onlineRevenue, 0);
   }
   get monthTotalAppointments(): number {
-      return this.reports.reduce((sum, r) => sum + r.totalAppointments, 0);
+      return this.visibleReports.reduce((sum, r) => sum + r.totalAppointments, 0);
   }
   get monthCompletedAppointments(): number {
-      return this.reports.reduce((sum, r) => sum + r.completedAppointments, 0);
+      return this.visibleReports.reduce((sum, r) => sum + r.completedAppointments, 0);
   }
   get monthTotalCommission(): number {
-      return this.reports.reduce((sum, r) => sum + (r as any).totalCommission, 0);
+      return this.visibleReports.reduce((sum, r) => sum + (r as any).totalCommission, 0);
   }
 
   get monthNewCustomers(): number {
-      return this.reports.reduce((sum, r) => sum + r.newCustomersCount, 0);
+      return this.visibleReports.reduce((sum, r) => sum + r.newCustomersCount, 0);
   }
 
   get monthAverageTicketValue(): number {

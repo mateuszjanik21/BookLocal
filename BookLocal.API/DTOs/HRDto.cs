@@ -56,4 +56,12 @@ namespace BookLocal.API.DTOs
         public int Year { get; set; }
         public int? Day { get; set; }
     }
+
+    public class HrMonthlySummaryDto
+    {
+        public int Month { get; set; }
+        public int Year { get; set; }
+        public decimal Revenue { get; set; }
+        public decimal EmployerCost { get; set; }
+    }
 }

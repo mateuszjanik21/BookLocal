@@ -6,6 +6,7 @@ import { ReservationService } from '../../../core/services/reservation';
 import { DiscountService, VerifyDiscountResult } from '../../../core/services/discount-service';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth-service';
 
 @Component({
   selector: 'app-reservation-modal',
@@ -23,6 +24,7 @@ export class ReservationModalComponent implements OnChanges {
   private toastr = inject(ToastrService);
   private fb = inject(FormBuilder);
   private router = inject(Router); 
+  private authService = inject(AuthService);
 
   currentStep = 1;
   availableSlots: string[] = [];
@@ -89,10 +91,12 @@ export class ReservationModalComponent implements OnChanges {
       
       const price = this.service.variants?.[0]?.price ?? 0;
       const serviceId = this.service.id; 
+      const currentUser: any = this.authService.currentUserValue;
       
       this.discountService.verifyDiscount(this.service.businessId, {
           code,
           serviceId: this.service.id,
+          customerId: currentUser ? currentUser.id : undefined,
           originalPrice: price
       }).subscribe({
           next: (res) => {

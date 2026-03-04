@@ -1,4 +1,5 @@
-﻿using BookLocal.API.DTOs;
+﻿using BookLocal.API.Data;
+using BookLocal.API.DTOs;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +38,7 @@ namespace BookLocal.API.Controllers
                     Type = d.Type.ToString(),
                     Value = d.Value,
                     MaxUses = d.MaxUses,
+                    MaxUsesPerCustomer = d.MaxUsesPerCustomer,
                     UsedCount = d.UsedCount,
                     ValidFrom = d.ValidFrom,
                     ValidTo = d.ValidTo,
@@ -69,6 +71,7 @@ namespace BookLocal.API.Controllers
                 Type = dto.Type,
                 Value = dto.Value,
                 MaxUses = dto.MaxUses,
+                MaxUsesPerCustomer = dto.MaxUsesPerCustomer,
                 ValidFrom = dto.ValidFrom,
                 ValidTo = dto.ValidTo,
                 ServiceId = dto.ServiceId,
@@ -85,6 +88,7 @@ namespace BookLocal.API.Controllers
                 Type = discount.Type.ToString(),
                 Value = discount.Value,
                 MaxUses = discount.MaxUses,
+                MaxUsesPerCustomer = discount.MaxUsesPerCustomer,
                 UsedCount = 0,
                 ValidFrom = discount.ValidFrom,
                 ValidTo = discount.ValidTo,
@@ -130,6 +134,20 @@ namespace BookLocal.API.Controllers
             if (discount.MaxUses.HasValue && discount.UsedCount >= discount.MaxUses.Value)
             {
                 return Ok(new VerifyDiscountResult { IsValid = false, Message = "Limit użycia kodu został wyczerpany." });
+            }
+
+            if (discount.MaxUsesPerCustomer.HasValue && !string.IsNullOrEmpty(request.CustomerId))
+            {
+                var userUses = await _context.Reservations
+                    .CountAsync(r => r.CustomerId == request.CustomerId &&
+                                     r.DiscountId == discount.DiscountId &&
+                                     r.Status != ReservationStatus.Cancelled &&
+                                     r.Status != ReservationStatus.NoShow);
+
+                if (userUses >= discount.MaxUsesPerCustomer.Value)
+                {
+                    return Ok(new VerifyDiscountResult { IsValid = false, Message = "Osiągnięto limit użyć tego kodu dla Twojego konta." });
+                }
             }
 
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

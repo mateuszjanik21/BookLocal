@@ -8,4 +8,5 @@ export interface DailyEmployeePerformance {
   totalRevenue: number;
   commission: number;
   averageRating: number;
+  photoUrl?: string;
 }

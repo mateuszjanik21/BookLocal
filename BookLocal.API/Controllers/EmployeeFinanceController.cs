@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace BookLocal.API.Controllers
 {
@@ -294,8 +295,42 @@ namespace BookLocal.API.Controllers
             if (employee == null) return NotFound("Pracownik nie istnieje.");
 
             var totalDaysInMonth = DateTime.DaysInMonth(dto.Year, dto.Month);
+            var now = DateTime.Now;
 
-            decimal totalGross = 0;
+            var reservationsToComplete = await _context.Reservations
+                .Where(r => r.EmployeeId == dto.EmployeeId
+                         && r.StartTime.Year == dto.Year
+                         && r.StartTime.Month == dto.Month
+                         && r.Status == ReservationStatus.Confirmed
+                         && r.EndTime <= now)
+                .ToListAsync();
+
+            if (reservationsToComplete.Any())
+            {
+                foreach (var tr in reservationsToComplete)
+                {
+                    tr.Status = ReservationStatus.Completed;
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            var completedReservations = await _context.Reservations
+                .Where(r => r.EmployeeId == dto.EmployeeId
+                         && r.StartTime.Year == dto.Year
+                         && r.StartTime.Month == dto.Month
+                         && r.Status == ReservationStatus.Completed)
+                .Select(r => r.ReservationId)
+                .ToListAsync();
+
+            var payments = await _context.Payments
+                .Where(p => completedReservations.Contains(p.ReservationId) && p.Status == PaymentStatus.Completed)
+                .ToListAsync();
+
+            decimal totalRevenue = payments.Sum(p => p.Amount);
+            decimal commissionPercentage = employee.FinanceSettings?.CommissionPercentage ?? 0m;
+            decimal commissionComponent = Math.Round(totalRevenue * (commissionPercentage / 100m), 2);
+
+            decimal totalGross = commissionComponent;
             decimal totalNet = 0;
             decimal totalEmployerCost = 0;
             decimal totalSocialSecurity = 0;
@@ -408,7 +443,7 @@ namespace BookLocal.API.Controllers
                 PeriodMonth = dto.Month,
                 PeriodYear = dto.Year,
                 BaseSalaryComponent = latestContract.BaseSalary,
-                CommissionComponent = 0,
+                CommissionComponent = commissionComponent,
                 BonusComponent = 0,
                 GrossAmount = totalGross,
                 SocialSecurityTax = totalSocialSecurity,
@@ -455,6 +490,62 @@ namespace BookLocal.API.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpGet("monthly-summary")]
+        public async Task<ActionResult<IEnumerable<HrMonthlySummaryDto>>> GetMonthlySummary(
+            int businessId,
+            [FromQuery] int endMonth,
+            [FromQuery] int endYear,
+            [FromQuery] int count = 6)
+        {
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId))
+                return Forbid();
+
+            var results = new List<HrMonthlySummaryDto>();
+
+            var endDate = new DateOnly(endYear, endMonth, DateTime.DaysInMonth(endYear, endMonth));
+            var startDate = endDate.AddMonths(-(count - 1));
+            startDate = new DateOnly(startDate.Year, startDate.Month, 1);
+            var startDateTime = startDate.ToDateTime(TimeOnly.MinValue);
+            var endDateTime = endDate.ToDateTime(TimeOnly.MaxValue);
+
+            var payrolls = await _context.EmployeePayrolls
+                .Include(p => p.Employee)
+                .Where(p => p.Employee.BusinessId == businessId &&
+                            (p.PeriodYear > startDate.Year || (p.PeriodYear == startDate.Year && p.PeriodMonth >= startDate.Month)) &&
+                            (p.PeriodYear < endDate.Year || (p.PeriodYear == endDate.Year && p.PeriodMonth <= endDate.Month)))
+                .ToListAsync();
+
+            var payments = await _context.Payments
+                .Include(p => p.Reservation)
+                .Where(p => p.Reservation.BusinessId == businessId &&
+                            p.Status == PaymentStatus.Completed &&
+                            p.Reservation.Status == ReservationStatus.Completed &&
+                            p.Reservation.StartTime >= startDateTime &&
+                            p.Reservation.StartTime <= endDateTime)
+                .ToListAsync();
+
+            for (int i = count - 1; i >= 0; i--)
+            {
+                var d = endDate.AddMonths(-i);
+                var m = d.Month;
+                var y = d.Year;
+
+                var monthPayrolls = payrolls.Where(p => p.PeriodMonth == m && p.PeriodYear == y);
+                var monthPayments = payments.Where(p => p.Reservation.StartTime.Month == m && p.Reservation.StartTime.Year == y);
+
+                results.Add(new HrMonthlySummaryDto
+                {
+                    Month = m,
+                    Year = y,
+                    Revenue = monthPayments.Sum(p => p.Amount),
+                    EmployerCost = monthPayrolls.Where(p => p.TotalEmployerCost > 0).Sum(p => p.TotalEmployerCost)
+                });
+            }
+
+            return Ok(results);
         }
     }
 }

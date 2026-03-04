@@ -15,78 +15,122 @@
       <span class="loading loading-spinner loading-lg text-primary"></span>
     </div>
   } @else {
-    <div class="overflow-x-auto shadow-lg rounded-lg bg-base-100 border border-base-200">
-      <table class="table">
-        <thead class="bg-base-200 text-base-content text-sm uppercase">
-          <tr>
-            <th>Kod</th>
-            <th>Wartość</th>
-            <th>Użycia</th>
-            <th>Ważność</th>
-            <th>Status</th>
-            <th>Akcje</th>
-          </tr>
-        </thead>
-        <tbody>
-            @for (d of discounts; track d.discountId) {
-            <tr class="hover">
-                <td class="font-mono font-bold text-lg">{{ d.code }}</td>
-                <td>
-                    @if(d.type === 'Percentage') {
-                        <span class="badge badge-lg badge-ghost gap-1 font-bold">-{{ d.value }}%</span>
-                    } @else {
-                        <span class="badge badge-lg badge-ghost gap-1 font-bold">-{{ d.value }} PLN</span>
-                    }
-                </td>
-                <td>
-                    <div class="flex flex-col">
-                        <span class="font-bold">{{ d.usedCount }}</span>
-                        @if(d.maxUses) {
-                            <span class="text-xs opacity-50">z {{ d.maxUses }} limitu</span>
-                        }
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="stat bg-base-100 rounded-2xl shadow-sm border border-base-200">
+            <div class="stat-figure text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"></path></svg>
+            </div>
+            <div class="stat-title text-base-content/70">Aktywne Rabaty</div>
+            <div class="stat-value text-primary">{{ activeDiscounts }} <span class="text-sm opacity-50 font-normal">z {{ totalDiscounts }}</span></div>
+        </div>
+        <div class="stat bg-base-100 rounded-2xl shadow-sm border border-base-200">
+            <div class="stat-figure text-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15.919l-7.394-4.502M15 8.08L7.606 12.583M20.25 12a8.25 8.25 0 11-16.5 0 8.25 8.25 0 0116.5 0z" /></svg>
+            </div>
+            <div class="stat-title text-base-content/70">Użyte Kupony</div>
+            <div class="stat-value text-secondary">{{ totalUses }}</div>
+        </div>
+        <div class="stat bg-base-100 rounded-2xl shadow-sm border border-base-200">
+            <div class="stat-figure text-accent">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-8 h-8 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /></svg>
+            </div>
+            <div class="stat-title text-base-content/70">Najpopularniejszy</div>
+            <div class="stat-value text-accent text-2xl lg:text-3xl truncate" [title]="topDiscount?.code || '-'">{{ topDiscount ? topDiscount.code : 'Brak' }}</div>
+            <div class="stat-desc font-medium mt-1">{{ topDiscount ? topDiscount.usedCount + ' użyć' : '' }}</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        @for (d of discounts; track d.discountId) {
+            <div class="relative bg-base-100 rounded-2xl shadow-md border border-base-200 flex overflow-hidden transition-all duration-300 hover:shadow-xl group"
+                 [class.opacity-60]="!d.isActive || (d.maxUses && d.usedCount >= d.maxUses)"
+                 [class.grayscale]="!d.isActive || (d.maxUses && d.usedCount >= d.maxUses)">
+                 
+                <div class="w-8 flex-shrink-0 flex items-center justify-center relative border-r-2 border-dashed border-base-200 pointer-events-none"
+                     [ngClass]="d.type === 'Percentage' ? 'bg-primary/20' : 'bg-success/20'">
+                     <div class="absolute -top-3 w-6 h-6 rounded-full bg-base-200/50"></div>
+                     <div class="absolute -bottom-3 w-6 h-6 rounded-full bg-base-200/50"></div>
+                     
+                     <span class="transform -rotate-90 tracking-widest uppercase text-xs font-bold opacity-50"
+                           [ngClass]="d.type === 'Percentage' ? 'text-primary' : 'text-success'">
+                         {{ d.type === 'Percentage' ? 'PROCENT' : 'KWOTA' }}
+                     </span>
+                </div>
+
+                <div class="flex-1 p-5 lg:p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                             <div class="flex items-center gap-2">
+                                <span class="text-3xl font-black tracking-tighter" [ngClass]="d.type === 'Percentage' ? 'text-primary' : 'text-success'">
+                                    -{{ d.value }}{{ d.type === 'Percentage' ? '%' : 'zł' }}
+                                </span>
+                             </div>
+
+                             <div class="tooltip tooltip-left" [attr.data-tip]="d.isActive ? 'Wyłącz' : 'Włącz'">
+                                <input type="checkbox" class="toggle toggle-sm" 
+                                       [class.toggle-success]="d.isActive" 
+                                       [checked]="d.isActive" 
+                                       (change)="toggleStatus(d)" />
+                             </div>
+                        </div>
+
+                        <div class="bg-base-200/50 rounded-xl p-3 flex justify-between items-center mt-4 border border-base-200">
+                             <span class="font-mono font-bold text-base sm:text-lg tracking-wider text-base-content/90 truncate mr-2" [title]="d.code">{{ d.code }}</span>
+                             <button class="btn btn-sm btn-circle btn-ghost text-base-content/60 hover:text-primary hover:bg-primary/10 transition-colors flex-shrink-0"
+                                     (click)="copyCode(d.code)" title="Kopiuj do schowka">
+                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" /></svg>
+                             </button>
+                        </div>
+
+                        <div class="flex gap-4 mt-4 text-xs font-medium text-base-content/60">
+                             <div class="flex items-center gap-1.5" *ngIf="d.validFrom || d.validTo">
+                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 opacity-70"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" /></svg>
+                                 <span>{{ d.validFrom || 'Od zawsze' }} - {{ d.validTo || 'Na zawsze' }}</span>
+                             </div>
+                             <div class="flex items-center gap-1.5" *ngIf="!d.validFrom && !d.validTo">
+                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 opacity-70"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                 <span>Ważny bezterminowo</span>
+                             </div>
+                        </div>
                     </div>
-                </td>
-                <td>
-                    <div class="flex flex-col text-sm">
-                        @if(d.validFrom) {
-                            <span>Od: {{ d.validFrom }}</span>
-                        }
-                        @if(d.validTo) {
-                            <span>Do: {{ d.validTo }}</span>
-                        }
-                        @if(!d.validFrom && !d.validTo) {
-                            <span class="opacity-50">Bezterminowy</span>
-                        }
-                    </div>
-                </td>
-                <td>
-                    @if(d.isActive) {
-                        <span class="badge badge-success gap-1">Aktywny</span>
-                    } @else {
-                        <span class="badge badge-ghost gap-1">Nieaktywny</span>
-                    }
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-ghost" (click)="toggleStatus(d)">
-                        @if(d.isActive) {
-                            Zatrzymaj
+
+                    <div class="mt-6">
+                        <div class="flex justify-between text-xs font-bold mb-1.5">
+                            <span class="text-base-content/60">Użycia</span>
+                            <span [ngClass]="d.maxUses && d.usedCount >= d.maxUses ? 'text-error' : 'text-base-content'">
+                                {{ d.usedCount }} <span *ngIf="d.maxUses" class="opacity-50">/ {{ d.maxUses }}</span>
+                            </span>
+                        </div>
+                        @if (d.maxUses) {
+                            <progress class="progress w-full transition-all duration-500" 
+                                      [class.progress-error]="d.usedCount >= d.maxUses"
+                                      [class.progress-primary]="d.usedCount < d.maxUses"
+                                      [value]="d.usedCount" 
+                                      [max]="d.maxUses"></progress>
                         } @else {
-                            Aktywuj
+                            <div class="w-full h-1.5 bg-primary/20 rounded-full overflow-hidden relative">
+                                <div class="absolute inset-0 bg-primary/40 -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                            </div>
                         }
-                    </button>
-                </td>
-            </tr>
-            }
-            @if(discounts.length === 0) {
-                <tr><td colspan="6" class="text-center py-8 opacity-50">Brak kuponów. Dodaj pierwszy!</td></tr>
-            }
-        </tbody>
-      </table>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @if(discounts.length === 0) {
+            <div class="col-span-1 md:col-span-2 xl:col-span-3 text-center py-16 bg-base-100 rounded-3xl border border-dashed border-base-300">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-base-200 mb-4 text-base-content/30">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" /></svg>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Brak aktywnych kuponów</h3>
+                <p class="text-base-content/50 max-w-sm mx-auto mb-6">Rozpocznij tworzenie rabatów dla swoich klientów klikając na przycisk powyżej.</p>
+                <button class="btn btn-primary" (click)="openCreateModal()">Dodaj Pierwszy Kupon</button>
+            </div>
+        }
     </div>
   }
 </div>
 
-<!-- Modal -->
 <dialog id="create_discount_modal" class="modal">
   <div class="modal-box">
     <h3 class="font-bold text-lg mb-4">Nowy kod rabatowy</h3>
@@ -96,33 +140,39 @@
             <input type="text" class="input input-bordered w-full uppercase" formControlName="code" />
         </div>
 
-        <div class="flex gap-4 mb-3">
-             <div class="form-control w-1/2">
+        <div class="flex flex-col sm:flex-row gap-4 mb-3">
+             <div class="form-control w-full sm:w-1/2">
                 <label class="label"><span class="label-text">Typ</span></label>
                 <select class="select select-bordered" formControlName="type">
                     <option [value]="0">Procentowy (%)</option>
                     <option [value]="1">Kwotowy (PLN)</option>
                 </select>
             </div>
-            <div class="form-control w-1/2">
+            <div class="form-control w-full sm:w-1/2">
                 <label class="label"><span class="label-text">Wartość</span></label>
                 <input type="number" class="input input-bordered" formControlName="value" min="0.01" step="0.01" />
             </div>
         </div>
 
-        <div class="form-control w-full mb-3">
-            <label class="label"><span class="label-text">Limit użyć (opcjonalne)</span></label>
-            <input type="number" class="input input-bordered w-full" formControlName="maxUses" placeholder="Brak limitu" />
+        <div class="flex flex-col sm:flex-row gap-4 mb-3">
+             <div class="form-control w-full sm:w-1/2">
+                <label class="label"><span class="label-text">Limit całkowity (opcja)</span></label>
+                <input type="number" class="input input-bordered w-full" formControlName="maxUses" placeholder="Brak limitu" />
+            </div>
+            <div class="form-control w-full sm:w-1/2">
+                <label class="label"><span class="label-text">Limit na klienta (opcja)</span></label>
+                <input type="number" class="input input-bordered w-full" formControlName="maxUsesPerCustomer" placeholder="Brak limitu" />
+            </div>
         </div>
         
-        <div class="flex gap-4 mb-3">
-             <div class="form-control w-1/2">
+        <div class="flex flex-col sm:flex-row gap-4 mb-3">
+             <div class="form-control w-full sm:w-1/2">
                 <label class="label"><span class="label-text">Ważny od (opcjonalne)</span></label>
-                <input type="date" class="input input-bordered" formControlName="validFrom" />
+                <input type="date" class="input input-bordered w-full" formControlName="validFrom" />
             </div>
-            <div class="form-control w-1/2">
+            <div class="form-control w-full sm:w-1/2">
                 <label class="label"><span class="label-text">Ważny do (opcjonalne)</span></label>
-                <input type="date" class="input input-bordered" formControlName="validTo" />
+                <input type="date" class="input input-bordered w-full" formControlName="validTo" />
             </div>
         </div>
 

@@ -74,114 +74,113 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div
-                class="card bg-base-100 border border-base-200 border-l-4 border-l-primary rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                class="card bg-primary/10 border border-primary/20 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-base-content/50 uppercase tracking-wide">Przychód
-                        Całkowity</span>
-                    <div class="p-1.5 bg-primary/10 rounded-lg text-primary">
+                    <span class="text-xs font-bold text-primary/70 uppercase tracking-wide">Przychód Całkowity</span>
+                    <div class="text-primary">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5">
+                            stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
                         </svg>
                     </div>
                 </div>
-                <div class="text-2xl font-bold text-base-content mb-1">{{ monthTotalRevenue |
-                    currency:'PLN':'symbol':'1.0-0' }}</div>
-                <div class="text-xs text-base-content/60">Suma wszystkich wpłat</div>
+                <div class="text-3xl font-bold text-primary mb-1">{{ monthTotalRevenue | currency:'PLN':'symbol':'1.0-0'
+                    }}</div>
+                <div class="text-xs text-base-content/50">Suma wszystkich wpłat</div>
             </div>
 
             <div
-                class="card bg-base-100 border border-base-200 border-l-4 border-l-secondary rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                class="card bg-secondary/10 border border-secondary/20 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-base-content/50 uppercase tracking-wide">Metody Płatności</span>
-                    <div class="p-1.5 bg-secondary/10 rounded-lg text-secondary">
+                    <span class="text-xs font-bold text-secondary/70 uppercase tracking-wide">Metody Płatności</span>
+                    <div class="text-secondary">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5">
+                            stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
-                <div class="space-y-1">
-                    <div class="flex justify-between text-sm">
+                <div class="space-y-1 mt-1">
+                    <div class="flex justify-between text-base">
                         <span class="text-base-content/70">Gotówka</span>
-                        <span class="font-bold">{{ monthCashRevenue | currency:'PLN':'symbol':'1.0-0' }}</span>
+                        <span class="font-bold text-secondary">{{ monthCashRevenue | currency:'PLN':'symbol':'1.0-0'
+                            }}</span>
                     </div>
-                    <div class="flex justify-between text-sm">
+                    <div class="flex justify-between text-base">
                         <span class="text-base-content/70">Karta/Online</span>
-                        <span class="font-bold">{{ monthCardRevenue + monthOnlineRevenue |
+                        <span class="font-bold text-secondary">{{ monthCardRevenue + monthOnlineRevenue |
                             currency:'PLN':'symbol':'1.0-0' }}</span>
                     </div>
                 </div>
             </div>
 
             <div
-                class="card bg-base-100 border border-base-200 border-l-4 border-l-accent rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                class="card bg-success/10 border border-success/20 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-base-content/50 uppercase tracking-wide">Wizyty</span>
-                    <div class="p-1.5 bg-accent/10 rounded-lg text-accent">
+                    <span class="text-xs font-bold text-success/70 uppercase tracking-wide">Wizyty</span>
+                    <div class="text-success">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5">
+                            stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                         </svg>
                     </div>
                 </div>
-                <div class="text-2xl font-bold text-base-content mb-1">{{ monthCompletedAppointments }} <span
-                        class="text-sm font-normal text-base-content/60">/ {{ monthTotalAppointments }}</span></div>
-                <div class="text-xs text-base-content/60">Zrealizowane / Wszystkie</div>
+                <div class="text-3xl font-bold text-success mb-1">{{ monthCompletedAppointments }} <span
+                        class="text-xl font-normal opacity-60">/ {{ monthTotalAppointments }}</span></div>
+                <div class="text-xs text-base-content/50">Zrealizowane / Wszystkie</div>
             </div>
 
             <div
-                class="card bg-base-100 border border-base-200 border-l-4 border-l-warning rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                class="card bg-warning/10 border border-warning/30 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-base-content/50 uppercase tracking-wide">Śr. Wartość
-                        Wizyty</span>
-                    <div class="p-1.5 bg-warning/10 rounded-lg text-warning">
+                    <span class="text-xs font-bold text-warning/70 uppercase tracking-wide">Śr. Wartość Wizyty</span>
+                    <div class="text-warning">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5">
+                            stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
-                <div class="text-2xl font-bold text-base-content mb-1">{{ monthAverageTicketValue |
+                <div class="text-3xl font-bold text-warning mb-1">{{ monthAverageTicketValue |
                     currency:'PLN':'symbol':'1.0-0' }}</div>
-                <div class="text-xs text-base-content/60">Przychód / Wizyta</div>
+                <div class="text-xs text-base-content/50">Przychód / Wizyta</div>
             </div>
 
             <div
-                class="card bg-base-100 border border-base-200 border-l-4 border-l-info rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                class="card bg-info/10 border border-info/30 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-base-content/50 uppercase tracking-wide">Nowi Klienci</span>
-                    <div class="p-1.5 bg-info/10 rounded-lg text-info">
+                    <span class="text-xs font-bold text-info/70 uppercase tracking-wide">Nowi Klienci</span>
+                    <div class="text-info">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5">
+                            stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                         </svg>
                     </div>
                 </div>
-                <div class="text-2xl font-bold text-base-content mb-1">{{ monthNewCustomers }}</div>
-                <div class="text-xs text-base-content/60">Pozyskani w tym okresie</div>
+                <div class="text-3xl font-bold text-info mb-1">{{ monthNewCustomers }}</div>
+                <div class="text-xs text-base-content/50">Pozyskani w tym okresie</div>
             </div>
 
             <div
-                class="card bg-base-100 border border-base-200 border-l-4 border-l-error rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                class="card bg-error/10 border border-error/20 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-base-content/50 uppercase tracking-wide">Prowizja Systemu</span>
-                    <div class="p-1.5 bg-error/10 rounded-lg text-error">
+                    <span class="text-xs font-bold text-error/70 uppercase tracking-wide">Prowizja Systemu</span>
+                    <div class="text-error">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5">
+                            stroke="currentColor" class="w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
                 </div>
-                <div class="text-2xl font-bold text-base-content mb-1">{{ monthTotalCommission |
+                <div class="text-3xl font-bold text-error mb-1">{{ monthTotalCommission |
                     currency:'PLN':'symbol':'1.2-2' }}</div>
-                <div class="text-xs text-base-content/60">Koszt subskrypcji</div>
+                <div class="text-xs text-base-content/50">Koszt subskrypcji</div>
             </div>
         </div>
     </div>
@@ -209,11 +208,24 @@
 
         @if(topEmployee) {
         <div
-            class="bg-gradient-to-r from-secondary/10 to-transparent p-6 rounded-2xl border border-secondary/20 mb-6 flex items-center justify-between">
-            <div>
-                <div class="text-xs font-bold text-secondary uppercase tracking-wider mb-1">Pracownik Miesiąca</div>
-                <h3 class="text-3xl font-bold text-base-content">{{ topEmployee.fullName }}</h3>
-                <p class="text-base-content/70 mt-1">Najwyższy przychód w wybranym okresie.</p>
+            class="bg-gradient-to-r from-secondary/10 to-transparent p-6 rounded-2xl border border-secondary/20 mb-6 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+            <div class="flex items-center gap-4">
+                <div class="avatar">
+                    @if(topEmployee.photoUrl) {
+                        <div class="w-16 h-16 rounded-full ring ring-secondary/20 ring-offset-base-100 ring-offset-2">
+                            <img [src]="topEmployee.photoUrl" alt="{{ topEmployee.fullName }}" />
+                        </div>
+                    } @else {
+                        <div class="w-16 h-16 rounded-full bg-secondary/10 text-secondary flex items-center justify-center placeholder ring ring-secondary/20 ring-offset-base-100 ring-offset-2">
+                            <span class="text-xl font-bold">{{ topEmployee.fullName.charAt(0) }}</span>
+                        </div>
+                    }
+                </div>
+                <div>
+                    <div class="text-xs font-bold text-secondary uppercase tracking-wider mb-1">Pracownik Miesiąca</div>
+                    <h3 class="text-2xl md:text-3xl font-bold text-base-content">{{ topEmployee.fullName }}</h3>
+                    <p class="text-base-content/70 mt-1 text-sm md:text-base">Najwyższy przychód w wybranym okresie.</p>
+                </div>
             </div>
             <div class="text-right">
                 <div class="text-3xl font-bold text-success">{{ topEmployee.totalRevenue |
@@ -223,60 +235,114 @@
         </div>
         }
 
-        <div class="card bg-base-100 border border-base-200 shadow-sm rounded-xl overflow-hidden">
-            @if(isLoadingPerformance) {
-            <div class="flex justify-center p-12"><span class="loading loading-spinner text-primary"></span></div>
-            } @else {
-            <div class="overflow-x-auto">
-                <table class="table table-zebra table-md w-full">
-                    <thead class="bg-base-200/50 text-base-content/70 uppercase text-xs">
-                        <tr>
-                            <th class="pl-6">Pracownik</th>
-                            <th>Wygenerowany Przychód</th>
-                            <th>Prowizja (Pracownika)</th>
-                            <th>Wizyty (Total / OK)</th>
-                            <th class="pr-6 text-right">Śr. Ocena</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm">
-                        @for(perf of employeePerformance; track perf.employeeId) {
-                        <tr class="hover:bg-base-200/30 transition-colors">
-                            <td class="pl-6 font-semibold text-base-content">{{ perf.fullName }}</td>
-                            <td class="font-mono text-success">{{ perf.totalRevenue | currency:'PLN':'symbol':'1.2-2' }}
-                            </td>
-                            <td class="font-mono opacity-80">{{ perf.commission | currency:'PLN':'symbol':'1.2-2' }}
-                            </td>
-                            <td>
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold">{{ perf.completedAppointments }}</span>
-                                    <span class="text-xs opacity-50">/ {{ perf.totalAppointments }}</span>
-                                </div>
-                            </td>
-                            <td class="pr-6 text-right">
-                                <div
-                                    class="inline-flex items-center gap-1 px-2 py-1 rounded bg-warning/10 text-warning-content font-bold">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                        class="w-3.5 h-3.5 text-warning">
-                                        <path fill-rule="evenodd"
-                                            d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                    {{ perf.averageRating | number:'1.1-1' }}
-                                </div>
-                            </td>
-                        </tr>
-                        } @empty {
-                        <tr>
-                            <td colspan="5" class="text-center text-base-content/50 py-8">
-                                Brak danych o wydajności pracowników w wybranym okresie.
-                            </td>
-                        </tr>
-                        }
-                    </tbody>
-                </table>
+        @if(isLoadingPerformance) {
+        <div class="flex justify-center p-12"><span class="loading loading-spinner text-primary"></span></div>
+        } @else if(employeePerformance.length > 0) {
+
+        <div class="relative w-full max-w-md mx-auto">
+            @if(employeePerformance.length > 1) {
+            <div class="absolute inset-y-0 -left-4 md:-left-12 flex items-center z-10">
+                <button class="btn btn-circle btn-sm bg-base-100 shadow-sm border border-base-200 hover:bg-base-200"
+                    (click)="prevPerformance()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                </button>
+            </div>
+            <div class="absolute inset-y-0 -right-4 md:-right-12 flex items-center z-10">
+                <button class="btn btn-circle btn-sm bg-base-100 shadow-sm border border-base-200 hover:bg-base-200"
+                    (click)="nextPerformance()">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                </button>
             </div>
             }
+
+            <div
+                class="card bg-base-100 border border-base-200 shadow-sm rounded-xl p-6 ring-1 ring-base-200/50 hover:shadow-md transition-shadow relative overflow-hidden group">
+                <div
+                    class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/5 to-transparent rounded-bl-full -z-10 group-hover:from-primary/10 transition-colors">
+                </div>
+
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="avatar">
+                        @if(employeePerformance[currentPerformanceIndex].photoUrl) {
+                            <div class="w-12 h-12 rounded-full ring ring-primary/20 ring-offset-base-100 ring-offset-2 shadow-sm">
+                                <img [src]="employeePerformance[currentPerformanceIndex].photoUrl" alt="Avatar" class="object-cover" />
+                            </div>
+                        } @else {
+                            <div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center placeholder ring ring-primary/20 ring-offset-base-100 ring-offset-2 shadow-sm">
+                                <span class="text-lg font-bold">{{ employeePerformance[currentPerformanceIndex].fullName.charAt(0) }}</span>
+                            </div>
+                        }
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-base-content leading-tight line-clamp-1">{{
+                            employeePerformance[currentPerformanceIndex].fullName }}</h3>
+                        <p class="text-xs text-base-content/50 uppercase tracking-widest font-semibold mt-0.5">Wydajność
+                            Pracy</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center text-sm border-b border-base-200/50 pb-3">
+                        <span class="text-base-content/60">Wygenerowany Przychód</span>
+                        <span class="font-mono text-lg font-bold text-success">{{
+                            employeePerformance[currentPerformanceIndex].totalRevenue | currency:'PLN':'symbol':'1.2-2'
+                            }}</span>
+                    </div>
+
+                    <div class="flex justify-between items-center text-sm border-b border-base-200/50 pb-3">
+                        <span class="text-base-content/60">Prowizja (Pracownika)</span>
+                        <span class="font-mono text-base font-semibold opacity-80">{{
+                            employeePerformance[currentPerformanceIndex].commission | currency:'PLN':'symbol':'1.2-2'
+                            }}</span>
+                    </div>
+
+                    <div class="flex justify-between items-center text-sm border-b border-base-200/50 pb-3">
+                        <span class="text-base-content/60">Wizyty (Zrealizowane)</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-bold text-base">{{
+                                employeePerformance[currentPerformanceIndex].completedAppointments }}</span>
+                            <span class="text-xs opacity-50">/ {{
+                                employeePerformance[currentPerformanceIndex].totalAppointments }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center text-sm pt-1">
+                        <span class="text-base-content/60">Średnia Ocena Klientów</span>
+                        <div
+                            class="inline-flex items-center gap-1.5 font-bold text-base px-2 py-0.5 rounded-lg bg-warning/10 text-warning-content">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                class="w-4 h-4 text-warning">
+                                <path fill-rule="evenodd"
+                                    d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            {{ employeePerformance[currentPerformanceIndex].averageRating | number:'1.1-1' }}
+                        </div>
+                    </div>
+                </div>
+
+                @if(employeePerformance.length > 1) {
+                <div class="flex justify-center gap-1.5 mt-6">
+                    @for(perf of employeePerformance; track perf.employeeId; let i = $index) {
+                    <div class="w-2 h-2 rounded-full transition-all duration-300"
+                        [class.bg-primary]="i === currentPerformanceIndex" [class.w-4]="i === currentPerformanceIndex"
+                        [class.bg-base-300]="i !== currentPerformanceIndex"></div>
+                    }
+                </div>
+                }
+            </div>
         </div>
+        } @else {
+        <div class="text-center text-base-content/50 py-12 bg-base-100 border border-base-200 rounded-xl shadow-sm">
+            Brak danych o wydajności pracowników w wybranym okresie.
+        </div>
+        }
     </div>
 
     <div class="space-y-4 pt-8 border-t border-base-200">
@@ -288,7 +354,36 @@
             Szczegółowe Raporty Dzienne
         </h2>
 
-        <div class="card bg-base-100 border border-base-200 shadow-sm rounded-xl overflow-hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:hidden">
+            @for(report of reports; track report.reportDate) {
+            <div class="card bg-base-100 border border-base-200 shadow-sm p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="font-mono font-semibold text-primary">{{ report.reportDate | date:'dd.MM.yyyy' }}</span>
+                    <span class="text-xs font-medium bg-base-200/80 px-2 py-1 rounded-md">{{ report.completedAppointments }} wizyt</span>
+                </div>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between items-center border-b border-base-200 border-dashed pb-2">
+                        <span class="text-base-content/60">Suma Przychodu</span>
+                        <span class="font-bold text-success text-base">{{ report.totalRevenue | currency:'PLN':'symbol':'1.2-2' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-base-content/60">Gotówka</span>
+                        <span>{{ report.cashRevenue | currency:'PLN':'symbol':'1.0-0' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-base-content/60">Karta/Online</span>
+                        <span>{{ report.cardRevenue + report.onlineRevenue | currency:'PLN':'symbol':'1.0-0' }}</span>
+                    </div>
+                </div>
+            </div>
+            } @empty {
+            <div class="col-span-full text-center text-base-content/50 py-8 bg-base-100 border border-base-200 rounded-xl shadow-sm">
+                Brak danych w wybranym okresie.
+            </div>
+            }
+        </div>
+
+        <div class="hidden lg:block card bg-base-100 border border-base-200 shadow-sm rounded-xl overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="table table-zebra table-md w-full">
                     <thead class="bg-base-200/50 text-base-content/70 uppercase text-xs">

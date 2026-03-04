@@ -4,8 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HRService } from '../../../../core/services/hr-service';
 import { FinanceService } from '../../../../core/services/finance-service';
 import { ToastrService } from 'ngx-toastr';
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
 
 interface MonthSlot {
   month: number;
@@ -27,7 +25,6 @@ export class MonthlySummaryComponent implements OnInit {
   @Input() businessId!: number;
 
   private hrService = inject(HRService);
-  private financeService = inject(FinanceService);
   private toastr = inject(ToastrService);
 
   today = new Date();
@@ -39,13 +36,11 @@ export class MonthlySummaryComponent implements OnInit {
 
   totalRevenue = 0;
   totalEmployerCost = 0;
-  reportsCount = 0;
-  payrollsCount = 0;
 
   history: MonthSlot[] = [];
 
   get netResult(): number { return this.totalRevenue - this.totalEmployerCost; }
-  get noData(): boolean { return this.reportsCount === 0 && this.payrollsCount === 0 && !this.isRefreshing; }
+  get noData(): boolean { return this.totalRevenue === 0 && this.totalEmployerCost === 0 && !this.isRefreshing; }
 
   monthLabels = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
   monthLabelsFull = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
@@ -71,56 +66,29 @@ export class MonthlySummaryComponent implements OnInit {
       this.isLoading = true;
     }
 
-    const slots: { month: number; year: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(this.selectedYear, this.selectedMonth - 1 - i, 1);
-      slots.push({ month: d.getMonth() + 1, year: d.getFullYear() });
-    }
-
-    const slotRequests = slots.map(({ month, year }) =>
-      forkJoin({
-        reports: this.financeService.getReports(this.businessId, month, year).pipe(catchError(() => of([]))),
-        payrolls: this.hrService.getPayrolls(this.businessId, month, year).pipe(catchError(() => of([]))),
-      }).pipe(
-        map(({ reports, payrolls }) => ({
-          month, year,
-          shortLabel: this.monthLabels[month - 1],
-          revenue: reports.reduce((s, r) => s + (r.totalRevenue ?? 0), 0),
-          employerCost: payrolls
-            .filter(p => (p.totalEmployerCost ?? 0) > 0)
-            .reduce((s, p) => s + p.totalEmployerCost, 0),
-          revenueRatio: 0,
-          costRatio: 0,
-        }))
-      )
-    );
-
-    forkJoin(slotRequests).subscribe({
+    this.hrService.getMonthlySummary(this.businessId, this.selectedMonth, this.selectedYear, 6).subscribe({
       next: (results) => {
         const maxRev  = Math.max(...results.map(r => r.revenue), 1);
         const maxCost = Math.max(...results.map(r => r.employerCost), 1);
+        
         this.history = results.map(r => ({
-          ...r,
-          revenueRatio: r.revenue     / maxRev,
-          costRatio:    r.employerCost / maxCost,
+          month: r.month,
+          year: r.year,
+          shortLabel: this.monthLabels[r.month - 1],
+          revenue: r.revenue,
+          employerCost: r.employerCost,
+          revenueRatio: r.revenue / maxRev,
+          costRatio: r.employerCost / maxCost
         }));
 
-        const current = results[results.length - 1];
-        this.totalRevenue      = current.revenue;
-        this.totalEmployerCost = current.employerCost;
+        const current = this.history[this.history.length - 1];
+        if (current) {
+          this.totalRevenue = current.revenue;
+          this.totalEmployerCost = current.employerCost;
+        }
 
-        this.reportsCount  = 0; 
-        this.payrollsCount = 0;
-
-        forkJoin({
-          reports:  this.financeService.getReports(this.businessId, this.selectedMonth, this.selectedYear).pipe(catchError(() => of([]))),
-          payrolls: this.hrService.getPayrolls(this.businessId, this.selectedMonth, this.selectedYear).pipe(catchError(() => of([]))),
-        }).subscribe(({ reports, payrolls }) => {
-          this.reportsCount  = reports.length;
-          this.payrollsCount = payrolls.filter(p => (p.totalEmployerCost ?? 0) > 0).length;
-          this.isLoading     = false;
-          this.isRefreshing  = false;
-        });
+        this.isLoading = false;
+        this.isRefreshing = false;
       },
       error: () => {
         this.toastr.error('Błąd ładowania podsumowania.');

@@ -10,6 +10,7 @@ namespace BookLocal.API.DTOs
         public string Type { get; set; }
         public decimal Value { get; set; }
         public int? MaxUses { get; set; }
+        public int? MaxUsesPerCustomer { get; set; }
         public int UsedCount { get; set; }
         public DateOnly? ValidFrom { get; set; }
         public DateOnly? ValidTo { get; set; }
@@ -31,6 +32,7 @@ namespace BookLocal.API.DTOs
         public decimal Value { get; set; }
 
         public int? MaxUses { get; set; }
+        public int? MaxUsesPerCustomer { get; set; }
         public DateOnly? ValidFrom { get; set; }
         public DateOnly? ValidTo { get; set; }
         public int? ServiceId { get; set; }
@@ -40,6 +42,7 @@ namespace BookLocal.API.DTOs
     {
         public string Code { get; set; }
         public int? ServiceId { get; set; }
+        public string? CustomerId { get; set; }
         public decimal OriginalPrice { get; set; }
     }
 

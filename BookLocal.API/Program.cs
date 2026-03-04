@@ -102,6 +102,7 @@ namespace BookLocal.API
             builder.Services.AddSingleton<PresenceTracker>();
             builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
             builder.Services.AddScoped<IPhotoService, PhotoService>();
+            builder.Services.AddScoped<ILazyStateService, LazyStateService>();
 
             builder.Services.AddSignalR();
 

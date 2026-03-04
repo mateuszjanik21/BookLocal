@@ -2,9 +2,9 @@ import { Component, OnInit, ViewEncapsulation, inject, HostListener } from '@ang
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { CalendarEvent, CalendarModule, CalendarView } from 'angular-calendar';
+import { CalendarEvent, CalendarModule, CalendarView, DateAdapter, CalendarUtils, CalendarA11y, CalendarDateFormatter, CalendarEventTitleFormatter } from 'angular-calendar';
+import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 import { finalize } from 'rxjs';
-
 import { ReservationService } from '../../../core/services/reservation';
 import { Reservation } from '../../../types/reservation.model';
 import { Employee } from '../../../types/business.model';
@@ -21,7 +21,14 @@ import { AddReservationOwnerModalComponent } from '../../../shared/components/ad
   ],
   templateUrl: './manage-reservations.html',
   styleUrl: './manage-reservations.css',
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
+  providers: [
+    { provide: DateAdapter, useFactory: adapterFactory },
+    CalendarUtils,
+    CalendarA11y,
+    CalendarDateFormatter,
+    CalendarEventTitleFormatter
+  ]
 })
 export class ManageReservationsComponent implements OnInit {
   private reservationService = inject(ReservationService);

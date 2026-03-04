@@ -42,6 +42,10 @@ export class ReservationService {
     return this.http.get<Reservation>(`${this.apiUrl}/reservations/${id}`);
   }
 
+  getAdjacentReservations(id: number): Observable<{ previousId: number | null, nextId: number | null }> {
+    return this.http.get<{ previousId: number | null, nextId: number | null }>(`${this.apiUrl}/reservations/${id}/adjacent`);
+  }
+
   updateReservationStatus(id: number, status: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/reservations/${id}/status`, { status });
   }

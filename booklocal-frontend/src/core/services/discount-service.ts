@@ -9,6 +9,7 @@ export interface Discount {
   type: 'Percentage' | 'FixedAmount';
   value: number;
   maxUses?: number;
+  maxUsesPerCustomer?: number;
   usedCount: number;
   validFrom?: string;
   validTo?: string;
@@ -21,6 +22,7 @@ export interface CreateDiscountDto {
   type: number;
   value: number;
   maxUses?: number;
+  maxUsesPerCustomer?: number;
   validFrom?: string;
   validTo?: string;
   serviceId?: number;
@@ -29,6 +31,7 @@ export interface CreateDiscountDto {
 export interface VerifyDiscountRequest {
     code: string;
     serviceId?: number;
+    customerId?: string;
     originalPrice: number;
 }
 

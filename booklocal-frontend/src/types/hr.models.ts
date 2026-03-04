@@ -53,3 +53,10 @@ export interface GeneratePayrollRequest {
   year: number;
   day?: number;
 }
+
+export interface HrMonthlySummary {
+  month: number;
+  year: number;
+  revenue: number;
+  employerCost: number;
+}

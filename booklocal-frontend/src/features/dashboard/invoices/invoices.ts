@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { InvoiceDto, InvoiceService } from '../../../core/services/invoice-service';
 import { BusinessService } from '../../../core/services/business-service';
 import { ToastrService } from 'ngx-toastr';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-invoices-list',
@@ -63,6 +61,9 @@ export class InvoicesListComponent implements OnInit {
   }
 
   async downloadPdf(invoice: InvoiceDto): Promise<void> {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+
     const doc = new jsPDF();
 
     try {

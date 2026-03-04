@@ -20,8 +20,8 @@ export class PayrollGeneratorComponent implements OnInit {
   private hrService = inject(HRService);
   private toastr = inject(ToastrService);
 
+  @Input() employees: Employee[] = [];
   payrolls: EmployeePayroll[] = [];
-  employees: Employee[] = [];
   isLoading = false;
   isGenerating = false;
   isDeleting: { [id: number]: boolean } = {};
@@ -60,13 +60,8 @@ export class PayrollGeneratorComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.businessId) {
-      this.loadEmployees();
       this.loadPayrolls();
     }
-  }
-
-  loadEmployees() {
-    this.hrService.getEmployeesForHr(this.businessId).subscribe(data => this.employees = data);
   }
 
   loadPayrolls() {

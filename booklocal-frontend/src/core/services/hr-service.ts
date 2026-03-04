@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { EmploymentContract, EmploymentContractUpsert, EmployeePayroll, GeneratePayrollRequest } from '../../types/hr.models';
+import { EmploymentContract, EmploymentContractUpsert, EmployeePayroll, GeneratePayrollRequest, HrMonthlySummary } from '../../types/hr.models';
 import { Employee } from '../../types/business.model';
 
 @Injectable({
@@ -34,6 +34,14 @@ export class HRService {
     if (month) params = params.set('month', month);
     if (year) params = params.set('year', year);
     return this.http.get<EmployeePayroll[]>(`${this.apiUrl}/businesses/${businessId}/hr/payrolls`, { params });
+  }
+
+  getMonthlySummary(businessId: number, endMonth: number, endYear: number, count: number = 6): Observable<HrMonthlySummary[]> {
+    let params = new HttpParams()
+      .set('endMonth', endMonth)
+      .set('endYear', endYear)
+      .set('count', count);
+    return this.http.get<HrMonthlySummary[]>(`${this.apiUrl}/businesses/${businessId}/hr/monthly-summary`, { params });
   }
 
   generatePayroll(businessId: number, payload: GeneratePayrollRequest): Observable<EmployeePayroll> {

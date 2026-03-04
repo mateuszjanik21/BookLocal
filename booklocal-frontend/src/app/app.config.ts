@@ -6,8 +6,6 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { tokenInterceptor } from '../core/interceptors/token-interceptor';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
-import { CalendarModule, DateAdapter } from 'angular-calendar';
-import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
 import { registerLocaleData } from '@angular/common';
 import localePl from '@angular/common/locales/pl';
@@ -28,10 +26,7 @@ export const appConfig: ApplicationConfig = {
       progressBar: true,
     }),
 
-    importProvidersFrom(CalendarModule.forRoot({
-      provide: DateAdapter,
-      useFactory: adapterFactory
-    })),
+
 
     { provide: LOCALE_ID, useValue: 'pl-PL' }
   ]

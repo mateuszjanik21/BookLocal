@@ -1,9 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Discount, DiscountService } from '../../../../core/services/discount-service';
 import { BusinessService } from '../../../../core/services/business-service';
 import { ToastrService } from 'ngx-toastr';
-import { Discount, DiscountService } from '../../../../core/services/discount-service';
 
 @Component({
   selector: 'app-discount-manager',
@@ -22,11 +22,20 @@ export class DiscountManagerComponent implements OnInit {
   isLoading = false;
   isCreating = false;
 
+  get totalDiscounts(): number { return this.discounts.length; }
+  get activeDiscounts(): number { return this.discounts.filter(d => d.isActive).length; }
+  get totalUses(): number { return this.discounts.reduce((sum, d) => sum + d.usedCount, 0); }
+  get topDiscount(): Discount | null {
+      if (this.discounts.length === 0) return null;
+      return [...this.discounts].sort((a, b) => b.usedCount - a.usedCount)[0];
+  }
+
   discountForm = this.fb.group({
     code: ['', [Validators.required, Validators.minLength(3)]],
     type: [0, [Validators.required]],
     value: [10, [Validators.required, Validators.min(0.01)]],
     maxUses: [null as number | null],
+    maxUsesPerCustomer: [null as number | null],
     validFrom: [null as string | null],
     validTo: [null as string | null]
   });
@@ -72,6 +81,7 @@ export class DiscountManagerComponent implements OnInit {
         type: Number(formVal.type),
         value: formVal.value!,
         maxUses: formVal.maxUses ? formVal.maxUses : undefined,
+        maxUsesPerCustomer: formVal.maxUsesPerCustomer ? formVal.maxUsesPerCustomer : undefined,
         validFrom: formVal.validFrom ? formVal.validFrom : undefined,
         validTo: formVal.validTo ? formVal.validTo : undefined
     };
@@ -99,5 +109,18 @@ export class DiscountManagerComponent implements OnInit {
           },
           error: () => this.toastr.error('Wystąpił błąd.')
       });
+  }
+
+  copyCode(code: string) {
+      navigator.clipboard.writeText(code).then(() => {
+          this.toastr.success(`Skopiowano kod ${code}`);
+      }).catch(() => {
+          this.toastr.error('Nie udało się skopiować kodu.');
+      });
+  }
+
+  getProgress(discount: Discount): number {
+      if (!discount.maxUses) return 0;
+      return Math.min(100, Math.round((discount.usedCount / discount.maxUses) * 100));
   }
 }

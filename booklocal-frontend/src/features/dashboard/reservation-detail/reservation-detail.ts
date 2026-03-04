@@ -35,13 +35,44 @@ export class ReservationDetailComponent implements OnInit {
   isGeneratingInvoice = false;
   isAddingPayment = false;
 
+  previousReservationId: number | null = null;
+  nextReservationId: number | null = null;
+
   statuses = ['Confirmed', 'Completed', 'Cancelled'];
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadReservation(+id);
-    }
+    this.route.paramMap.subscribe(params => {
+        const id = params.get('id');
+        if (id) {
+            this.loadReservation(+id);
+            this.loadAdjacentReservations(+id);
+        }
+    });
+  }
+
+  loadAdjacentReservations(id: number): void {
+      this.reservationService.getAdjacentReservations(id).subscribe({
+          next: (res) => {
+              this.previousReservationId = res.previousId;
+              this.nextReservationId = res.nextId;
+          },
+          error: () => {
+              this.previousReservationId = null;
+              this.nextReservationId = null;
+          }
+      });
+  }
+
+  goToPrevious(): void {
+      if (this.previousReservationId) {
+          this.router.navigate(['/dashboard/reservations', this.previousReservationId]);
+      }
+  }
+
+  goToNext(): void {
+      if (this.nextReservationId) {
+          this.router.navigate(['/dashboard/reservations', this.nextReservationId]);
+      }
   }
 
   loadReservation(id: number): void {

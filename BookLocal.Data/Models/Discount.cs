@@ -37,5 +37,6 @@ namespace BookLocal.Data.Models
         public bool IsActive { get; set; } = true;
 
         public int? ServiceId { get; set; }
+        public int? MaxUsesPerCustomer { get; set; }
     }
 }

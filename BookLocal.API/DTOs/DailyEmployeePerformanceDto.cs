@@ -11,5 +11,6 @@
         public decimal TotalRevenue { get; set; }
         public decimal Commission { get; set; }
         public double AverageRating { get; set; }
+        public string? PhotoUrl { get; set; }
     }
 }

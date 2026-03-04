@@ -300,7 +300,8 @@ namespace BookLocal.API.Controllers
                     CancelledAppointments = cancelled.Count,
                     TotalRevenue = revenue,
                     Commission = commission,
-                    AverageRating = rating
+                    AverageRating = rating,
+                    PhotoUrl = emp.PhotoUrl
                 });
             }
 

@@ -21,8 +21,8 @@ export class EmploymentContractManagerComponent implements OnInit {
   private hrService      = inject(HRService);
   private toastr         = inject(ToastrService);
 
+  @Input() employees: Employee[] = [];
   allContracts: EmploymentContract[] = [];
-  employees:    Employee[]           = [];
   isLoading     = false;
   isArchiving   = false;
   showArchived  = false;
@@ -62,9 +62,6 @@ export class EmploymentContractManagerComponent implements OnInit {
     this.hrService.getContracts(this.businessId).subscribe({
       next: (data) => { this.allContracts = data; this.isLoading = false; },
       error: () => { this.toastr.error('Błąd ładowania umów.'); this.isLoading = false; }
-    });
-    this.hrService.getEmployeesForHr(this.businessId).subscribe({
-      next: (data) => this.employees = data,
     });
   }
 
