@@ -207,7 +207,7 @@ namespace BookLocal.Data.Migrations
             ";
             migrationBuilder.Sql(proc5);
 
-            // PROC 6: GetLatestReviews (Bez zmian - tutaj nie ma statusu)
+            // PROC 6: GetLatestReviews
             var proc6 = @"
             CREATE OR ALTER PROCEDURE [dbo].[GetLatestReviews] @OwnerId NVARCHAR(450)
             AS
@@ -261,14 +261,13 @@ namespace BookLocal.Data.Migrations
                 LEFT JOIN AspNetUsers u ON r.CustomerId = u.Id
                 LEFT JOIN Reviews rev ON r.ReservationId = rev.ReservationId
                 WHERE b.OwnerId = @OwnerId
-                  AND r.StartTime < @EndDate
-                  AND r.EndTime > @StartDate
+                    AND r.StartTime < @EndDate
+                    AND r.EndTime > @StartDate
             END
             ";
             migrationBuilder.Sql(proc7);
 
             // PROC 8: GetTodaysReservations
-            // TUTAJ BYŁ GŁÓWNY BŁĄD. Zmieniamy 'Status != 1' z powrotem na 'Status != ''Cancelled'''
             var proc8 = @"
             CREATE OR ALTER PROCEDURE [dbo].[GetTodaysReservations] @OwnerId NVARCHAR(450)
             AS

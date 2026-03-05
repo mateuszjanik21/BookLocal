@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -10,6 +10,8 @@ export interface InvoiceDto {
   saleDate: string;
   customerName: string;
   customerNip?: string;
+  totalNet: number;
+  totalTax: number;
   totalGross: number;
   paymentMethod: number;
   items: InvoiceItemDto[];
@@ -24,6 +26,14 @@ export interface InvoiceItemDto {
   grossValue: number;
 }
 
+export interface PagedResult<T> {
+  items: T[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -35,15 +45,18 @@ export class InvoiceService {
     return this.http.post<InvoiceDto>(`${this.apiUrl}/businesses/${businessId}/invoices/generate`, { reservationId });
   }
 
-  getInvoices(businessId: number, page: number = 1, pageSize: number = 10): Observable<PagedResult<InvoiceDto>> {
-    return this.http.get<PagedResult<InvoiceDto>>(`${this.apiUrl}/businesses/${businessId}/invoices?page=${page}&pageSize=${pageSize}`);
-  }
-}
+  getInvoices(businessId: number, page: number = 1, pageSize: number = 15, search?: string, month?: string): Observable<PagedResult<InvoiceDto>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('pageSize', pageSize.toString());
 
-export interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
+    if (search) {
+      params = params.set('search', search);
+    }
+    if (month) {
+      params = params.set('month', month);
+    }
+
+    return this.http.get<PagedResult<InvoiceDto>>(`${this.apiUrl}/businesses/${businessId}/invoices`, { params });
+  }
 }

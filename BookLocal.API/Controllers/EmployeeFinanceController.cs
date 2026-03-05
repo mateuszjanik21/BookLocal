@@ -261,7 +261,7 @@ namespace BookLocal.API.Controllers
 
             if (existingPayroll != null)
             {
-                return BadRequest("Płaca za ten miesiąc została już wygenerowana.");
+                return NoContent();
             }
 
             var serverNow = DateTime.Now;
@@ -330,7 +330,7 @@ namespace BookLocal.API.Controllers
             decimal commissionPercentage = employee.FinanceSettings?.CommissionPercentage ?? 0m;
             decimal commissionComponent = Math.Round(totalRevenue * (commissionPercentage / 100m), 2);
 
-            decimal totalGross = commissionComponent;
+            decimal totalGross = 0;
             decimal totalNet = 0;
             decimal totalEmployerCost = 0;
             decimal totalSocialSecurity = 0;
@@ -356,6 +356,12 @@ namespace BookLocal.API.Controllers
                 if (activeDays <= 0) continue;
 
                 decimal contractGross = Math.Round(c.BaseSalary * (activeDays / (decimal)totalDaysInMonth), 2);
+
+                if (c == contracts.First())
+                {
+                    contractGross += commissionComponent; 
+                }
+
                 totalGross += contractGross;
 
                 decimal contractNet = 0;

@@ -42,20 +42,31 @@
           <h2 class="text-xl font-bold text-base-content capitalize order-first xl:order-none">
             {{ viewTitle }}
           </h2>
-          
-          <div class="hidden md:flex join shadow-sm">
-            <button class="join-item btn btn-sm" 
-                    [class.btn-primary]="view === CalendarView.Month" 
-                    [class.btn-ghost]="view !== CalendarView.Month"
-                    (click)="setView(CalendarView.Month)">Miesiąc</button>
-            <button class="join-item btn btn-sm" 
-                    [class.btn-primary]="view === CalendarView.Week" 
-                    [class.btn-ghost]="view !== CalendarView.Week"
-                    (click)="setView(CalendarView.Week)">Tydzień</button>
-            <button class="join-item btn btn-sm" 
-                    [class.btn-primary]="view === CalendarView.Day" 
-                    [class.btn-ghost]="view !== CalendarView.Day"
-                    (click)="setView(CalendarView.Day)">Dzień</button>
+
+          <div class="flex flex-col sm:flex-row items-center gap-4">
+            <select class="select select-bordered select-sm w-full sm:w-auto" 
+                    [(ngModel)]="selectedEmployeeId"
+                    (ngModelChange)="loadReservations()">
+              <option [ngValue]="undefined">Wszyscy pracownicy</option>
+              @for (emp of employees; track emp.id) {
+                <option [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+              }
+            </select>
+            
+            <div class="hidden md:flex join shadow-sm">
+              <button class="join-item btn btn-sm" 
+                      [class.btn-primary]="view === CalendarView.Month" 
+                      [class.btn-ghost]="view !== CalendarView.Month"
+                      (click)="setView(CalendarView.Month)">Miesiąc</button>
+              <button class="join-item btn btn-sm" 
+                      [class.btn-primary]="view === CalendarView.Week" 
+                      [class.btn-ghost]="view !== CalendarView.Week"
+                      (click)="setView(CalendarView.Week)">Tydzień</button>
+              <button class="join-item btn btn-sm" 
+                      [class.btn-primary]="view === CalendarView.Day" 
+                      [class.btn-ghost]="view !== CalendarView.Day"
+                      (click)="setView(CalendarView.Day)">Dzień</button>
+            </div>
           </div>
           
           <div class="md:hidden badge badge-ghost font-mono text-xs">

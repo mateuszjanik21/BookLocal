@@ -104,9 +104,13 @@ export class PayrollGeneratorComponent implements OnInit {
     .pipe(finalize(() => this.isGenerating = false))
     .subscribe({
       next: (results) => {
-        const generatedCount = results.filter(r => r !== null).length;
+        const generatedCount = results.filter(r => r && !r.isError).length;
+        const errors = results.filter(r => r && r.isError);
+
         if (generatedCount > 0) {
           this.toastr.success(`Wygenerowano ${generatedCount} nowych list płac za ${this.filterMonth}/${this.filterYear}!`);
+        } else if (errors.length > 0) {
+           errors.forEach(e => this.toastr.error(e.message || 'Wystąpił błąd podczas generowania płacy.'));
         } else {
           this.toastr.info(`Wszystkie możliwe płace za ten miesiąc zostały już wygenerowane.`);
         }

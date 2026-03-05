@@ -31,10 +31,15 @@ export class ReservationService {
     return this.http.get<PagedResult<Reservation>>(`${this.apiUrl}/reservations/my-reservations`, { params });
   }
 
-  getCalendarEvents(start: string, end: string): Observable<Reservation[]> {
-    const params = new HttpParams()
+  getCalendarEvents(start: string, end: string, employeeId?: number): Observable<Reservation[]> {
+    let params = new HttpParams()
       .set('start', start)
       .set('end', end);
+
+    if (employeeId) {
+      params = params.set('employeeId', employeeId.toString());
+    }
+
     return this.http.get<Reservation[]>(`${this.apiUrl}/reservations/calendar`, { params });
   }
 

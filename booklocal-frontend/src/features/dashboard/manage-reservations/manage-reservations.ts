@@ -9,6 +9,9 @@ import { ReservationService } from '../../../core/services/reservation';
 import { Reservation } from '../../../types/reservation.model';
 import { Employee } from '../../../types/business.model';
 import { AddReservationOwnerModalComponent } from '../../../shared/components/add-reservation-owner-modal/add-reservation-owner-modal';
+import { EmployeeService } from '../../../core/services/employee-service';
+import { BusinessService } from '../../../core/services/business-service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-manage-reservations',
@@ -16,6 +19,7 @@ import { AddReservationOwnerModalComponent } from '../../../shared/components/ad
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     CalendarModule,
     AddReservationOwnerModalComponent
   ],
@@ -44,6 +48,13 @@ export class ManageReservationsComponent implements OnInit {
 
   isAddModalVisible = false;
   newReservationDetails: { date: Date, employee?: Employee } | null = null;
+
+  employees: Employee[] = [];
+  selectedEmployeeId: number | undefined;
+  businessId: number | undefined;
+
+  private employeeService = inject(EmployeeService);
+  private businessService = inject(BusinessService);
 
   get viewTitle(): string {
     const datePipe = new DatePipe('pl-PL');
@@ -101,7 +112,19 @@ export class ManageReservationsComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkScreenSize();
-    this.loadReservations();
+    
+    this.businessService.getMyBusiness().subscribe({
+      next: (business) => {
+        if (business) {
+          this.businessId = business.id;
+          this.employeeService.getEmployees(this.businessId!).subscribe(data => {
+            this.employees = data.filter(e => !e.isArchived);
+          });
+          this.loadReservations();
+        }
+      },
+      error: () => this.toastr.error('Nie udało się pobrać danych firmy.')
+    });
   }
 
   @HostListener('window:resize', ['$event'])
@@ -149,7 +172,7 @@ export class ManageReservationsComponent implements OnInit {
         return new Date(date.getTime() - offset).toISOString().slice(0, 19);
     };
 
-    this.reservationService.getCalendarEvents(toLocalISO(start), toLocalISO(end)).pipe(
+    this.reservationService.getCalendarEvents(toLocalISO(start), toLocalISO(end), this.selectedEmployeeId).pipe(
       finalize(() => this.isLoading = false)
     ).subscribe({
       next: (data) => {

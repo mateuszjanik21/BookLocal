@@ -34,7 +34,7 @@ namespace BookLocal.API.Controllers
                     "EXEC GetFinanceReport @BusinessId, @StartDate, @EndDate",
                     new Microsoft.Data.SqlClient.SqlParameter("@BusinessId", businessId),
                     new Microsoft.Data.SqlClient.SqlParameter("@StartDate", startDate.ToDateTime(TimeOnly.MinValue)),
-                    new Microsoft.Data.SqlClient.SqlParameter("@EndDate", endDate.ToDateTime(TimeOnly.MaxValue))
+                    new Microsoft.Data.SqlClient.SqlParameter("@EndDate", endDate.ToDateTime(TimeOnly.MinValue))
                 )
                 .ToListAsync();
 
@@ -104,7 +104,7 @@ namespace BookLocal.API.Controllers
             }
 
             var startOfDay = date.ToDateTime(TimeOnly.MinValue);
-            var endOfDay = date.ToDateTime(TimeOnly.MaxValue);
+            var endOfDay = date.ToDateTime(new TimeOnly(23, 59, 59));
 
             var reservations = await _context.Reservations
                 .Include(r => r.ServiceVariant)
@@ -122,7 +122,7 @@ namespace BookLocal.API.Controllers
 
             var activeSubscription = await _context.BusinessSubscriptions
                 .Include(s => s.Plan)
-                .Where(s => s.BusinessId == businessId && s.StartDate <= date.ToDateTime(TimeOnly.MaxValue) && s.EndDate >= date.ToDateTime(TimeOnly.MinValue))
+                .Where(s => s.BusinessId == businessId && s.StartDate <= date.ToDateTime(new TimeOnly(23, 59, 59)) && s.EndDate >= date.ToDateTime(TimeOnly.MinValue))
                 .OrderByDescending(s => s.SubscriptionId)
                 .FirstOrDefaultAsync();
 
@@ -229,12 +229,12 @@ namespace BookLocal.API.Controllers
             if (startDate.HasValue && endDate.HasValue)
             {
                 startDateTime = startDate.Value.ToDateTime(TimeOnly.MinValue);
-                endDateTime = endDate.Value.ToDateTime(TimeOnly.MaxValue);
+                endDateTime = endDate.Value.ToDateTime(new TimeOnly(23, 59, 59));
             }
             else if (date.HasValue)
             {
                 startDateTime = date.Value.ToDateTime(TimeOnly.MinValue);
-                endDateTime = date.Value.ToDateTime(TimeOnly.MaxValue);
+                endDateTime = date.Value.ToDateTime(new TimeOnly(23, 59, 59));
             }
             else
             {

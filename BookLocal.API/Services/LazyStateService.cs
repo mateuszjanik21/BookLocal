@@ -1,8 +1,5 @@
 ﻿using BookLocal.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace BookLocal.API.Services
 {
@@ -56,7 +53,7 @@ namespace BookLocal.API.Services
                                 LoyaltyPointId = existingPoints.LoyaltyId,
                                 PointsAmount = earnedPoints,
                                 Type = LoyaltyTransactionType.Earned,
-                                TransactionId = tr.ReservationId,
+                                ReservationId = tr.ReservationId,
                                 Description = "Automatyczne dodanie punktów za ukończoną wizytę",
                                 CreatedAt = now
                             });
@@ -80,7 +77,7 @@ namespace BookLocal.API.Services
                                 LoyaltyPointId = newLoyaltyPoint.LoyaltyId,
                                 PointsAmount = earnedPoints,
                                 Type = LoyaltyTransactionType.Earned,
-                                TransactionId = tr.ReservationId,
+                                ReservationId = tr.ReservationId,
                                 Description = "Automatyczne dodanie punktów za ukończoną wizytę (Pierwsza wizyta)",
                                 CreatedAt = now
                             });
@@ -121,7 +118,7 @@ namespace BookLocal.API.Services
                             LoyaltyPointId = existingPoints.LoyaltyId,
                             PointsAmount = earnedPoints,
                             Type = LoyaltyTransactionType.Earned,
-                            TransactionId = tr.ReservationId,
+                            ReservationId = tr.ReservationId,
                             Description = "Automatyczne dodanie punktów za ukończoną wizytę",
                             CreatedAt = now
                         });
@@ -145,7 +142,7 @@ namespace BookLocal.API.Services
                             LoyaltyPointId = newLoyaltyPoint.LoyaltyId,
                             PointsAmount = earnedPoints,
                             Type = LoyaltyTransactionType.Earned,
-                            TransactionId = tr.ReservationId,
+                            ReservationId = tr.ReservationId,
                             Description = "Automatyczne dodanie punktów za ukończoną wizytę (Pierwsza wizyta)",
                             CreatedAt = now
                         });

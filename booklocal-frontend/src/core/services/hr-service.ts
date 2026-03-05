@@ -48,10 +48,15 @@ export class HRService {
     return this.http.post<EmployeePayroll>(`${this.apiUrl}/businesses/${businessId}/hr/payrolls/generate`, payload);
   }
 
-  generatePayrollForAll(businessId: number, employeeIds: number[], month: number, year: number, day?: number): Observable<(EmployeePayroll | null)[]> {
+  generatePayrollForAll(businessId: number, employeeIds: number[], month: number, year: number, day?: number): Observable<any[]> {
     const requests = employeeIds.map(id =>
       this.generatePayroll(businessId, { employeeId: id, month, year, day }).pipe(
-        catchError(() => of(null))
+        catchError((err) => {
+          if (err.status === 400 && err.error) {
+              return of({ isError: true, message: err.error });
+          }
+          return of(null);
+        })
       )
     );
     return forkJoin(requests);

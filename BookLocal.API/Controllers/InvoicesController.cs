@@ -28,6 +28,7 @@ namespace BookLocal.API.Controllers
 
             var reservation = await _context.Reservations
                 .Include(r => r.ServiceVariant)
+                    .ThenInclude(sv => sv.Service)
                 .Include(r => r.Customer)
                 .FirstOrDefaultAsync(r => r.ReservationId == dto.ReservationId && r.BusinessId == businessId);
 
@@ -76,7 +77,7 @@ namespace BookLocal.API.Controllers
                 {
                     new InvoiceItem
                     {
-                        Name = reservation.ServiceVariant.Name,
+                        Name = $"{reservation.ServiceVariant.Service.Name} - {reservation.ServiceVariant.Name}",
                         Quantity = 1,
                         UnitPriceNet = netAmount,
                         VatRate = vatRate,
@@ -103,7 +104,9 @@ namespace BookLocal.API.Controllers
         public async Task<ActionResult<PagedResultDto<InvoiceDto>>> GetInvoices(
             int businessId,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
+            [FromQuery] int pageSize = 15,
+            [FromQuery] string? search = null,
+            [FromQuery] string? month = null)
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId))
@@ -113,6 +116,23 @@ namespace BookLocal.API.Controllers
                .Include(i => i.Items)
                .Include(i => i.Customer)
                .Where(i => i.BusinessId == businessId);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.Trim().ToLower();
+                query = query.Where(i => i.InvoiceNumber.ToLower().Contains(s)
+                    || (i.Customer.FirstName + " " + i.Customer.LastName).ToLower().Contains(s));
+            }
+
+            if (!string.IsNullOrWhiteSpace(month) && month.Length == 7)
+            {
+                if (int.TryParse(month.Substring(0, 4), out int year) && int.TryParse(month.Substring(5, 2), out int mon))
+                {
+                    var startOfMonth = new DateTime(year, mon, 1);
+                    var endOfMonth = startOfMonth.AddMonths(1);
+                    query = query.Where(i => i.IssueDate >= startOfMonth && i.IssueDate < endOfMonth);
+                }
+            }
 
             var totalCount = await query.CountAsync();
 
@@ -142,6 +162,8 @@ namespace BookLocal.API.Controllers
                 IssueDate = i.IssueDate,
                 SaleDate = i.SaleDate,
                 CustomerName = customerName,
+                TotalNet = i.TotalNet,
+                TotalTax = i.TotalTax,
                 TotalGross = i.TotalGross,
                 PaymentMethod = i.PaymentMethod,
                 Items = i.Items.Select(item => new InvoiceItemDto

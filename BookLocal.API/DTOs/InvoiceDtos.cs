@@ -1,4 +1,6 @@
 ﻿using BookLocal.Data.Models;
+using System;
+using System.Collections.Generic;
 
 namespace BookLocal.API.DTOs
 {
@@ -10,6 +12,8 @@ namespace BookLocal.API.DTOs
         public DateTime SaleDate { get; set; }
         public string CustomerName { get; set; }
         public string CustomerNip { get; set; }
+        public decimal TotalNet { get; set; }
+        public decimal TotalTax { get; set; }
         public decimal TotalGross { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public List<InvoiceItemDto> Items { get; set; }

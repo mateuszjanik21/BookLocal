@@ -230,7 +230,8 @@ namespace BookLocal.API.Controllers
         [Authorize(Roles = "owner")]
         public async Task<ActionResult<IEnumerable<ReservationDto>>> GetCalendarEvents(
             [FromQuery] DateTime? start,
-            [FromQuery] DateTime? end)
+            [FromQuery] DateTime? end,
+            [FromQuery] int? employeeId = null)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -245,6 +246,11 @@ namespace BookLocal.API.Controllers
                     new Microsoft.Data.SqlClient.SqlParameter("@EndDate", endDate)
                 )
                 .ToListAsync();
+
+            if (employeeId.HasValue)
+            {
+                sqlEvents = sqlEvents.Where(e => e.EmployeeId == employeeId.Value).ToList();
+            }
 
             var reservationDtos = sqlEvents.Select(r => new ReservationDto
             {
@@ -861,25 +867,6 @@ namespace BookLocal.API.Controllers
 
             _context.LoyaltyTransactions.Add(transaction);
             await _context.SaveChangesAsync();
-        }
-
-        [HttpGet("{id}/adjacent")]
-        [Authorize]
-        public async Task<ActionResult> GetAdjacentReservations(int id)
-        {
-            var current = await _context.Reservations.FindAsync(id);
-            if (current == null) return NotFound();
-            var prev = await _context.Reservations
-                .Where(r => r.BusinessId == current.BusinessId && r.StartTime < current.StartTime)
-                .OrderByDescending(r => r.StartTime)
-                .Select(r => r.ReservationId)
-                .FirstOrDefaultAsync();
-            var next = await _context.Reservations
-                .Where(r => r.BusinessId == current.BusinessId && r.StartTime > current.StartTime)
-                .OrderBy(r => r.StartTime)
-                .Select(r => r.ReservationId)
-                .FirstOrDefaultAsync();
-            return Ok(new { PreviousId = prev > 0 ? prev : (int?)null, NextId = next > 0 ? next : (int?)null });
         }
     }
 }

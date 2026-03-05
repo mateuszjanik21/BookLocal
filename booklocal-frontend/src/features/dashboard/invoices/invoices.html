@@ -1,48 +1,163 @@
-<div class="space-y-6">
-  <div class="flex justify-between items-center">
+<div class="p-4 sm:p-6 lg:p-8 bg-base-200/30 min-h-screen">
+<div class="max-w-6xl mx-auto space-y-6">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
     <div>
       <h2 class="text-2xl font-bold">Faktury</h2>
-      <p class="text-base-content/70">Historia wystawionych dokumentów sprzedaży</p>
+      <p class="text-base-content/60 text-sm">Historia wystawionych dokumentów sprzedaży</p>
     </div>
   </div>
 
-  @if(isLoading) {
+  @if (invoices.length > 0 || !isLoading) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="rounded-xl bg-primary/10 border border-primary/20 p-4">
+        <p class="text-xs uppercase font-semibold text-primary/70 tracking-wider mb-1">Łączna liczba faktur</p>
+        <p class="text-3xl font-bold text-primary">{{ totalCount }}</p>
+      </div>
+      <div class="rounded-xl bg-success/10 border border-success/20 p-4">
+        <p class="text-xs uppercase font-semibold text-success/70 tracking-wider mb-1">Suma brutto (ta strona)</p>
+        <p class="text-3xl font-bold text-success">{{ statsTotalGross | number:'1.0-0' }}<span class="text-lg font-normal"> zł</span></p>
+      </div>
+    </div>
+  }
+
+  <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+    <label class="input input-bordered input-md sm:input-sm flex items-center gap-2 flex-1 max-w-md">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 opacity-50">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+      </svg>
+      <input type="text" 
+             class="grow" 
+             placeholder="Szukaj po numerze lub kliencie..."
+             [(ngModel)]="searchQuery"
+             (input)="onSearchInput()" />
+    </label>
+
+    <input type="month" 
+           class="input input-bordered input-md sm:input-sm w-full sm:w-auto"
+           [(ngModel)]="monthFilter"
+           (change)="onMonthChange()" />
+
+    @if (searchQuery || monthFilter) {
+      <button class="btn btn-ghost btn-sm gap-1" (click)="clearFilters()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+        Wyczyść
+      </button>
+    }
+  </div>
+
+  @if(showSpinner && invoices.length === 0) {
     <div class="flex justify-center p-12">
       <span class="loading loading-spinner loading-lg text-primary"></span>
     </div>
-  } @else {
-    <div class="bg-base-100 rounded-box shadow overflow-hidden">
+  }
+
+  <div [class.opacity-50]="isLoading" [class.pointer-events-none]="isLoading" class="transition-opacity duration-200">
+    <div class="bg-base-100 rounded-box shadow-sm border border-base-200 overflow-hidden hidden md:block">
       <div class="overflow-x-auto">
-        <table class="table table-zebra">
+        <table class="table">
           <thead>
-            <tr>
-              <th>Numer</th>
-              <th>Data Wystawienia</th>
-              <th>Klient</th>
-              <th>Kwota Brutto</th>
-              <th>Akcje</th>
+            <tr class="bg-base-200/50">
+              <th class="font-semibold">Numer</th>
+              <th class="font-semibold">Data wystawienia</th>
+              <th class="font-semibold">Data sprzedaży</th>
+              <th class="font-semibold">Klient</th>
+              <th class="font-semibold text-right">Kwota brutto</th>
+              <th class="font-semibold text-center">Akcje</th>
             </tr>
           </thead>
           <tbody>
             @for(invoice of invoices; track invoice.invoiceId) {
-              <tr>
-                <td class="font-bold font-mono">{{ invoice.invoiceNumber }}</td>
-                <td>{{ invoice.issueDate | date:'dd.MM.yyyy' }}</td>
-                <td>{{ invoice.customerName }}</td>
-                <td class="text-primary font-bold">{{ invoice.totalGross | currency:'PLN':'symbol':'1.2-2' }}</td>
-                <td>
-                  <button class="btn btn-sm btn-ghost gap-2" (click)="downloadPdf(invoice)">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                    </svg>
-                    PDF
-                  </button>
+              <tr class="hover:bg-base-200/30 cursor-pointer transition-colors" 
+                  (click)="toggleDetails(invoice.invoiceId)">
+                <td class="font-mono font-bold text-sm">{{ invoice.invoiceNumber }}</td>
+                <td class="text-sm">{{ invoice.issueDate | date:'dd.MM.yyyy' }}</td>
+                <td class="text-sm text-base-content/60">{{ invoice.saleDate | date:'dd.MM.yyyy' }}</td>
+                <td class="text-sm">{{ invoice.customerName }}</td>
+                <td class="text-right font-bold text-primary">{{ invoice.totalGross | currency:'PLN':'symbol':'1.2-2' }}</td>
+                <td class="text-center" (click)="$event.stopPropagation()">
+                  <div class="flex items-center justify-center gap-1">
+                    <button class="btn btn-xs btn-ghost gap-1 tooltip" data-tip="Podgląd" (click)="previewPdf(invoice)">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                      </svg>
+                    </button>
+                    <button class="btn btn-xs btn-ghost gap-1 tooltip" data-tip="Pobierz PDF" (click)="downloadPdf(invoice)">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                      </svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
+
+              @if(expandedInvoiceId === invoice.invoiceId) {
+                <tr @expandCollapse>
+                  <td colspan="6" class="bg-base-200/30 p-0">
+                    <div class="p-4 space-y-3">
+                      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                        <div>
+                          <span class="text-base-content/50 text-xs">Netto</span>
+                          <p class="font-semibold">{{ invoice.totalNet | currency:'PLN':'symbol':'1.2-2' }}</p>
+                        </div>
+                        <div>
+                          <span class="text-base-content/50 text-xs">VAT</span>
+                          <p class="font-semibold">{{ invoice.totalTax | currency:'PLN':'symbol':'1.2-2' }}</p>
+                        </div>
+                        <div>
+                          <span class="text-base-content/50 text-xs">Metoda płatności</span>
+                          <p class="font-semibold">{{ paymentMethods[invoice.paymentMethod] || 'Inne' }}</p>
+                        </div>
+                        <div>
+                          <span class="text-base-content/50 text-xs">NIP klienta</span>
+                          <p class="font-semibold">{{ invoice.customerNip || '—' }}</p>
+                        </div>
+                      </div>
+
+                      <div class="divider my-1"></div>
+
+                      <h4 class="font-semibold text-sm">Pozycje faktury</h4>
+                      <div class="overflow-x-auto">
+                        <table class="table table-xs">
+                          <thead>
+                            <tr>
+                              <th>Nazwa</th>
+                              <th class="text-center">Ilość</th>
+                              <th class="text-right">Cena netto</th>
+                              <th class="text-center">VAT</th>
+                              <th class="text-right">Netto</th>
+                              <th class="text-right">Brutto</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for(item of invoice.items; track item.name) {
+                              <tr>
+                                <td>{{ item.name }}</td>
+                                <td class="text-center">{{ item.quantity }}</td>
+                                <td class="text-right">{{ item.unitPriceNet | currency:'PLN':'symbol':'1.2-2' }}</td>
+                                <td class="text-center">{{ item.vatRate * 100 | number:'1.0-0' }}%</td>
+                                <td class="text-right">{{ item.netValue | currency:'PLN':'symbol':'1.2-2' }}</td>
+                                <td class="text-right font-bold">{{ item.grossValue | currency:'PLN':'symbol':'1.2-2' }}</td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
             } @empty {
               <tr>
-                <td colspan="5" class="text-center py-8 opacity-50">
-                  Brak wystawionych faktur.
+                <td colspan="6" class="text-center py-12">
+                  <div class="flex flex-col items-center gap-2 opacity-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-10">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                    </svg>
+                    <p>Brak wystawionych faktur.</p>
+                  </div>
                 </td>
               </tr>
             }
@@ -50,15 +165,91 @@
         </table>
       </div>
     </div>
-    
-    @if (!isLoading && totalPages > 1) {
-        <div class="flex justify-center mt-4">
-            <div class="join">
-                <button class="join-item btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">«</button>
-                <button class="join-item btn no-animation">Strona {{currentPage}} z {{totalPages}}</button>
-                <button class="join-item btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">»</button>
+
+    <div class="md:hidden space-y-3">
+      @for(invoice of invoices; track invoice.invoiceId) {
+        <div class="card bg-base-100 shadow-sm border border-base-200" (click)="toggleDetails(invoice.invoiceId)">
+          <div class="card-body p-4 space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-mono font-bold text-sm">{{ invoice.invoiceNumber }}</p>
+                <p class="text-xs text-base-content/60">{{ invoice.issueDate | date:'dd.MM.yyyy' }}</p>
+              </div>
+              <span class="text-primary font-bold">{{ invoice.totalGross | currency:'PLN':'symbol':'1.2-2' }}</span>
             </div>
+            <p class="text-sm">{{ invoice.customerName }}</p>
+
+            @if(expandedInvoiceId === invoice.invoiceId) {
+              <div class="space-y-2 pt-2 border-t border-base-200" @expandCollapse>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span class="text-base-content/50">Netto</span>
+                    <p class="font-semibold">{{ invoice.totalNet | currency:'PLN':'symbol':'1.2-2' }}</p>
+                  </div>
+                  <div>
+                    <span class="text-base-content/50">VAT</span>
+                    <p class="font-semibold">{{ invoice.totalTax | currency:'PLN':'symbol':'1.2-2' }}</p>
+                  </div>
+                  <div>
+                    <span class="text-base-content/50">Płatność</span>
+                    <p class="font-semibold">{{ paymentMethods[invoice.paymentMethod] || 'Inne' }}</p>
+                  </div>
+                  <div>
+                    <span class="text-base-content/50">Data sprzedaży</span>
+                    <p class="font-semibold">{{ invoice.saleDate | date:'dd.MM.yyyy' }}</p>
+                  </div>
+                </div>
+
+                @for(item of invoice.items; track item.name) {
+                  <div class="bg-base-200/50 rounded-lg p-2 text-xs">
+                    <p class="font-semibold">{{ item.name }}</p>
+                    <p>{{ item.quantity }} × {{ item.unitPriceNet | currency:'PLN':'symbol':'1.2-2' }} · VAT {{ item.vatRate * 100 | number:'1.0-0' }}% → <strong>{{ item.grossValue | currency:'PLN':'symbol':'1.2-2' }}</strong></p>
+                  </div>
+                }
+
+                <div class="flex gap-2 pt-1" (click)="$event.stopPropagation()">
+                  <button class="btn btn-xs btn-ghost flex-1 gap-1" (click)="previewPdf(invoice)">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                    Podgląd
+                  </button>
+                  <button class="btn btn-xs btn-ghost flex-1 gap-1" (click)="downloadPdf(invoice)">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                    Pobierz
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
         </div>
+      } @empty {
+        <div class="text-center py-12 opacity-50">
+          <p>Brak wystawionych faktur.</p>
+        </div>
+      }
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+        <p class="text-xs text-base-content/50">Wyświetlono {{ rangeStart }}–{{ rangeEnd }} z {{ totalCount }} faktur</p>
+        <div class="join">
+          <button class="join-item btn btn-sm" [disabled]="currentPage === 1" (click)="changePage(1)">«</button>
+          <button class="join-item btn btn-sm" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">‹</button>
+          @for(p of getPageNumbers(); track p) {
+            <button class="join-item btn btn-sm" 
+                    [class.btn-primary]="p === currentPage"
+                    [class.btn-ghost]="p !== currentPage"
+                    (click)="changePage(p)">{{ p }}</button>
+          }
+          <button class="join-item btn btn-sm" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">›</button>
+          <button class="join-item btn btn-sm" [disabled]="currentPage === totalPages" (click)="changePage(totalPages)">»</button>
+        </div>
+      </div>
     }
-  }
+  </div>
+</div>
 </div>
