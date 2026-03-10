@@ -22,6 +22,8 @@ export class FinanceDashboardComponent implements OnInit {
 
   reports: DailyFinancialReport[] = [];
   isLoading = true;
+  showSpinner = false;
+  private spinnerTimeout: any;
   isGenerating = false;
 
   selectedMonth: number;
@@ -164,20 +166,30 @@ export class FinanceDashboardComponent implements OnInit {
     if (!this.businessId) return;
 
     this.isLoading = true;
+    this.showSpinner = false;
+    clearTimeout(this.spinnerTimeout);
+    this.spinnerTimeout = setTimeout(() => {
+      if (this.isLoading) this.showSpinner = true;
+    }, 500);
+
     this.financeService.getLiveReports(this.businessId, start, end).subscribe({
       next: (data) => {
         this.reports = data;
         this.isLoading = false;
+        this.showSpinner = false;
       },
       error: () => {
         this.toastr.error('Nie udało się pobrać raportów.');
         this.isLoading = false;
+        this.showSpinner = false;
       }
     });
   }
   
   employeePerformance: DailyEmployeePerformance[] = [];
   isLoadingPerformance = false;
+  showPerformanceSpinner = false;
+  private perfSpinnerTimeout: any;
   currentPerformanceIndex = 0;
 
   nextPerformance() {
@@ -199,14 +211,23 @@ export class FinanceDashboardComponent implements OnInit {
   loadEmployeePerformance(start: string, end: string) {
       if (!this.businessId) return;
       this.isLoadingPerformance = true;
+      this.showPerformanceSpinner = false;
+      clearTimeout(this.perfSpinnerTimeout);
+      this.perfSpinnerTimeout = setTimeout(() => {
+        if (this.isLoadingPerformance) this.showPerformanceSpinner = true;
+      }, 500);
       
       this.financeService.getEmployeePerformance(this.businessId, undefined, start, end).subscribe({
           next: (data) => {
               this.employeePerformance = data;
               this.currentPerformanceIndex = 0;
               this.isLoadingPerformance = false;
+              this.showPerformanceSpinner = false;
           },
-          error: () => this.isLoadingPerformance = false
+          error: () => {
+              this.isLoadingPerformance = false;
+              this.showPerformanceSpinner = false;
+          }
       });
   }
 

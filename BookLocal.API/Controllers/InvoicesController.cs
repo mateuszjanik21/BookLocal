@@ -135,6 +135,7 @@ namespace BookLocal.API.Controllers
             }
 
             var totalCount = await query.CountAsync();
+            var totalGrossSum = await query.SumAsync(i => i.TotalGross);
 
             var invoices = await query
                .OrderByDescending(i => i.IssueDate)
@@ -144,12 +145,14 @@ namespace BookLocal.API.Controllers
 
             var dtos = invoices.Select(i => MapToDto(i, i.Customer.FirstName + " " + i.Customer.LastName)).ToList();
 
-            return Ok(new PagedResultDto<InvoiceDto>
+            return Ok(new
             {
                 Items = dtos,
                 TotalCount = totalCount,
                 PageNumber = page,
-                PageSize = pageSize
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
+                TotalGrossSum = totalGrossSum
             });
         }
 

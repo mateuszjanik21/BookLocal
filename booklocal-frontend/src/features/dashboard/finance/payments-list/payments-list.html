@@ -1,73 +1,393 @@
-<div class="card bg-base-100 shadow-xl">
-  <div class="card-body">
-    <div class="flex justify-between items-center mb-4">
-        <h2 class="card-title text-2xl">Transakcje</h2>
-        <button class="btn btn-ghost btn-sm" (click)="loadData()">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 4.992 9.19-9.19M16.022 9.348l9.19-9.19M3 9a6 6 0 0 1 10.395-5.352m9.41 11.23a6 6 0 0 1-10.395 5.352" />
-            </svg>
-            Odśwież
-        </button>
+<div class="p-4 sm:p-6 lg:p-8 bg-base-200/30 min-h-screen">
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h2 class="text-2xl font-bold">Transakcje</h2>
+      </div>
     </div>
 
-    @if(isLoading) {
-      <div class="flex justify-center p-8">
-        <span class="loading loading-spinner loading-lg text-primary"></span>
-      </div>
-    } @else {
-      <div class="overflow-x-auto">
-        <table class="table table-zebra w-full">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Data</th>
-              <th>Metoda</th>
-              <th>Status</th>
-              <th>Kwota</th>
-              <th>Rezerwacja</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for(payment of payments; track payment.paymentId) {
-              <tr>
-                <td>#{{ payment.paymentId }}</td>
-                <td>{{ payment.transactionDate | date:'short' }}</td>
-                <td>
-                    <div class="badge badge-outline gap-2">
-                        {{ payment.method }}
-                    </div>
-                </td>
-                <td>
-                    <div class="badge" [class.badge-success]="payment.status === 'Completed'" [class.badge-warning]="payment.status === 'Pending'">
-                        {{ payment.status }}
-                    </div>
-                </td>
-                <td class="font-bold">{{ payment.amount | currency:'PLN':'symbol':'1.2-2' }}</td>
-                <td>
-                    <a [routerLink]="['/dashboard/reservations', payment.reservationId]" class="link link-primary">
-                        Rezerwacja #{{ payment.reservationId }}
-                    </a>
-                </td>
-              </tr>
-            } @empty {
-              <tr>
-                <td colspan="6" class="text-center p-8 text-base-content/60">Brak zarejestrowanych płatności.</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+    <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+      <select class="select select-bordered select-md sm:select-sm w-full sm:w-auto" [(ngModel)]="methodFilter"
+        (ngModelChange)="onFilterChange()">
+        <option value="">Wszystkie metody</option>
+        @for(opt of methodOptions; track opt.value) {
+        <option [value]="opt.key">{{ opt.label }}</option>
+        }
+      </select>
+
+      <select class="select select-bordered select-md sm:select-sm w-full sm:w-auto" [(ngModel)]="statusFilter"
+        (ngModelChange)="onFilterChange()">
+        <option value="">Wszystkie statusy</option>
+        @for(opt of statusOptions; track opt.value) {
+        <option [value]="opt.key">{{ opt.label }}</option>
+        }
+      </select>
+
+      @if (methodFilter || statusFilter) {
+      <button class="btn btn-ghost btn-sm gap-1" (click)="clearFilters()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="size-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+        Wyczyść
+      </button>
+      }
+    </div>
+
+    @if(showSpinner && payments.length === 0) {
+    <div class="flex justify-center p-12">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
     }
-    
-    @if (!isLoading && totalPages > 1) {
-        <div class="flex justify-center mt-4 pb-4">
-            <div class="join">
-                <button class="join-item btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">«</button>
-                <button class="join-item btn no-animation">Strona {{currentPage}} z {{totalPages}}</button>
-                <button class="join-item btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">»</button>
-            </div>
+
+    <div [class.opacity-50]="isLoading" [class.pointer-events-none]="isLoading" class="transition-opacity duration-200">
+
+      <div class="bg-base-100 rounded-box shadow-sm border border-base-200 overflow-hidden hidden md:block">
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr class="bg-base-200/50">
+                <th
+                  class="font-semibold text-xs uppercase tracking-wider cursor-pointer select-none hover:text-primary transition-colors"
+                  (click)="toggleSort('id')">
+                  ID <span class="text-primary">{{ getSortIcon('id') }}</span>
+                </th>
+                <th
+                  class="font-semibold text-xs uppercase tracking-wider cursor-pointer select-none hover:text-primary transition-colors"
+                  (click)="toggleSort('date')">
+                  Data <span class="text-primary">{{ getSortIcon('date') }}</span>
+                </th>
+                <th class="font-semibold text-xs uppercase tracking-wider">Klient</th>
+                <th class="font-semibold text-xs uppercase tracking-wider">Metoda</th>
+                <th class="font-semibold text-xs uppercase tracking-wider">Status</th>
+                <th
+                  class="font-semibold text-xs uppercase tracking-wider cursor-pointer select-none hover:text-primary transition-colors"
+                  (click)="toggleSort('amount')">
+                  Kwota <span class="text-primary">{{ getSortIcon('amount') }}</span>
+                </th>
+                <th class="font-semibold text-xs uppercase tracking-wider text-right">Akcje</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for(payment of payments; track payment.paymentId) {
+              <tr [id]="'payment-' + payment.paymentId" class="hover:bg-base-200/30 cursor-pointer transition-colors"
+                (click)="toggleDetails(payment.paymentId)">
+                <td class="font-mono text-sm">#{{ payment.paymentId }}</td>
+                <td class="text-sm">{{ payment.transactionDate | date:'dd.MM.yyyy HH:mm' }}</td>
+                <td class="text-sm">{{ payment.customerName || '—' }}</td>
+                <td>
+                  <div class="badge badge-outline badge-sm gap-1">
+                    @if(payment.method === 'Cash') {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                      stroke="currentColor" class="w-3 h-3">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+                    </svg>
+                    } @else if(payment.method === 'Card') {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                      stroke="currentColor" class="w-3 h-3">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                    </svg>
+                    } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                      stroke="currentColor" class="w-3 h-3">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418" />
+                    </svg>
+                    }
+                    {{ paymentMethods[payment.method] || payment.method }}
+                  </div>
+                </td>
+                <td>
+                  <div class="badge badge-sm" [ngClass]="statusColors[payment.status] || ''">
+                    {{ paymentStatuses[payment.status] || payment.status }}
+                  </div>
+                </td>
+                <td class="font-bold text-success">{{ payment.amount | number:'1.2-2' }} {{ payment.currency }}</td>
+                <td class="text-right">
+                  <div class="flex gap-1 justify-end" (click)="$event.stopPropagation()">
+                    <button class="btn btn-ghost btn-xs tooltip" data-tip="Edytuj"
+                      (click)="openEditModal(payment, $event)">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="m16.862 4.487 1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                      </svg>
+                    </button>
+                    <button class="btn btn-ghost btn-xs text-error tooltip" data-tip="Usuń"
+                      (click)="confirmDelete(payment, $event)">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              @if(expandedPaymentId === payment.paymentId) {
+              <tr @expandCollapse>
+                <td colspan="7" class="bg-base-200/30 p-0">
+                  <div class="p-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-sm">
+                      <div>
+                        <span class="text-base-content/50 text-xs block mb-0.5">Rezerwacja</span>
+                        <a [routerLink]="['/dashboard/reservations', payment.reservationId]"
+                          [queryParams]="{from: 'payments', paymentId: payment.paymentId, page: currentPage}"
+                          class="link link-primary font-medium">
+                          #{{ payment.reservationId }}
+                        </a>
+                      </div>
+                      <div>
+                        <span class="text-base-content/50 text-xs block mb-0.5">Usługa</span>
+                        <p class="font-medium">{{ payment.serviceName || '—' }}</p>
+                      </div>
+                      <div>
+                        <span class="text-base-content/50 text-xs block mb-0.5">Klient</span>
+                        <p class="font-medium">{{ payment.customerName || 'Gość' }}</p>
+                      </div>
+                      <div>
+                        <span class="text-base-content/50 text-xs block mb-0.5">Wartość rezerwacji</span>
+                        <p class="font-medium">{{ payment.reservationAmount | number:'1.2-2' }} {{ payment.currency }}
+                        </p>
+                      </div>
+                      <div>
+                        <span class="text-base-content/50 text-xs block mb-0.5">Prowizja platformy</span>
+                        <p class="font-medium" [class.text-error]="payment.commissionAmount > 0">
+                          {{ payment.commissionAmount | number:'1.2-2' }} {{ payment.currency }}
+                        </p>
+                      </div>
+                      <div>
+                        <span class="text-base-content/50 text-xs block mb-0.5">Waluta</span>
+                        <p class="font-medium">{{ payment.currency }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              }
+              } @empty {
+              <tr>
+                <td colspan="7" class="text-center p-12 text-base-content/50">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1"
+                    stroke="currentColor" class="w-12 h-12 mx-auto mb-3 opacity-30">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                  </svg>
+                  Brak zarejestrowanych płatności.
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
         </div>
-    }
+      </div>
+
+      <div class="md:hidden space-y-3">
+        <div class="flex gap-2 items-center">
+          <span class="text-xs text-base-content/50">Sortuj:</span>
+          <button class="btn btn-xs" [class.btn-primary]="sortField === 'date'" (click)="toggleSort('date')">
+            Data <span class="ml-0.5">{{ getSortIcon('date') }}</span>
+          </button>
+          <button class="btn btn-xs" [class.btn-primary]="sortField === 'amount'" (click)="toggleSort('amount')">
+            Kwota <span class="ml-0.5">{{ getSortIcon('amount') }}</span>
+          </button>
+        </div>
+        @for(payment of payments; track payment.paymentId) {
+        <div [id]="'payment-' + payment.paymentId" class="card bg-base-100 shadow-sm border border-base-200"
+          (click)="toggleDetails(payment.paymentId)">
+          <div class="card-body p-4 gap-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-mono text-xs text-base-content/50">#{{ payment.paymentId }}</p>
+                <p class="font-bold text-success text-lg">{{ payment.amount | number:'1.2-2' }} {{ payment.currency }}
+                </p>
+                <p class="text-sm text-base-content/70">{{ payment.customerName || '—' }}</p>
+              </div>
+              <div class="flex flex-col items-end gap-1">
+                <div class="badge badge-sm" [ngClass]="statusColors[payment.status] || ''">
+                  {{ paymentStatuses[payment.status] || payment.status }}
+                </div>
+                <div class="badge badge-outline badge-xs">
+                  {{ paymentMethods[payment.method] || payment.method }}
+                </div>
+              </div>
+            </div>
+            <p class="text-xs text-base-content/50">{{ payment.transactionDate | date:'dd.MM.yyyy HH:mm' }}</p>
+
+            @if(expandedPaymentId === payment.paymentId) {
+            <div class="space-y-3 pt-3 border-t border-base-200" @expandCollapse>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span class="text-base-content/50">Rezerwacja</span>
+                  <p class="font-medium">
+                    <a [routerLink]="['/dashboard/reservations', payment.reservationId]"
+                      [queryParams]="{from: 'payments', paymentId: payment.paymentId, page: currentPage}"
+                      class="link link-primary" (click)="$event.stopPropagation()">
+                      #{{ payment.reservationId }}
+                    </a>
+                  </p>
+                </div>
+                <div>
+                  <span class="text-base-content/50">Usługa</span>
+                  <p class="font-medium">{{ payment.serviceName || '—' }}</p>
+                </div>
+                <div>
+                  <span class="text-base-content/50">Wartość rezerwacji</span>
+                  <p class="font-medium">{{ payment.reservationAmount | number:'1.2-2' }} zł</p>
+                </div>
+                <div>
+                  <span class="text-base-content/50">Prowizja</span>
+                  <p class="font-medium" [class.text-error]="payment.commissionAmount > 0">
+                    {{ payment.commissionAmount | number:'1.2-2' }} zł
+                  </p>
+                </div>
+              </div>
+              <div class="flex gap-2 pt-1" (click)="$event.stopPropagation()">
+                <button class="btn btn-ghost btn-xs gap-1" (click)="openEditModal(payment)">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-3.5 h-3.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="m16.862 4.487 1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                  </svg>
+                  Edytuj
+                </button>
+                <button class="btn btn-ghost btn-xs text-error gap-1" (click)="confirmDelete(payment)">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-3.5 h-3.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                  Usuń
+                </button>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        } @empty {
+        <div class="card bg-base-100 shadow-sm border border-base-200">
+          <div class="card-body items-center text-center text-base-content/50 py-12">
+            Brak zarejestrowanych płatności.
+          </div>
+        </div>
+        }
+      </div>
+
+      @if (totalPages > 1) {
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+        <p class="text-xs text-base-content/50">Wyświetlono {{ rangeStart }}–{{ rangeEnd }} z {{ totalCount }}
+          transakcji</p>
+        <div class="join">
+          <button class="join-item btn btn-sm" [disabled]="currentPage === 1" (click)="changePage(1)">«</button>
+          <button class="join-item btn btn-sm" [disabled]="currentPage === 1"
+            (click)="changePage(currentPage - 1)">‹</button>
+          @for(p of getPageNumbers(); track p) {
+          <button class="join-item btn btn-sm" [class.btn-active]="p === currentPage" (click)="changePage(p)">{{ p
+            }}</button>
+          }
+          <button class="join-item btn btn-sm" [disabled]="currentPage === totalPages"
+            (click)="changePage(currentPage + 1)">›</button>
+          <button class="join-item btn btn-sm" [disabled]="currentPage === totalPages"
+            (click)="changePage(totalPages)">»</button>
+        </div>
+      </div>
+      }
+    </div>
 
   </div>
 </div>
+
+@if(isEditModalOpen && editingPayment) {
+<div class="modal modal-open">
+  <div class="modal-box w-full sm:w-11/12 max-w-lg bg-base-100 sm:rounded-2xl border border-base-200 shadow-2xl">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h3 class="text-xl font-bold">Edycja płatności</h3>
+        <p class="text-sm text-base-content/50 mt-0.5">Transakcja #{{ editingPayment.paymentId }}</p>
+      </div>
+      <button class="btn btn-ghost btn-sm btn-circle" (click)="closeEditModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="bg-base-200/40 rounded-xl p-3 mb-6">
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <span class="text-base-content/50">Klient</span>
+          <p class="font-semibold text-sm">{{ editingPayment.customerName || 'Gość' }}</p>
+        </div>
+        <div>
+          <span class="text-base-content/50">Usługa</span>
+          <p class="font-semibold text-sm">{{ editingPayment.serviceName || '—' }}</p>
+        </div>
+        <div>
+          <span class="text-base-content/50">Wartość rezerwacji</span>
+          <p class="font-semibold text-sm text-primary">{{ editingPayment.reservationAmount | number:'1.2-2' }} zł</p>
+        </div>
+        <div>
+          <span class="text-base-content/50">Data transakcji</span>
+          <p class="font-semibold text-sm">{{ editingPayment.transactionDate | date:'dd.MM.yyyy HH:mm' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-4">
+      <div class="form-control">
+        <label class="label"><span class="label-text font-medium">Kwota</span></label>
+        <div class="relative">
+          <input type="number" class="input input-bordered w-full pr-12" [class.input-error]="editAmountError"
+            [(ngModel)]="editForm.amount" step="0.01" min="0.01" [max]="editingPayment.reservationAmount"
+            (ngModelChange)="validateAmount()" />
+          <span class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/40 text-sm font-medium">zł</span>
+        </div>
+        @if(editAmountError) {
+        <label class="label">
+          <span class="label-text-alt text-error">{{ editAmountError }}</span>
+        </label>
+        }
+        <label class="label">
+          <span class="label-text-alt text-base-content/40">Maks. {{ editingPayment.reservationAmount | number:'1.2-2'
+            }} zł</span>
+        </label>
+      </div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text font-medium">Metoda płatności</span></label>
+        <select class="select select-bordered w-full" [(ngModel)]="editForm.method">
+          @for(opt of methodOptions; track opt.value) {
+          <option [ngValue]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-control">
+        <label class="label"><span class="label-text font-medium">Status</span></label>
+        <select class="select select-bordered w-full" [(ngModel)]="editForm.status">
+          @for(opt of statusOptions; track opt.value) {
+          <option [ngValue]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-action mt-6">
+      <button class="btn btn-ghost" (click)="closeEditModal()">Anuluj</button>
+      <button class="btn btn-primary" [disabled]="!!editAmountError" (click)="saveEdit()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-4 h-4">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+        </svg>
+        Zapisz zmiany
+      </button>
+    </div>
+  </div>
+  <div class="modal-backdrop bg-black/50" (click)="closeEditModal()"></div>
+</div>
+}

@@ -37,10 +37,20 @@ export class ReservationDetailComponent implements OnInit {
 
   previousReservationId: number | null = null;
   nextReservationId: number | null = null;
+  cameFromPayments = false;
+  sourcePaymentId: number | null = null;
+  sourcePage: number | null = null;
 
   statuses = ['Confirmed', 'Completed', 'Cancelled'];
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe(qp => {
+      this.cameFromPayments = qp.get('from') === 'payments';
+      const pid = qp.get('paymentId');
+      this.sourcePaymentId = pid ? +pid : null;
+      const pg = qp.get('page');
+      this.sourcePage = pg ? +pg : null;
+    });
     this.route.paramMap.subscribe(params => {
         const id = params.get('id');
         if (id) {

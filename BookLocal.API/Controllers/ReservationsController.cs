@@ -868,5 +868,32 @@ namespace BookLocal.API.Controllers
             _context.LoyaltyTransactions.Add(transaction);
             await _context.SaveChangesAsync();
         }
+
+        [HttpGet("{id}/adjacent")]
+        public async Task<IActionResult> GetAdjacentReservations(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var reservation = await _context.Reservations
+                .Include(r => r.Business)
+                .FirstOrDefaultAsync(r => r.ReservationId == id);
+
+            if (reservation == null) return NotFound();
+            if (reservation.Business.OwnerId != userId && reservation.CustomerId != userId)
+                return Forbid();
+
+            var previousId = await _context.Reservations
+                .Where(r => r.BusinessId == reservation.BusinessId && r.StartTime < reservation.StartTime)
+                .OrderByDescending(r => r.StartTime)
+                .Select(r => (int?)r.ReservationId)
+                .FirstOrDefaultAsync();
+
+            var nextId = await _context.Reservations
+                .Where(r => r.BusinessId == reservation.BusinessId && r.StartTime > reservation.StartTime)
+                .OrderBy(r => r.StartTime)
+                .Select(r => (int?)r.ReservationId)
+                .FirstOrDefaultAsync();
+
+            return Ok(new { previousId, nextId });
+        }
     }
 }

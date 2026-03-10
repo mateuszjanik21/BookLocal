@@ -32,6 +32,7 @@ export interface PagedResult<T> {
   pageNumber: number;
   pageSize: number;
   totalPages: number;
+  totalGrossSum?: number;
 }
 
 @Injectable({

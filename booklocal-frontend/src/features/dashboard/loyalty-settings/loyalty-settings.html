@@ -1,204 +1,216 @@
-<div class="p-4 sm:p-6 lg:p-8 bg-base-200/30 min-h-screen space-y-6">
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-    <div>
-      <h1 class="text-2xl sm:text-3xl font-bold text-base-content">Lojalność i Nagrody</h1>
-      <p class="mt-1 text-sm sm:text-base text-base-content/70">Zarządzaj programem lojalnościowym i śledź zaangażowanie
-        klientów.</p>
+<div class="p-4 sm:p-6 lg:p-8 bg-base-200/30 min-h-screen">
+  <div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-base-content">Lojalność i Nagrody</h1>
+        <p class="mt-1 text-sm sm:text-base text-base-content/70">Zarządzaj programem lojalnościowym i śledź
+          zaangażowanie
+          klientów.</p>
+      </div>
     </div>
-  </div>
 
-  @if (isLoading) {
-  <div class="flex justify-center p-12">
-    <span class="loading loading-spinner loading-lg text-primary"></span>
-  </div>
-  } @else {
+    @if (isLoading) {
+    <div class="flex justify-center p-12">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+    } @else {
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-    <div class="h-fit">
-      <div class="card bg-base-100 shadow-sm border border-base-200 max-w-full overflow-hidden">
-        <div class="card-body p-4 sm:p-6 w-full">
-          <h2 class="card-title text-xl mb-4">Ustawienia Programu</h2>
+      <div class="h-fit">
+        <div class="card bg-base-100 shadow-sm border border-base-200 max-w-full overflow-hidden">
+          <div class="card-body p-4 sm:p-6 w-full">
+            <h2 class="card-title text-xl mb-4">Ustawienia Programu</h2>
 
-          <form [formGroup]="configForm" (submit)="saveConfig()" class="w-full">
-            <div class="form-control mb-6 w-full">
-              <label
-                class="label cursor-pointer flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 p-3 sm:p-4 bg-base-200/50 rounded-lg border border-base-300 w-full">
-                <input type="checkbox" class="toggle toggle-primary toggle-lg" formControlName="isActive" />
-                <span class="label-text text-base sm:text-lg font-medium break-words">Uruchom Program
-                  Lojalnościowy</span>
-              </label>
-            </div>
-
-            <div class="form-control mb-6" [class.opacity-50]="!configForm.get('isActive')?.value"
-              [class.pointer-events-none]="!configForm.get('isActive')?.value">
-              <label class="label">
-                <span class="label-text text-base font-semibold">Zasady naliczania punktów</span>
-              </label>
-              <div class="p-3 sm:p-4 bg-base-200/50 rounded-lg border border-base-300 space-y-3">
-                <label class="label p-0">
-                  <span class="label-text mb-1">Kwota wydana w salonie (PLN)</span>
+            <form [formGroup]="configForm" (submit)="saveConfig()" class="w-full">
+              <div class="form-control mb-6 w-full">
+                <label
+                  class="label cursor-pointer flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 p-3 sm:p-4 bg-base-200/50 rounded-lg border border-base-300 w-full">
+                  <input type="checkbox" class="toggle toggle-primary toggle-lg" formControlName="isActive" />
+                  <span class="label-text text-base sm:text-lg font-medium break-words">Uruchom Program
+                    Lojalnościowy</span>
                 </label>
-                <div class="flex flex-col sm:flex-row gap-2 w-full">
-                  <input type="number" class="input input-bordered w-full" formControlName="spendAmountForOnePoint"
-                    min="0.01" step="0.01" />
-                  <div class="btn btn-neutral no-animation shrink-0 pointer-events-none">PLN = 1 Punkt</div>
-                </div>
-                <div class="text-sm text-base-content/60 mt-2">
-                  <span class="font-medium">Przykład:</span> Ustawienie 10 PLN sprawi, że za każdy zrealizowany paragon
-                  na kwotę 100 PLN do konta klienta doliczone zostanie automatycznie 10 punktów.
-                </div>
               </div>
-            </div>
 
-            <div class="form-control mb-6" [class.opacity-50]="!configForm.get('isActive')?.value"
-              [class.pointer-events-none]="!configForm.get('isActive')?.value">
-              <div class="p-4 bg-success/10 border border-success/20 rounded-lg flex gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                  class="w-6 h-6 stroke-success shrink-0">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div>
-                  <h4 class="font-bold text-success text-sm sm:text-base mb-1">Gwarancja Wartości (1 pkt = 1 PLN)</h4>
-                  <p class="text-xs sm:text-sm text-base-content/80 leading-relaxed">System z góry zakłada, że
-                    niezależnie od trudności zdobycia punktu powyżej, jego ostateczna wartość w portfelu lojalnościowym
-                    klienta to zawsze 1 PLN. Jeśli klient zbierze 50 punktów, w systemie rezerwacyjnym będzie mógł
-                    wygenerować 50 PLN opustu na Twój zabieg.</p>
+              <div class="form-control mb-6" [class.opacity-50]="!configForm.get('isActive')?.value"
+                [class.pointer-events-none]="!configForm.get('isActive')?.value">
+                <label class="label">
+                  <span class="label-text text-base font-semibold">Zasady naliczania punktów</span>
+                </label>
+                <div class="p-3 sm:p-4 bg-base-200/50 rounded-lg border border-base-300 space-y-3">
+                  <label class="label p-0">
+                    <span class="label-text mb-1">Kwota wydana w salonie (PLN)</span>
+                  </label>
+                  <div class="flex flex-col sm:flex-row gap-2 w-full">
+                    <input type="number" class="input input-bordered w-full" formControlName="spendAmountForOnePoint"
+                      min="0.01" step="0.01" />
+                    <div class="btn btn-neutral no-animation shrink-0 pointer-events-none">PLN = 1 Punkt</div>
+                  </div>
+                  <div class="text-sm text-base-content/60 mt-2">
+                    <span class="font-medium">Przykład:</span> Ustawienie 10 PLN sprawi, że za każdy zrealizowany
+                    paragon
+                    na kwotę 100 PLN do konta klienta doliczone zostanie automatycznie 10 punktów.
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="flex justify-end mt-4">
-              <button type="submit" class="btn btn-primary" [disabled]="isSaving || configForm.invalid">
-                @if (isSaving) {
-                <span class="loading loading-spinner"></span>
-                }
-                Zapisz Konfigurację
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <div class="space-y-6 flex flex-col">
-      @if (configForm.get('isActive')?.value && stats) {
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        <div class="stat bg-base-100 shadow-sm border border-base-200 rounded-2xl">
-          <div class="stat-figure text-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-              </path>
-            </svg>
-          </div>
-          <div class="stat-title">Uczestnicy Programu</div>
-          <div class="stat-value text-primary">{{ stats.totalActiveCustomers }}</div>
-          <div class="stat-desc">Klienci z min. 1 pkt</div>
-        </div>
-
-        <div class="stat bg-base-100 shadow-sm border border-base-200 rounded-2xl">
-          <div class="stat-figure text-secondary">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-              </path>
-            </svg>
-          </div>
-          <div class="stat-title">Przyznane Punkty</div>
-          <div class="stat-value text-secondary">{{ stats.totalPointsIssued }}</div>
-          <div class="stat-desc">Zliczono od początku</div>
-        </div>
-
-        <div class="stat bg-base-100 shadow-sm border border-base-200 rounded-2xl">
-          <div class="stat-figure text-accent">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </div>
-          <div class="stat-title">Wykorzystane Punkty</div>
-          <div class="stat-value text-accent">{{ stats.totalPointsRedeemed }}</div>
-          <div class="stat-desc">Wymienione na zniżki</div>
-        </div>
-
-        <div class="stat bg-base-100 shadow-sm border border-base-200 rounded-2xl">
-          <div class="stat-figure text-warning">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
-              </path>
-            </svg>
-          </div>
-          <div class="stat-title">Zobowiązanie Zniżkowe</div>
-          <div class="stat-value text-warning">{{ stats.pendingPointsLiability }}</div>
-          <div class="stat-desc">Punkty na kontach</div>
-        </div>
-      </div>
-      }
-
-      @if (configForm.get('isActive')?.value) {
-      <div class="card bg-base-100 shadow-sm border border-base-200 flex-grow max-w-full overflow-hidden">
-        <div class="card-body p-4 sm:p-6 w-full">
-          <h2 class="card-title text-xl mb-4">Dodatkowe akcje</h2>
-
-          <div class="p-4 sm:p-5 rounded-xl border border-info/30 bg-info/10">
-            <div class="flex flex-col sm:flex-row items-start gap-4">
-              <div class="mt-1 hidden sm:block">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                  class="stroke-info shrink-0 w-8 h-8">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-              <div class="w-full">
-                <h3 class="font-bold text-base mb-1 text-info flex items-center gap-2">
+              <div class="form-control mb-6" [class.opacity-50]="!configForm.get('isActive')?.value"
+                [class.pointer-events-none]="!configForm.get('isActive')?.value">
+                <div class="p-4 bg-success/10 border border-success/20 rounded-lg flex gap-3">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    class="stroke-current shrink-0 w-5 h-5 sm:hidden">
+                    class="w-6 h-6 stroke-success shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <div>
+                    <h4 class="font-bold text-success text-sm sm:text-base mb-1">Gwarancja Wartości (1 pkt = 1 PLN)</h4>
+                    <p class="text-xs sm:text-sm text-base-content/80 leading-relaxed">System z góry zakłada, że
+                      niezależnie od trudności zdobycia punktu powyżej, jego ostateczna wartość w portfelu
+                      lojalnościowym
+                      klienta to zawsze 1 PLN. Jeśli klient zbierze 50 punktów, w systemie rezerwacyjnym będzie mógł
+                      wygenerować 50 PLN opustu na Twój zabieg.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex justify-end mt-4">
+                <button type="submit" class="btn btn-primary" [disabled]="isSaving || configForm.invalid">
+                  @if (isSaving) {
+                  <span class="loading loading-spinner"></span>
+                  }
+                  Zapisz Konfigurację
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6 flex flex-col">
+        @if (configForm.get('isActive')?.value && stats) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div class="stat bg-base-100 shadow-sm border border-base-200 rounded-2xl">
+            <div class="stat-figure text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                </path>
+              </svg>
+            </div>
+            <div class="stat-title">Uczestnicy Programu</div>
+            <div class="stat-value text-primary">{{ stats.totalActiveCustomers }}</div>
+            <div class="stat-desc">Klienci z min. 1 pkt</div>
+          </div>
+
+          <div class="stat bg-base-100 shadow-sm border border-base-200 rounded-2xl">
+            <div class="stat-figure text-secondary">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                </path>
+              </svg>
+            </div>
+            <div class="stat-title">Przyznane Punkty</div>
+            <div class="stat-value text-secondary">{{ stats.totalPointsIssued }}</div>
+            <div class="stat-desc">Zliczono od początku</div>
+          </div>
+
+          <div class="stat bg-base-100 shadow-sm border border-base-200 rounded-2xl">
+            <div class="stat-figure text-accent">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <div class="stat-title">Wykorzystane Punkty</div>
+            <div class="stat-value text-accent">{{ stats.totalPointsRedeemed }}</div>
+            <div class="stat-desc">Wymienione na zniżki</div>
+          </div>
+
+          <div class="stat bg-base-100 shadow-sm border border-base-200 rounded-2xl">
+            <div class="stat-figure text-warning">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="w-8 h-8 stroke-current">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                </path>
+              </svg>
+            </div>
+            <div class="stat-title">Zobowiązanie Zniżkowe</div>
+            <div class="stat-value text-warning">{{ stats.pendingPointsLiability }}</div>
+            <div class="stat-desc">Punkty na kontach</div>
+          </div>
+        </div>
+        }
+
+        @if (configForm.get('isActive')?.value) {
+        <div class="card bg-base-100 shadow-sm border border-base-200 flex-grow max-w-full overflow-hidden">
+          <div class="card-body p-4 sm:p-6 w-full">
+            <h2 class="card-title text-xl mb-4">Dodatkowe akcje</h2>
+
+            <div class="p-4 sm:p-5 rounded-xl border border-info/30 bg-info/10">
+              <div class="flex flex-col sm:flex-row items-start gap-4">
+                <div class="mt-1 hidden sm:block">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    class="stroke-info shrink-0 w-8 h-8">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
-                  Przeliczanie punktów historycznych
-                </h3>
-                <p class="text-sm text-base-content/70 mb-4 leading-relaxed">
-                  Jeżeli uruchamiasz program lojalnościowy po raz pierwszy, a Twoi klienci odbyli już u Ciebie wizyty w
-                  przeszłości, możesz kliknąć poniższy przycisk. System przeanalizuje wszystkie zakończone rezerwacje
-                  wstecz i wygeneruje za nie należne punkty lojalnościowe opierając się na ustawionym wyżej mnożniku.
-                </p>
-                <button type="button" class="btn btn-sm btn-info text-info-content" (click)="openModal()">
-                  Skonwertuj poprzednie wizyty na punkty
-                </button>
+                </div>
+                <div class="w-full">
+                  <h3 class="font-bold text-base mb-1 text-info flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                      class="stroke-current shrink-0 w-5 h-5 sm:hidden">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Przeliczanie punktów historycznych
+                  </h3>
+                  <p class="text-sm text-base-content/70 mb-4 leading-relaxed">
+                    Jeżeli uruchamiasz program lojalnościowy po raz pierwszy, a Twoi klienci odbyli już u Ciebie wizyty
+                    w
+                    przeszłości, możesz kliknąć poniższy przycisk. System przeanalizuje wszystkie zakończone rezerwacje
+                    wstecz i wygeneruje za nie należne punkty lojalnościowe opierając się na ustawionym wyżej mnożniku.
+                  </p>
+                  <button type="button" class="btn btn-sm btn-info text-info-content" (click)="openModal()">
+                    Skonwertuj poprzednie wizyty na punkty
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+        }
       </div>
-      }
     </div>
-  </div>
-  }
+    }
 
-  <dialog class="modal" [class.modal-open]="isModalOpen">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg text-info flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-        Potwierdź przeliczanie
-      </h3>
-      <p class="py-4 text-base-content/80 leading-relaxed">
-        Zostaną przeliczone wszystkie historyczne wizyty klientów według bazowej konfiguracji 
-        <span class="font-bold">({{ configForm.value.spendAmountForOnePoint }} PLN = 1 pkt)</span>.<br><br>
-        Ta operacja jest <span class="font-bold">jednorazowa i nieodwracalna</span> dla poddanych jej wizyt (system nie naliczy im punktów ponownie). Upewnij się, że dobrze sparametryzowałeś konfigurację punktową. 
-      </p>
-      <div class="modal-action">
-        <button type="button" class="btn" (click)="closeModal()" [disabled]="isRecalculating">Anuluj</button>
-        <button type="button" class="btn btn-info text-info-content" (click)="recalculatePoints()" [disabled]="isRecalculating">
+    <dialog class="modal" [class.modal-open]="isModalOpen">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg text-info flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          Potwierdź przeliczanie
+        </h3>
+        <p class="py-4 text-base-content/80 leading-relaxed">
+          Zostaną przeliczone wszystkie historyczne wizyty klientów według bazowej konfiguracji
+          <span class="font-bold">({{ configForm.value.spendAmountForOnePoint }} PLN = 1 pkt)</span>.<br><br>
+          Ta operacja jest <span class="font-bold">jednorazowa i nieodwracalna</span> dla poddanych jej wizyt (system
+          nie naliczy im punktów ponownie). Upewnij się, że dobrze sparametryzowałeś konfigurację punktową.
+        </p>
+        <div class="modal-action">
+          <button type="button" class="btn" (click)="closeModal()" [disabled]="isRecalculating">Anuluj</button>
+          <button type="button" class="btn btn-info text-info-content" (click)="recalculatePoints()"
+            [disabled]="isRecalculating">
             @if(isRecalculating) { <span class="loading loading-spinner loading-xs"></span> }
             Tak, kontynuuj
-        </button>
+          </button>
+        </div>
       </div>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-      <button (click)="closeModal()" [disabled]="isRecalculating">close</button>
-    </form>
-  </dialog>
+      <form method="dialog" class="modal-backdrop">
+        <button (click)="closeModal()" [disabled]="isRecalculating">close</button>
+      </form>
+    </dialog>
+  </div>
 </div>

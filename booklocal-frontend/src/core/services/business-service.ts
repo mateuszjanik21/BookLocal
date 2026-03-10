@@ -85,4 +85,8 @@ export class BusinessService {
   getDashboardData(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/businesses/dashboard-data`);
   }
+
+  updateBusiness(id: number, data: { name: string; nip: string; address: string; city: string; description: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/businesses/${id}`, data);
+  }
 }

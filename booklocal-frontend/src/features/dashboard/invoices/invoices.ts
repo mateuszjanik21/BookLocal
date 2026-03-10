@@ -44,7 +44,7 @@ export class InvoicesListComponent implements OnInit {
 
   expandedInvoiceId: number | null = null;
 
-  statsTotalGross = 0;
+  totalGrossSum = 0;
 
   paymentMethods: Record<number, string> = {
     0: 'Gotówka',
@@ -110,7 +110,7 @@ export class InvoicesListComponent implements OnInit {
         this.totalCount = data.totalCount;
         this.totalPages = data.totalPages;
 
-        this.statsTotalGross = data.items.reduce((sum, i) => sum + i.totalGross, 0);
+        this.totalGrossSum = data.totalGrossSum ?? 0;
         this.isLoading = false;
         this.showSpinner = false;
       },

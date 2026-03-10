@@ -14,8 +14,8 @@
         <p class="text-3xl font-bold text-primary">{{ totalCount }}</p>
       </div>
       <div class="rounded-xl bg-success/10 border border-success/20 p-4">
-        <p class="text-xs uppercase font-semibold text-success/70 tracking-wider mb-1">Suma brutto (ta strona)</p>
-        <p class="text-3xl font-bold text-success">{{ statsTotalGross | number:'1.0-0' }}<span class="text-lg font-normal"> zł</span></p>
+        <p class="text-xs uppercase font-semibold text-success/70 tracking-wider mb-1">Łączna wartość faktur</p>
+        <p class="text-3xl font-bold text-success">{{ totalGrossSum | number:'1.0-0' }}<span class="text-lg font-normal"> zł</span></p>
       </div>
     </div>
   }

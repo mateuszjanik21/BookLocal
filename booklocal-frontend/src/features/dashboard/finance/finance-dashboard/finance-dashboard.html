@@ -44,13 +44,14 @@
         </div>
     </div>
 
-    @if(isLoading) {
+    @if(showSpinner && reports.length === 0) {
     <div class="flex flex-col items-center justify-center py-20">
         <span class="loading loading-spinner loading-lg text-primary mb-4"></span>
         <span class="text-base-content/50">Ładowanie raportów...</span>
     </div>
-    } @else {
+    }
 
+    <div [class.opacity-50]="isLoading" [class.pointer-events-none]="isLoading" class="transition-opacity duration-200">
     <div class="space-y-4">
         <div class="flex justify-between items-center px-1">
             <h2 class="text-lg font-bold text-base-content uppercase tracking-wider flex items-center gap-2">
@@ -235,9 +236,12 @@
         </div>
         }
 
-        @if(isLoadingPerformance) {
+        @if(showPerformanceSpinner && employeePerformance.length === 0) {
         <div class="flex justify-center p-12"><span class="loading loading-spinner text-primary"></span></div>
-        } @else if(employeePerformance.length > 0) {
+        }
+
+        <div [class.opacity-50]="isLoadingPerformance" [class.pointer-events-none]="isLoadingPerformance" class="transition-opacity duration-200">
+        @if(employeePerformance.length > 0) {
 
         <div class="relative w-full max-w-md mx-auto">
             @if(employeePerformance.length > 1) {
@@ -344,6 +348,7 @@
         </div>
         }
     </div>
+    </div>
 
     <div class="space-y-4 pt-8 border-t border-base-200">
         <h2 class="text-lg font-bold text-base-content uppercase tracking-wider flex items-center gap-2 px-1">
@@ -420,6 +425,6 @@
             </div>
         </div>
     </div>
-    }
+    </div>
 
 </div>

@@ -10,9 +10,13 @@ namespace BookLocal.API.DTOs
         public int BusinessId { get; set; }
         public string Method { get; set; }
         public decimal Amount { get; set; }
+        public decimal CommissionAmount { get; set; }
         public string Currency { get; set; }
         public DateTime TransactionDate { get; set; }
         public string Status { get; set; }
+        public string? CustomerName { get; set; }
+        public string? ServiceName { get; set; }
+        public decimal ReservationAmount { get; set; }
     }
 
     public class CreatePaymentDto
@@ -25,5 +29,17 @@ namespace BookLocal.API.DTOs
 
         [Required]
         public decimal Amount { get; set; }
+    }
+
+    public class UpdatePaymentDto
+    {
+        [Required]
+        public decimal Amount { get; set; }
+
+        [Required]
+        public PaymentMethod Method { get; set; }
+
+        [Required]
+        public PaymentStatus Status { get; set; }
     }
 }

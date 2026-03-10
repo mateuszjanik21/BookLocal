@@ -1,0 +1,4 @@
+.tooltip::before,
+.tooltip::after {
+  z-index: 50;
+}
