@@ -20,6 +20,8 @@ export class LoyaltySettingsComponent implements OnInit {
 
   businessId: number | null = null;
   isLoading = false;
+  showSpinner = false;
+  private spinnerTimeout: any;
   isSaving = false;
   stats: LoyaltyStats | null = null;
 
@@ -39,6 +41,11 @@ export class LoyaltySettingsComponent implements OnInit {
   loadConfig() {
     if (!this.businessId) return;
     this.isLoading = true;
+    this.showSpinner = false;
+    clearTimeout(this.spinnerTimeout);
+    this.spinnerTimeout = setTimeout(() => {
+      if (this.isLoading) this.showSpinner = true;
+    }, 500);
     this.loyaltyService.getConfig(this.businessId).subscribe({
       next: (config) => {
         this.configForm.patchValue({
@@ -46,10 +53,12 @@ export class LoyaltySettingsComponent implements OnInit {
           spendAmountForOnePoint: config.spendAmountForOnePoint
         });
         this.isLoading = false;
+        this.showSpinner = false;
       },
       error: () => {
         this.toastr.error('Błąd ładowania konfiguracji.');
         this.isLoading = false;
+        this.showSpinner = false;
       }
     });
   }

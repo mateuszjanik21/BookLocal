@@ -126,7 +126,7 @@
               </span>
               }
               @if (getActiveContract(); as contract) {
-              <span class="badge badge-neutral badge-outline bg-neutral/5 border-neutral/30">{{
+              <span class="badge badge-neutral bg-neutral/5 border-neutral/30">{{
                 contractTypeTranslations[contract.contractType] || contract.contractType }}</span>
               }
               <span class="badge badge-ghost bg-base-200">{{ calculateAge(employee.dateOfBirth) }} lat</span>
@@ -887,15 +887,15 @@
 </ng-template>
 
 
-@if (isEditModalVisible && employeeAsBase) {
-<app-edit-employee-modal [businessId]="businessId!" [employee]="employeeAsBase"
+@if (isEditModalVisible && employeeAsBaseInfo) {
+<app-edit-employee-modal [businessId]="businessId!" [employee]="employeeAsBaseInfo"
   (closed)="onEditModalClosed($event)"></app-edit-employee-modal>
 }
-@if (isScheduleModalVisible && employeeAsBase) {
-<app-schedule-modal [employee]="employeeAsBase" (closed)="onScheduleModalClosed($event)"></app-schedule-modal>
+@if (isScheduleModalVisible && employeeAsBaseInfo) {
+<app-schedule-modal [employee]="employeeAsBaseInfo" (closed)="onScheduleModalClosed($event)"></app-schedule-modal>
 }
-@if (isAssignServicesModalVisible && employeeAsBase) {
-<app-assign-services-modal [businessId]="businessId!" [employee]="employeeAsBase" [categories]="categories"
+@if (isAssignServicesModalVisible && employeeAsBaseInfo) {
+<app-assign-services-modal [businessId]="businessId!" [employee]="employeeAsBaseInfo" [categories]="categories"
   (closed)="onAssignServicesModalClosed($event)"></app-assign-services-modal>
 }
 @if (employeeForPhoto && businessId) {

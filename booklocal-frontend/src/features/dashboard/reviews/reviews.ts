@@ -70,10 +70,10 @@ export class ReviewsComponent implements OnInit, OnDestroy {
       next: (result) => {
         this.reviews = result.items;
         this.totalCount = result.totalCount;
-        this.isLoading = false;
+        setTimeout(() => this.isLoading = false, 300);
       },
       error: () => {
-        this.isLoading = false;
+        setTimeout(() => this.isLoading = false, 300);
       }
     });
   }

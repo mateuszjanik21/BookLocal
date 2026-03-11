@@ -207,7 +207,11 @@ namespace BookLocal.API.Controllers
 
             if (employee.EmployeeDetails == null)
             {
-                employee.EmployeeDetails = new EmployeeDetails();
+                employee.EmployeeDetails = new EmployeeDetails
+                {
+                    EmployeeId = employee.EmployeeId
+                };
+                _context.EmployeeDetails.Add(employee.EmployeeDetails);
             }
 
             employee.EmployeeDetails.Bio = employeeDto.Bio;

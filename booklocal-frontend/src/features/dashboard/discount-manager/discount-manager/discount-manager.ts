@@ -20,6 +20,8 @@ export class DiscountManagerComponent implements OnInit {
   businessId: number | null = null;
   discounts: Discount[] = [];
   isLoading = false;
+  showSpinner = false;
+  private spinnerTimeout: any;
   isCreating = false;
 
   get totalDiscounts(): number { return this.discounts.length; }
@@ -50,12 +52,21 @@ export class DiscountManagerComponent implements OnInit {
   loadDiscounts() {
     if (!this.businessId) return;
     this.isLoading = true;
+    this.showSpinner = false;
+    clearTimeout(this.spinnerTimeout);
+    this.spinnerTimeout = setTimeout(() => {
+      if (this.isLoading) this.showSpinner = true;
+    }, 500);
     this.discountService.getDiscounts(this.businessId).subscribe({
       next: (data) => {
         this.discounts = data;
         this.isLoading = false;
+        this.showSpinner = false;
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.showSpinner = false;
+      }
     });
   }
 
@@ -88,7 +99,7 @@ export class DiscountManagerComponent implements OnInit {
 
     this.discountService.createDiscount(this.businessId, payload).subscribe({
         next: (newDiscount) => {
-            this.discounts.unshift(newDiscount);
+            this.discounts.unshift(newDiscount); // Add to top
             this.toastr.success('Kupon utworzony.');
             this.isCreating = false;
             this.closeModal();

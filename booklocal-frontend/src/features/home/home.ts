@@ -19,14 +19,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   private businessService = inject(BusinessService);
   private categoryService = inject(CategoryService);
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('chipsContainer') chipsContainer!: ElementRef<HTMLDivElement>;
+  
   
   Math = Math;
-  isLoading = true;
+  isSkeletonVisible = false;
+  private skeletonTimeout: any;
   mainCategories: MainCategory[] = [];
   
   pagedResult: PagedResult<ServiceCategorySearchResult> | null = null;
   pageNumber = 1;
-  pageSize = 10;
+  pageSize = 12;
 
   activeMainCategoryId: number | null = null;
   activeSortBy = 'rating_desc';
@@ -57,7 +60,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   fetchResults(): void {
-    this.isLoading = true;
+    this.isSkeletonVisible = false;
+    if (this.skeletonTimeout) {
+      clearTimeout(this.skeletonTimeout);
+    }
+    
+    // Ustawienie opóźnionej flagi isSkeletonVisible o 1000 milisekund,
+    // by nie wymuszać brzydkich mignięć pustym ekranem przy szybkich odp.
+    this.skeletonTimeout = setTimeout(() => {
+      this.isSkeletonVisible = true;
+    }, 1000);
+
     const params = {
       searchTerm: this.searchInput?.nativeElement.value,
       mainCategoryId: this.activeMainCategoryId ?? undefined,
@@ -68,9 +81,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.businessService.searchCategoryFeed(params).subscribe({
       next: (data) => {
         this.pagedResult = data;
-        this.isLoading = false;
+        clearTimeout(this.skeletonTimeout);
+        this.isSkeletonVisible = false;
       },
-      error: () => this.isLoading = false
+      error: () => {
+        clearTimeout(this.skeletonTimeout);
+        this.isSkeletonVisible = false;
+      }
     });
   }
 
@@ -127,6 +144,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
     this.onSearchInput();
   }
+
+  scrollChips(amount: number): void {
+    if (this.chipsContainer) {
+      this.chipsContainer.nativeElement.scrollBy({ left: amount, behavior: 'smooth' });
+    }
+  }
   
   startImageRotation(): void {
     this.imageInterval = setInterval(() => {
@@ -148,6 +171,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.searchSubscription?.unsubscribe();
     if (this.imageInterval) {
       clearInterval(this.imageInterval);
+    }
+    if (this.skeletonTimeout) {
+      clearTimeout(this.skeletonTimeout);
     }
   }
 }

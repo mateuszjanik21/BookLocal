@@ -57,17 +57,6 @@
   transform: translateX(4px);
 }
 
-.service-row .btn-secondary {
-  opacity: 0;
-  transform: scale(0.8);
-  transition: all 0.2s ease-in-out;
-}
-
-.service-row:hover .btn-secondary {
-  opacity: 1;
-  transform: scale(1);
-}
-
 
 .employee-card {
   transition: transform 0.3s ease;

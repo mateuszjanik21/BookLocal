@@ -36,11 +36,11 @@ export class ManageEmployeesComponent implements OnInit {
     this.businessService.getMyBusiness().subscribe({
       next: (data) => {
         this.business = data;
-        this.isLoading = false;
+        setTimeout(() => this.isLoading = false, 300);
       },
       error: (err: any) => {
         console.error("Błąd:", err);
-        this.isLoading = false;
+        setTimeout(() => this.isLoading = false, 300);
       }
     });
   }

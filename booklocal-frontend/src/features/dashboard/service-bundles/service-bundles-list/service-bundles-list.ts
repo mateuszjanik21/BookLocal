@@ -32,11 +32,11 @@ export class ServiceBundlesListComponent implements OnInit {
     ).subscribe({
         next: (data) => {
             this.bundles = data;
-            this.isLoading = false;
+            setTimeout(() => this.isLoading = false, 300);
         },
         error: () => {
             this.toastr.error('Nie udało się pobrać pakietów.');
-            this.isLoading = false;
+            setTimeout(() => this.isLoading = false, 300);
         }
     });
   }

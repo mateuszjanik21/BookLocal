@@ -41,6 +41,17 @@ export class ReservationDetailComponent implements OnInit {
   sourcePaymentId: number | null = null;
   sourcePage: number | null = null;
 
+  paymentMethods: Record<string | number, string> = {
+    0: 'Gotówka',
+    1: 'Karta',
+    2: 'Online',
+    3: 'Inne',
+    'Cash': 'Gotówka',
+    'Card': 'Karta',
+    'Online': 'Online',
+    'Other': 'Inne'
+  };
+
   statuses = ['Confirmed', 'Completed', 'Cancelled'];
 
   ngOnInit(): void {

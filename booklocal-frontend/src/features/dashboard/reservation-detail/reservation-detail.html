@@ -195,7 +195,7 @@
                              </td>
                              <td class="flex justify-between md:table-cell py-1.5 md:py-3 border-none md:border-b border-base-200">
                                 <span class="md:hidden opacity-70 font-medium">Metoda:</span>
-                                <span>{{ payment.method }}</span>
+                                <span>{{ paymentMethods[payment.method] || payment.method }}</span>
                              </td>
                              <td class="flex justify-between items-center md:table-cell py-1.5 md:py-3 border-none md:border-b border-base-200">
                                  <span class="md:hidden opacity-70 font-medium">Status:</span>
@@ -262,7 +262,6 @@
         <select class="select select-bordered w-full" [(ngModel)]="selectedPaymentMethod">
           <option value="Cash">Gotówka</option>
           <option value="Card">Karta płatnicza</option>
-          <option value="Transfer">Przelew</option>
         </select>
       </div>
 

@@ -26,7 +26,7 @@ export class ManageHrComponent implements OnInit {
       this.business = b;
       this.hrService.getEmployeesForHr(b.id).subscribe(emps => {
         this.employees = emps;
-        this.dataLoaded = true;
+        setTimeout(() => this.dataLoaded = true, 300);
       });
     });
   }

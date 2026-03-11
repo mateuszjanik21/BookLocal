@@ -32,6 +32,9 @@ export class InvoicesListComponent implements OnInit {
   private spinnerTimeout: any;
   businessId: number | null = null;
   businessName: string = '';
+  businessNip: string = '';
+  businessAddress: string = '';
+  businessOwner: string = '';
   
   currentPage = 1;
   pageSize = 15;
@@ -46,11 +49,15 @@ export class InvoicesListComponent implements OnInit {
 
   totalGrossSum = 0;
 
-  paymentMethods: Record<number, string> = {
+  paymentMethods: Record<string | number, string> = {
     0: 'Gotówka',
     1: 'Karta',
     2: 'Online',
-    3: 'Inne'
+    3: 'Inne',
+    'Cash': 'Gotówka',
+    'Card': 'Karta',
+    'Online': 'Online',
+    'Other': 'Inne'
   };
 
   ngOnInit(): void {
@@ -67,6 +74,9 @@ export class InvoicesListComponent implements OnInit {
         if (business) {
           this.businessId = business.id;
           this.businessName = business.name;
+          this.businessNip = business.nip || '';
+          this.businessAddress = `${business.address || ''}, ${business.city || ''}`.replace(/^, | , $/g, '');
+          this.businessOwner = business.owner ? `${business.owner.firstName} ${business.owner.lastName || ''}`.trim() : '';
           this.loadInvoices();
         }
       },
@@ -111,13 +121,17 @@ export class InvoicesListComponent implements OnInit {
         this.totalPages = data.totalPages;
 
         this.totalGrossSum = data.totalGrossSum ?? 0;
-        this.isLoading = false;
-        this.showSpinner = false;
+        setTimeout(() => {
+          this.isLoading = false;
+          this.showSpinner = false;
+        }, 300);
       },
       error: () => {
         this.toastr.error('Błąd pobierania faktur.');
-        this.isLoading = false;
-        this.showSpinner = false;
+        setTimeout(() => {
+          this.isLoading = false;
+          this.showSpinner = false;
+        }, 300);
       }
     });
   }
@@ -195,20 +209,24 @@ export class InvoicesListComponent implements OnInit {
     doc.text(`Nr: ${invoice.invoiceNumber}`, 14, 28);
     
     doc.setFontSize(10);
-    doc.text(`Data wystawienia: ${new Date(invoice.issueDate).toLocaleDateString()}`, 140, 20);
-    doc.text(`Data sprzedaży: ${new Date(invoice.saleDate).toLocaleDateString()}`, 140, 26);
+    doc.text(`Data wystawienia: ${new Date(invoice.issueDate).toLocaleDateString()}`, 110, 20);
+    doc.text(`Data sprzedaży: ${new Date(invoice.saleDate).toLocaleDateString()}`, 110, 26);
+    doc.text(`Wystawił(a): ${this.businessOwner || 'Samoobsługa/System'}`, 110, 32);
 
-    doc.line(14, 35, 196, 35);
+    doc.line(14, 38, 196, 38);
     
-    doc.text('Sprzedawca:', 14, 42);
     doc.setFontSize(11);
-    doc.text(this.businessName, 14, 48);
-    
+    doc.text('Sprzedawca:', 14, 46);
     doc.setFontSize(10);
-    doc.text('Nabywca:', 110, 42);
+    doc.text(this.businessName || 'Brak nazwy', 14, 52);
+    doc.text(this.businessAddress || '-', 14, 57);
+    doc.text(`NIP: ${this.businessNip || '-'}`, 14, 62);
+    
     doc.setFontSize(11);
-    doc.text(invoice.customerName, 110, 48);
-    if (invoice.customerNip) doc.text(`NIP: ${invoice.customerNip}`, 110, 54);
+    doc.text('Nabywca:', 110, 46);
+    doc.setFontSize(10);
+    doc.text(invoice.customerName || 'Nieznany', 110, 52);
+    if (invoice.customerNip) doc.text(`NIP: ${invoice.customerNip}`, 110, 57);
 
     const tableData = invoice.items.map(item => [
       item.name,
@@ -220,7 +238,7 @@ export class InvoicesListComponent implements OnInit {
     ]);
 
     autoTable(doc, {
-      startY: 65,
+      startY: 75,
       head: [['Nazwa', 'Ilość', 'Cena Netto', 'VAT', 'Wartość Netto', 'Wartość Brutto']],
       body: tableData,
       theme: 'grid',

@@ -173,7 +173,8 @@ public class SearchController : ControllerBase
             var term = searchTerm.ToLower();
             query = query.Where(sc =>
                 sc.Name.ToLower().Contains(term) ||
-                sc.Business.Name.ToLower().Contains(term)
+                sc.Business.Name.ToLower().Contains(term) ||
+                sc.Services.Any(s => s.Name.ToLower().Contains(term) && !s.IsArchived)
             );
         }
 

@@ -22,9 +22,11 @@
         public string? PhotoUrl { get; set; }
         public DateOnly DateOfBirth { get; set; }
         public string? Specialization { get; set; }
+        public string? Bio { get; set; }
         public string? InstagramProfileUrl { get; set; }
         public string? PortfolioUrl { get; set; }
 
+        public ICollection<EmployeeCertificateDto> Certificates { get; set; } = new List<EmployeeCertificateDto>();
         public bool IsStudent { get; set; }
         public bool IsArchived { get; set; }
         public int AssignedServicesCount { get; set; }

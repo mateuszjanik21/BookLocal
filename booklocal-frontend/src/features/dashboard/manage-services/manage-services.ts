@@ -73,8 +73,10 @@ export class ManageServicesComponent implements OnInit {
         return this.categoryService.getCategories(businessData.id, this.showArchived);
       }),
       finalize(() => {
-        this.isLoading = false;
-        this.isRefreshing = false;
+        setTimeout(() => {
+          this.isLoading = false;
+          this.isRefreshing = false;
+        }, 300);
       })
     ).subscribe({
       next: (categoriesData) => {

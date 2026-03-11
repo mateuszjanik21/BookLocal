@@ -321,21 +321,7 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
 
-  get employeeAsBase(): Employee | null {
-    if (!this.employee) return null;
-    return {
-      id: this.employee.id,
-      firstName: this.employee.firstName,
-      lastName: this.employee.lastName,
-      position: this.employee.position ?? null,
-      photoUrl: this.employee.photoUrl,
-      dateOfBirth: this.employee.dateOfBirth,
-      specialization: this.employee.specialization,
-      instagramProfileUrl: this.employee.instagramProfileUrl,
-      portfolioUrl: this.employee.portfolioUrl,
-      isArchived: this.employee.isArchived
-    };
-  }
+  employeeAsBaseInfo: Employee | null = null;
 
   onEditModalClosed(result: boolean) {
     this.isEditModalVisible = false;
@@ -364,15 +350,35 @@ export class EmployeeDetailComponent implements OnInit {
     if (refresh) this.loadData();
   }
 
+  private setEmployeeAsBaseInfo() {
+    if (!this.employee) return;
+    this.employeeAsBaseInfo = {
+      id: this.employee.id,
+      firstName: this.employee.firstName,
+      lastName: this.employee.lastName,
+      position: this.employee.position ?? null,
+      photoUrl: this.employee.photoUrl,
+      dateOfBirth: this.employee.dateOfBirth,
+      specialization: this.employee.specialization,
+      bio: this.employee.bio,
+      instagramProfileUrl: this.employee.instagramProfileUrl,
+      portfolioUrl: this.employee.portfolioUrl,
+      isArchived: this.employee.isArchived
+    };
+  }
+
   openEditModal(employee: EmployeeDetail) {
+    this.setEmployeeAsBaseInfo();
     this.isEditModalVisible = true;
   }
 
   openScheduleModal(employee: EmployeeDetail) {
+    this.setEmployeeAsBaseInfo();
     this.isScheduleModalVisible = true;
   }
 
   openAssignServicesModal(employee: EmployeeDetail) {
+    this.setEmployeeAsBaseInfo();
     this.isAssignServicesModalVisible = true;
   }
 

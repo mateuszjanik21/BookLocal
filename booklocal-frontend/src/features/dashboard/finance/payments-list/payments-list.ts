@@ -132,13 +132,17 @@ export class PaymentsListComponent implements OnInit {
           this.expandedPaymentId = this.autoExpandId;
           this.autoExpandId = null;
         }
-        this.isLoading = false;
-        this.showSpinner = false;
+        setTimeout(() => {
+          this.isLoading = false;
+          this.showSpinner = false;
+        }, 300);
       },
       error: () => {
         this.toastr.error('Nie udało się pobrać listy płatności.');
-        this.isLoading = false;
-        this.showSpinner = false;
+        setTimeout(() => {
+          this.isLoading = false;
+          this.showSpinner = false;
+        }, 300);
       }
     });
   }

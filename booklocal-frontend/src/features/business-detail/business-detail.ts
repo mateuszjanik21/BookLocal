@@ -62,6 +62,8 @@ export class BusinessDetailComponent implements OnInit {
 
   favoriteVariantIds = new Set<number>();
 
+  selectedEmployee: Employee | null = null;
+
   ngOnInit(): void {
     const businessId = this.route.snapshot.paramMap.get('id');
 
@@ -252,5 +254,13 @@ export class BusinessDetailComponent implements OnInit {
   closeBookBundleModal() {
       this.isBookBundleModalOpen = false;
       this.selectedBundle = null;
+  }
+
+  openEmployeeModal(employee: Employee): void {
+    this.selectedEmployee = employee;
+  }
+
+  closeEmployeeModal(): void {
+    this.selectedEmployee = null;
   }
 }

@@ -1,5 +1,5 @@
 .parallax-container {
-  height: 55vh; 
+  height: 45vh; 
   min-height: 400px;
   overflow: hidden;
   perspective: 1px;
@@ -20,8 +20,15 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  will-change: transform;
-  transition: opacity 0.75s ease-in-out;
+  will-change: transform, opacity;
+  transition: opacity 1.2s ease-in-out, transform 10s ease-out;
+  transform: scale(1.05); /* lekki zoom by default */
+}
+
+/* W trakcie zanikania - jeszcze bardziej przybliżamy, zmniejszając opacity */
+.parallax-background img.image-fading {
+  opacity: 0;
+  transform: scale(1.15);
 }
 
 .parallax-background img.image-fading {
@@ -44,6 +51,8 @@
   overflow: hidden; 
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   animation: card-fade-in 0.6s ease-out forwards;
+  display: flex;
+  flex-direction: column; /* Karta pionowa dla grid */
 }
 
 .category-card:hover {
@@ -51,12 +60,21 @@
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
+.category-card figure {
+  width: 100%;
+  height: 240px; /* Stała wysokość zdjęcia dla grida */
+  overflow: hidden;
+}
+
 .category-card figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition: transform 0.4s ease;
 }
 
 .category-card:hover figure img {
-  transform: scale(1.05);
+  transform: scale(1.08); /* silniejszy efekt zoom po najechaniu na kafel */
 }
 
 
@@ -114,4 +132,12 @@
 
 .animate-fade-in-up {
   animation: fade-in-up 0.8s ease-out 0.2s backwards;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

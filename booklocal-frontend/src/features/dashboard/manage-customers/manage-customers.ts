@@ -19,6 +19,8 @@ export class ManageCustomersComponent implements OnInit {
 
   customers: CustomerListItem[] = [];
   isLoading = false;
+  showSpinner = false;
+  private spinnerTimeout: any;
   searchQuery = '';
   private searchSubject = new Subject<string>();
   
@@ -123,13 +125,22 @@ export class ManageCustomersComponent implements OnInit {
   loadCustomers() {
     if (!this.businessId) return;
     this.isLoading = true;
+    this.showSpinner = false;
+    clearTimeout(this.spinnerTimeout);
+    this.spinnerTimeout = setTimeout(() => {
+      if (this.isLoading) this.showSpinner = true;
+    }, 500);
     this.customerService.getCustomers(this.businessId, this.searchQuery, this.statusFilter, this.historyFilter, this.spentFilter, this.page, this.pageSize).subscribe({
       next: (data) => {
         this.customers = data.items;
         this.totalCount = data.totalCount;
         this.isLoading = false;
+        this.showSpinner = false;
       },
-      error: () => this.isLoading = false
+      error: () => {
+        this.isLoading = false;
+        this.showSpinner = false;
+      }
     });
   }
 

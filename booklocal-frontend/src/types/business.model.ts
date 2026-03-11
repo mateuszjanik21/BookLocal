@@ -32,6 +32,15 @@ export interface ServiceCategory {
   services: Service[];
 }
 
+export interface EmployeeCertificate {
+  certificateId: number;
+  name: string;
+  institution?: string;
+  dateObtained: string;
+  imageUrl?: string;
+  isVisibleToClient: boolean;
+}
+
 export interface Employee {
   id: number;
   firstName: string;
@@ -40,9 +49,12 @@ export interface Employee {
   photoUrl?: string;
   dateOfBirth: string;
   specialization?: string;
+  bio?: string;
   instagramProfileUrl?: string;
   portfolioUrl?: string;
   isArchived: boolean;
+  isStudent?: boolean;
+  certificates?: EmployeeCertificate[];
   assignedServicesCount?: number;
   completedReservationsCount?: number;
   activeContractType?: string;
@@ -65,6 +77,7 @@ export interface BusinessDetail extends Business {
   reviewCount: number;
   owner: {
     firstName?: string;
+    lastName?: string;
   };
   categories: ServiceCategory[];
   employees: Employee[];

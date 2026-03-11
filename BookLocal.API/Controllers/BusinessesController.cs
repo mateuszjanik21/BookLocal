@@ -72,6 +72,8 @@ namespace BookLocal.API.Controllers
                         .ThenInclude(s => s.Variants)
                 .Include(b => b.Employees)
                     .ThenInclude(e => e.FinanceSettings)
+                .Include(b => b.Employees)
+                    .ThenInclude(e => e.EmployeeDetails)
                 .Include(b => b.Owner)
                 .FirstOrDefaultAsync(b => b.BusinessId == id);
 
@@ -92,7 +94,11 @@ namespace BookLocal.API.Controllers
                 IsVerified = isVerified,
                 AverageRating = business.Reviews.Any() ? business.Reviews.Average(r => r.Rating) : 0,
                 ReviewCount = business.Reviews.Count,
-                Owner = new OwnerDto { FirstName = business.Owner?.FirstName ?? "Właściciel" },
+                Owner = new OwnerDto
+                {
+                    FirstName = business.Owner?.FirstName ?? "Właściciel",
+                    LastName = business.Owner?.LastName
+                },
 
                 Categories = business.Categories.Select(c => new ServiceCategoryDto
                 {
@@ -130,11 +136,32 @@ namespace BookLocal.API.Controllers
                     PhotoUrl = e.PhotoUrl,
                     DateOfBirth = e.DateOfBirth,
                     Specialization = e.EmployeeDetails != null ? e.EmployeeDetails.Specialization : null,
+                    Bio = e.EmployeeDetails != null ? e.EmployeeDetails.Bio : null,
                     InstagramProfileUrl = e.EmployeeDetails != null ? e.EmployeeDetails.InstagramProfileUrl : null,
                     PortfolioUrl = e.EmployeeDetails != null ? e.EmployeeDetails.PortfolioUrl : null,
                     IsStudent = e.FinanceSettings != null ? e.FinanceSettings.IsStudent : false
                 }).ToList()
             };
+
+            var employeeIds = business.Employees.Select(e => e.EmployeeId).ToList();
+            var certificates = await _context.Set<BookLocal.Data.Models.EmployeeCertificate>()
+                .Where(c => employeeIds.Contains(c.EmployeeId) && c.IsVisibleToClient)
+                .ToListAsync();
+
+            foreach (var empDto in businessDto.Employees)
+            {
+                empDto.Certificates = certificates
+                    .Where(c => c.EmployeeId == empDto.Id)
+                    .Select(c => new EmployeeCertificateDto
+                    {
+                        CertificateId = c.CertificateId,
+                        Name = c.Name,
+                        Institution = c.Institution,
+                        DateObtained = c.DateObtained,
+                        ImageUrl = c.ImageUrl,
+                        IsVisibleToClient = c.IsVisibleToClient
+                    }).ToList();
+            }
 
             return Ok(businessDto);
         }
@@ -188,7 +215,11 @@ namespace BookLocal.API.Controllers
                 IsVerified = isVerified,
                 AverageRating = business.Reviews.Any() ? business.Reviews.Average(r => r.Rating) : 0,
                 ReviewCount = business.Reviews.Count,
-                Owner = new OwnerDto { FirstName = business.Owner?.FirstName },
+                Owner = new OwnerDto
+                {
+                    FirstName = business.Owner?.FirstName,
+                    LastName = business.Owner?.LastName
+                },
 
                 Categories = business.Categories.Select(c => new ServiceCategoryDto
                 {
@@ -237,6 +268,7 @@ namespace BookLocal.API.Controllers
                         PhotoUrl = e.PhotoUrl,
                         DateOfBirth = e.DateOfBirth,
                         Specialization = e.EmployeeDetails != null ? e.EmployeeDetails.Specialization : null,
+                        Bio = e.EmployeeDetails != null ? e.EmployeeDetails.Bio : null,
                         InstagramProfileUrl = e.EmployeeDetails != null ? e.EmployeeDetails.InstagramProfileUrl : null,
                         PortfolioUrl = e.EmployeeDetails != null ? e.EmployeeDetails.PortfolioUrl : null,
                         IsStudent = e.FinanceSettings != null ? e.FinanceSettings.IsStudent : false,

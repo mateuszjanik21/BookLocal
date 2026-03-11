@@ -33,6 +33,9 @@ export class FinanceDashboardComponent implements OnInit {
   maxDate: string;
   businessId: number | null = null;
   businessName: string = '';
+  businessNip: string = '';
+  businessAddress: string = '';
+  businessOwner: string = '';
 
   generationMode: 'single' | 'range' | 'month' = 'single';
   generateMonthValue: string;
@@ -90,6 +93,9 @@ export class FinanceDashboardComponent implements OnInit {
         if (business) {
             this.businessId = business.id;
             this.businessName = business.name;
+            this.businessNip = business.nip || '';
+            this.businessAddress = `${business.address || ''}, ${business.city || ''}`.replace(/^, | , $/g, '');
+            this.businessOwner = business.owner ? `${business.owner.firstName} ${business.owner.lastName || ''}`.trim() : '';
             this.loadData();
         }
       },
@@ -329,12 +335,25 @@ export class FinanceDashboardComponent implements OnInit {
     doc.setFontSize(18);
     doc.text(`Raport Finansowy: ${this.displayDateLabel}`, 14, 20);
     
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Zestawienie wygenerowane dnia: ${new Date().toLocaleDateString()}`, 14, 26);
+    doc.setTextColor(0);
+    
     doc.setFontSize(12);
-    doc.text(`Firma: ${this.businessName}`, 14, 30);
-    doc.text(`Data: ${new Date().toLocaleDateString()}`, 14, 36);
+    doc.text('Firma:', 14, 35);
+    doc.setFontSize(10);
+    doc.text(this.businessName || 'Brak nazwy', 14, 40);
+    doc.text(this.businessAddress || '-', 14, 45);
+    doc.text(`NIP: ${this.businessNip || '-'}`, 14, 50);
+
+    doc.setFontSize(12);
+    doc.text('Wystawca:', 120, 35);
+    doc.setFontSize(10);
+    doc.text(this.businessOwner || 'Nieznany', 120, 40);
 
     doc.setFontSize(14);
-    doc.text('Podsumowanie', 14, 50);
+    doc.text('Podsumowanie', 14, 60);
     
     const summaryData = [
         ['Całkowity Przychód', `${this.monthTotalRevenue.toFixed(2)} PLN`],
@@ -347,7 +366,7 @@ export class FinanceDashboardComponent implements OnInit {
     ];
 
     autoTable(doc, {
-        startY: 55,
+        startY: 65,
         head: [['Metryka', 'Wartość']],
         body: summaryData,
         theme: 'striped',
@@ -393,11 +412,26 @@ export class FinanceDashboardComponent implements OnInit {
 
       doc.setFontSize(18);
       doc.text(`Raport Wydajności: ${this.displayDateLabel}`, 14, 20);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Zestawienie wygenerowane dnia: ${new Date().toLocaleDateString()}`, 14, 26);
+      doc.setTextColor(0);
+
       doc.setFontSize(12);
-      doc.text(`Firma: ${this.businessName}`, 14, 30);
+      doc.text('Firma:', 14, 35);
+      doc.setFontSize(10);
+      doc.text(this.businessName || 'Brak nazwy', 14, 40);
+      doc.text(this.businessAddress || '-', 14, 45);
+      doc.text(`NIP: ${this.businessNip || '-'}`, 14, 50);
+
+      doc.setFontSize(12);
+      doc.text('Wystawca:', 120, 35);
+      doc.setFontSize(10);
+      doc.text(this.businessOwner || 'Nieznany', 120, 40);
 
       doc.setFontSize(14);
-      doc.text('Ranking Pracowników', 14, 55);
+      doc.text('Ranking Pracowników', 14, 60);
 
       const maxRev = Math.max(...this.employeePerformance.map(e => e.totalRevenue), 1);
 
@@ -410,7 +444,7 @@ export class FinanceDashboardComponent implements OnInit {
       ]);
 
       autoTable(doc, {
-          startY: 60,
+          startY: 65,
           head: [['Pracownik', 'Przychód (PLN)', 'Prowizja (PLN)', 'Wizyty (OK/All)', 'Ocena']],
           body: empData,
           theme: 'grid',

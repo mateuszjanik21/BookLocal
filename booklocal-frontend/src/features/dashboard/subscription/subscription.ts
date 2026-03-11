@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CurrentSubscription, SubscriptionPlan, SubscriptionService } from '../../../core/services/subscription-service';
 import { ToastrService } from 'ngx-toastr';
@@ -17,8 +17,22 @@ export class SubscriptionManagerComponent implements OnInit {
   currentSubscription: CurrentSubscription | null = null;
   isLoading = true;
 
+  @ViewChild('plansContainer') plansContainer!: ElementRef;
+
   ngOnInit() {
     this.loadData();
+  }
+
+  scrollLeft() {
+    if (this.plansContainer) {
+      this.plansContainer.nativeElement.scrollBy({ left: -320, behavior: 'smooth' });
+    }
+  }
+
+  scrollRight() {
+    if (this.plansContainer) {
+      this.plansContainer.nativeElement.scrollBy({ left: 320, behavior: 'smooth' });
+    }
   }
 
   loadData() {
@@ -30,7 +44,7 @@ export class SubscriptionManagerComponent implements OnInit {
       },
       error: () => {
         this.toastr.error('Nie udało się pobrać planów subskrypcyjnych.');
-        this.isLoading = false;
+        setTimeout(() => this.isLoading = false, 300);
       }
     });
   }
@@ -39,11 +53,11 @@ export class SubscriptionManagerComponent implements OnInit {
     this.subscriptionService.getCurrentSubscription().subscribe({
       next: (sub) => {
         this.currentSubscription = sub;
-        this.isLoading = false;
+        setTimeout(() => this.isLoading = false, 300);
       },
       error: () => {
         console.error('Failed to load current subscription');
-        this.isLoading = false;
+        setTimeout(() => this.isLoading = false, 300);
       }
     });
   }
