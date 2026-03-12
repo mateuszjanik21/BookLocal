@@ -1,122 +1,245 @@
-<div class="modal modal-open">
-  <div class="modal-box w-11/12 max-w-5xl h-[90vh]">
-    <h3 class="font-bold text-lg mb-4">Umów Pakiet: {{ bundle?.name }}</h3>
-    
-    <div class="flex flex-col h-full gap-4">
-      <ul class="steps w-full">
-        <li class="step" [class.step-primary]="currentStep >= 1">Wybierz Pracownika</li>
-        <li class="step" [class.step-primary]="currentStep >= 2">Wybierz Termin</li>
-        <li class="step" [class.step-primary]="currentStep >= 3">Potwierdzenie</li>
+<dialog #bundleDialog class="modal modal-bottom lg:modal-middle transition-all duration-300" (close)="close.emit()">
+  <div class="modal-box relative border-none shadow-2xl max-w-none lg:max-w-xl">
+    <div class="w-12 h-1.5 bg-base-300 rounded-full mx-auto mb-4 lg:hidden opacity-50"></div>
+
+    <div class="flex justify-between items-start mb-2">
+      <div>
+        <h3 class="font-black text-2xl tracking-tight">Zarezerwuj pakiet</h3>
+        <p class="text-xs font-semibold text-primary/70 uppercase tracking-widest mt-1">
+          {{ bundle?.name }}
+        </p>
+      </div>
+      <button class="btn btn-sm btn-circle btn-ghost" (click)="closeModal()">✕</button>
+    </div>
+
+    <div class="flex-grow flex flex-col overflow-hidden">
+      <ul class="steps steps-horizontal w-full my-6">
+        <li class="step" [class.step-primary]="currentStep >= 1">Kto</li>
+        <li class="step" [class.step-primary]="currentStep >= 2">Termin</li>
+        <li class="step" [class.step-primary]="currentStep >= 3">Pakiet</li>
+        <li class="step" [class.step-primary]="currentStep === 4">Finał</li>
       </ul>
 
-      <div *ngIf="currentStep === 1" class="overflow-y-auto flex-1">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          @for (emp of employees; track emp.id) {
-            <div 
-              class="card bg-base-100 shadow-xl border border-base-200 cursor-pointer hover:border-primary transition-all"
-              [class.border-primary]="selectedEmployee?.id === emp.id"
-              (click)="selectEmployee(emp)">
-              <div class="card-body items-center text-center p-4">
-                <div class="avatar placeholder mb-2">
-                  <div class="bg-neutral text-neutral-content rounded-full w-16">
-                    <img *ngIf="emp.photoUrl" [src]="emp.photoUrl" />
-                    <span *ngIf="!emp.photoUrl" class="text-xl">{{ emp.firstName[0] }}{{ emp.lastName[0] }}</span>
+      <div class="flex-grow overflow-y-auto px-1 -mx-1 custom-scrollbar min-h-[350px]">
+        @if (currentStep === 1) {
+          <div class="animate-fade-in space-y-3 pb-4">
+            <p class="text-sm font-bold text-base-content/60 ml-1">Wybierz eksperta dla pakietu:</p>
+            <div class="grid grid-cols-2 gap-3">
+              @for (emp of employees; track emp.id) {
+                <div class="emp-card card p-4 items-center text-center cursor-pointer"
+                     [class.selected]="selectedEmployee?.id === emp.id"
+                     (click)="selectEmployee(emp); nextStep()">
+                  <div class="avatar mb-3">
+                    <div class="w-16 rounded-full ring-2 ring-primary/20 ring-offset-base-100 ring-offset-2">
+                       <img [src]="emp.photoUrl || 'assets/placeholder.svg'" (error)="$any($event.target).src='assets/placeholder.svg'" />
+                    </div>
+                  </div>
+                  <span class="font-bold text-sm block truncate w-full">{{ emp.firstName }}</span>
+                  <span class="text-[0.65rem] opacity-50 block truncate w-full uppercase font-black">{{ emp.position }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (currentStep === 2) {
+          <div class="animate-fade-in space-y-6 pb-6">
+            <div class="form-control">
+              <label class="label"><span class="label-text font-bold">Wybierz datę i godzinę startu pakietu</span></label>
+              <input type="date" #dateInput (change)="onDateChange(dateInput.value)" [min]="minDate"
+                     class="input input-bordered w-full rounded-2xl bg-base-200/50 focus:bg-base-200 transition-all font-semibold" />
+            </div>
+
+            @if (dateInput.value) {
+              @if (isLoadingSlots) {
+                <div class="flex flex-col justify-center items-center h-48 gap-3">
+                  <span class="loading loading-spinner text-primary loading-lg"></span>
+                  <span class="text-xs font-bold opacity-40 uppercase tracking-widest">Szukam terminów...</span>
+                </div>
+              } @else if (availableSlots.length === 0) {
+                <div class="bg-warning/10 rounded-3xl p-8 text-center border border-warning/20">
+                  <p class="text-warning font-bold">Brak dostępnych godzin</p>
+                  <p class="text-xs opacity-60 mt-1">Spróbuj wybrać inny dzień wizyty.</p>
+                </div>
+              } @else {
+                <div class="space-y-6">
+                  <div class="flex flex-col gap-3">
+                    <p class="text-sm font-bold text-base-content/60 ml-1">Wybierz porę dnia:</p>
+                    <div class="flex flex-wrap gap-2">
+                      @for (group of ['Rano', 'Południe', 'Popołudnie', 'Wieczór']; track group) {
+                        @if (timeGroups[group].length > 0) {
+                          <button type="button" 
+                                  class="btn btn-sm rounded-xl px-4 normal-case font-bold transition-all shadow-sm"
+                                  [class.btn-primary]="activeGroup === group"
+                                  [class.btn-ghost]="activeGroup !== group"
+                                  [class.bg-base-200]="activeGroup !== group"
+                                  (click)="selectGroup(group)">
+                            {{ group }}
+                            <span class="opacity-40 text-[10px] ml-1">({{ timeGroups[group].length }})</span>
+                          </button>
+                        }
+                      }
+                    </div>
+                  </div>
+
+                  <div class="space-y-3">
+                    <p class="text-sm font-bold text-base-content/60 ml-1">Dostępne godziny ({{ activeGroup }}):</p>
+                    <div class="grid grid-cols-4 gap-2">
+                      @for (slot of timeGroups[activeGroup]; track slot) {
+                        <button class="slot-btn btn btn-sm h-12 shadow-sm"
+                                [class.selected]="selectedSlot === slot"
+                                (click)="selectedSlot = slot; nextStep()">
+                          {{ slot | date:'HH:mm' }}
+                        </button>
+                      }
+                    </div>
                   </div>
                 </div>
-                <h3 class="font-bold">{{ emp.firstName }} {{ emp.lastName }}</h3>
-                <p class="text-sm text-base-content/70">{{ emp.position }}</p>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-
-      <div *ngIf="currentStep === 2" class="flex flex-col md:flex-row gap-6 h-full overflow-hidden">
-        <div class="w-full md:w-1/3">
-           <div class="form-control">
-             <label class="label"><span class="label-text">Wybierz dzień</span></label>
-             <input type="date" [ngModel]="selectedDate | date:'yyyy-MM-dd'" (ngModelChange)="onDateChange($event)" class="input input-bordered w-full" />
-           </div>
-        </div>
-
-        <div class="w-full md:w-2/3 overflow-y-auto">
-            <h4 class="font-bold mb-2">Dostępne godziny (Cały pakiet: {{ (bundle?.totalPrice ?? 0) | currency:'PLN' }})</h4>
-            
-            @if (isLoadingSlots) {
-                <div class="flex justify-center p-4"><span class="loading loading-spinner loading-lg"></span></div>
-            } @else if (availableSlots.length === 0) {
-                <div class="alert">Brak wolnych terminów w wybranym dniu.</div>
+              }
             } @else {
-                <div class="grid grid-cols-3 md:grid-cols-4 gap-2">
-                    @for (slot of availableSlots; track slot) {
-                        <button 
-                            class="btn btn-outline btn-sm" 
-                            [class.btn-active]="selectedSlot === slot"
-                            (click)="selectSlot(slot)">
-                            {{ slot | date:'HH:mm' }}
-                        </button>
-                    }
-                </div>
+              <div class="flex flex-col items-center justify-center py-10 opacity-30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <p class="font-bold">Najpierw wybierz datę</p>
+              </div>
             }
-        </div>
-      </div>
-
-       <div *ngIf="currentStep === 3" class="flex-1 flex flex-col items-center justify-center gap-4">
-          <div class="stats shadow">
-            <div class="stat">
-                <div class="stat-title">Pakiet</div>
-                <div class="stat-value text-primary text-2xl">{{ bundle?.name }}</div>
-                <div class="stat-desc">{{ bundle?.items?.length }} usług</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">Pracownik</div>
-                <div class="stat-value text-secondary text-2xl">{{ selectedEmployee?.firstName }}</div>
-            </div>
-            <div class="stat">
-                <div class="stat-title">Termin</div>
-                <div class="stat-value text-2xl">{{ selectedSlot | date:'dd.MM HH:mm' }}</div>
-            </div>
           </div>
+        }
 
-          <div *ngIf="isOwnerMode">
-            <div class="form-control w-full max-w-xs">
-                <label class="label"><span class="label-text">Imię i Nazwisko Klienta</span></label>
-                <input type="text" [(ngModel)]="guestName" placeholder="np. Anna Nowak" class="input input-bordered w-full" />
+        @if (currentStep === 3) {
+          <div class="animate-fade-in space-y-6 pb-6">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-base-200/50 p-4 rounded-2xl border border-base-300">
+                    <span class="text-[0.65rem] uppercase font-black opacity-40 block mb-1">Specjalista</span>
+                    <span class="font-bold text-sm">{{ selectedEmployee?.firstName }}</span>
+                </div>
+                <div class="bg-base-200/50 p-4 rounded-2xl border border-base-300">
+                    <span class="text-[0.65rem] uppercase font-black opacity-40 block mb-1">Start pakietu</span>
+                    <span class="font-bold text-sm">{{ selectedSlot | date:'dd.MM HH:mm' }}</span>
+                </div>
             </div>
-            <div class="form-control w-full max-w-xs">
-                <label class="label"><span class="label-text">Telefon (opcjonalnie)</span></label>
-                <input type="text" [(ngModel)]="guestPhone" placeholder="123 456 789" class="input input-bordered w-full" />
-            </div>
-          </div>
 
-          <div class="card w-96 bg-base-100 shadow-xl border border-base-200">
-             <div class="card-body p-4">
-                <h4 class="font-bold mb-2">Harmonogram usług:</h4>
+            <div class="bundle-timeline">
+                <h4 class="text-xs font-black uppercase opacity-40 mb-4 tracking-widest pl-1">Usługi w pakiecie:</h4>
                 <ul class="timeline timeline-vertical timeline-compact">
                     @for (item of bundle?.items; track item.serviceBundleItemId; let i = $index) {
                         <li>
-                            <hr *ngIf="i > 0" />
-                            <div class="timeline-middle">
+                            <hr *ngIf="i > 0" class="bg-primary/20" />
+                            <div class="timeline-middle text-primary">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
                             </div>
-                            <div class="timeline-end timeline-box">{{ item.serviceName }} - {{ item.variantName }} <span class="text-xs opacity-50">({{ item.durationMinutes }} min)</span></div>
-                            <hr *ngIf="i < (bundle?.items?.length ?? 0) - 1" />
+                            <div class="timeline-end timeline-box py-3 px-4 shadow-sm border-none bg-base-100/50 w-full">
+                                <p class="text-xs font-black">{{ item.serviceName }}</p>
+                                <p class="text-[0.65rem] opacity-50 uppercase">{{ item.variantName }} • {{ item.durationMinutes }} min</p>
+                            </div>
+                            <hr *ngIf="i < (bundle?.items?.length ?? 0) - 1" class="bg-primary/20" />
                         </li>
                     }
                 </ul>
-             </div>
-          </div>
-       </div>
+            </div>
 
-      <div class="modal-action mt-auto">
-        <button class="btn" (click)="close.emit()">Anuluj</button>
-        <button class="btn" *ngIf="currentStep > 1" (click)="currentStep = currentStep - 1">Wstecz</button>
-        <button class="btn btn-primary" *ngIf="currentStep < 3" [disabled]="!canProceed()" (click)="nextStep()">Dalej</button>
-        <button class="btn btn-success text-white" *ngIf="currentStep === 3" [disabled]="isSaving" (click)="confirmBooking()">
-            <span *ngIf="isSaving" class="loading loading-spinner"></span>
-            Potwierdź Rezerwację
-        </button>
+            @if (isOwnerMode) {
+              <div class="space-y-3 bg-secondary/5 p-4 rounded-2xl border border-secondary/10">
+                <p class="text-xs font-black uppercase text-secondary tracking-widest mb-1">Dane klienta (Owner Mode)</p>
+                <input type="text" [(ngModel)]="guestName" placeholder="Imię i Nazwisko" 
+                       class="input input-bordered input-sm w-full rounded-xl" />
+                <input type="text" [(ngModel)]="guestPhone" placeholder="Telefon (opcjonalnie)" 
+                       class="input input-bordered input-sm w-full rounded-xl" />
+              </div>
+            }
+          </div>
+        }
+
+        @if(currentStep === 4) {
+          <div class="animate-fade-in space-y-4 pb-6">
+            <div class="bg-base-200/50 rounded-2xl p-5 space-y-4 border border-base-300 mb-6">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-bold text-base-content/60">Do zapłaty za pakiet:</span>
+                    <span class="text-3xl font-black text-primary price-tag">{{ (bundle?.totalPrice ?? 0) | currency:'PLN':'symbol':'1.2-2':'pl-PL' }}</span>
+                </div>
+            </div>
+
+            <p class="text-sm font-bold text-base-content/60 ml-1">Wybierz formę płatności:</p>
+            
+            <div class="space-y-3">
+              <label class="payment-card flex items-center p-4 cursor-pointer gap-4" [class.active]="paymentMethod === 'Cash'">
+                <div class="w-12 h-12 rounded-2xl bg-success/10 text-success flex items-center justify-center shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+                <div class="flex-grow">
+                  <span class="font-bold block">Płatność w salonie</span>
+                  <span class="text-[0.65rem] opacity-50 uppercase font-black">Gotówka lub Karta</span>
+                </div>
+                <input type="radio" name="paymentMethod" [(ngModel)]="paymentMethod" value="Cash" class="radio radio-primary" />
+              </label>
+
+              <label class="payment-card flex items-center p-4 cursor-pointer gap-4" [class.active]="paymentMethod === 'Online'">
+                <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div class="flex-grow">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold">Płatność online</span>
+                    <span class="badge badge-success badge-xs font-black">FAST</span>
+                  </div>
+                  <span class="text-[0.65rem] opacity-50 uppercase font-black">Blik, Przelewy24, Apple Pay</span>
+                </div>
+                <input type="radio" name="paymentMethod" [(ngModel)]="paymentMethod" value="Online" class="radio radio-primary" />
+              </label>
+            </div>
+
+            @if(paymentStatus === 'processing' || paymentStatus === 'success') {
+                <div class="fixed inset-0 bg-base-100/60 backdrop-blur-sm z-[100] flex flex-col items-center justify-center text-center p-8">
+                    @if(paymentStatus === 'processing') {
+                        <span class="loading loading-spinner text-primary loading-lg mb-4"></span>
+                        <p class="font-black text-xl">Przetwarzanie...</p>
+                        <p class="text-sm opacity-60">Proszę nie zamykać okna.</p>
+                    }
+                    @if(paymentStatus === 'success') {
+                      <div class="scale-up bg-success text-success-content p-6 rounded-full mb-4 shadow-xl shadow-success/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                      <p class="font-black text-2xl">Sukces!</p>
+                      <p class="text-sm opacity-60">Pakiet został zarezerwowany.</p>
+                    }
+                </div>
+            }
+          </div>
+        }
       </div>
     </div>
+
+    <div class="modal-action pt-4 border-t border-base-300 mt-0 bg-base-100/50">
+        <div class="flex w-full gap-2">
+           @if(currentStep > 1 && paymentStatus === 'idle') {
+             <button type="button" class="btn btn-ghost rounded-2xl px-6" (click)="prevStep()">Wstecz</button>
+           } @else if (paymentStatus === 'idle') {
+             <button type="button" class="btn btn-ghost rounded-2xl px-6" (click)="closeModal()">Anuluj</button>
+           }
+           
+           <div class="flex-grow"></div>
+           
+           @if(currentStep === 2) {
+             <button type="button" class="btn btn-primary rounded-2xl px-10 shadow-lg shadow-primary/20" 
+                     (click)="nextStep()" [disabled]="!selectedSlot">
+               Dalej
+             </button>
+           }
+           
+           @if(currentStep === 3) {
+             <button type="button" class="btn btn-primary rounded-2xl px-10 shadow-lg shadow-primary/20" 
+                     (click)="nextStep()">
+               Podsumowanie
+             </button>
+           }
+
+           @if(currentStep === 4) {
+             <button type="button" class="btn btn-primary rounded-2xl px-10 shadow-lg shadow-primary/20" 
+                     [disabled]="isSaving || isProcessingPayment" (click)="onSubmit()">
+               @if(isSaving) { <span class="loading loading-spinner"></span> }
+               {{ paymentMethod === 'Online' ? 'Zapłać i zarezerwuj' : 'Zarezerwuj pakiet' }}
+             </button>
+           }
+        </div>
+    </div>
   </div>
-</div>
+</dialog>

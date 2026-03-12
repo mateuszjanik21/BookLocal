@@ -1,0 +1,107 @@
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  align-items: flex-end;
+}
+
+@media (min-width: 1024px) {
+  .modal {
+    align-items: center;
+  }
+}
+
+.modal-box {
+  width: 100%;
+  max-width: none;
+  height: 100vh;
+  max-height: 100vh;
+  border-radius: 2rem 2rem 0 0;
+  padding: 1.5rem;
+  background: hsl(var(--b1) / 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--bc) / 0.1);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (min-width: 1024px) {
+  .modal-box {
+    width: 28rem;
+    border-radius: 2rem;
+    margin-bottom: 0;
+    max-height: 80vh;
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+}
+
+.steps .step {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.employee-grid-item {
+  transition: all 0.2s ease;
+  border: 1.5px solid transparent;
+}
+
+.employee-grid-item.selected {
+  background-color: hsl(var(--p) / 0.15);
+  border-color: hsl(var(--p));
+}
+
+.employee-grid-item:active {
+  transform: scale(0.96);
+}
+
+.slot-btn {
+  font-weight: 600;
+  border-radius: 1rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border-color: hsl(var(--bc) / 0.1);
+}
+
+.slot-btn:hover:not(:disabled) {
+  border-color: hsl(var(--p));
+  background: hsl(var(--p) / 0.05);
+}
+
+.slot-btn.selected {
+  background: hsl(var(--p));
+  color: hsl(var(--pc));
+  border-color: hsl(var(--p));
+  box-shadow: 0 4px 12px hsl(var(--p) / 0.2);
+}
+
+.payment-card {
+  border-radius: 1.25rem;
+  transition: all 0.3s ease;
+  background: transparent;
+  border: 1px solid transparent;
+  outline: none;
+}
+
+.payment-card.active {
+  background: hsl(var(--p) / 0.06);
+  border-color: hsl(var(--p) / 0.6);
+}
+
+.payment-card:focus,
+.payment-card:focus-within {
+  outline: none;
+  box-shadow: none;
+}
+
+.price-tag {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}

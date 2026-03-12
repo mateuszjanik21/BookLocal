@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Service, Employee } from '../../../types/business.model';
+import { Service, Employee, BusinessDetail } from '../../../types/business.model';
 import { ReservationService } from '../../../core/services/reservation';
 import { DiscountService, VerifyDiscountResult } from '../../../core/services/discount-service';
 import { ToastrService } from 'ngx-toastr';
@@ -18,6 +18,7 @@ export class ReservationModalComponent implements OnChanges {
   @ViewChild('reservationDialog') dialog!: ElementRef<HTMLDialogElement>;
   @Input() service: Service | null = null;
   @Input() employees: Employee[] = [];
+  @Input() business: BusinessDetail | null = null;
   
   private reservationService = inject(ReservationService);
   private discountService = inject(DiscountService);
@@ -26,8 +27,15 @@ export class ReservationModalComponent implements OnChanges {
   private router = inject(Router); 
   private authService = inject(AuthService);
 
-  currentStep = 1;
+  currentStep: number = 1;
   availableSlots: string[] = [];
+  timeGroups: { [key: string]: string[] } = {
+    'Rano': [],
+    'Południe': [],
+    'Popołudnie': [],
+    'Wieczór': []
+  };
+  activeGroup: string = 'Rano';
   isLoadingSlots = false;
   isReserving = false;
   minDate: string;
@@ -46,6 +54,7 @@ export class ReservationModalComponent implements OnChanges {
 
   isProcessingPayment = false;
   paymentStatus: 'idle' | 'processing' | 'success' | 'failed' = 'idle';
+  isServicePreselected = false;
 
   constructor() {
     const today = new Date();
@@ -53,11 +62,15 @@ export class ReservationModalComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['service'] && this.service) {
+    if (changes['service']) {
       this.resetModal();
-      if (this.employees.length === 1) {
-        this.reservationForm.get('employeeId')?.setValue(this.employees[0].id.toString());
-        this.currentStep = 2;
+      if (this.service) {
+        this.isServicePreselected = true;
+        if (this.employees.length === 1) {
+          this.reservationForm.get('employeeId')?.setValue(this.employees[0].id.toString());
+          this.currentStep = 3;
+          this.onDateChange();
+        }
       }
     }
   }
@@ -72,6 +85,7 @@ export class ReservationModalComponent implements OnChanges {
     this.reservationService.getAvailableSlots(+employeeId, this.service.id, date).subscribe({
       next: (slots) => {
         this.availableSlots = slots;
+        this.groupSlots(slots);
         this.isLoadingSlots = false;
       },
       error: () => {
@@ -79,6 +93,38 @@ export class ReservationModalComponent implements OnChanges {
         this.isLoadingSlots = false;
       }
     });
+  }
+
+  groupSlots(slots: string[]): void {
+    this.timeGroups = { 'Rano': [], 'Południe': [], 'Popołudnie': [], 'Wieczór': [] };
+    
+    slots.forEach(slot => {
+      const date = new Date(slot);
+      const hour = date.getHours();
+      
+      if (hour >= 6 && hour < 11) this.timeGroups['Rano'].push(slot);
+      else if (hour >= 11 && hour < 15) this.timeGroups['Południe'].push(slot);
+      else if (hour >= 15 && hour < 18) this.timeGroups['Popołudnie'].push(slot);
+      else if (hour >= 18) this.timeGroups['Wieczór'].push(slot);
+    });
+
+    const groupsWithSlots = Object.keys(this.timeGroups).filter(key => this.timeGroups[key].length > 0);
+    if (groupsWithSlots.length > 0 && this.timeGroups[this.activeGroup].length === 0) {
+      this.activeGroup = groupsWithSlots[0];
+    }
+  }
+
+  selectGroup(group: string): void {
+    this.activeGroup = group;
+  }
+
+  selectService(service: Service, variant: any): void {
+    this.service = {
+       ...service,
+       variants: [variant]
+    };
+    this.onDateChange();
+    this.nextStep();
   }
 
   verifyDiscount() {
@@ -93,7 +139,13 @@ export class ReservationModalComponent implements OnChanges {
       const serviceId = this.service.id; 
       const currentUser: any = this.authService.currentUserValue;
       
-      this.discountService.verifyDiscount(this.service.businessId, {
+      const businessId = this.service.businessId || this.business?.id;
+      if (!businessId) {
+          this.toastr.error('Błąd: Nie znaleziono identyfikatora firmy.');
+          return;
+      }
+
+      this.discountService.verifyDiscount(businessId, {
           code,
           serviceId: this.service.id,
           customerId: currentUser ? currentUser.id : undefined,
@@ -176,16 +228,33 @@ export class ReservationModalComponent implements OnChanges {
   }
 
   nextStep(): void {
-    if (this.currentStep < 4) this.currentStep++;
+    if (this.currentStep === 1 && this.service) {
+      this.currentStep = 3;
+      this.onDateChange();
+      return;
+    }
+    
+    if (this.currentStep < 4) {
+      this.currentStep++;
+      if (this.currentStep === 3) {
+        this.onDateChange();
+      }
+    }
   }
 
   prevStep(): void {
+    if (this.currentStep === 3 && this.isServicePreselected) {
+      this.currentStep = 1;
+      return;
+    }
     if (this.currentStep > 1) this.currentStep--;
   }
 
   resetModal(): void {
     this.currentStep = 1;
+    this.isServicePreselected = !!this.service;
     this.reservationForm.reset();
+    this.reservationForm.get('paymentMethod')?.setValue('Cash');
     this.availableSlots = [];
     this.verifiedDiscount = null;
     this.discountError = null;

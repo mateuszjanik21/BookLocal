@@ -67,6 +67,7 @@ export interface Business {
   nip: string;
   city: string | null;
   address: string | null;
+  phoneNumber: string | null;
   description: string | null;
   photoUrl?: string;
 }
@@ -117,6 +118,7 @@ export interface ServiceCategorySearchResult {
   businessId: number;
   businessName: string;
   businessCity: string | null;
+  mainCategoryName?: string;
   averageRating: number;
   reviewCount: number;
   businessCreatedAt: string;

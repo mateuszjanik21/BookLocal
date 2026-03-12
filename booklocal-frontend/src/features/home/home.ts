@@ -19,9 +19,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   private businessService = inject(BusinessService);
   private categoryService = inject(CategoryService);
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('locationInput') locationInput!: ElementRef<HTMLInputElement>;
   @ViewChild('chipsContainer') chipsContainer!: ElementRef<HTMLDivElement>;
   
-  
+  locationTerm: string = '';
   Math = Math;
   isSkeletonVisible = false;
   private skeletonTimeout: any;
@@ -34,7 +35,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   activeMainCategoryId: number | null = null;
   activeSortBy = 'rating_desc';
 
-  private searchSubject = new Subject<string>();
+  private searchSubject = new Subject<void>();
   private searchSubscription?: Subscription;
   
   backgroundImages: string[] = [
@@ -73,6 +74,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     const params = {
       searchTerm: this.searchInput?.nativeElement.value,
+      locationTerm: this.locationTerm,
       mainCategoryId: this.activeMainCategoryId ?? undefined,
       sortBy: this.activeSortBy,
       pageNumber: this.pageNumber,
@@ -93,12 +95,40 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onSearchInput(): void {
     this.pageNumber = 1;
-    this.searchSubject.next(this.searchInput.nativeElement.value);
+    this.searchSubject.next();
+  }
+
+  onLocationInput(event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.locationTerm = val;
+    this.pageNumber = 1;
+    this.searchSubject.next();
+  }
+
+  useCurrentLocation(): void {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // Symulacja wykrycia lokalizacji
+          this.locationTerm = 'Moja lokalizacja';
+          if (this.locationInput) this.locationInput.nativeElement.value = this.locationTerm;
+          this.onFilterChange();
+        },
+        (error) => {
+          console.error('Błąd pobierania lokalizacji', error);
+        }
+      );
+    }
   }
 
   onFilterChange(): void {
     this.pageNumber = 1;
     this.fetchResults();
+  }
+
+  getLowestPrice(item: ServiceCategorySearchResult): string {
+    const price = item.services?.[0]?.variants?.[0]?.price;
+    return price !== undefined ? `${price}` : '---';
   }
   
   pageChanged(newPage: number): void {
@@ -142,6 +172,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.searchInput) {
       this.searchInput.nativeElement.value = '';
     }
+    if (this.locationInput) {
+      this.locationInput.nativeElement.value = '';
+    }
+    this.locationTerm = '';
     this.onSearchInput();
   }
 

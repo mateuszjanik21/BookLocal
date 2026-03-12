@@ -22,10 +22,9 @@
   object-fit: cover;
   will-change: transform, opacity;
   transition: opacity 1.2s ease-in-out, transform 10s ease-out;
-  transform: scale(1.05); /* lekki zoom by default */
+  transform: scale(1.05);
 }
 
-/* W trakcie zanikania - jeszcze bardziej przybliżamy, zmniejszając opacity */
 .parallax-background img.image-fading {
   opacity: 0;
   transform: scale(1.15);
@@ -37,44 +36,51 @@
 
 .parallax-content {
   height: 100%;
+  padding-top: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.3));
-  position: relative;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.2));
   z-index: 1;
 }
 
-.category-card {
-  border-radius: 1rem; 
+.parallax-content h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  margin-bottom: 1rem;
+}
+
+.parallax-content p {
+  font-size: clamp(0.9rem, 2vw, 1.25rem);
+  margin-bottom: 2rem;
+}
+
+.salon-card {
+  border-radius: 1.25rem; 
   overflow: hidden; 
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: card-fade-in 0.6s ease-out forwards;
-  display: flex;
-  flex-direction: column; /* Karta pionowa dla grid */
 }
 
-.category-card:hover {
-  transform: translateY(-8px); 
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+.salon-card:hover {
+  transform: translateY(-4px); 
+  box-shadow: 0 12px 20px -8px rgba(0,0,0,0.15);
+  border-color: var(--p);
 }
 
-.category-card figure {
-  width: 100%;
-  height: 240px; /* Stała wysokość zdjęcia dla grida */
-  overflow: hidden;
+.salon-card figure {
+  transition: width 0.3s ease;
 }
 
-.category-card figure img {
+.salon-card figure img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  transition: transform 0.6s ease;
 }
 
-.category-card:hover figure img {
-  transform: scale(1.08); /* silniejszy efekt zoom po najechaniu na kafel */
+.salon-card:hover figure img {
+  transform: scale(1.05);
 }
 
 
@@ -111,18 +117,147 @@
   }
 }
 
+.search-glass-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  max-width: 900px;
+  margin: 0 auto;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .search-glass-container {
+    flex-direction: row;
+    border-radius: 2.5rem;
+    max-width: 1050px;
+  }
+}
+
+.search-glass-container input {
+  transition: all 0.3s ease;
+}
+
+.search-glass-container input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.search-glass-container input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.search-glass-container .btn-primary {
+  background: #00b341;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .search-glass-container input {
+    height: 72px; 
+    font-size: 1.125rem;
+  }
+  
+  .search-glass-container .btn-primary {
+    height: 72px;
+    padding: 0 3rem;
+  }
+}
+
+.search-glass-container .btn-primary:hover {
+  background: #009c38;
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.btn-search-ios {
+  background: #00b341;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 768px) {
+  .btn-search-ios {
+    width: 80px;
+    height: 72px;
+    border-radius: 0;
+    flex-shrink: 0;
+  }
+}
+
+.btn-search-ios:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.btn-search-ios svg {
+  color: white !important;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
 @media (max-width: 768px) {
   .parallax-container {
     height: auto;
-    min-height: 300px;
+    min-height: 140px; 
+    padding: 1.5rem 0;
+  }
+  
+  .parallax-content {
+    padding-top: 0;
   }
 
-  .category-card .card-body {
-    padding: 1rem;
+  .parallax-content h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
   }
 
-  .category-card .card-title {
-    font-size: 1.25rem;
+  .parallax-content p {
+    display: none; 
+  }
+
+  .search-glass-container {
+    margin-top: 0.5rem;
+    border-radius: 1.25rem;
+    backdrop-filter: blur(15px);
+    padding: 0.5rem;
+  }
+
+  .btn-search-ios {
+    width: 100%;
+    height: 50px;
+    border-radius: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .salon-card {
+    height: 110px;
+    margin-bottom: 0.75rem;
+  }
+
+  .salon-card figure {
+    width: 100px !important;
+    height: 110px !important;
+  }
+
+  .salon-card .p-4 {
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .salon-card h2 {
+    font-size: 0.85rem !important;
   }
 }
 

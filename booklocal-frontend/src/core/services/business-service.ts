@@ -32,24 +32,26 @@ export class BusinessService {
     return this.http.get<BusinessDetail>(`${this.apiUrl}/businesses/my-business`);
   }
 
-  searchServices(params: { searchTerm?: string, mainCategoryId?: number, sortBy?: string, pageNumber: number, pageSize: number }): Observable<PagedResult<ServiceSearchResult>> {
+  searchServices(params: { searchTerm?: string, locationTerm?: string, mainCategoryId?: number, sortBy?: string, pageNumber: number, pageSize: number }): Observable<PagedResult<ServiceSearchResult>> {
     let httpParams = new HttpParams()
       .set('pageNumber', params.pageNumber.toString())
       .set('pageSize', params.pageSize.toString());
 
     if (params.searchTerm) { httpParams = httpParams.set('searchTerm', params.searchTerm); }
+    if (params.locationTerm) { httpParams = httpParams.set('locationTerm', params.locationTerm); }
     if (params.mainCategoryId) { httpParams = httpParams.set('mainCategoryId', params.mainCategoryId.toString()); }
     if (params.sortBy) { httpParams = httpParams.set('sortBy', params.sortBy); }
 
     return this.http.get<PagedResult<ServiceSearchResult>>(`${this.apiUrl}/search/services`, { params: httpParams });
   }
 
-  searchBusinesses(params: { searchTerm?: string, mainCategoryId?: number, sortBy?: string, pageNumber: number, pageSize: number }): Observable<PagedResult<BusinessSearchResult>> {
+  searchBusinesses(params: { searchTerm?: string, locationTerm?: string, mainCategoryId?: number, sortBy?: string, pageNumber: number, pageSize: number }): Observable<PagedResult<BusinessSearchResult>> {
     let httpParams = new HttpParams()
       .set('pageNumber', params.pageNumber.toString())
       .set('pageSize', params.pageSize.toString());
 
     if (params.searchTerm) { httpParams = httpParams.set('searchTerm', params.searchTerm); }
+    if (params.locationTerm) { httpParams = httpParams.set('locationTerm', params.locationTerm); }
     if (params.mainCategoryId) { httpParams = httpParams.set('mainCategoryId', params.mainCategoryId.toString()); }
     if (params.sortBy) { httpParams = httpParams.set('sortBy', params.sortBy); }
 
@@ -58,6 +60,7 @@ export class BusinessService {
 
   searchCategoryFeed(params: { 
     searchTerm?: string, 
+    locationTerm?: string,
     mainCategoryId?: number, 
     sortBy?: string,
     pageNumber: number,
@@ -69,6 +72,7 @@ export class BusinessService {
       .set('pageSize', params.pageSize.toString());
     
     if (params.searchTerm) { httpParams = httpParams.set('searchTerm', params.searchTerm); }
+    if (params.locationTerm) { httpParams = httpParams.set('locationTerm', params.locationTerm); }
     if (params.mainCategoryId) { httpParams = httpParams.set('mainCategoryId', params.mainCategoryId.toString()); }
     if (params.sortBy) { httpParams = httpParams.set('sortBy', params.sortBy); }
     

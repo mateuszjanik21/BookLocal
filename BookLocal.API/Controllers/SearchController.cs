@@ -16,6 +16,7 @@ public class SearchController : ControllerBase
     [HttpGet("services")]
     public async Task<IActionResult> SearchServices(
         [FromQuery] string? searchTerm,
+        [FromQuery] string? locationTerm,
         [FromQuery] int? mainCategoryId,
         [FromQuery] string? sortBy,
         [FromQuery] int pageNumber = 1,
@@ -43,6 +44,13 @@ public class SearchController : ControllerBase
                 s.Business.Name.ToLower().Contains(term) ||
                 s.ServiceCategory.Name.ToLower().Contains(term)
             );
+        }
+
+        if (!string.IsNullOrWhiteSpace(locationTerm))
+        {
+            var lTerm = locationTerm.ToLower();
+            query = query.Where(s => (s.Business.City != null && s.Business.City.ToLower().Contains(lTerm)) ||
+                                     (s.Business.Address != null && s.Business.Address.ToLower().Contains(lTerm)));
         }
 
         var projectedQuery = query.Select(s => new ServiceSearchResultDto
@@ -89,6 +97,7 @@ public class SearchController : ControllerBase
     [HttpGet("businesses")]
     public async Task<IActionResult> SearchBusinesses(
     [FromQuery] string? searchTerm,
+    [FromQuery] string? locationTerm,
     [FromQuery] int? mainCategoryId,
     [FromQuery] string? sortBy,
     [FromQuery] int pageNumber = 1,
@@ -104,10 +113,14 @@ public class SearchController : ControllerBase
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             var term = searchTerm.ToLower();
-            query = query.Where(b =>
-                b.Name.ToLower().Contains(term) ||
-                (b.City != null && b.City.ToLower().Contains(term))
-            );
+            query = query.Where(b => b.Name.ToLower().Contains(term));
+        }
+
+        if (!string.IsNullOrWhiteSpace(locationTerm))
+        {
+            var lTerm = locationTerm.ToLower();
+            query = query.Where(b => (b.City != null && b.City.ToLower().Contains(lTerm)) ||
+                                     (b.Address != null && b.Address.ToLower().Contains(lTerm)));
         }
 
         var projectedQuery = query.Select(b => new BusinessSearchResultDto
@@ -149,6 +162,7 @@ public class SearchController : ControllerBase
     [HttpGet("category-feed")]
     public async Task<IActionResult> SearchCategoryFeed(
     [FromQuery] string? searchTerm,
+    [FromQuery] string? locationTerm,
     [FromQuery] int? mainCategoryId,
     [FromQuery] string? sortBy,
     [FromQuery] int pageNumber = 1,
@@ -176,6 +190,13 @@ public class SearchController : ControllerBase
                 sc.Business.Name.ToLower().Contains(term) ||
                 sc.Services.Any(s => s.Name.ToLower().Contains(term) && !s.IsArchived)
             );
+        }
+
+        if (!string.IsNullOrWhiteSpace(locationTerm))
+        {
+            var lTerm = locationTerm.ToLower();
+            query = query.Where(sc => (sc.Business.City != null && sc.Business.City.ToLower().Contains(lTerm)) ||
+                                      (sc.Business.Address != null && sc.Business.Address.ToLower().Contains(lTerm)));
         }
 
         var projectedQuery = query.Select(sc => new
@@ -210,6 +231,7 @@ public class SearchController : ControllerBase
             BusinessId = x.ServiceCategory.BusinessId,
             BusinessName = x.ServiceCategory.Business.Name,
             BusinessCity = x.ServiceCategory.Business.City,
+            MainCategoryName = x.ServiceCategory.MainCategory?.Name,
             AverageRating = x.AverageRating,
             ReviewCount = x.ReviewCount,
             BusinessCreatedAt = x.Business.CreatedAt,

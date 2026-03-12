@@ -73,3 +73,46 @@
 .employee-card:hover .avatar img {
   filter: brightness(1.1);
 }
+
+.carousel-bundles {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.carousel-bundles::-webkit-scrollbar {
+  display: none;
+}
+
+.bundle-card-premium {
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+}
+
+.service-row-ios {
+  border-bottom: 1px solid hsl(var(--bc) / 0.05);
+}
+.service-row-ios:last-child {
+  border-bottom: none;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.service-row-ios .text-primary {
+  font-weight: 500 !important;
+}
+
+.bundle-card-premium .text-2xl {
+  font-weight: 600 !important;
+}
+
+.btn-circle {
+  transition: all 0.2s ease;
+}
+.btn-circle:active {
+  transform: scale(0.9);
+}

@@ -103,6 +103,10 @@ export class BusinessDetailComponent implements OnInit {
       return this.favoriteVariantIds.has(variantId);
   }
 
+  get isCustomer(): boolean {
+    return this.authService.isLoggedIn() && this.authService.hasRole('customer');
+  }
+
   toggleFavorite(variant: any, event: Event) {
       event.stopPropagation();
       const variantId = variant.serviceVariantId;
@@ -191,9 +195,8 @@ export class BusinessDetailComponent implements OnInit {
     }
   }
 
-  openReservationModal(service: Service, pVariant: any, modal: any): void {
+  openReservationModal(service: Service, pVariant: any, modal: any, employeeId?: number): void {
     if (this.business) {
-      // Create a service copy with ONLY the selected variant to ensure modal uses it
       this.selectedService = { 
           ...service, 
           businessId: this.business.id,
@@ -202,9 +205,40 @@ export class BusinessDetailComponent implements OnInit {
       
       this.businessService.getEmployeesForService(this.business.id, service.id).subscribe(employees => {
         this.filteredEmployees = employees;
-        modal.showModal(); 
+        
+        setTimeout(() => {
+          modal.resetModal();
+          
+          if (employeeId) {
+            modal.reservationForm.get('employeeId')?.setValue(employeeId.toString());
+            modal.currentStep = 2; 
+            modal.onDateChange();
+          } else if (employees.length === 1) {
+            modal.reservationForm.get('employeeId')?.setValue(employees[0].id.toString());
+            modal.currentStep = 2;
+          }
+
+          modal.showModal(); 
+        });
       });
     }
+  }
+
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('pl-PL', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(price) + ' zł';
+  }
+
+  getBundleOriginalPrice(bundle: ServiceBundle): number {
+    return bundle.items.reduce((sum, item) => sum + (item.originalPrice || 0), 0);
+  }
+
+  getBundleDiscount(bundle: ServiceBundle): number {
+    const original = this.getBundleOriginalPrice(bundle);
+    if (!original || original <= bundle.totalPrice) return 0;
+    return Math.round(100 - (bundle.totalPrice / original * 100));
   }
 
   scrollToServices(): void {
@@ -246,9 +280,11 @@ export class BusinessDetailComponent implements OnInit {
       });
   }
   
-  openBookBundleModal(bundle: ServiceBundle) {
+  openBookBundleModal(bundle: ServiceBundle, modal: any) {
       this.selectedBundle = bundle;
-      this.isBookBundleModalOpen = true; 
+      setTimeout(() => {
+          modal.showModal();
+      });
   }
 
   closeBookBundleModal() {
@@ -262,5 +298,49 @@ export class BusinessDetailComponent implements OnInit {
 
   closeEmployeeModal(): void {
     this.selectedEmployee = null;
+  }
+
+  startReservationWithEmployee(employee: Employee, modal: any): void {
+    if (!this.business) return;
+    
+    this.filteredEmployees = this.business.employees;
+    
+    setTimeout(() => {
+      modal.resetModal();
+      modal.reservationForm.get('employeeId')?.setValue(employee.id.toString());
+      modal.currentStep = 2;
+      modal.showModal();
+    });
+    
+    this.closeEmployeeModal();
+  }
+
+  callBusiness(): void {
+    if (this.business && this.business.phoneNumber) {
+      window.open(`tel:${this.business.phoneNumber}`, '_self');
+    } else {
+      this.toastr.info('Numer telefonu nie jest dostępny.');
+    }
+  }
+
+  openRoute(): void {
+    if (this.business) {
+      const address = `${this.business.address || ''} ${this.business.city || ''}`;
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+    }
+  }
+
+  shareBusiness(): void {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: this.business?.name || 'BookLocal',
+        url: url
+      }).catch(err => console.error('Error sharing:', err));
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        this.toastr.success('Link do profilu skopiowany do schowka!');
+      });
+    }
   }
 }

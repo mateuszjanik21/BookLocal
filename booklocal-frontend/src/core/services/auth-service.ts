@@ -24,6 +24,14 @@ export class AuthService {
     this.loadUserFromToken();
   }
 
+  isLoggedIn(): boolean {
+    return !!this.currentUserValue;
+  }
+
+  hasRole(role: string): boolean {
+    return this.currentUserValue?.roles.includes(role) || false;
+  }
+
   login(payload: LoginPayload): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, payload).pipe(
       tap(response => this.handleAuthentication(response.token, response.user))

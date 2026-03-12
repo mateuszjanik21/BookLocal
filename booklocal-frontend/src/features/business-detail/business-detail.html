@@ -50,25 +50,72 @@
           </div>
           }
         </div>
-        <div class="flex gap-2 flex-wrap justify-center md:justify-end">
-          <button (click)="scrollToServices()" class="btn btn-primary btn-sm md:btn-md shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            Zarezerwuj
+        <div class="flex gap-4 md:gap-6 justify-center md:justify-end">
+          <button (click)="callBusiness()" class="btn btn-circle bg-white/20 border-white/30 text-white hover:bg-white/40 shadow-lg" title="Zadzwoń">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
           </button>
-          @if ((authService.currentUser$ | async); as user) {
-            @if (user.roles.includes('customer')) {
-              <button class="btn btn-outline btn-sm md:btn-md border-white/40 text-white hover:bg-white/20" (click)="startChatWithBusiness()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                Napisz
-              </button>
-            }
-          }
+          <button (click)="openRoute()" class="btn btn-circle bg-white/20 border-white/30 text-white hover:bg-white/40 shadow-lg" title="Trasa">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          </button>
+          <button (click)="shareBusiness()" class="btn btn-circle bg-white/20 border-white/30 text-white hover:bg-white/40 shadow-lg" title="Udostępnij">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="container mx-auto px-4 md:px-8 py-8">
+  <div class="container mx-auto px-4 md:px-8 py-8 pb-24">
+    @if (bundles.length > 0) {
+    <div class="mb-10 fade-in-up">
+      <h2 class="text-2xl font-bold flex items-center gap-2 mb-6 ml-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+        Pakiety Usług
+        <span class="badge badge-secondary badge-sm ml-2">BESTSELLER</span>
+      </h2>
+      <div class="carousel-bundles flex gap-4 overflow-x-auto pb-6 scrollbar-hide px-2">
+          @for (bundle of bundles; track bundle.serviceBundleId) {
+          <div class="bundle-card-premium shrink-0 w-[280px] md:w-[320px] card bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl transition-transform"
+               [ngClass]="isCustomer ? 'hover:scale-[1.02] cursor-pointer' : 'opacity-90 cursor-default'"
+               (click)="isCustomer ? openBookBundleModal(bundle, bundle_modal) : null">
+              <div class="card-body p-6">
+                  <div class="flex justify-between items-start">
+                    <h3 class="card-title text-xl font-bold leading-tight">{{ bundle.name }}</h3>
+                    @if (getBundleDiscount(bundle) > 0) {
+                      <div class="badge badge-ghost bg-white/20 border-none text-white font-bold">-{{ getBundleDiscount(bundle) }}%</div>
+                    }
+                  </div>
+                  @if(bundle.description) {
+                    <p class="text-sm opacity-90 mt-2 line-clamp-2">{{ bundle.description }}</p>
+                  }
+                  <div class="flex-grow mt-4">
+                    <ul class="space-y-2">
+                       @for (item of bundle.items.slice(0, 3); track item.serviceBundleItemId) {
+                         <li class="flex items-center gap-2 text-xs opacity-90">
+                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                           <span class="truncate">{{ item.serviceName }}</span>
+                         </li>
+                       }
+                    </ul>
+                  </div>
+                  <div class="divider before:bg-white/20 after:bg-white/20 my-2"></div>
+                  <div class="flex justify-between items-center mt-2">
+                      <div class="flex flex-col">
+                        @if (getBundleOriginalPrice(bundle) > bundle.totalPrice) {
+                          <span class="text-xs opacity-70 line-through">{{ formatPrice(getBundleOriginalPrice(bundle)) }}</span>
+                        }
+                        <span class="text-2xl font-black">{{ formatPrice(bundle.totalPrice) }}</span>
+                      </div>
+                      <button class="btn btn-sm btn-circle bg-white text-indigo-600 border-none animate-pulse" *ngIf="isCustomer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                      </button>
+                  </div>
+              </div>
+          </div>
+          }
+      </div>
+    </div>
+    }
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
       <div class="lg:col-span-2 space-y-8 order-2 lg:order-1">
@@ -99,43 +146,41 @@
                   <div class="space-y-1.5">
                     @for (service of category.services; track service.id) {
                     <div class="bg-base-100 rounded-lg p-3 border border-base-200">
-                        <div class="font-semibold text-base mb-1">{{ service.name }}</div>
+                        <div class="font-semibold text-base mb-1 text-base-content/80">{{ service.name }}</div>
                         @if(service.description) {
                           <p class="text-sm text-base-content/60 mb-2">{{ service.description }}</p>
                         }
                         <div class="space-y-1">
                             @for (variant of service.variants; track variant.serviceVariantId) {
-                                <div class="service-row flex flex-col sm:flex-row justify-between sm:items-center p-2 rounded-lg gap-2 sm:gap-4">
+                                <div class="card flex flex-row items-center bg-base-100 p-4 border border-base-200 cursor-pointer hover:border-primary transition-all group relative"
+                                     (click)="isCustomer ? openReservationModal(service, variant, reservation_modal) : null">
                                     <div class="flex-grow">
-                                        <span class="font-medium text-sm">{{ variant.name }}</span>
-                                        @if(variant.isDefault) { <span class="badge badge-xs badge-neutral ml-1">Domyślny</span> }
-                                        <div class="text-xs text-base-content/60 mt-0.5 whitespace-nowrap">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline-block -mt-0.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                            {{ variant.durationMinutes }} min
+                                        <div class="flex items-center gap-2">
+                                          <span class="font-medium text-base text-base-content">{{ variant.name }}</span>
+                                          @if(variant.isDefault) { <span class="badge badge-xs badge-ghost opacity-60">Domyślny</span> }
+                                        </div>
+                                        <div class="text-xs text-base-content/50 mt-1 flex items-center gap-3">
+                                            <span class="flex items-center gap-1">
+                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                              {{ variant.durationMinutes }} min
+                                            </span>
                                         </div>
                                     </div>
-                                    <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-1 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-none border-base-200">
-                                        <span class="font-bold text-primary">{{ variant.price }} zł</span>
-                                        <div class="flex items-center gap-1">
-                                          @if ((authService.currentUser$ | async); as user) {
-                                          @if (user.roles.includes('customer')) {
-                                            <button class="btn btn-xs btn-secondary rounded-full"
-                                                (click)="openReservationModal(service, variant, reservation_modal)">
-                                                Rezerwuj
-                                            </button>
-                                            <button class="btn btn-ghost btn-circle btn-xs text-error"
-                                                (click)="toggleFavorite(variant, $event)"
-                                                title="Dodaj do ulubionych">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
-                                                    [attr.fill]="isFavorite(variant.serviceVariantId) ? 'currentColor' : 'none'"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                                </svg>
-                                            </button>
-                                          }
+                                    <div class="flex items-center gap-3">
+                                        @if (isCustomer) {
+                                          <button class="btn btn-ghost btn-circle btn-sm text-error hover:text-error transition-colors"
+                                              (click)="toggleFavorite(variant, $event)"
+                                              [title]="isFavorite(variant.serviceVariantId) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych'">
+                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                  [attr.fill]="isFavorite(variant.serviceVariantId) ? 'currentColor' : 'none'"
+                                                  viewBox="0 0 24 24" stroke="currentColor">
+                                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                              </svg>
+                                          </button>
                                         }
-                                        </div>
+                                        <span class="text-lg text-primary min-w-[80px] text-right">{{ formatPrice(variant.price) }}</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/20 group-hover:text-primary/40 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                                     </div>
                                 </div>
                             }
@@ -155,47 +200,6 @@
             </div>
           </div>
         </div>
-
-        @if (bundles.length > 0) {
-        <div class="card bg-base-100 shadow-xl fade-in-up">
-          <div class="card-body">
-            <h2 class="text-2xl font-bold flex items-center gap-2 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-              Pakiety Usług
-              <span class="badge badge-secondary badge-sm">Oszczędzaj</span>
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                @for (bundle of bundles; track bundle.serviceBundleId) {
-                <div class="card bg-gradient-to-br from-base-200 to-base-200/50 border border-base-300 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="card-body p-5">
-                        <h3 class="card-title text-lg">{{ bundle.name }}</h3>
-                        @if(bundle.description) {
-                          <p class="text-sm text-base-content/60">{{ bundle.description }}</p>
-                        }
-                        <div class="divider my-1"></div>
-                        <ul class="space-y-1">
-                           @for (item of bundle.items; track item.serviceBundleItemId) {
-                             <li class="flex items-center gap-2 text-sm">
-                               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                               <span>{{ item.serviceName }} — {{ item.variantName }}</span>
-                             </li>
-                           }
-                        </ul>
-                        <div class="card-actions justify-between items-center mt-3">
-                            <span class="text-2xl font-extrabold text-primary">{{ bundle.totalPrice | currency:'PLN' }}</span>
-                            @if ((authService.currentUser$ | async); as user) {
-                                @if (user.roles.includes('customer')) {
-                                    <button class="btn btn-primary btn-sm" (click)="openBookBundleModal(bundle)">Rezerwuj Pakiet</button>
-                                }
-                            }
-                        </div>
-                    </div>
-                </div>
-                }
-            </div>
-          </div>
-        </div>
-        }
 
         <div class="card bg-base-100 shadow-xl fade-in-up" style="animation-delay: 0.1s;">
           <div class="card-body">
@@ -369,10 +373,30 @@
               <div class="space-y-3 text-sm">
                 @if(business.address) {
                 <div class="flex items-start gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/40 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  <div>
+                  <div class="mt-4 rounded-xl overflow-hidden grayscale-[0.2] hover:grayscale-0 transition-all shadow-md border border-base-300 h-32 relative group">
+                    <img [src]="'https://maps.googleapis.com/maps/api/staticmap?center=' + business.city + ',' + business.address + '&zoom=14&size=400x150&key=YOUR_KEY_HERE'" 
+                         (error)="$any($event.target).src='https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=400&q=80'"
+                         class="w-full h-full object-cover" alt="Map preview" />
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-transparent transition-colors">
+                      <button (click)="openRoute()" class="btn btn-xs btn-primary gap-1 shadow-lg font-bold">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        Otwórz w Mapach
+                      </button>
+                    </div>
+                  </div>
+                  <div class="mt-3">
                     <p class="font-medium">Adres</p>
                     <p class="text-base-content/60">{{ business.address }}, {{ business.city }}</p>
+                  </div>
+                </div>
+                }
+
+                @if(business.nip) {
+                <div class="flex items-start gap-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/40 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  <div>
+                    <p class="font-medium">NIP</p>
+                    <p class="text-base-content/60">{{ business.nip }}</p>
                   </div>
                 </div>
                 }
@@ -394,15 +418,19 @@
             <div class="card-body items-center text-center">
               <h2 class="card-title text-lg">Zarezerwuj wizytę</h2>
               <p class="text-sm opacity-80">Wybierz usługę i umów się w kilka sekund!</p>
-              <button (click)="scrollToServices()" class="btn btn-secondary btn-sm w-full mt-2">
-                Przeglądaj usługi
-              </button>
-              @if ((authService.currentUser$ | async); as user) {
-                @if (user.roles.includes('customer')) {
-                  <button class="btn btn-ghost btn-sm w-full border-primary-content/30" (click)="startChatWithBusiness()">
-                    Napisz wiadomość
-                  </button>
-                }
+              @if (isCustomer) {
+                <button (click)="scrollToServices()" class="btn btn-secondary btn-sm w-full mt-2">
+                  Przeglądaj usługi
+                </button>
+                <button class="btn btn-ghost btn-sm w-full border-primary-content/30" (click)="startChatWithBusiness()">
+                  Napisz wiadomość
+                </button>
+              } @else {
+                <div class="mt-4 w-full space-y-2">
+                  <p class="text-xs opacity-70 mb-2">Musisz być zalogowany, aby rezerwować</p>
+                  <a routerLink="/login" class="btn btn-secondary btn-sm w-full">Zaloguj się</a>
+                  <a routerLink="/register" class="btn btn-ghost btn-xs w-full opacity-60">Załóż konto</a>
+                </div>
               }
             </div>
           </div>
@@ -423,21 +451,19 @@
 }
 
 <app-reservation-modal #reservation_modal [service]="selectedService"
-  [employees]="filteredEmployees"></app-reservation-modal>
+  [employees]="filteredEmployees" [business]="business"></app-reservation-modal>
 
 @if(isEditReviewModalVisible) {
 <app-edit-review-modal [businessId]="business!.id" [review]="reviewToEdit!" (closed)="closeEditReviewModal($event)">
 </app-edit-review-modal>
 }
 
-@if (isBookBundleModalOpen && selectedBundle && business) {
-    <app-book-bundle-modal
-        [bundle]="selectedBundle"
-        [businessId]="business.id"
-        [isOwnerMode]="false"
-        (close)="closeBookBundleModal()">
-    </app-book-bundle-modal>
-}
+<app-book-bundle-modal #bundle_modal
+    [bundle]="selectedBundle"
+    [businessId]="business?.id || null"
+    [isOwnerMode]="false"
+    (close)="closeBookBundleModal()">
+</app-book-bundle-modal>
 
 @if (selectedEmployee) {
 <div class="modal modal-open" (click)="closeEmployeeModal()">
@@ -516,10 +542,24 @@
     }
 
     <div class="modal-action">
-      <button class="btn btn-primary btn-sm w-full" (click)="closeEmployeeModal(); scrollToServices()">
-        Zarezerwuj wizytę
-      </button>
+      @if (business && business.categories.length > 0 && selectedEmployee && isCustomer) {
+        <button class="btn btn-primary w-full shadow-lg shadow-primary/20 group h-auto py-4 rounded-2xl" 
+                      (click)="isCustomer ? startReservationWithEmployee(selectedEmployee, reservation_modal) : null">
+          Wybierz usługę u {{ selectedEmployee.firstName }}
+        </button>
+      }
     </div>
+  </div>
+</div>
+}
+
+@if (isCustomer) {
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-base-100/80 backdrop-blur-xl border-t border-base-300 z-50 animate-slide-up lg:hidden">
+  <div class="container mx-auto max-w-lg">
+    <button (click)="scrollToServices()" class="btn btn-primary btn-lg w-full rounded-2xl shadow-xl font-black text-lg gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+      Umów wizytę
+    </button>
   </div>
 </div>
 }
