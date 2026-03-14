@@ -1,104 +1,287 @@
 # 📖 BookLocal
 
-BookLocal to w pełni funkcjonalna aplikacja webowa, stworzona do rezerwacji wizyt w lokalnych firmach usługowych. Umożliwia klientom wyszukiwanie i rezerwowanie usług, a właścicielom firm kompleksowe zarządzanie swoim biznesem, pracownikami, grafikami i rezerwacjami.
+**BookLocal** to rozbudowana, wielomodułowa aplikacja webowa do rezerwacji wizyt w lokalnych firmach usługowych. Projekt obejmuje pełen ekosystem: od aplikacji klienckiej (**Angular SPA**), przez serwer API (**ASP.NET Core**), aż po aplikację mobilną (**Flutter**). System obsługuje trzy role użytkowników – **Klient**, **Właściciel firmy** i **Super Administrator** – każda z dedykowanym zestawem funkcjonalności.
 
 ---
 
-## 🚀 Podgląd na żywo
+##  Podgląd na żywo
 
-- **Aplikacja:** <https://wonderful-pebble-00b01fe03.2.azurestaticapps.net> (aplikacja na darmowym planie Azure, może potrzebować chwili na „wybudzenie się”)
-- **Dokumentacja API (Swagger):** <https://booklocal-api-gja0begeg4gfbfcj.polandcentral-01.azurewebsites.net/swagger>
+| Zasób | Link |
+|---|---|
+| **Aplikacja Web** | [wonderful-pebble-00b01fe03.2.azurestaticapps.net](https://wonderful-pebble-00b01fe03.2.azurestaticapps.net) |
+| **Dokumentacja API (Swagger)** | [booklocal-api-…/swagger](https://booklocal-api-gja0begeg4gfbfcj.polandcentral-01.azurewebsites.net/swagger) |
 
----
-
-## ✨ Główne Funkcje
-
-- **Wyszukiwanie i filtrowanie:** Zaawansowane wyszukiwanie firm usługowych z opcjami filtrowania i sortowania.
-- **System Rezerwacji:** Intuicyjny kalendarz do rezerwacji i zarządzania wizytami.
-- **Panel Zarządzania:** Dedykowany panel dla właścicieli firm do zarządzania usługami, pracownikami i grafikami.
-- **Uwierzytelnianie i Autoryzacja:** Bezpieczny system logowania oparty na rolach (klient, właściciel) przy użyciu tokenów JWT.
-- **System Ocen i Opinii:** Możliwość dodawania ocen i komentarzy do zrealizowanych usług.
-- **Zarządzanie Zdjęciami:** Przesyłanie i zarządzanie zdjęciami dla profili firmowych, zintegrowane z usługą Cloudinary.
-- **Komunikacja w czasie rzeczywistym:** Czat między użytkownikami oraz system powiadomień, zaimplementowane przy użyciu SignalR.
+> [!NOTE]
+> Aplikacja hostowana jest na darmowym planie Azure – pierwsze ładowanie może potrwać kilka sekund.
 
 ---
 
-## 🛠️ Architektura i Stos Technologiczny
+##  Konta testowe
 
-Aplikacja została zbudowana w architekturze rozproszonej, oddzielającej warstwę prezentacji (Frontend) od logiki biznesowej (Backend).
+| Rola | Login | Hasło |
+|---|---|---|
+| **Super Administrator** | `admin@booklocal.com` | `Admin123!` |
+| **Właściciel firmy** | `owner@test.com` | `P@ssword1` |
+| **Klient** | `customer@test.com` | `P@ssword1` |
 
-### **Frontend**
-Zbudowany jako Single Page Application (SPA), co zapewnia płynne i szybkie działanie bez przeładowywania strony.
-- **Framework:** **Angular** – dojrzały i wydajny framework do budowania dynamicznych interfejsów użytkownika.
-- **Język:** **TypeScript** – dla bezpieczeństwa typów i lepszej skalowalności kodu.
-- **Wdrożenie:** **Azure Static Web Apps** – usługa idealnie dopasowana do hostowania nowoczesnych aplikacji frontendowych, zintegrowana z globalną siecią CDN.
-- **CI/CD:** **GitHub Actions** – proces budowania i wdrażania jest w pełni zautomatyzowany po każdym `push` do głównej gałęzi repozytorium.
+Możesz również samodzielnie przejść przez proces rejestracji jako klient lub właściciel.
 
-### **Backend**
-Wydajne i skalowalne API RESTowe, które dostarcza dane i obsługuje całą logikę biznesową aplikacji.
-- **Framework:** **.NET (ASP.NET Core)** – do budowy szybkiego i bezpiecznego Web API.
-- **Dostęp do Danych:** **Entity Framework Core** – nowoczesny ORM (Object-Relational Mapper) do komunikacji z bazą danych.
-- **Uwierzytelnianie:** **ASP.NET Core Identity z JWT** – standard branżowy do zabezpieczania endpointów API.
-- **Komunikacja Real-time:** **SignalR** – do implementacji dwukierunkowej komunikacji (np. w czacie).
-- **Wdrożenie:** **Azure App Service** – niezawodna platforma do hostowania aplikacji webowych .NET.
-
-### **Baza Danych**
-- **Silnik:** **Azure SQL Database** – w pełni zarządzana, relacyjna baza danych w chmurze Microsoft.
-- **Zasilanie Danych:** **Bogus** – biblioteka używana do generowania realistycznych, przykładowych danych na potrzeby deweloperskie.
-
-### **Usługi Zewnętrzne**
-- **Przechowywanie Zdjęć:** **Cloudinary** – platforma do zarządzania mediami, używana do hostowania i serwowania zdjęć.
+> [!WARNING]
+> To publiczna aplikacja demonstracyjna – **nie rejestruj się prawdziwymi danymi osobowymi**. Używaj fikcyjnych informacji do testów.
 
 ---
 
-## ⚙️ Uruchomienie Lokalne
+##  Funkcjonalności
 
-### Wymagania wstępne
+###  Panel Klienta
 
-- [.NET SDK](https://dotnet.microsoft.com/download)
-- [Node.js](https://nodejs.org/)
+| Funkcjonalność | Opis |
+|---|---|
+| **Wyszukiwanie firm** | Zaawansowane wyszukiwanie z filtrami (kategoria, miasto, ocena) i sortowaniem |
+| **Przeglądanie profili firm** | Lista usług z cenami, warianty usług, opinie klientów |
+| **System rezerwacji** | Wybór pracownika → usługi → daty → godziny → forma płatności, z widokiem dostępnych slotów podzielonych na pory dnia |
+| **Rezerwacja pakietów usług** | Możliwość zarezerwowania pakietu wielu usług jednocześnie |
+| **Kody rabatowe** | Weryfikacja i stosowanie kodów rabatowych (procentowych i kwotowych) ze sprawdzaniem ważności |
+| **Punkty lojalnościowe** | Zbieranie punktów za zakończone wizyty i wykorzystywanie ich jako zniżki przy kolejnych rezerwacjach (1 pkt = 1 PLN, min. 1 PLN do zapłaty) |
+| **Płatności** | Obsługa płatności gotówką, kartą i online (Blik, Przelewy24, Apple Pay) |
+| **Moje rezerwacje** | Lista rezerwacji z podziałem na nadchodzące/przeszłe, możliwość anulowania |
+| **Ulubione firmy** | Dodawanie firm do ulubionych |
+| **Opinie i oceny** | Dodawanie recenzji z oceną gwiazdkową po zakończonej wizycie |
+| **Czat** | Komunikacja w czasie rzeczywistym z firmami (SignalR) |
+| **Obecność online** | Status online/offline użytkowników z wskaźnikiem aktywności |
+| **Profil użytkownika** | Edycja danych osobowych i zdjęcia profilowego |
+
+###  Panel Właściciela Firmy (Dashboard)
+
+| Moduł | Opis |
+|---|---|
+| **Dashboard Home** | Podsumowanie kluczowych wskaźników, nadchodzące rezerwacje |
+| **Zarządzanie usługami** | CRUD usług z wariantami (Standard/Premium), cenami, czasem trwania i czasem sprzątania; archiwizacja usług |
+| **Kategorie usług** | Tworzenie własnych podkategorii usług z przypisaniem do kategorii głównych |
+| **Pakiety usług** | Tworzenie pakietów z wielu usług z ceną pakietową niższą niż suma składowych |
+| **Zarządzanie pracownikami** | Dodawanie pracowników z: bio, specjalizacją, zdjęciem, certyfikatami; przypisywanie usług do pracowników |
+| **Grafiki pracy** | Definiowanie grafików (7 dni/tydzień) z godzinami pracy, wyjątkami (urlopy, L4), automatyczne obliczanie dostępności |
+| **Zarządzanie rezerwacjami** | Kalendarz rezerwacji, widok listy, zmiana statusów (potwierdzona/anulowana/zakończona/no-show), tworzenie rezerwacji w imieniu klienta (guest mode) |
+| **Moduł HR** | Umowy o pracę (UoP, zlecenie, B2B), dane finansowe pracowników (stawka godzinowa, typ dojazdu, PIT-2), listy płac z automatycznym obliczaniem nagrodzenia |
+| **Finanse** | Raporty dzienne z przychodami, prowizjami, strukturą płatności; wykresy i statystyki (nowi/powracający klienci, occupancy rate, top selling service) |
+| **Faktury** | Generowanie faktur VAT z pozycjami, wartością netto/brutto/VAT, możliwość pobrania |
+| **CRM – Zarządzanie klientami** | Profile klientów z historią wizyt, łączną kwotą wydatków, liczbą no-show, datą ostatniej wizyty |
+| **Kody rabatowe** | Tworzenie i zarządzanie rabatami (procentowe/kwotowe), limity użyć, daty ważności, przypisanie do usług |
+| **Program lojalnościowy** | Konfiguracja programu: kwota za 1 punkt, historia transakcji (naliczenia/wykorzystania), zarządzanie saldami klientów |
+| **Zdjęcia** | Galeria firmowa – upload/usuwanie zdjęć (Cloudinary), zarządzanie okładką |
+| **Subskrypcje** | Wybór planu (Free/Silver/Gold) z różnym limitem pracowników/usług, auto-renewal |
+| **Powiadomienia** | Real-time powiadomienia o nowych rezerwacjach (SignalR) |
+| **Szablony** | Zarządzanie szablonami (dodatkowy moduł konfiguracyjny) |
+
+###  Panel Super Administratora
+
+| Funkcjonalność | Opis |
+|---|---|
+| **Statystyki platformy** | Łączna liczba firm, nowe firmy w miesiącu, aktywne subskrypcje, przychód z planów, oczekujące weryfikacje |
+| **Weryfikacja firm** | Przeglądanie zgłoszeń nowych firm, zatwierdzanie/odrzucanie z podaniem powodu |
+| **Zarządzanie planami subskrypcji** | CRUD planów (nazwa, cena miesięczna/roczna, limity pracowników/usług, prowizja, zaawansowane raporty, narzędzia marketingowe) |
+
+---
+
+
+```
+
+### Frontend (Web)
+- **Framework:** Angular (standalone components, lazy loading)
+- **Język:** TypeScript
+- **Stylizacja:** Tailwind CSS + DaisyUI (UI component library)
+- **Zarządzanie stanem:** RxJS, Reactive Forms
+- **Komunikacja real-time:** SignalR Client
+- **Hosting:** Azure Static Web Apps
+- **CI/CD:** GitHub Actions (automatyczny deploy przy push do `master`)
+- **Serwisy:** 33 dedykowane serwisy Angular (auth, business, reservation, chat, finance, HR, loyalty, invoice, itp.)
+
+### Frontend (Mobile)
+- **Framework:** Flutter
+- **Język:** Dart
+- **Platformy:** Android, iOS, Web, Windows, Linux, macOS
+
+### Backend
+- **Framework:** ASP.NET Core (.NET 8) Web API
+- **ORM:** Entity Framework Core (Code-First)
+- **Kontrolery API:** 29 kontrolerów obsługujących pełen zakres operacji CRUD i logiki biznesowej
+- **Uwierzytelnianie:** ASP.NET Core Identity + JWT (Bearer tokens) z 3 rolami (`customer`, `owner`, `superadmin`)
+- **Real-time:** SignalR – 3 huby:
+  - `ChatHub` – czat między klientem a firmą
+  - `NotificationHub` – powiadomienia o nowych rezerwacjach
+  - `PresenceHub` – status obecności online/offline
+- **Hosting:** Azure App Service
+- **CI/CD:** GitHub Actions (automatyczny deploy na Azure)
+
+### Baza danych
+- **Silnik:** Azure SQL Database (relacyjna, w pełni zarządzana), SQL Server do developmentu
+- **Modele:** 37 modeli domenowych (Business, Employee, Reservation, Service, Payment, Invoice, Loyalty, Review, Discount, Schedule, itp.)
+- **Seeding:** Bogus (faker dla .NET) – generowanie realistycznych danych testowych (30 firm, 770+ klientów, tysiące rezerwacji)
+- **Widoki SQL:** Procedury i widoki do raportów finansowych (`DailyEmployeePerformance`)
+
+### Usługi zewnętrzne
+- **Cloudinary** – hosting i zarządzanie zdjęciami (upload, transformacje, usuwanie)
+
+---
+
+##  Modele domenowe
+
+Kluczowe encje w systemie:
+
+| Grupa | Encje |
+|---|---|
+| **Użytkownicy** | `User`, `CustomerBusinessProfile` |
+| **Firmy** | `Business`, `BusinessSubscription`, `BusinessVerification`, `MainCategory`, `ServiceCategory` |
+| **Usługi** | `Service`, `ServiceVariant`, `ServiceBundle`, `ServiceBundleItem`, `EmployeeService` |
+| **Pracownicy** | `Employee`, `EmployeeDetails`, `EmployeeCertificate`, `EmployeeFinanceSettings`, `EmployeePayroll`, `EmploymentContract` |
+| **Grafiki** | `WorkSchedule`, `ScheduleException` |
+| **Rezerwacje** | `Reservation` (statusy: Confirmed, Completed, Cancelled, NoShow) |
+| **Finanse** | `Payment`, `Invoice`, `InvoiceItem`, `DailyFinancialReport`, `DailyEmployeePerformance`, `CommissionRate` |
+| **Marketing** | `Discount`, `LoyaltyPoint`, `LoyaltyProgramConfig`, `LoyaltyTransaction` |
+| **Komunikacja** | `Conversation`, `Message` |
+| **Oceny** | `Review` |
+| **Ulubione** | `UserFavoriteService` |
+| **Subskrypcje** | `SubscriptionPlan` (Free, Silver, Gold) |
+
+---
+
+##  Endpointy API (przegląd)
+
+| Kontroler | Odpowiedzialność |
+|---|---|
+| `AuthController` | Rejestracja, logowanie, odświeżanie tokenów JWT |
+| `BusinessesController` | CRUD firm, profil publiczny, zdjęcia, kategorie |
+| `ServicesController` | CRUD usług i wariantów |
+| `ServiceBundlesController` | Pakiety usług |
+| `ServiceCategoriesController` | Podkategorie usług |
+| `EmployeesController` | CRUD pracowników, certyfikaty, przypisania usług |
+| `SchedulesController` | Grafiki pracy, wyjątki |
+| `AvailabilityController` | Obliczanie dostępnych slotów czasowych |
+| `ReservationsController` | Tworzenie rezerwacji (klient + owner), statusy, kalendarz, rabaty, punkty lojalnościowe |
+| `ReviewsController` | Opinie i oceny |
+| `DiscountsController` | Kody rabatowe – tworzenie, weryfikacja, stosowanie |
+| `LoyaltyController` | Program lojalnościowy – konfiguracja, saldo, transakcje |
+| `PaymentsController` | Rejestracja płatności, prowizje |
+| `FinanceController` | Raporty dzienne, statystyki finansowe |
+| `EmployeeFinanceController` | HR – umowy, listy płac, ustawienia finansowe |
+| `InvoicesController` | Generowanie i zarządzanie fakturami |
+| `CustomersController` | CRM – profile klientów biznesowych |
+| `FavoritesController` | Ulubione firmy |
+| `MessagesController` | Historia wiadomości |
+| `PhotosController` | Upload/zarządzanie zdjęciami (Cloudinary) |
+| `SearchController` | Wyszukiwanie z filtrami i sortowaniem |
+| `SubscriptionController` | Zarządzanie subskrypcjami |
+| `AdminController` | Panel admina – statystyki, weryfikacja firm, plany |
+| `DocumentController` | Dokumenty firmowe |
+
+Pełna dokumentacja endpointów dostępna na [Swagger UI](https://booklocal-api-gja0begeg4gfbfcj.polandcentral-01.azurewebsites.net/swagger).
+
+---
+
+##  Uruchomienie lokalne
+
+### Wymagania
+
+- [.NET SDK 8.0+](https://dotnet.microsoft.com/download)
+- [Node.js 18+](https://nodejs.org/)
 - [Angular CLI](https://angular.io/cli) (`npm install -g @angular/cli`)
-- Lokalna instancja SQL Server (np. SQL Server Express)
+- SQL Server (lokalny lub Azure SQL)
 
-### Konta użytkowików
-- **Właściciel**:
-   - Login: owner@test.com
-   - Hasło: P@ssword1
-- **Klient**: 
-   - Login: customer@test.com
-   - Hasło: P@ssword1
-
-**Chcesz założyć własne konto?**
-
-Oczywiście możesz również samodzielnie przejść przez proces rejestracji. Zachęcam do testowania wszystkich funkcji!
-
-> **Ważna uwaga:** Ponieważ jest to publiczna aplikacja demonstracyjna, **proszę o nierejestrowanie się przy użyciu prawdziwych danych osobowych**. Do celów testowych używaj wyłącznie fikcyjnych informacji (np. Jan Kowalski, test@email.com itp.).
 ### Backend
 
-1. Otwórz `BookLocal.sln` w Visual Studio.
-2. W pliku `BookLocal.API/appsettings.Development.json` uzupełnij sekcje `ConnectionStrings`, `Jwt` i `CloudinarySettings`.
-3. Uruchom projekt `BookLocal.API` (klawisz F5). Spowoduje to również wypełnienie bazy danych przykładowymi danymi.
+1. Otwórz `BookLocal.sln` w Visual Studio lub Rider.
+2. Uzupełnij plik `BookLocal.API/appsettings.Development.json`:
+   ```json
+   {
+     "ConnectionStrings": {
+       "DefaultConnection": "Server=localhost;Database=BookLocal;Trusted_Connection=True;TrustServerCertificate=True"
+     },
+     "Jwt": {
+       "Key": "your-secret-key-min-32-characters",
+       "Issuer": "BookLocal",
+       "Audience": "BookLocalApp"
+     },
+     "CloudinarySettings": {
+       "CloudName": "your-cloud",
+       "ApiKey": "your-key",
+       "ApiSecret": "your-secret"
+     }
+   }
+   ```
+3. Uruchom projekt `BookLocal.API`. Baza danych zostanie utworzona i wypełniona danymi testowymi automatycznie (~800 użytkowników, 30 firm, tysiące rezerwacji).
 
-### Frontend
+### Frontend (Web)
 
-1. Przejdź do folderu `booklocal-frontend`:
-   ```bash
-   cd booklocal-frontend
-   ```
-2. Zainstaluj zależności:
-   ```bash
-   npm install
-   ```
-3. W pliku `src/environments/environment.ts` upewnij się, że `apiUrl` wskazuje na adres Twojego lokalnego API (np. `https://localhost:5001/api`).
-4. Uruchom serwer deweloperski:
-   ```bash
-   ng serve
-   ```
-5. Otwórz w przeglądarce `http://localhost:4200`.
+```bash
+cd booklocal-frontend
+npm install
+```
+
+Upewnij się, że `src/environments/environment.ts` wskazuje na lokalne API:
+```typescript
+export const environment = {
+  apiUrl: 'https://localhost:7036/api'
+};
+```
+
+```bash
+ng serve
+```
+
+Aplikacja dostępna pod `http://localhost:4200`.
+
+### Mobile (opcjonalnie)
+
+```bash
+cd booklocal_mobile
+flutter pub get
+flutter run
+```
 
 ---
 
-## 📄 License
+##  CI/CD
 
-Ten projekt jest licencjonowany na warunkach licencji MIT - zobacz plik [LICENSE](LICENSE) po szczegóły.
+Projekt zawiera **3 workflow GitHub Actions**:
 
+| Workflow | Trigger | Cel |
+|---|---|---|
+| `azure-static-web-apps-*.yml` | Push do `master` | Deploy frontendu Angular na Azure Static Web Apps |
+| `master_booklocal-api.yml` | Push do `master` | Deploy backendu .NET na Azure App Service |
+| `deploy.yml` | Push do `master` | Dodatkowy pipeline wdrożeniowy |
+
+---
+
+##  Struktura projektu
+
+```
+BookLocal/
+├── BookLocal.API/          # Backend – ASP.NET Core Web API
+│   ├── Controllers/        # 29 kontrolerów REST API
+│   ├── DTOs/               # Data Transfer Objects
+│   ├── Data/               # DbContext, DbInitializer, Migracje
+│   ├── Hubs/               # SignalR (ChatHub, NotificationHub, PresenceHub)
+│   └── Program.cs          # Konfiguracja aplikacji
+│
+├── BookLocal.Data/         # Warstwa danych
+│   └── Models/             # 37 modeli domenowych (EF Core entities)
+│
+├── booklocal-frontend/     # Frontend – Angular SPA
+│   └── src/
+│       ├── core/services/  # 33 serwisy (auth, business, chat, finance...)
+│       ├── features/       # Moduły funkcjonalne (home, dashboard, auth...)
+│       ├── shared/         # Współdzielone komponenty (modale rezerwacji)
+│       └── types/          # Interfejsy i modele TypeScript
+│
+├── booklocal_mobile/       # Aplikacja mobilna – Flutter/Dart
+│
+├── .github/workflows/      # CI/CD pipelines (GitHub Actions)
+├── *.sql                   # Procedury SQL (raporty finansowe)
+└── README.md
+```
+
+---
+
+##  Licencja
+
+Ten projekt jest licencjonowany na warunkach licencji MIT – szczegóły w pliku [LICENSE](LICENSE).
