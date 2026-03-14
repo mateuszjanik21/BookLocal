@@ -83,9 +83,6 @@ Możesz również samodzielnie przejść przez proces rejestracji jako klient lu
 
 ---
 
-
-```
-
 ### Frontend (Web)
 - **Framework:** Angular (standalone components, lazy loading)
 - **Język:** TypeScript
