@@ -69,7 +69,7 @@
 
         <div class="p-6 md:p-8 flex flex-col justify-between w-full relative">
 
-          <div class="absolute top-6 right-6">
+          <div class="absolute top-6 right-3">
             <span class="badge border-none p-2 shadow-sm font-bold text-[10px] uppercase tracking-wider" [ngClass]="{
                     'bg-success/20 text-success': res.status.toLowerCase() === 'confirmed',
                     'bg-error/20 text-error': res.status.toLowerCase() === 'cancelled',
@@ -80,12 +80,13 @@
           <div class="mb-4 pr-24">
             <div class="flex flex-wrap items-center gap-2 mb-3">
               @if (res.isBundle) {
-                <span class="badge badge-secondary text-xs font-bold uppercase tracking-wider">Pakiet: {{ res.serviceName }}</span>
+              <span class="badge badge-secondary text-xs font-bold uppercase tracking-wider">Pakiet: {{ res.serviceName
+                }}</span>
               } @else {
-                <span class="badge badge-neutral text-xs font-bold">{{ res.serviceName }}</span>
-                @if (res.variantName && res.variantName !== res.serviceName) {
-                  <span class="text-xs text-base-content/60 font-medium">{{ res.variantName }}</span>
-                }
+              <span class="badge badge-neutral text-xs font-bold">{{ res.serviceName }}</span>
+              @if (res.variantName && res.variantName !== res.serviceName) {
+              <span class="text-xs text-base-content/60 font-medium">{{ res.variantName }}</span>
+              }
               }
             </div>
             <a (click)="navigateToBusiness(res.businessId)"
@@ -208,12 +209,12 @@
           <div class="mb-4 pr-24">
             <div class="flex flex-wrap items-center gap-2 mb-1">
               @if (res.isBundle) {
-                <span class="text-xs font-bold text-secondary/70 uppercase">Pakiet: {{ res.serviceName }}</span>
+              <span class="text-xs font-bold text-secondary/70 uppercase">Pakiet: {{ res.serviceName }}</span>
               } @else {
-                <span class="text-xs font-bold text-base-content/50">{{ res.serviceName }}</span>
-                @if (res.variantName && res.variantName !== res.serviceName) {
-                  <span class="text-xs text-base-content/40 font-medium">({{ res.variantName }})</span>
-                }
+              <span class="text-xs font-bold text-base-content/50">{{ res.serviceName }}</span>
+              @if (res.variantName && res.variantName !== res.serviceName) {
+              <span class="text-xs text-base-content/40 font-medium">({{ res.variantName }})</span>
+              }
               }
             </div>
             <a (click)="navigateToBusiness(res.businessId)"
