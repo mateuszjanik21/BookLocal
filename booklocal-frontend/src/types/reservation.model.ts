@@ -10,6 +10,9 @@ export interface OwnerCreateReservationPayload {
   startTime: string;
   guestName: string;
   guestPhoneNumber?: string;
+  customerId?: string;
+  paymentMethod?: string;
+  loyaltyPointsUsed?: number;
 }
 
 export interface Reservation {
@@ -39,4 +42,6 @@ export interface Reservation {
   isServiceArchived: boolean;
   hasReview: boolean;
   paymentMethod: string;
+  loyaltyPointsUsed?: number;
+  serviceBundleId?: number;
 }

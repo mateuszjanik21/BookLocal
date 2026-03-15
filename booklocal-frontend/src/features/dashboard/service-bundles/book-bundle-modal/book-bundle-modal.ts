@@ -6,14 +6,16 @@ import { Employee } from '../../../../types/business.model';
 import { AvailabilityService } from '../../../../core/services/availability';
 import { EmployeeService } from '../../../../core/services/employee-service';
 import { ReservationService } from '../../../../core/services/reservation';
+import { LoyaltyService } from '../../../../core/services/loyalty-service';
+import { AuthService } from '../../../../core/services/auth-service';
 import { ToastrService } from 'ngx-toastr';
 import { switchMap } from 'rxjs';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-book-bundle-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, RouterModule],
   templateUrl: './book-bundle-modal.html'
 })
 export class BookBundleModalComponent implements OnInit {
@@ -26,7 +28,7 @@ export class BookBundleModalComponent implements OnInit {
   private employeeService = inject(EmployeeService);
   private toastr = inject(ToastrService);
 
-  currentStep = 1;
+  currentStep = 0;
   employees: Employee[] = [];
   selectedEmployee: Employee | null = null;
   
@@ -53,6 +55,16 @@ export class BookBundleModalComponent implements OnInit {
   paymentStatus: 'idle' | 'processing' | 'success' | 'failed' = 'idle';
 
   private reservationService = inject(ReservationService);
+  private loyaltyService = inject(LoyaltyService);
+  private authService = inject(AuthService);
+
+  get isCustomer(): boolean {
+    const user = this.authService.currentUserValue;
+    return !!user && user.roles.includes('customer');
+  }
+
+  loyaltyPointsBalance = 0;
+  loyaltyPointsToUse = 0;
 
   constructor() {
     const today = new Date();
@@ -169,7 +181,8 @@ export class BookBundleModalComponent implements OnInit {
         serviceBundleId: this.bundle.serviceBundleId,
         employeeId: this.selectedEmployee.id,
         startTime: this.selectedSlot,
-        paymentMethod: this.paymentMethod
+        paymentMethod: this.paymentMethod,
+        loyaltyPointsUsed: this.loyaltyPointsToUse > 0 ? this.loyaltyPointsToUse : undefined
       };
 
       if (this.isOwnerMode) {
@@ -207,6 +220,7 @@ export class BookBundleModalComponent implements OnInit {
   showModal() {
       this.resetModal();
       this.loadEmployees();
+      this.loadLoyaltyBalance();
       this.dialog.nativeElement.showModal();
   }
 
@@ -215,7 +229,7 @@ export class BookBundleModalComponent implements OnInit {
   }
 
   resetModal() {
-      this.currentStep = 1;
+      this.currentStep = 0;
       this.selectedEmployee = null;
       this.selectedSlot = null;
       this.availableSlots = [];
@@ -225,9 +239,42 @@ export class BookBundleModalComponent implements OnInit {
       this.isSaving = false;
       this.guestName = '';
       this.guestPhone = '';
+      this.loyaltyPointsToUse = 0;
   }
 
   prevStep() {
-      if (this.currentStep > 1) this.currentStep--;
+      if (this.currentStep > 0) this.currentStep--;
+  }
+
+  get currentPrice(): number {
+      const basePrice = this.bundle?.totalPrice ?? 0;
+      return Math.max(basePrice - this.loyaltyPointsToUse, 1);
+  }
+
+  get maxLoyaltyPoints(): number {
+      const basePrice = this.bundle?.totalPrice ?? 0;
+      return Math.min(this.loyaltyPointsBalance, Math.max(Math.floor(basePrice - 1), 0));
+  }
+
+  onLoyaltyPointsChange(): void {
+      if (this.loyaltyPointsToUse < 0) this.loyaltyPointsToUse = 0;
+      if (this.loyaltyPointsToUse > this.maxLoyaltyPoints) {
+          this.loyaltyPointsToUse = this.maxLoyaltyPoints;
+      }
+  }
+
+  private loadLoyaltyBalance(): void {
+      if (this.isOwnerMode) return;
+      const currentUser: any = this.authService.currentUserValue;
+      if (!currentUser?.id || !this.businessId) return;
+
+      this.loyaltyService.getCustomerLoyalty(this.businessId, currentUser.id).subscribe({
+          next: (data) => {
+              this.loyaltyPointsBalance = data.balance.pointsBalance;
+          },
+          error: () => {
+              this.loyaltyPointsBalance = 0;
+          }
+      });
   }
 }

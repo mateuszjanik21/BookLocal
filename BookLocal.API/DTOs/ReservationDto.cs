@@ -10,6 +10,7 @@ namespace BookLocal.API.DTOs
         public DateTime StartTime { get; set; }
         public string? DiscountCode { get; set; }
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+        public int LoyaltyPointsUsed { get; set; } = 0;
     }
 
     public class ReservationDto
@@ -43,6 +44,8 @@ namespace BookLocal.API.DTOs
         public bool IsServiceArchived { get; set; }
 
         public bool HasReview { get; set; }
+        public int? ServiceBundleId { get; set; }
+        public int LoyaltyPointsUsed { get; set; }
         public string PaymentMethod { get; set; }
     }
 
@@ -67,6 +70,9 @@ namespace BookLocal.API.DTOs
         public string GuestName { get; set; }
         public string? GuestPhoneNumber { get; set; }
         public string? DiscountCode { get; set; }
+        public string? CustomerId { get; set; }
+        public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+        public int LoyaltyPointsUsed { get; set; } = 0;
     }
 
     public class OwnerCreateBundleReservationDto
@@ -94,6 +100,7 @@ namespace BookLocal.API.DTOs
         public DateTime StartTime { get; set; }
         public string? DiscountCode { get; set; }
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
+        public int LoyaltyPointsUsed { get; set; } = 0;
     }
 
     public class ReservationSqlDto
@@ -114,6 +121,7 @@ namespace BookLocal.API.DTOs
         public string? CustomerId { get; set; }
         public string? CustomerFullName { get; set; }
         public string? GuestName { get; set; }
+        public int? ServiceBundleId { get; set; }
         public bool HasReview { get; set; }
     }
 }

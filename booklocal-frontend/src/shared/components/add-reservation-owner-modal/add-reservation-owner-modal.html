@@ -1,67 +1,192 @@
 <div class="modal modal-open">
-  <div class="modal-box">
-    <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" (click)="closed.emit(false)">✕</button>
-    <h3 class="font-bold text-lg">Dodaj Nową Rezerwację</h3>
-    
-    @if (isLoading) {
-      <div class="flex justify-center p-8"><span class="loading loading-spinner"></span></div>
-    } @else {
-      <form [formGroup]="reservationForm" (ngSubmit)="onSubmit()" class="space-y-4 mt-4">
-        
-        <div class="p-4 bg-base-200 rounded-lg">
-            <h4 class="font-semibold mb-2">Dane Klienta</h4>
-            <div class="form-control">
-                <label class="label"><span class="label-text">Imię i Nazwisko</span></label>
-                <input type="text" placeholder="Jan Kowalski" class="input input-bordered" formControlName="guestName" />
+    <div class="modal-box max-w-2xl w-full p-0 overflow-hidden">
+        <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-base-200">
+            <div>
+                <h3 class="font-black text-xl tracking-tight">Dodaj Nową Rezerwację</h3>
+                <p class="text-xs opacity-50 font-semibold uppercase tracking-widest mt-0.5">Panel właściciela</p>
             </div>
-            <div class="form-control mt-2">
-                <label class="label"><span class="label-text">Numer telefonu (opcjonalnie)</span></label>
-                <input type="tel" placeholder="123 456 789" class="input input-bordered" formControlName="guestPhoneNumber" />
-            </div>
+            <button class="btn btn-sm btn-circle btn-ghost" (click)="closed.emit(false)">✕</button>
         </div>
 
-        <div class="p-4 bg-base-200 rounded-lg">
-            <h4 class="font-semibold mb-2">Szczegóły Wizyty</h4>
-            <div class="form-control">
-                <label class="label"><span class="label-text">Usługa</span></label>
-                <select class="select select-bordered" formControlName="serviceId">
-                    <option disabled selected value="">Wybierz usługę...</option>
-                    @for (service of services; track service.id) {
-                        <option [value]="service.id">
-                          {{ service.name }} ({{ service.variants[0].durationMinutes }} min)
-                        </option>
-                    }
-                </select>
-            </div>
-            <div class="grid grid-cols-2 gap-4 mt-2">
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Data</span></label>
-                    <input type="date" class="input input-bordered" formControlName="date" />
-                </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Godzina</span></label>
-                    <input type="time" class="input input-bordered" formControlName="startTime" />
-                </div>
-            </div>
-            <div class="form-control mt-2">
-                <label class="label"><span class="label-text">Pracownik</span></label>
-                <select class="select select-bordered" formControlName="employeeId">
-                    <option disabled selected value="">Wybierz...</option>
-                    @for (employee of employees; track employee.id) {
-                        <option [value]="employee.id">{{ employee.firstName }} {{ employee.lastName }}</option>
-                    }
-                </select>
-            </div>
+        @if (isLoading) {
+        <div class="flex justify-center items-center p-16">
+            <span class="loading loading-spinner loading-lg text-primary"></span>
         </div>
+        } @else {
+        <form [formGroup]="reservationForm" (ngSubmit)="onSubmit()" class="space-y-0 overflow-y-auto max-h-[75vh]">
+            <div class="p-6 space-y-5">
 
-        <div class="modal-action">
-          <button type="button" class="btn btn-ghost" (click)="closed.emit(false)">Anuluj</button>
-          <button type="submit" class="btn btn-primary" [disabled]="reservationForm.invalid || isSaving">
-            @if(isSaving) { <span class="loading loading-spinner"></span> }
-            Zapisz rezerwację
-          </button>
-        </div>
-      </form>
-    }
-  </div>
+                <div class="bg-base-200/50 rounded-2xl p-4 space-y-3 border border-base-200">
+                    <h4 class="text-xs font-black uppercase tracking-widest opacity-50">Klient</h4>
+
+                    <div class="relative">
+                        <div class="relative w-full">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-base-content/40" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                            </div>
+                            <input type="text" placeholder="Wpisz imię i nazwisko..."
+                                class="input input-bordered w-full pl-9 rounded-xl bg-base-100"
+                                (input)="onSearchChange($event)" formControlName="guestName" />
+                            @if (isSearchingCustomers) {
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                <span class="loading loading-spinner loading-xs text-primary"></span>
+                            </div>
+                            }
+                        </div>
+
+                        @if (searchResults.length > 0) {
+                        <ul
+                            class="menu bg-base-100 w-full rounded-xl shadow-xl absolute top-full left-0 z-50 mt-1 max-h-44 overflow-y-auto border border-base-300">
+                            <li
+                                class="menu-title px-3 py-2 text-[0.6rem] font-black text-base-content/40 uppercase tracking-widest sticky top-0 bg-base-100 border-b border-base-200">
+                                Zarejestrowani klienci
+                            </li>
+                            @for (customer of searchResults; track customer.userId) {
+                            <li>
+                                <a (click)="selectCustomer(customer)" class="py-2 items-center">
+                                    <div class="avatar">
+                                        <div class="w-8 rounded-full border border-base-200">
+                                            <img [src]="customer.photoUrl || 'assets/placeholder-avatar.svg'" />
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col ml-1">
+                                        <span class="font-bold text-sm">{{ customer.fullName }}</span>
+                                        @if (customer.phoneNumber) {
+                                        <span class="text-xs opacity-50">{{ customer.phoneNumber }}</span>
+                                        }
+                                    </div>
+                                </a>
+                            </li>
+                            }
+                        </ul>
+                        }
+                    </div>
+
+                    @if (selectedCustomer) {
+                    <div class="bg-primary/5 rounded-xl flex items-center gap-3 border border-primary/20 p-3">
+                        <div class="avatar">
+                            <div class="w-10 rounded-full border border-primary/20">
+                                <img [src]="selectedCustomer.photoUrl || 'assets/placeholder-avatar.svg'" />
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-[0.6rem] uppercase tracking-widest opacity-50 font-bold">Połączono konto</p>
+                            <p class="font-bold text-sm leading-snug">{{ selectedCustomer.fullName }}</p>
+                        </div>
+                        @if (loyaltyPointsBalance > 0) {
+                        <span class="badge badge-warning ml-auto font-black">{{ loyaltyPointsBalance }} pkt</span>
+                        }
+                    </div>
+                    }
+
+                    @if (!selectedCustomer) {
+                    <div class="form-control">
+                        <label class="label py-1"><span class="label-text text-xs font-bold opacity-60">Telefon
+                                (opcjonalnie)</span></label>
+                        <input type="tel" placeholder="123 456 789" class="input input-bordered rounded-xl"
+                            formControlName="guestPhoneNumber" />
+                    </div>
+                    }
+                </div>
+
+                <div class="bg-base-200/50 rounded-2xl p-4 space-y-3 border border-base-200">
+                    <h4 class="text-xs font-black uppercase tracking-widest opacity-50">Szczegóły Wizyty</h4>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="form-control sm:col-span-2">
+                            <label class="label py-1"><span
+                                    class="label-text text-xs font-bold opacity-60">Usługa</span></label>
+                            <select class="select select-bordered rounded-xl w-full" formControlName="serviceId">
+                                <option disabled selected value="">Wybierz usługę...</option>
+                                @for (service of services; track service.id) {
+                                <option [value]="service.id">
+                                    {{ service.name }} — {{ service.variants[0].durationMinutes }} min · {{
+                                    service.variants[0].price }} zł
+                                </option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-control sm:col-span-2">
+                            <label class="label py-1"><span
+                                    class="label-text text-xs font-bold opacity-60">Pracownik</span></label>
+                            <select class="select select-bordered rounded-xl w-full" formControlName="employeeId">
+                                <option disabled selected value="">Wybierz pracownika...</option>
+                                @for (employee of employees; track employee.id) {
+                                <option [value]="employee.id">{{ employee.firstName }} {{ employee.lastName }}</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label py-1"><span
+                                    class="label-text text-xs font-bold opacity-60">Data</span></label>
+                            <input type="date" class="input input-bordered rounded-xl" formControlName="date" />
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label py-1"><span
+                                    class="label-text text-xs font-bold opacity-60">Godzina</span></label>
+                            <input type="time" class="input input-bordered rounded-xl" formControlName="startTime" />
+                        </div>
+                    </div>
+                </div>
+
+                @if (reservationForm.get('serviceId')?.value) {
+                <div class="bg-base-200/50 rounded-2xl p-4 space-y-3 border border-base-200">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-black uppercase tracking-widest opacity-50">Do zapłaty</h4>
+                        <span class="text-2xl font-black text-primary">{{ currentPrice | number:'1.2-2' }} zł</span>
+                    </div>
+
+                    @if (selectedCustomer && loyaltyPointsBalance > 0) {
+                    <div class="p-3 rounded-xl bg-warning/10 border border-warning/20">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-warning shrink-0" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                            </svg>
+                            <span class="font-bold text-xs">Punkty lojalnościowe klienta</span>
+                            <span class="badge badge-warning badge-sm ml-auto font-black">{{ loyaltyPointsBalance }}
+                                pkt</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="range" class="range range-warning range-xs flex-grow" [min]="0"
+                                [max]="maxLoyaltyPoints" [step]="1" [(ngModel)]="loyaltyPointsToUse"
+                                [ngModelOptions]="{standalone: true}" (ngModelChange)="onLoyaltyPointsChange()" />
+                            <div class="flex items-center gap-1 shrink-0">
+                                <input type="number" class="input input-bordered input-xs w-14 text-center font-bold"
+                                    [min]="0" [max]="maxLoyaltyPoints" [(ngModel)]="loyaltyPointsToUse"
+                                    [ngModelOptions]="{standalone: true}" (ngModelChange)="onLoyaltyPointsChange()" />
+                                <span class="text-[0.6rem] opacity-50 font-black uppercase">pkt</span>
+                            </div>
+                        </div>
+                        @if (loyaltyPointsToUse > 0) {
+                        <p class="text-xs text-warning mt-2 font-semibold text-right">
+                            Zniżka: -{{ loyaltyPointsToUse }} zł → do zapłaty: {{ currentPrice | number:'1.2-2' }} zł
+                        </p>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+
+            </div>
+
+            <div class="flex justify-end gap-3 px-6 py-4 border-t border-base-200 bg-base-100 sticky bottom-0">
+                <button type="button" class="btn btn-ghost rounded-xl" (click)="closed.emit(false)">Anuluj</button>
+                <button type="submit" class="btn btn-primary rounded-xl px-8 shadow shadow-primary/25"
+                    [disabled]="reservationForm.invalid || isSaving">
+                    @if(isSaving) { <span class="loading loading-spinner"></span> }
+                    Zapisz rezerwację
+                </button>
+            </div>
+        </form>
+        }
+    </div>
 </div>

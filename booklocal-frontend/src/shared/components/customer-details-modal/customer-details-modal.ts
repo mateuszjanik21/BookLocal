@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { CustomerService } from '../../../core/services/customer-service';
-import { CustomerDetail } from '../../../types/customer.models';
+import { CustomerService, PagedResult } from '../../../core/services/customer-service';
+import { CustomerDetail, ReservationHistory } from '../../../types/customer.models';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -22,6 +22,12 @@ export class CustomerDetailsModalComponent implements OnInit {
 
   customer: CustomerDetail | null = null;
   isLoading = true;
+
+  history: ReservationHistory[] = [];
+  currentPage = 1;
+  pageSize = 10;
+  totalHistoryCount = 0;
+  isLoadingHistory = false;
 
   notesForm = this.fb.group({
     privateNotes: [''],
@@ -44,12 +50,40 @@ export class CustomerDetailsModalComponent implements OnInit {
           formulas: data.formulas
         });
         this.isLoading = false;
+        this.loadHistory(1);
       },
       error: () => {
-        this.toastr.error('Nie udało się pobrać szczegółów клиента.');
+        this.toastr.error('Nie udało się pobrać szczegółów klienta.');
         this.closed.emit(false);
       }
     });
+  }
+
+  loadHistory(page: number, append: boolean = false) {
+    this.isLoadingHistory = true;
+    this.customerService.getCustomerHistory(this.businessId, this.customerId, page, this.pageSize)
+      .subscribe({
+        next: (res: PagedResult<ReservationHistory>) => {
+          if (append) {
+            this.history = [...this.history, ...res.items];
+          } else {
+            this.history = res.items;
+          }
+          this.totalHistoryCount = res.totalCount;
+          this.currentPage = res.pageNumber;
+          this.isLoadingHistory = false;
+        },
+        error: () => {
+          this.toastr.error('Nie udało się pobrać historii wizyt.');
+          this.isLoadingHistory = false;
+        }
+      });
+  }
+
+  loadMore() {
+    if (this.history.length < this.totalHistoryCount && !this.isLoadingHistory) {
+      this.loadHistory(this.currentPage + 1, true);
+    }
   }
 
   saveNotes() {

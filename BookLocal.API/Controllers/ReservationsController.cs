@@ -83,6 +83,15 @@ namespace BookLocal.API.Controllers
                 discountId = discountResult.discountId;
             }
 
+            decimal loyaltyDiscount = 0;
+            if (reservationDto.LoyaltyPointsUsed > 0)
+            {
+                var loyaltyResult = await RedeemLoyaltyPoints(service.BusinessId, userId, reservationDto.LoyaltyPointsUsed, variant.Price - discountAmount);
+                if (loyaltyResult.error != null)
+                    return BadRequest(loyaltyResult.error);
+                loyaltyDiscount = loyaltyResult.discount;
+            }
+
             var reservation = new Reservation
             {
                 BusinessId = service.BusinessId,
@@ -91,15 +100,42 @@ namespace BookLocal.API.Controllers
                 EmployeeId = reservationDto.EmployeeId,
                 StartTime = reservationDto.StartTime,
                 EndTime = proposedEndTime,
-                AgreedPrice = variant.Price - discountAmount,
+                AgreedPrice = variant.Price - discountAmount - loyaltyDiscount,
                 DiscountAmount = discountAmount,
                 DiscountId = discountId,
+                LoyaltyPointsUsed = reservationDto.LoyaltyPointsUsed,
                 Status = ReservationStatus.Confirmed,
                 PaymentMethod = reservationDto.PaymentMethod
             };
 
             _context.Reservations.Add(reservation);
             await _context.SaveChangesAsync();
+
+            if (reservation.PaymentMethod == PaymentMethod.Online && reservation.AgreedPrice > 0)
+            {
+                var payment = new Payment
+                {
+                    ReservationId = reservation.ReservationId,
+                    BusinessId = service.BusinessId,
+                    PaymentMethod = PaymentMethod.Online,
+                    Amount = reservation.AgreedPrice,
+                    Status = PaymentStatus.Completed,
+                    TransactionDate = DateTime.UtcNow
+                };
+
+                var activeSubscription = await _context.BusinessSubscriptions
+                    .Include(s => s.Plan)
+                    .FirstOrDefaultAsync(s => s.BusinessId == service.BusinessId && s.IsActive);
+
+                if (activeSubscription != null)
+                {
+                    var commissionRate = (decimal)activeSubscription.Plan.CommissionPercentage / 100m;
+                    payment.CommissionAmount = Math.Round(payment.Amount * commissionRate, 2);
+                }
+
+                _context.Payments.Add(payment);
+                await _context.SaveChangesAsync();
+            }
 
             var customer = await _userManager.FindByIdAsync(userId);
             var notificationPayload = new
@@ -211,6 +247,8 @@ namespace BookLocal.API.Controllers
                 CustomerFullName = r.Customer != null ? $"{r.Customer.FirstName} {r.Customer.LastName}" : "Gość",
                 GuestName = r.GuestName,
                 HasReview = r.Review != null,
+                ServiceBundleId = r.ServiceBundleId,
+                LoyaltyPointsUsed = r.LoyaltyPointsUsed,
                 PaymentMethod = r.PaymentMethod.ToString()
             }).ToList();
 
@@ -272,6 +310,7 @@ namespace BookLocal.API.Controllers
                 CustomerFullName = r.CustomerFullName,
                 GuestName = r.GuestName,
                 HasReview = r.HasReview,
+                ServiceBundleId = r.ServiceBundleId,
                 PaymentMethod = r.PaymentMethod
             }).ToList();
 
@@ -325,6 +364,16 @@ namespace BookLocal.API.Controllers
             var isOwner = User.IsInRole("owner") && reservation.Business.OwnerId == userId;
             if (reservation.CustomerId != userId && !isOwner) return Forbid();
 
+            var loyaltyPointsUsed = reservation.LoyaltyPointsUsed;
+            if (reservation.ServiceBundleId.HasValue)
+            {
+                loyaltyPointsUsed = await _context.Reservations
+                    .Where(r => r.ServiceBundleId == reservation.ServiceBundleId &&
+                                r.CustomerId == reservation.CustomerId &&
+                                r.StartTime.Date == reservation.StartTime.Date)
+                    .SumAsync(r => r.LoyaltyPointsUsed);
+            }
+
             var reservationDto = new ReservationDto
             {
                 ReservationId = reservation.ReservationId,
@@ -350,6 +399,8 @@ namespace BookLocal.API.Controllers
                 GuestName = reservation.GuestName,
                 HasReview = await _context.Reviews.AnyAsync(r => r.ReservationId == id),
                 IsServiceArchived = reservation.ServiceVariant?.Service?.IsArchived ?? true,
+                ServiceBundleId = reservation.ServiceBundleId,
+                LoyaltyPointsUsed = loyaltyPointsUsed,
                 PaymentMethod = reservation.PaymentMethod.ToString()
             };
 
@@ -487,12 +538,23 @@ namespace BookLocal.API.Controllers
                 globalDiscountRatio = bundle.TotalPrice / sumOfVariantsPrice;
             }
 
+            decimal loyaltyDiscountTotal = 0;
+            if (reservationDto.LoyaltyPointsUsed > 0)
+            {
+                var loyaltyResult = await RedeemLoyaltyPoints(bundle.BusinessId, userId, reservationDto.LoyaltyPointsUsed, bundle.TotalPrice);
+                if (loyaltyResult.error != null)
+                    return BadRequest(loyaltyResult.error);
+                loyaltyDiscountTotal = loyaltyResult.discount;
+            }
+
+            decimal loyaltyRatio = bundle.TotalPrice > 0 ? (bundle.TotalPrice - loyaltyDiscountTotal) / bundle.TotalPrice : 1.0m;
+
             foreach (var item in bundleItems)
             {
                 var variantDuration = item.ServiceVariant.DurationMinutes + item.ServiceVariant.CleanupTimeMinutes;
                 var currentEndTime = currentStartTime.AddMinutes(variantDuration);
 
-                var itemPrice = item.ServiceVariant.Price * globalDiscountRatio;
+                var itemPrice = item.ServiceVariant.Price * globalDiscountRatio * loyaltyRatio;
 
                 var reservation = new Reservation
                 {
@@ -505,6 +567,7 @@ namespace BookLocal.API.Controllers
                     EndTime = currentEndTime,
                     AgreedPrice = itemPrice,
                     Status = ReservationStatus.Confirmed,
+                    LoyaltyPointsUsed = bundleItems.IndexOf(item) == 0 ? reservationDto.LoyaltyPointsUsed : 0,
                     PaymentMethod = reservationDto.PaymentMethod
                 };
 
@@ -517,6 +580,36 @@ namespace BookLocal.API.Controllers
             {
                 _context.Reservations.AddRange(reservationsToCreate);
                 await _context.SaveChangesAsync();
+
+                if (reservationDto.PaymentMethod == PaymentMethod.Online)
+                {
+                    var totalAmount = reservationsToCreate.Sum(r => r.AgreedPrice);
+                    if (totalAmount > 0)
+                    {
+                        var payment = new Payment
+                        {
+                            ReservationId = reservationsToCreate.First().ReservationId,
+                            BusinessId = bundle.BusinessId,
+                            PaymentMethod = PaymentMethod.Online,
+                            Amount = totalAmount,
+                            Status = PaymentStatus.Completed,
+                            TransactionDate = DateTime.UtcNow
+                        };
+
+                        var activeSubscription = await _context.BusinessSubscriptions
+                            .Include(s => s.Plan)
+                            .FirstOrDefaultAsync(s => s.BusinessId == bundle.BusinessId && s.IsActive);
+
+                        if (activeSubscription != null)
+                        {
+                            var commissionRate = (decimal)activeSubscription.Plan.CommissionPercentage / 100m;
+                            payment.CommissionAmount = Math.Round(payment.Amount * commissionRate, 2);
+                        }
+
+                        _context.Payments.Add(payment);
+                        await _context.SaveChangesAsync();
+                    }
+                }
 
                 var customer = await _userManager.FindByIdAsync(userId);
                 var notificationPayload = new
@@ -600,6 +693,15 @@ namespace BookLocal.API.Controllers
                 discountId = discountResult.discountId;
             }
 
+            decimal loyaltyDiscount = 0;
+            if (reservationDto.LoyaltyPointsUsed > 0 && !string.IsNullOrEmpty(reservationDto.CustomerId))
+            {
+                var loyaltyResult = await RedeemLoyaltyPoints(variant.Service.BusinessId, reservationDto.CustomerId, reservationDto.LoyaltyPointsUsed, variant.Price - discountAmount);
+                if (loyaltyResult.error != null)
+                    return BadRequest(loyaltyResult.error);
+                loyaltyDiscount = loyaltyResult.discount;
+            }
+
             var reservation = new Reservation
             {
                 BusinessId = variant.Service.BusinessId,
@@ -607,12 +709,15 @@ namespace BookLocal.API.Controllers
                 EmployeeId = reservationDto.EmployeeId,
                 StartTime = reservationDto.StartTime,
                 EndTime = proposedEndTime,
-                AgreedPrice = variant.Price - discountAmount,
+                AgreedPrice = variant.Price - discountAmount - loyaltyDiscount,
                 DiscountAmount = discountAmount,
                 DiscountId = discountId,
+                LoyaltyPointsUsed = reservationDto.LoyaltyPointsUsed,
                 GuestName = reservationDto.GuestName,
                 GuestPhoneNumber = reservationDto.GuestPhoneNumber,
-                Status = ReservationStatus.Confirmed
+                CustomerId = reservationDto.CustomerId,
+                Status = ReservationStatus.Confirmed,
+                PaymentMethod = reservationDto.PaymentMethod
             };
 
             _context.Reservations.Add(reservation);
@@ -867,6 +972,47 @@ namespace BookLocal.API.Controllers
 
             _context.LoyaltyTransactions.Add(transaction);
             await _context.SaveChangesAsync();
+        }
+
+        private async Task<(decimal discount, string? error)> RedeemLoyaltyPoints(int businessId, string customerId, int pointsToUse, decimal priceAfterDiscounts)
+        {
+            if (pointsToUse <= 0) return (0, null);
+
+            var loyaltyPoint = await _context.LoyaltyPoints
+                .FirstOrDefaultAsync(p => p.BusinessId == businessId && p.CustomerId == customerId);
+
+            if (loyaltyPoint == null || loyaltyPoint.PointsBalance < pointsToUse)
+                return (0, "Nie masz wystarczającej liczby punktów lojalnościowych.");
+
+            // 1 punkt = 1 PLN
+            decimal discount = (decimal)pointsToUse;
+
+            // Minimum 1 PLN do zapłaty
+            if (priceAfterDiscounts - discount < 1.00m)
+            {
+                discount = priceAfterDiscounts - 1.00m;
+                if (discount < 0) discount = 0;
+            }
+
+            int actualPointsUsed = (int)discount;
+            if (actualPointsUsed <= 0) return (0, null);
+
+            loyaltyPoint.PointsBalance -= actualPointsUsed;
+            loyaltyPoint.LastUpdated = DateTime.UtcNow;
+
+            var transaction = new LoyaltyTransaction
+            {
+                LoyaltyPoint = loyaltyPoint,
+                PointsAmount = actualPointsUsed,
+                Type = LoyaltyTransactionType.Redeemed,
+                Description = $"Wykorzystano {actualPointsUsed} pkt przy rezerwacji",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.LoyaltyTransactions.Add(transaction);
+            await _context.SaveChangesAsync();
+
+            return (discount, null);
         }
 
         [HttpGet("{id}/adjacent")]

@@ -159,22 +159,80 @@ namespace BookLocal.API.Controllers
                 Allergies = profile.Allergies,
                 Formulas = profile.Formulas,
                 VisitCount = visitCount,
-                History = await _context.Reservations
-                    .Where(r => r.BusinessId == businessId && r.CustomerId == customerId)
-                    .OrderByDescending(r => r.StartTime)
-                    .Select(r => new ReservationHistoryDto
-                    {
-                        ReservationId = r.ReservationId,
-                        StartTime = r.StartTime,
-                        ServiceName = r.ServiceVariant.Service.Name + " (" + r.ServiceVariant.Name + ")",
-                        EmployeeName = r.Employee.FirstName + " " + r.Employee.LastName,
-                        Price = r.AgreedPrice,
-                        Status = r.Status.ToString()
-                    })
-                    .ToListAsync()
+                History = new List<ReservationHistoryDto>()
             };
 
             return Ok(dto);
+        }
+
+        [HttpGet("{customerId}/history")]
+        public async Task<ActionResult<PagedResultDto<ReservationHistoryDto>>> GetCustomerHistory(
+            int businessId,
+            string customerId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
+            if (business == null) return Forbid();
+
+            var query = _context.Reservations
+                .Include(r => r.ServiceVariant.Service)
+                .Include(r => r.Employee)
+                .Include(r => r.ServiceBundle)
+                .Where(r => r.BusinessId == businessId && r.CustomerId == customerId);
+
+            var rawReservations = await query
+                .OrderByDescending(r => r.StartTime)
+                .ToListAsync();
+
+            var groupedHistory = rawReservations
+                .GroupBy(r => r.ServiceBundleId.HasValue
+                    ? $"Bundle_{r.ServiceBundleId}_{r.StartTime.Date:yyyy-MM-dd}"
+                    : $"Single_{r.ReservationId}")
+                .Select(g =>
+                {
+                    var first = g.OrderBy(x => x.StartTime).First();
+                    if (first.ServiceBundleId.HasValue && first.ServiceBundle != null)
+                    {
+                        var empNames = g.Select(x => x.Employee.FirstName + " " + x.Employee.LastName).Distinct();
+                        return new ReservationHistoryDto
+                        {
+                            ReservationId = first.ReservationId,
+                            StartTime = first.StartTime,
+                            ServiceName = $"[PAKIET] {first.ServiceBundle.Name} ({g.Count()} usługi)",
+                            EmployeeName = string.Join(", ", empNames),
+                            Price = g.Sum(x => x.AgreedPrice),
+                            Status = first.Status.ToString()
+                        };
+                    }
+
+                    return new ReservationHistoryDto
+                    {
+                        ReservationId = first.ReservationId,
+                        StartTime = first.StartTime,
+                        ServiceName = first.ServiceVariant?.Service?.Name + " (" + first.ServiceVariant?.Name + ")",
+                        EmployeeName = first.Employee?.FirstName + " " + first.Employee?.LastName,
+                        Price = first.AgreedPrice,
+                        Status = first.Status.ToString()
+                    };
+                })
+                .OrderByDescending(h => h.StartTime)
+                .ToList();
+
+            var totalCount = groupedHistory.Count;
+            var pagedItems = groupedHistory
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return Ok(new PagedResultDto<ReservationHistoryDto>
+            {
+                Items = pagedItems,
+                TotalCount = totalCount,
+                PageNumber = page,
+                PageSize = pageSize
+            });
         }
 
         [HttpPut("{customerId}/notes")]

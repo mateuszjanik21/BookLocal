@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
-import { CustomerDetail, CustomerListItem, UpdateCustomerNotePayload, UpdateCustomerStatusPayload, CustomerStatusFilter, CustomerHistoryFilter, CustomerSpentFilter } from '../../types/customer.models';
+import { CustomerDetail, CustomerListItem, UpdateCustomerNotePayload, UpdateCustomerStatusPayload, CustomerStatusFilter, CustomerHistoryFilter, CustomerSpentFilter, ReservationHistory } from '../../types/customer.models';
 
 export interface PagedResult<T> {
     items: T[];
@@ -41,5 +41,13 @@ export class CustomerService {
 
   updateStatus(businessId: number, customerId: string, payload: UpdateCustomerStatusPayload) {
     return this.http.put(`${this.apiUrl}/businesses/${businessId}/customers/${customerId}/status`, payload);
+  }
+
+  getCustomerHistory(businessId: number, customerId: string, page: number = 1, pageSize: number = 10): Observable<PagedResult<ReservationHistory>> {
+    const params = new HttpParams()
+        .set('page', page)
+        .set('pageSize', pageSize);
+
+    return this.http.get<PagedResult<ReservationHistory>>(`${this.apiUrl}/businesses/${businessId}/customers/${customerId}/history`, { params });
   }
 }

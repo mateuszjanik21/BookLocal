@@ -34,6 +34,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   activeMainCategoryId: number | null = null;
   activeSortBy = 'rating_desc';
+  isLocationLoading = false;
+  isLoading = false;
 
   private searchSubject = new Subject<void>();
   private searchSubscription?: Subscription;
@@ -61,16 +63,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   fetchResults(): void {
+    this.isLoading = true;
     this.isSkeletonVisible = false;
+    
     if (this.skeletonTimeout) {
       clearTimeout(this.skeletonTimeout);
     }
     
-    // Ustawienie opóźnionej flagi isSkeletonVisible o 1000 milisekund,
-    // by nie wymuszać brzydkich mignięć pustym ekranem przy szybkich odp.
     this.skeletonTimeout = setTimeout(() => {
-      this.isSkeletonVisible = true;
-    }, 1000);
+      if (this.isLoading) {
+        this.isSkeletonVisible = true;
+      }
+    }, 250);
 
     const params = {
       searchTerm: this.searchInput?.nativeElement.value,
@@ -80,17 +84,24 @@ export class HomeComponent implements OnInit, OnDestroy {
       pageNumber: this.pageNumber,
       pageSize: this.pageSize
     };
+
     this.businessService.searchCategoryFeed(params).subscribe({
       next: (data) => {
         this.pagedResult = data;
-        clearTimeout(this.skeletonTimeout);
-        this.isSkeletonVisible = false;
+        this.cleanupLoadingState();
       },
       error: () => {
-        clearTimeout(this.skeletonTimeout);
-        this.isSkeletonVisible = false;
+        this.cleanupLoadingState();
       }
     });
+  }
+
+  private cleanupLoadingState(): void {
+    if (this.skeletonTimeout) {
+      clearTimeout(this.skeletonTimeout);
+    }
+    this.isLoading = false;
+    this.isSkeletonVisible = false;
   }
 
   onSearchInput(): void {
@@ -106,18 +117,42 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   useCurrentLocation(): void {
+    if (this.isLocationLoading) return;
+    
     if (navigator.geolocation) {
+      this.isLocationLoading = true;
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          // Symulacja wykrycia lokalizacji
-          this.locationTerm = 'Moja lokalizacja';
-          if (this.locationInput) this.locationInput.nativeElement.value = this.locationTerm;
-          this.onFilterChange();
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=pl`)
+            .then(res => res.json())
+            .then(data => {
+              this.locationTerm = data.city || data.locality || 'Moja lokalizacja';
+              if (this.locationInput) this.locationInput.nativeElement.value = this.locationTerm;
+              this.isLocationLoading = false;
+              this.onFilterChange();
+            })
+            .catch(() => {
+              this.locationTerm = 'Moja lokalizacja';
+              if (this.locationInput) this.locationInput.nativeElement.value = this.locationTerm;
+              this.isLocationLoading = false;
+              this.onFilterChange();
+            });
         },
         (error) => {
           console.error('Błąd pobierania lokalizacji', error);
+          this.isLocationLoading = false;
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
+    } else {
+      console.warn('Geolokalizacja nie jest wspierana przez tę przeglądarkę.');
     }
   }
 

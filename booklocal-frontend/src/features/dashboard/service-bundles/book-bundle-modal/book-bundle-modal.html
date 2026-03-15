@@ -13,7 +13,7 @@
     </div>
 
     <div class="flex-grow flex flex-col overflow-hidden">
-      <ul class="steps steps-horizontal w-full my-6">
+      <ul class="steps steps-horizontal w-full my-6" *ngIf="currentStep > 0">
         <li class="step" [class.step-primary]="currentStep >= 1">Kto</li>
         <li class="step" [class.step-primary]="currentStep >= 2">Termin</li>
         <li class="step" [class.step-primary]="currentStep >= 3">Pakiet</li>
@@ -21,6 +21,57 @@
       </ul>
 
       <div class="flex-grow overflow-y-auto px-1 -mx-1 custom-scrollbar min-h-[350px]">
+        @if (currentStep === 0) {
+          <div class="animate-fade-in space-y-6 pb-6">
+            <div class="bg-base-200/50 p-6 rounded-3xl border border-base-300">
+                <h4 class="text-xs font-black uppercase opacity-40 mb-4 tracking-widest pl-1">Usługi w tym pakiecie:</h4>
+                <div class="space-y-3">
+                    @for (item of bundle?.items; track item.serviceBundleItemId) {
+                        <div class="flex items-center gap-4 bg-base-100 p-4 rounded-2xl border border-base-200 shadow-sm">
+                            <div class="bg-primary/10 text-primary rounded-xl p-2.5 shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                            </div>
+                            <div class="flex-grow">
+                                <p class="font-bold text-sm text-base-content">{{ item.serviceName }}</p>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-[0.65rem] opacity-50 uppercase font-black">{{ item.variantName }}</span>
+                                    <span class="text-base-content/20">•</span>
+                                    <span class="text-[0.65rem] opacity-50 uppercase font-black">{{ item.durationMinutes }} min</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="bg-primary/5 p-6 rounded-3xl border border-primary/10">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-sm font-bold opacity-60">Łączna wartość:</span>
+                    <span class="text-sm line-through opacity-40 font-bold" *ngIf="bundle && bundle.totalPrice < (bundle.items[0].originalPrice || 0)">{{ bundle.items[0].originalPrice }} zł</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-bold opacity-60">Cena w pakiecie:</span>
+                    <span class="text-3xl font-black text-primary">{{ bundle?.totalPrice }} zł</span>
+                </div>
+            </div>
+
+            @if (isCustomer || isOwnerMode) {
+                <button class="btn btn-primary btn-lg w-full rounded-2xl shadow-xl shadow-primary/20 gap-3 mt-4" (click)="nextStep()">
+                    Zarezerwuj ten pakiet
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                </button>
+            } @else {
+                <div class="bg-base-200/50 p-6 rounded-3xl border border-dashed border-base-300 text-center space-y-3 mt-4">
+                    <p class="text-sm font-bold opacity-60">Zaloguj się, aby zarezerwować ten pakiet</p>
+                    <div class="flex gap-2 justify-center">
+                        <a routerLink="/login" class="btn btn-primary btn-sm rounded-xl px-6" (click)="closeModal()">Zaloguj się</a>
+                        <a routerLink="/register" class="btn btn-ghost btn-sm rounded-xl px-4" (click)="closeModal()">Załóż konto</a>
+                    </div>
+                </div>
+            }
+          </div>
+        }
+
         @if (currentStep === 1) {
           <div class="animate-fade-in space-y-3 pb-4">
             <p class="text-sm font-bold text-base-content/60 ml-1">Wybierz eksperta dla pakietu:</p>
@@ -154,9 +205,37 @@
             <div class="bg-base-200/50 rounded-2xl p-5 space-y-4 border border-base-300 mb-6">
                 <div class="flex justify-between items-center">
                     <span class="text-sm font-bold text-base-content/60">Do zapłaty za pakiet:</span>
-                    <span class="text-3xl font-black text-primary price-tag">{{ (bundle?.totalPrice ?? 0) | currency:'PLN':'symbol':'1.2-2':'pl-PL' }}</span>
+                    <span class="text-3xl font-black text-primary price-tag">{{ currentPrice | currency:'PLN':'symbol':'1.2-2':'pl-PL' }}</span>
                 </div>
             </div>
+
+            @if (!isOwnerMode && loyaltyPointsBalance > 0) {
+            <div class="p-4 rounded-2xl bg-warning/5 mb-4">
+              <div class="flex items-center gap-2 mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+                <span class="font-bold text-sm">Punkty lojalnościowe</span>
+                <span class="badge badge-warning badge-sm ml-auto font-black">{{ loyaltyPointsBalance }} pkt</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <input type="range" class="range range-warning range-xs flex-grow"
+                  [min]="0" [max]="maxLoyaltyPoints" [step]="1"
+                  [(ngModel)]="loyaltyPointsToUse" (ngModelChange)="onLoyaltyPointsChange()" />
+                <div class="flex items-center gap-1 shrink-0">
+                  <input type="number" class="input input-bordered input-sm w-16 text-center font-bold"
+                    [min]="0" [max]="maxLoyaltyPoints"
+                    [(ngModel)]="loyaltyPointsToUse" (ngModelChange)="onLoyaltyPointsChange()" />
+                  <span class="text-xs opacity-60">pkt</span>
+                </div>
+              </div>
+              @if (loyaltyPointsToUse > 0) {
+              <p class="text-xs text-warning mt-2 font-semibold">
+                Zniżka: -{{ loyaltyPointsToUse }},00 PLN · Do zapłaty: {{ currentPrice | number:'1.2-2' }} PLN
+              </p>
+              }
+            </div>
+            }
 
             <p class="text-sm font-bold text-base-content/60 ml-1">Wybierz formę płatności:</p>
             
@@ -210,7 +289,7 @@
 
     <div class="modal-action pt-4 border-t border-base-300 mt-0 bg-base-100/50">
         <div class="flex w-full gap-2">
-           @if(currentStep > 1 && paymentStatus === 'idle') {
+           @if(currentStep > 0 && paymentStatus === 'idle') {
              <button type="button" class="btn btn-ghost rounded-2xl px-6" (click)="prevStep()">Wstecz</button>
            } @else if (paymentStatus === 'idle') {
              <button type="button" class="btn btn-ghost rounded-2xl px-6" (click)="closeModal()">Anuluj</button>
@@ -218,6 +297,13 @@
            
            <div class="flex-grow"></div>
            
+           @if(currentStep === 1) {
+             <button type="button" class="btn btn-primary rounded-2xl px-10 shadow-lg shadow-primary/20" 
+                     (click)="nextStep()" [disabled]="!selectedEmployee">
+               Dalej
+             </button>
+           }
+
            @if(currentStep === 2) {
              <button type="button" class="btn btn-primary rounded-2xl px-10 shadow-lg shadow-primary/20" 
                      (click)="nextStep()" [disabled]="!selectedSlot">

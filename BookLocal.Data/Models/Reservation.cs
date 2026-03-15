@@ -63,6 +63,8 @@ public class Reservation
     [Column(TypeName = "decimal(10, 2)")]
     public decimal DiscountAmount { get; set; } = 0;
 
+    public int LoyaltyPointsUsed { get; set; } = 0;
+
     public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.Cash;
 }
 

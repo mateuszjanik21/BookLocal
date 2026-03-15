@@ -7,6 +7,15 @@
 <div class="bg-base-200/40 min-h-screen">
 
   <div class="header-banner relative rounded-none md:rounded-b-3xl overflow-hidden shadow-lg">
+    <!-- Przycisk powrotu -->
+    <button (click)="goBack()" 
+            class="absolute top-4 left-4 z-50 btn btn-circle btn-sm md:btn-md bg-black/20 border-white/30 text-white hover:bg-black/40 backdrop-blur-md shadow-lg transition-all active:scale-95" 
+            title="Wróć">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 md:w-6 md:h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+      </svg>
+    </button>
+
     <div class="absolute inset-0">
       <div class="header-background absolute inset-0 bg-cover bg-center"
         [style.background-image]="'url(' + (business.photoUrl || 'assets/placeholder.svg') + ')'">
@@ -75,9 +84,8 @@
       </h2>
       <div class="carousel-bundles flex gap-4 overflow-x-auto pb-6 scrollbar-hide px-2">
           @for (bundle of bundles; track bundle.serviceBundleId) {
-          <div class="bundle-card-premium shrink-0 w-[280px] md:w-[320px] card bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl transition-transform"
-               [ngClass]="isCustomer ? 'hover:scale-[1.02] cursor-pointer' : 'opacity-90 cursor-default'"
-               (click)="isCustomer ? openBookBundleModal(bundle, bundle_modal) : null">
+          <div class="bundle-card-premium shrink-0 w-[280px] md:w-[320px] card bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl transition-transform hover:scale-[1.02] cursor-pointer"
+               (click)="openBookBundleModal(bundle, bundle_modal)">
               <div class="card-body p-6">
                   <div class="flex justify-between items-start">
                     <h3 class="card-title text-xl font-bold leading-tight">{{ bundle.name }}</h3>
@@ -86,29 +94,20 @@
                     }
                   </div>
                   @if(bundle.description) {
-                    <p class="text-sm opacity-90 mt-2 line-clamp-2">{{ bundle.description }}</p>
+                    <p class="text-sm opacity-90 mt-2 line-clamp-3">{{ bundle.description }}</p>
                   }
-                  <div class="flex-grow mt-4">
-                    <ul class="space-y-2">
-                       @for (item of bundle.items.slice(0, 3); track item.serviceBundleItemId) {
-                         <li class="flex items-center gap-2 text-xs opacity-90">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                           <span class="truncate">{{ item.serviceName }}</span>
-                         </li>
-                       }
-                    </ul>
-                  </div>
-                  <div class="divider before:bg-white/20 after:bg-white/20 my-2"></div>
-                  <div class="flex justify-between items-center mt-2">
+                  <div class="divider before:bg-white/20 after:bg-white/20 my-4"></div>
+                  <div class="flex justify-between items-end mt-auto">
                       <div class="flex flex-col">
                         @if (getBundleOriginalPrice(bundle) > bundle.totalPrice) {
                           <span class="text-xs opacity-70 line-through">{{ formatPrice(getBundleOriginalPrice(bundle)) }}</span>
                         }
-                        <span class="text-2xl font-black">{{ formatPrice(bundle.totalPrice) }}</span>
+                        <span class="text-3xl font-black">{{ formatPrice(bundle.totalPrice) }}</span>
+                        <span class="text-[10px] uppercase font-bold opacity-60 tracking-wider">Cena za pakiet</span>
                       </div>
-                      <button class="btn btn-sm btn-circle bg-white text-indigo-600 border-none animate-pulse" *ngIf="isCustomer">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                      </button>
+                      <div class="bg-white/20 p-2 rounded-xl backdrop-blur-sm border border-white/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                      </div>
                   </div>
               </div>
           </div>
@@ -451,7 +450,7 @@
 }
 
 <app-reservation-modal #reservation_modal [service]="selectedService"
-  [employees]="filteredEmployees" [business]="business"></app-reservation-modal>
+  [employees]="filteredEmployees" [business]="business" [businessId]="business?.id ?? null"></app-reservation-modal>
 
 @if(isEditReviewModalVisible) {
 <app-edit-review-modal [businessId]="business!.id" [review]="reviewToEdit!" (closed)="closeEditReviewModal($event)">

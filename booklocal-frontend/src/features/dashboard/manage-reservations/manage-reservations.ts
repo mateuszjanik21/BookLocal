@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewEncapsulation, inject, HostListener } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { CalendarEvent, CalendarModule, CalendarView, DateAdapter, CalendarUtils, CalendarA11y, CalendarDateFormatter, CalendarEventTitleFormatter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
@@ -37,6 +37,7 @@ import { FormsModule } from '@angular/forms';
 export class ManageReservationsComponent implements OnInit {
   private reservationService = inject(ReservationService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private toastr = inject(ToastrService);
 
   isLoading = true;
@@ -111,7 +112,15 @@ export class ManageReservationsComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.checkScreenSize();
+    this.route.queryParams.subscribe(params => {
+      if (params['view']) {
+        this.view = params['view'] as CalendarView;
+      }
+      if (params['date']) {
+        this.viewDate = new Date(params['date']);
+      }
+      this.checkScreenSize();
+    });
     
     this.businessService.getMyBusiness().subscribe({
       next: (business) => {
@@ -176,7 +185,7 @@ export class ManageReservationsComponent implements OnInit {
       finalize(() => this.isLoading = false)
     ).subscribe({
       next: (data) => {
-        this.events = data.map(res => this.mapReservationToCalendarEvent(res));
+        this.events = this.groupBundleReservations(data);
       },
       error: (err) => {
         this.toastr.error("Błąd podczas pobierania rezerwacji.");
@@ -184,15 +193,64 @@ export class ManageReservationsComponent implements OnInit {
     });
   }
   
+  private groupBundleReservations(reservations: Reservation[]): CalendarEvent<{ reservation: Reservation }>[] {
+    const groupedEvents: CalendarEvent<{ reservation: Reservation }>[] = [];
+    const bundleGroups: { [key: string]: Reservation[] } = {};
+
+    reservations.forEach(res => {
+      if (res.serviceBundleId) {
+        const dateKey = new Date(res.startTime).toISOString().split('T')[0];
+        const customerKey = res.customerId || res.guestName || 'guest';
+        const groupKey = `${res.serviceBundleId}_${customerKey}_${dateKey}`;
+        
+        if (!bundleGroups[groupKey]) {
+          bundleGroups[groupKey] = [];
+        }
+        bundleGroups[groupKey].push(res);
+      } else {
+        groupedEvents.push(this.mapReservationToCalendarEvent(res));
+      }
+    });
+
+    Object.keys(bundleGroups).forEach(key => {
+      const bundleRes = bundleGroups[key].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+      
+      if (bundleRes.length > 0) {
+        const first = bundleRes[0];
+        const last = bundleRes[bundleRes.length - 1];
+        
+        const customerName = first.customerFullName || first.guestName || 'Gość';
+        const eventColor = this.statusColors[first.status] || { primary: '#a855f7', secondary: '#f3e8ff' };
+        
+        // Use first ID for navigation
+        groupedEvents.push({
+          id: first.reservationId,
+          start: new Date(first.startTime),
+          end: new Date(last.endTime),
+          title: `[PAKIET] ${customerName} (${bundleRes.length} usługi)`,
+          color: { ...eventColor },
+          meta: {
+            reservation: first 
+          }
+        });
+      }
+    });
+
+    return groupedEvents;
+  }
+  
   private mapReservationToCalendarEvent(reservation: Reservation): CalendarEvent<{ reservation: Reservation }> {
     const customerName = reservation.customerFullName || reservation.guestName || 'Gość';
     const eventColor = this.statusColors[reservation.status] || { primary: '#a855f7', secondary: '#f3e8ff' };
+
+    const bundlePrefix = reservation.serviceBundleId ? '[PAKIET] ' : '';
+    const title = `${bundlePrefix}${new Date(reservation.startTime).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })} - ${customerName} (${reservation.serviceName})`;
 
     return {
       id: reservation.reservationId,
       start: new Date(reservation.startTime),
       end: new Date(reservation.endTime),
-      title: `${new Date(reservation.startTime).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })} - ${customerName} (${reservation.serviceName})`,
+      title: title,
       color: { ...eventColor },
       meta: {
         reservation
@@ -207,7 +265,12 @@ export class ManageReservationsComponent implements OnInit {
 
   eventClicked({ event }: { event: CalendarEvent }): void {
     if (event.id) {
-      this.router.navigate(['/dashboard/reservations', event.id]);
+      this.router.navigate(['/dashboard/reservations', event.id], {
+        queryParams: {
+          view: this.view,
+          date: this.viewDate.toISOString()
+        }
+      });
     }
   }
 

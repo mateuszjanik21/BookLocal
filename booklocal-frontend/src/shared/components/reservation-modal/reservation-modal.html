@@ -187,10 +187,40 @@
             </div>
           </div>
 
+          @if (loyaltyPointsBalance > 0) {
+          <div class="mt-4 p-4 rounded-2xl bg-warning/5 border border-warning/10">
+            <div class="flex items-center gap-2 mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+              <span class="font-bold text-sm">Punkty lojalnościowe</span>
+              <span class="badge badge-warning badge-sm ml-auto font-black">{{ loyaltyPointsBalance }} pkt</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="range" class="range range-warning range-xs flex-grow" [min]="0" [max]="maxLoyaltyPoints"
+                [step]="1" [(ngModel)]="loyaltyPointsToUse" [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="onLoyaltyPointsChange()" />
+              <div class="flex items-center gap-1 shrink-0">
+                <input type="number" class="input input-bordered input-sm w-16 text-center font-bold" [min]="0"
+                  [max]="maxLoyaltyPoints" [(ngModel)]="loyaltyPointsToUse" [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onLoyaltyPointsChange()" />
+                <span class="text-xs opacity-60">pkt</span>
+              </div>
+            </div>
+            @if (loyaltyPointsToUse > 0) {
+            <p class="text-xs text-warning mt-2 font-semibold">
+              Zniżka: -{{ loyaltyPointsToUse }},00 PLN · Do zapłaty: {{ currentPrice | number:'1.2-2' }} PLN
+            </p>
+            }
+          </div>
+          }
+
           <p class="text-sm font-bold text-base-content/60">Wybierz formę płatności:</p>
 
-          <label
-              class="payment-card flex flex-row items-center p-4 cursor-pointer gap-4 rounded-2xl"
+          <div class="space-y-3">
+            <label class="payment-card flex flex-row items-center p-4 cursor-pointer gap-4 rounded-2xl"
               [class.active]="reservationForm.get('paymentMethod')?.value === 'Cash'">
               <div class="w-12 h-12 rounded-2xl bg-success/10 text-success flex items-center justify-center shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -206,8 +236,7 @@
               <input type="radio" formControlName="paymentMethod" value="Cash" class="radio radio-primary radio-sm" />
             </label>
 
-            <label
-              class="payment-card flex flex-row items-center p-4 cursor-pointer gap-4 rounded-2xl"
+            <label class="payment-card flex flex-row items-center p-4 cursor-pointer gap-4 rounded-2xl"
               [class.active]="reservationForm.get('paymentMethod')?.value === 'Online'">
               <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -226,6 +255,7 @@
               <input type="radio" formControlName="paymentMethod" value="Online" class="radio radio-primary radio-sm" />
             </label>
           </div>
+        </div>
         }
       </div>
 

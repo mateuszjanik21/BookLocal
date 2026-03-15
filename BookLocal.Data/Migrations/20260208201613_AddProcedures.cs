@@ -252,6 +252,7 @@ namespace BookLocal.Data.Migrations
                     r.CustomerId,
                     COALESCE(u.FirstName + ' ' + u.LastName, r.GuestName) AS CustomerFullName,
                     r.GuestName,
+                    r.ServiceBundleId,
                     CAST(CASE WHEN rev.ReviewId IS NOT NULL THEN 1 ELSE 0 END AS BIT) AS HasReview
                 FROM Reservations r
                 INNER JOIN Businesses b ON r.BusinessId = b.BusinessId
@@ -261,9 +262,10 @@ namespace BookLocal.Data.Migrations
                 LEFT JOIN AspNetUsers u ON r.CustomerId = u.Id
                 LEFT JOIN Reviews rev ON r.ReservationId = rev.ReservationId
                 WHERE b.OwnerId = @OwnerId
-                    AND r.StartTime < @EndDate
-                    AND r.EndTime > @StartDate
+                  AND r.StartTime < @EndDate
+                  AND r.EndTime > @StartDate
             END
+
             ";
             migrationBuilder.Sql(proc7);
 
@@ -277,7 +279,7 @@ namespace BookLocal.Data.Migrations
                 SELECT @BusinessId = BusinessId FROM Businesses WHERE OwnerId = @OwnerId;
                 SET @TodayStart = CAST(GETDATE() AS DATE);
                 SET @TodayEnd = DATEADD(DAY, 1, @TodayStart);
-                
+    
                 SELECT 
                     r.ReservationId, r.StartTime, r.EndTime, r.Status, r.AgreedPrice, r.PaymentMethod,
                     r.ServiceVariantId, sv.Name AS VariantName, s.Name AS ServiceName,
@@ -285,7 +287,8 @@ namespace BookLocal.Data.Migrations
                     e.FirstName + ' ' + e.LastName AS EmployeeFullName,
                     r.CustomerId,
                     COALESCE(u.FirstName + ' ' + u.LastName, r.GuestName) AS CustomerFullName,
-                    r.GuestName, s.IsArchived AS IsServiceArchived,
+                    r.GuestName,
+                    r.ServiceBundleId,
                     CAST(CASE WHEN rev.ReviewId IS NOT NULL THEN 1 ELSE 0 END AS BIT) AS HasReview
                 FROM Reservations r
                 INNER JOIN Businesses b ON r.BusinessId = b.BusinessId

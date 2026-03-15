@@ -243,21 +243,38 @@
   }
 
   .salon-card {
-    height: 110px;
-    margin-bottom: 0.75rem;
+    height: auto;
+    min-height: 135px;
+    margin-bottom: 0;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 15px -4px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    display: flex;
+    flex-direction: row;
+    position: relative;
   }
 
   .salon-card figure {
-    width: 100px !important;
-    height: 110px !important;
+    width: 115px !important;
+    height: auto !important;
+    min-height: 135px;
+    border-radius: 1.25rem 0 0 1.25rem !important;
+    flex-shrink: 0;
   }
 
   .salon-card .p-4 {
-    padding: 0.5rem 0.75rem !important;
+    padding: 0.6rem 0.7rem !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex-grow: 1;
+    min-width: 0;
   }
 
   .salon-card h2 {
-    font-size: 0.85rem !important;
+    font-size: 0.95rem !important;
+    margin-bottom: 0.1rem;
+    line-height: 1.2;
   }
 }
 

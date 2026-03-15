@@ -34,8 +34,6 @@ namespace BookLocal.API.Controllers
 
             if (reservation == null) return NotFound("Nie znaleziono rezerwacji.");
 
-            // Only Owner of the business or the Customer can make payments (Customer logic simplified for now)
-            // For now, assume this endpoint is mostly for Owners adding payments manually
             if (reservation.Business.OwnerId != userId && reservation.CustomerId != userId)
                 return Forbid();
 
@@ -49,7 +47,6 @@ namespace BookLocal.API.Controllers
                 TransactionDate = DateTime.UtcNow
             };
 
-            // Calculate Commission for Online payments
             if (paymentDto.Method == PaymentMethod.Online)
             {
                 var activeSubscription = await _context.BusinessSubscriptions
@@ -166,8 +163,25 @@ namespace BookLocal.API.Controllers
             if (reservation.CustomerId != userId && reservation.Business.OwnerId != userId)
                 return Forbid();
 
-            var payments = await _context.Payments
-                .Where(p => p.ReservationId == reservationId)
+            var query = _context.Payments.AsQueryable();
+
+            if (reservation.ServiceBundleId.HasValue)
+            {
+                var bundleReservationIds = await _context.Reservations
+                    .Where(r => r.ServiceBundleId == reservation.ServiceBundleId &&
+                                r.CustomerId == reservation.CustomerId &&
+                                r.StartTime.Date == reservation.StartTime.Date)
+                    .Select(r => r.ReservationId)
+                    .ToListAsync();
+
+                query = query.Where(p => bundleReservationIds.Contains(p.ReservationId));
+            }
+            else
+            {
+                query = query.Where(p => p.ReservationId == reservationId);
+            }
+
+            var payments = await query
                 .OrderByDescending(p => p.TransactionDate)
                 .Select(p => new PaymentDto
                 {

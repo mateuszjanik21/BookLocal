@@ -4,14 +4,16 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Service, Employee, BusinessDetail } from '../../../types/business.model';
 import { ReservationService } from '../../../core/services/reservation';
 import { DiscountService, VerifyDiscountResult } from '../../../core/services/discount-service';
+import { LoyaltyService } from '../../../core/services/loyalty-service';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth-service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-reservation-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DatePipe],
+  imports: [CommonModule, ReactiveFormsModule, DatePipe, FormsModule],
   templateUrl: './reservation-modal.html',
 })
 export class ReservationModalComponent implements OnChanges {
@@ -19,9 +21,11 @@ export class ReservationModalComponent implements OnChanges {
   @Input() service: Service | null = null;
   @Input() employees: Employee[] = [];
   @Input() business: BusinessDetail | null = null;
+  @Input() businessId: number | null = null;
   
   private reservationService = inject(ReservationService);
   private discountService = inject(DiscountService);
+  private loyaltyService = inject(LoyaltyService);
   private toastr = inject(ToastrService);
   private fb = inject(FormBuilder);
   private router = inject(Router); 
@@ -55,6 +59,9 @@ export class ReservationModalComponent implements OnChanges {
   isProcessingPayment = false;
   paymentStatus: 'idle' | 'processing' | 'success' | 'failed' = 'idle';
   isServicePreselected = false;
+
+  loyaltyPointsBalance = 0;
+  loyaltyPointsToUse = 0;
 
   constructor() {
     const today = new Date();
@@ -179,7 +186,7 @@ export class ReservationModalComponent implements OnChanges {
     
     const { paymentMethod } = this.reservationForm.value;
 
-    if (paymentMethod === 'Online' && this.paymentStatus !== 'success') {
+    if (paymentMethod === 'Online' && this.paymentStatus !== 'success' && this.currentPrice > 0) {
        this.processOnlinePayment();
        return;
     }
@@ -209,7 +216,8 @@ export class ReservationModalComponent implements OnChanges {
       employeeId: +employeeId!,
       startTime: startTime!,
       discountCode: (this.verifiedDiscount && discountCode) ? discountCode : undefined,
-      paymentMethod: paymentMethod!
+      paymentMethod: paymentMethod!,
+      loyaltyPointsUsed: this.loyaltyPointsToUse > 0 ? this.loyaltyPointsToUse : undefined
     };
     
     this.reservationService.createReservation(payload).subscribe({
@@ -229,6 +237,7 @@ export class ReservationModalComponent implements OnChanges {
 
   nextStep(): void {
     if (this.currentStep === 1 && this.service) {
+      // Jeśli już mamy wybraną usługę (np. kliknięte z cennika), pomijamy krok 2
       this.currentStep = 3;
       this.onDateChange();
       return;
@@ -258,11 +267,16 @@ export class ReservationModalComponent implements OnChanges {
     this.availableSlots = [];
     this.verifiedDiscount = null;
     this.discountError = null;
+    this.loyaltyPointsToUse = 0;
+    // Nie zerujemy loyaltyPointsBalance - zostanie odświeżone w showModal()
   }
   
   showModal(): void {
+    this.loadLoyaltyBalance();
     this.dialog.nativeElement.showModal();
   }
+
+  private _showModalBusinessId: number | undefined;
 
   closeModal(): void {
     this.dialog.nativeElement.close();
@@ -270,9 +284,43 @@ export class ReservationModalComponent implements OnChanges {
 
   get currentPrice(): number {
       const basePrice = this.service?.variants?.[0]?.price ?? 0;
+      let price = basePrice;
       if (this.verifiedDiscount) {
-          return this.verifiedDiscount.finalPrice;
+          price = this.verifiedDiscount.finalPrice;
       }
-      return basePrice;
+      price -= this.loyaltyPointsToUse;
+      return Math.max(price, 0);
+  }
+
+  get maxLoyaltyPoints(): number {
+      const basePrice = this.verifiedDiscount ? this.verifiedDiscount.finalPrice : (this.service?.variants?.[0]?.price ?? 0);
+      return Math.min(this.loyaltyPointsBalance, Math.max(Math.floor(basePrice - 1), 0));
+  }
+
+  onLoyaltyPointsChange(): void {
+      if (this.loyaltyPointsToUse < 0) this.loyaltyPointsToUse = 0;
+      if (this.loyaltyPointsToUse > this.maxLoyaltyPoints) {
+          this.loyaltyPointsToUse = this.maxLoyaltyPoints;
+      }
+  }
+
+  private loadLoyaltyBalance(): void {
+      const currentUser: any = this.authService.currentUserValue;
+      const businessId = this._showModalBusinessId ?? this.businessId ?? this.service?.businessId ?? this.business?.id;
+      if (!currentUser?.id || !businessId) {
+          console.log('[Loyalty] Brak userId lub businessId:', { userId: currentUser?.id, businessId, inputBusinessId: this.businessId, service: this.service?.businessId, business: this.business?.id });
+          return;
+      }
+      console.log('[Loyalty] Ładowanie punktów dla businessId:', businessId, 'userId:', currentUser.id);
+      this.loyaltyService.getCustomerLoyalty(businessId, currentUser.id).subscribe({
+          next: (data) => {
+              this.loyaltyPointsBalance = data.balance.pointsBalance;
+              console.log('[Loyalty] Saldo punktów:', this.loyaltyPointsBalance);
+          },
+          error: (err) => {
+              console.warn('[Loyalty] Błąd ładowania punktów:', err);
+              this.loyaltyPointsBalance = 0;
+          }
+      });
   }
 }

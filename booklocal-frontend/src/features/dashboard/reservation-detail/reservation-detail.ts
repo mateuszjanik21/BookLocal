@@ -12,6 +12,8 @@ import { finalize } from 'rxjs';
 import { PaymentDto, PaymentService } from '../../../core/services/payment-service';
 import { InvoiceService } from '../../../core/services/invoice-service';
 import { CustomerDetailsModalComponent } from '../../../shared/components/customer-details-modal/customer-details-modal';
+import { ServiceBundleService } from '../../../core/services/service-bundle';
+import { ServiceBundle } from '../../../types/service-bundle.model';
 
 @Component({
   selector: 'app-reservation-detail',
@@ -27,8 +29,10 @@ export class ReservationDetailComponent implements OnInit {
   private invoiceService = inject(InvoiceService);
   private paymentService = inject(PaymentService);
   private toastr = inject(ToastrService);
+  private bundleService = inject(ServiceBundleService);
   
   reservation: Reservation | null = null;
+  bundle: ServiceBundle | null = null;
   payments: PaymentDto[] = [];
   isLoading = true;
   isUpdating = false;
@@ -40,6 +44,8 @@ export class ReservationDetailComponent implements OnInit {
   cameFromPayments = false;
   sourcePaymentId: number | null = null;
   sourcePage: number | null = null;
+  sourceView: string | null = null;
+  sourceDate: string | null = null;
 
   paymentMethods: Record<string | number, string> = {
     0: 'Gotówka',
@@ -61,6 +67,8 @@ export class ReservationDetailComponent implements OnInit {
       this.sourcePaymentId = pid ? +pid : null;
       const pg = qp.get('page');
       this.sourcePage = pg ? +pg : null;
+      this.sourceView = qp.get('view');
+      this.sourceDate = qp.get('date');
     });
     this.route.paramMap.subscribe(params => {
         const id = params.get('id');
@@ -86,13 +94,19 @@ export class ReservationDetailComponent implements OnInit {
 
   goToPrevious(): void {
       if (this.previousReservationId) {
-          this.router.navigate(['/dashboard/reservations', this.previousReservationId]);
+          const queryParams: any = {};
+          if (this.sourceView) queryParams.view = this.sourceView;
+          if (this.sourceDate) queryParams.date = this.sourceDate;
+          this.router.navigate(['/dashboard/reservations', this.previousReservationId], { queryParams });
       }
   }
 
   goToNext(): void {
       if (this.nextReservationId) {
-          this.router.navigate(['/dashboard/reservations', this.nextReservationId]);
+          const queryParams: any = {};
+          if (this.sourceView) queryParams.view = this.sourceView;
+          if (this.sourceDate) queryParams.date = this.sourceDate;
+          this.router.navigate(['/dashboard/reservations', this.nextReservationId], { queryParams });
       }
   }
 
@@ -104,6 +118,12 @@ export class ReservationDetailComponent implements OnInit {
       next: (data) => {
         this.reservation = data;
         this.loadPayments(id);
+        if (data.serviceBundleId && data.businessId) {
+            this.bundleService.getBundle(data.businessId, data.serviceBundleId).subscribe({
+                next: (b) => this.bundle = b,
+                error: () => console.warn('Błąd ładowania szczegółów pakietu')
+            });
+        }
       },
       error: () => {
         this.toastr.error('Nie udało się załadować danych rezerwacji.');
@@ -134,8 +154,16 @@ export class ReservationDetailComponent implements OnInit {
 
   get remainingAmountToPay(): number {
       if(!this.reservation) return 0;
-      const rem = this.reservation.agreedPrice - this.totalPayments;
+      const pointsDiscount = this.reservation.loyaltyPointsUsed || 0;
+      const totalPrice = this.bundle ? this.bundle.totalPrice : this.reservation.agreedPrice;
+      const rem = totalPrice - this.totalPayments - pointsDiscount;
       return rem > 0 ? rem : 0;
+  }
+
+  get bundleEndTime(): Date | null {
+      if (!this.reservation || !this.bundle || !this.bundle.items) return null;
+      const totalDuration = this.bundle.items.reduce((acc, item) => acc + item.durationMinutes, 0);
+      return new Date(new Date(this.reservation.startTime).getTime() + totalDuration * 60000);
   }
 
   openPaymentModal(): void {

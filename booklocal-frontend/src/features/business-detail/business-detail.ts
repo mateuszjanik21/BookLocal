@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { BusinessService } from '../../core/services/business-service';
@@ -30,6 +31,7 @@ import { FavoriteService } from '../../core/services/favourite-service';
 })
 export class BusinessDetailComponent implements OnInit {
   private router = inject(Router); 
+  private location = inject(Location);
   private chatService = inject(ChatService);
   private route = inject(ActivatedRoute);
   private businessService = inject(BusinessService);
@@ -218,7 +220,7 @@ export class BusinessDetailComponent implements OnInit {
             modal.currentStep = 2;
           }
 
-          modal.showModal(); 
+          modal.showModal();
         });
       });
     }
@@ -342,5 +344,9 @@ export class BusinessDetailComponent implements OnInit {
         this.toastr.success('Link do profilu skopiowany do schowka!');
       });
     }
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 }
