@@ -196,8 +196,7 @@ namespace BookLocal.API.Controllers
                 .Include(r => r.Review)
                 .Include(r => r.ServiceVariant)
                     .ThenInclude(v => v.Service)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+                .Include(r => r.ServiceBundle)
                 .AsNoTracking()
                 .ToListAsync();
 
@@ -218,43 +217,58 @@ namespace BookLocal.API.Controllers
                     }
                 }
 
-                if (trackedReservations.Any())
-                {
-                    await _context.SaveChangesAsync();
-                }
-
-                foreach (var r in reservationsToComplete)
-                {
-                    r.Status = ReservationStatus.Completed;
-                }
+                if (trackedReservations.Any()) await _context.SaveChangesAsync();
+                foreach (var r in reservationsToComplete) r.Status = ReservationStatus.Completed;
             }
 
-            var reservationDtos = reservations.Select(r => new ReservationDto
-            {
-                ReservationId = r.ReservationId,
-                StartTime = r.StartTime,
-                EndTime = r.EndTime,
-                Status = r.Status.ToString(),
-                ServiceVariantId = r.ServiceVariantId,
-                ServiceName = r.ServiceVariant?.Service?.Name ?? "Usługa usunięta",
-                VariantName = r.ServiceVariant?.Name ?? "",
-                AgreedPrice = r.AgreedPrice,
-                BusinessName = r.Business.Name,
-                BusinessId = r.BusinessId,
-                EmployeeId = r.EmployeeId,
-                EmployeeFullName = $"{r.Employee.FirstName} {r.Employee.LastName}",
-                CustomerId = r.CustomerId,
-                CustomerFullName = r.Customer != null ? $"{r.Customer.FirstName} {r.Customer.LastName}" : "Gość",
-                GuestName = r.GuestName,
-                HasReview = r.Review != null,
-                ServiceBundleId = r.ServiceBundleId,
-                LoyaltyPointsUsed = r.LoyaltyPointsUsed,
-                PaymentMethod = r.PaymentMethod.ToString()
-            }).ToList();
+            var reservationDtos = reservations
+                .GroupBy(r => (r.ServiceBundleId.HasValue && r.ServiceBundleId.Value > 0) ? $"B_{r.ServiceBundleId}" : $"R_{r.ReservationId}")
+                .Select(g => {
+                    var first = g.OrderBy(r => r.StartTime).First();
+                    var isBundle = g.Any(r => r.ServiceBundleId.HasValue && r.ServiceBundleId.Value > 0);
+
+                    return new ReservationDto
+                    {
+                        ReservationId = first.ReservationId,
+                        StartTime = first.StartTime,
+                        EndTime = g.Max(r => r.EndTime),
+                        Status = first.Status.ToString(),
+                        ServiceVariantId = first.ServiceVariantId,
+                        ServiceName = isBundle ? first.ServiceBundle?.Name ?? "Pakiet" : (first.ServiceVariant?.Service?.Name ?? "Usługa"),
+                        VariantName = isBundle ? "Pakiet usług" : (first.ServiceVariant?.Name ?? ""),
+                        AgreedPrice = g.Sum(r => r.AgreedPrice),
+                        BusinessName = first.Business.Name,
+                        BusinessId = first.BusinessId,
+                        EmployeeId = first.EmployeeId,
+                        EmployeeFullName = $"{first.Employee.FirstName} {first.Employee.LastName}",
+                        EmployeePhotoUrl = first.Employee?.PhotoUrl,
+                        CustomerId = first.CustomerId,
+                        CustomerFullName = first.Customer != null ? $"{first.Customer.FirstName} {first.Customer.LastName}" : "Gość",
+                        GuestName = first.GuestName,
+                        HasReview = g.Any(r => r.Review != null),
+                        ServiceBundleId = first.ServiceBundleId,
+                        BundleName = first.ServiceBundle?.Name,
+                        IsBundle = isBundle,
+                        LoyaltyPointsUsed = g.Sum(r => r.LoyaltyPointsUsed),
+                        PaymentMethod = first.PaymentMethod.ToString()
+                    };
+                })
+                .OrderBy(d => scope == "past" ? d.StartTime : DateTime.MinValue)
+                .ThenBy(d => d.StartTime)
+                .ToList();
+
+            if (scope == "past") reservationDtos = reservationDtos.OrderByDescending(d => d.StartTime).ToList();
+            else reservationDtos = reservationDtos.OrderBy(d => d.StartTime).ToList();
+
+            totalCount = reservationDtos.Count;
+            var pagedResults = reservationDtos
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
 
             var pagedResult = new PagedResultDto<ReservationDto>
             {
-                Items = reservationDtos,
+                Items = pagedResults,
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize
@@ -466,21 +480,45 @@ namespace BookLocal.API.Controllers
             if (reservation.StartTime < DateTime.UtcNow) return BadRequest("Nie można anulować przeszłych rezerwacji.");
             if (reservation.Status == ReservationStatus.Cancelled) return BadRequest("Ta rezerwacja została już anulowana.");
 
-            reservation.Status = ReservationStatus.Cancelled;
+            var reservationsToCancel = new List<Reservation> { reservation };
+
+            if (reservation.ServiceBundleId.HasValue && reservation.ServiceBundleId.Value > 0)
+            {
+                var bundleReservations = await _context.Reservations
+                    .Where(r => r.ServiceBundleId == reservation.ServiceBundleId &&
+                                r.CustomerId == userId &&
+                                r.Status == ReservationStatus.Confirmed)
+                    .ToListAsync();
+
+                foreach (var res in bundleReservations)
+                {
+                    if (!reservationsToCancel.Any(r => r.ReservationId == res.ReservationId))
+                    {
+                        reservationsToCancel.Add(res);
+                    }
+                }
+            }
+
+            foreach (var res in reservationsToCancel)
+            {
+                res.Status = ReservationStatus.Cancelled;
+            }
+
             await _context.SaveChangesAsync();
 
-            var serviceName = reservation.ServiceVariant?.Service?.Name ?? "Usługa";
+            var serviceName = reservation.ServiceBundleId.HasValue ? "Pakiet usług" : (reservation.ServiceVariant?.Service?.Name ?? "Usługa");
             var notificationPayload = new
             {
                 Message = $"Klient {reservation.Customer.FirstName} anulował wizytę na '{serviceName}'.",
                 ReservationId = reservation.ReservationId,
-                Status = reservation.Status.ToString()
+                Status = ReservationStatus.Cancelled.ToString(),
+                IsBundle = reservation.ServiceBundleId.HasValue
             };
 
             await _hubContext.Clients.Group(reservation.BusinessId.ToString())
                 .SendAsync("ReservationCancelledNotification", notificationPayload);
 
-            return Ok(new { Message = "Rezerwacja została pomyślnie anulowana." });
+            return Ok(new { Message = reservation.ServiceBundleId.HasValue ? "Pakiet został pomyślnie anulowany." : "Rezerwacja została pomyślnie anulowana." });
         }
 
         // POST: api/reservations/bundle
@@ -984,10 +1022,8 @@ namespace BookLocal.API.Controllers
             if (loyaltyPoint == null || loyaltyPoint.PointsBalance < pointsToUse)
                 return (0, "Nie masz wystarczającej liczby punktów lojalnościowych.");
 
-            // 1 punkt = 1 PLN
             decimal discount = (decimal)pointsToUse;
 
-            // Minimum 1 PLN do zapłaty
             if (priceAfterDiscounts - discount < 1.00m)
             {
                 discount = priceAfterDiscounts - 1.00m;

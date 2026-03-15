@@ -131,6 +131,8 @@ public class SearchController : ControllerBase
             PhotoUrl = b.PhotoUrl,
             AverageRating = b.Reviews.Any() ? b.Reviews.Average(r => r.Rating) : 0,
             ReviewCount = b.Reviews.Count(),
+            IsVerified = b.IsVerified,
+            SubscriptionPlanName = _context.BusinessSubscriptions.Where(s => s.BusinessId == b.BusinessId && s.IsActive && s.EndDate > DateTime.UtcNow).Select(s => s.Plan.Name).FirstOrDefault(),
             MainCategories = b.Categories.Select(sc => sc.MainCategory.Name).Distinct().ToList()
         });
 

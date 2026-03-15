@@ -1,4 +1,5 @@
-﻿using BookLocal.API.DTOs;
+﻿using BookLocal.API.Data;
+using BookLocal.API.DTOs;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -58,7 +59,7 @@ namespace BookLocal.API.Controllers
 
         [HttpGet("stats")]
         [Authorize(Roles = "owner")]
-        public async Task<ActionResult<LoyaltyStatsDto>> GetStats(int businessId)
+        public async Task<ActionResult<LoyaltyStatsDto>> GetStats([FromRoute] int businessId)
         {
             var activeCustomersCount = await _context.LoyaltyPoints
                 .Where(lp => lp.BusinessId == businessId && (lp.PointsBalance > 0 || lp.TotalPointsEarned > 0))
@@ -76,13 +77,15 @@ namespace BookLocal.API.Controllers
                 .Where(lp => lp.BusinessId == businessId)
                 .SumAsync(lp => (int?)lp.PointsBalance) ?? 0;
 
-            return Ok(new LoyaltyStatsDto
+            var stats = new LoyaltyStatsDto
             {
                 TotalActiveCustomers = activeCustomersCount,
                 TotalPointsIssued = pointsIssued,
                 TotalPointsRedeemed = pointsRedeemed,
                 PendingPointsLiability = pendingLiability
-            });
+            };
+
+            return Ok(stats);
         }
 
         [HttpGet("customer/{customerId}")]

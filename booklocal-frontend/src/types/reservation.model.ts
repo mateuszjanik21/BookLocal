@@ -44,4 +44,6 @@ export interface Reservation {
   paymentMethod: string;
   loyaltyPointsUsed?: number;
   serviceBundleId?: number;
+  bundleName?: string;
+  isBundle: boolean;
 }

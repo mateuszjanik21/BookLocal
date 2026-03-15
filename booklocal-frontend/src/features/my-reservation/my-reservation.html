@@ -1,125 +1,307 @@
-<div class="container p-4 md:p-8 mx-auto">
-  <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-6">
-    <h1 class="text-3xl font-bold">Moje Rezerwacje</h1>
-    <a routerLink="/" class="btn btn-primary mt-4 sm:mt-0">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
-      Nowa rezerwacja
+<div class="container p-4 md:p-8 md:pt-14 mx-auto content-fade-in min-h-screen">
+
+  <div class="flex flex-col mb-12 items-center justify-center text-center">
+    <div class="w-full max-w-2xl mx-auto mb-6">
+      <h2 class="text-3xl md:text-5xl font-black tracking-tight text-base-content leading-tight">
+        Twój kalendarz <span class="text-primary italic">wizyt</span>
+      </h2>
+      <p class="text-base-content/60 mt-3 text-base font-medium">
+        Zarządzaj swoimi zbliżającymi się rezerwacjami lub przywołuj wspaniałe doświadczenia.
+      </p>
+    </div>
+
+    <div class="flex gap-2 justify-center w-full overflow-x-auto pb-2 scrollbar-hide mb-8">
+      <button class="btn btn-sm md:btn-md rounded-full px-6 transition-all"
+        [class.btn-primary]="activeTab === 'upcoming'" [class.bg-base-200]="activeTab !== 'upcoming'"
+        [class.border-base-300]="activeTab !== 'upcoming'" (click)="activeTab = 'upcoming'">
+        Nadchodzące wizyty
+      </button>
+      <button class="btn btn-sm md:btn-md rounded-full px-6 transition-all" [class.btn-primary]="activeTab === 'past'"
+        [class.bg-base-200]="activeTab !== 'past'" [class.border-base-300]="activeTab !== 'past'"
+        (click)="activeTab = 'past'">
+        Historia wizyt
+      </button>
+    </div>
+
+    <a routerLink="/businesses"
+      class="btn btn-primary btn-outline rounded-2xl md:w-auto w-full font-bold shadow-sm transition-transform active:scale-95 animate-fade-in-down mb-10">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+        <path fill-rule="evenodd"
+          d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+          clip-rule="evenodd" />
+      </svg>
+      Odkryj Nowe Miejsca
     </a>
   </div>
 
-  <div class="tabs tabs-boxed mb-6">
-    <a class="tab tab-lg flex-1" [class.tab-active]="activeTab === 'upcoming'" (click)="activeTab = 'upcoming'">Nadchodzące wizyty</a> 
-    <a class="tab tab-lg flex-1" [class.tab-active]="activeTab === 'past'" (click)="activeTab = 'past'">Historia wizyt</a>
-  </div>
-
-  <div [hidden]="activeTab !== 'upcoming'">
+  <div [hidden]="activeTab !== 'upcoming'" class="max-w-4xl mx-auto relative z-10 w-full">
     @if (isLoadingUpcoming) {
-      <div class="flex justify-center items-center p-16">
-        <span class="loading loading-spinner loading-lg text-primary"></span>
-      </div>
+    <div class="grid gap-6">
+      @for(_ of [0,1,2]; track $index) {
+      <div class="skeleton w-full h-40 bg-base-200 rounded-[2rem] animate-pulse"></div>
+      }
+    </div>
     } @else {
-      @if (upcomingReservations.length > 0) {
-        <div class="space-y-4">
-          @for (res of upcomingReservations; track res.reservationId) {
-            <div class="card card-side bg-base-100 shadow-md flex-col sm:flex-row">
-              <div class="p-4 sm:p-6 flex flex-col justify-center items-center sm:border-r border-base-200 text-center w-full sm:w-48">
-                <p class="text-lg font-bold">{{ res.startTime | date:'d' }}</p>
-                <p class="text-base-content/80">{{ res.startTime | date:'LLLL yyyy' }}</p>
-                <p class="text-sm text-base-content/60">{{ res.startTime | date:'EEEE, HH:mm' }}</p>
-              </div>
-              <div class="card-body">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <h2 class="card-title text-primary">{{ res.serviceName }}</h2>
-                    <p>{{ res.businessName }} ({{ res.employeeFullName }})</p>
-                  </div>
-                  <span class="badge" [ngClass]="{
-                    'badge-success': res.status.toLowerCase() === 'confirmed',
-                    'badge-error': res.status.toLowerCase() === 'cancelled'
-                  }">{{ res.status | reservationStatus }}</span>
-                </div>
-                <div class="card-actions justify-end mt-4">
-                  @if (res.status.toLowerCase() === 'confirmed') {
-                    <button class="btn btn-error btn-sm btn-outline" (click)="onCancelReservation(res.reservationId)">Anuluj</button>
-                  }
-                </div>
-              </div>
+    @if (upcomingReservations.length > 0) {
+    <div class="grid gap-6">
+      @for (res of upcomingReservations; track res.reservationId) {
+
+      <div
+        class="relative bg-base-100 rounded-[2rem] overflow-hidden transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 border border-base-200 flex flex-col md:flex-row animate-fade-in-up"
+        [style.animation-delay]="$index * 75 + 'ms'">
+
+        <div
+          class="md:w-56 bg-primary/10 flex md:flex-col items-center justify-center p-6 border-b md:border-b-0 md:border-r border-primary/20 shrink-0 text-center gap-2 md:gap-0">
+          <p class="text-4xl md:text-5xl font-black text-primary">{{ res.startTime | date:'d' }}</p>
+          <div class="flex flex-col items-center">
+            <p class="text-primary/70 font-bold uppercase tracking-wider text-xs mt-1 md:mt-2">{{ res.startTime |
+              date:'MMM yyyy' }}</p>
+            <div class="flex items-center gap-1.5 mt-1.5 md:mt-3 bg-base-100 px-3 py-1.5 rounded-full shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="text-sm font-bold text-base-content/80">{{ res.startTime | date:'HH:mm' }}</span>
             </div>
+          </div>
+        </div>
+
+        <div class="p-6 md:p-8 flex flex-col justify-between w-full relative">
+
+          <div class="absolute top-6 right-6">
+            <span class="badge border-none p-2 shadow-sm font-bold text-[10px] uppercase tracking-wider" [ngClass]="{
+                    'bg-success/20 text-success': res.status.toLowerCase() === 'confirmed',
+                    'bg-error/20 text-error': res.status.toLowerCase() === 'cancelled',
+                    'bg-warning/20 text-warning': res.status.toLowerCase() === 'pending'
+                  }">{{ res.status | reservationStatus }}</span>
+          </div>
+
+          <div class="mb-4 pr-24">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+              @if (res.isBundle) {
+                <span class="badge badge-secondary text-xs font-bold uppercase tracking-wider">Pakiet: {{ res.serviceName }}</span>
+              } @else {
+                <span class="badge badge-neutral text-xs font-bold">{{ res.serviceName }}</span>
+                @if (res.variantName && res.variantName !== res.serviceName) {
+                  <span class="text-xs text-base-content/60 font-medium">{{ res.variantName }}</span>
+                }
+              }
+            </div>
+            <a (click)="navigateToBusiness(res.businessId)"
+              class="hover:text-primary transition-colors inline-block group cursor-pointer"
+              title="Przejdź do profilu salonu">
+              <h3
+                class="text-2xl font-black pr-2 group-hover:underline decoration-primary decoration-4 underline-offset-4">
+                {{ res.businessName }}</h3>
+            </a>
+          </div>
+
+          <div class="flex flex-wrap items-center text-sm font-medium text-base-content/60 gap-4 mt-auto">
+            <div class="flex items-center gap-2">
+              @if (res.employeePhotoUrl) {
+              <img [src]="res.employeePhotoUrl" class="w-6 h-6 rounded-full object-cover shadow-sm"
+                (error)="$any($event.target).src='assets/placeholder.svg'">
+              } @else {
+              <div class="w-6 h-6 rounded-full bg-base-200 flex items-center justify-center shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                  class="w-3 h-3 opacity-50">
+                  <path fill-rule="evenodd"
+                    d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+                    clip-rule="evenodd" />
+                </svg>
+              </div>
+              }
+              {{ res.employeeFullName }}
+            </div>
+            <div class="w-1.5 h-1.5 rounded-full bg-base-300 hidden sm:block"></div>
+            <p class="font-bold text-base-content flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                class="w-4 h-4 text-primary">
+                <path d="M12 7.5a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Z" />
+                <path fill-rule="evenodd"
+                  d="M1.5 4.875C1.5 3.839 2.34 3 3.375 3h17.25c1.035 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875H3.375A1.875 1.875 0 0 1 1.5 14.625v-9.75ZM8.25 9.75a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0ZM18.75 9a.75.75 0 0 0-.75.75v.008c0 .414.336.75.75.75h.008a.75.75 0 0 0 .75-.75V9.75a.75.75 0 0 0-.75-.75h-.008ZM4.5 9.75A.75.75 0 0 1 5.25 9h.008a.75.75 0 0 1 .75.75v.008a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75V9.75Z"
+                  clip-rule="evenodd" />
+              </svg>
+              {{ res.agreedPrice }} zł
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="p-4 md:p-6 bg-base-200/50 md:bg-transparent md:border-l border-base-200 flex items-center justify-center shrink-0">
+          @if (res.status.toLowerCase() === 'confirmed' || res.status.toLowerCase() === 'pending') {
+          <button class="btn btn-error btn-outline md:btn-md rounded-xl w-full hover:shadow-lg transition-all font-bold"
+            (click)="onCancelReservation(res.reservationId)">
+            Odwołaj
+          </button>
+          } @else {
+          <button class="btn btn-ghost btn-disabled md:btn-md rounded-xl w-full">Zablokowane</button>
           }
         </div>
-
-        @if (hasMoreUpcoming) {
-          <div class="text-center mt-8">
-            <button class="btn btn-primary btn-wide" (click)="loadMoreUpcoming()" [disabled]="isLoadingMoreUpcoming">
-              @if(isLoadingMoreUpcoming) { <span class="loading loading-spinner"></span> }
-              Pokaż więcej
-            </button>
-          </div>
-        }
-      } @else {
-        <div class="text-center p-8 bg-base-200 rounded-lg">
-          <p>Nie masz żadnych nadchodzących rezerwacji.</p>
-        </div>
+      </div>
       }
+    </div>
+
+    @if (hasMoreUpcoming) {
+    <div class="text-center mt-10">
+      <button class="btn btn-base-200 btn-wide rounded-full font-bold shadow-sm" (click)="loadMoreUpcoming()"
+        [disabled]="isLoadingMoreUpcoming">
+        @if(isLoadingMoreUpcoming) { <span class="loading loading-spinner"></span> }
+        Załaduj kolejne wizyty
+      </button>
+    </div>
+    }
+    } @else {
+    <div
+      class="flex flex-col items-center justify-center text-center py-24 bg-base-100/50 rounded-[3rem] border-2 border-dashed border-base-300">
+      <div class="w-24 h-24 bg-base-200 rounded-full flex items-center justify-center mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-10 h-10 text-base-content/30">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+        </svg>
+      </div>
+      <h3 class="text-2xl font-bold mb-3">Twój kalendarz jest pusty</h3>
+      <p class="text-base-content/60 max-w-sm">Nie masz na razie żadnych nadchodzących wizyt w salonach. Może pora na
+        relaks?</p>
+    </div>
+    }
     }
   </div>
 
-  <div [hidden]="activeTab !== 'past'">
+  <div [hidden]="activeTab !== 'past'" class="max-w-4xl mx-auto relative z-10 w-full">
     @if (isLoadingPast) {
-      <div class="flex justify-center items-center p-16">
-        <span class="loading loading-spinner loading-lg text-primary"></span>
-      </div>
+    <div class="grid gap-6">
+      @for(_ of [0,1,2]; track $index) {
+      <div class="skeleton w-full h-40 bg-base-200 rounded-[2rem] animate-pulse"></div>
+      }
+    </div>
     } @else {
-      @if (pastReservations.length > 0) {
-        <div class="space-y-4">
-          @for (res of pastReservations; track res.reservationId) {
-            <div class="card card-side bg-base-100 shadow-md flex-col sm:flex-row opacity-80">
-              <div class="p-4 sm:p-6 flex flex-col justify-center items-center sm:border-r border-base-200 text-center w-full sm:w-48">
-                <p class="text-lg font-bold">{{ res.startTime | date:'d' }}</p>
-                <p class="text-base-content/80">{{ res.startTime | date:'LLLL yyyy' }}</p>
-                <p class="text-sm text-base-content/60">{{ res.startTime | date:'EEEE, HH:mm' }}</p>
-              </div>
-              <div class="card-body">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <h2 class="card-title">{{ res.serviceName }}</h2>
-                    <p>{{ res.businessName }} ({{ res.employeeFullName }})</p>
-                  </div>
-                  <span class="badge" [ngClass]="{
-                    'badge-error': res.status.toLowerCase() === 'cancelled',
-                    'badge-neutral opacity-60': res.status.toLowerCase() === 'completed'
-                  }">{{ res.status | reservationStatus }}</span>
-                </div>
-                <div class="card-actions justify-end mt-4">
-                  @if (res.status.toLowerCase() === 'completed' && !res.hasReview) {
-                    <button class="btn btn-primary btn-sm" (click)="openReviewModal(res)">Oceń wizytę</button>
-                  }
-                </div>
-              </div>
-            </div>
-          }
+    @if (pastReservations.length > 0) {
+    <div class="grid gap-6">
+      @for (res of pastReservations; track res.reservationId) {
+
+      <div
+        class="relative bg-base-100 rounded-[2rem] overflow-hidden transition-all duration-300 border border-base-200 flex flex-col md:flex-row opacity-80 hover:opacity-100 animate-fade-in-up"
+        [style.animation-delay]="$index * 75 + 'ms'">
+
+        <div
+          class="md:w-56 bg-base-200/50 flex md:flex-col items-center justify-center p-6 border-b md:border-b-0 md:border-r border-base-200 shrink-0 text-center gap-2 md:gap-0 grayscale">
+          <p class="text-4xl md:text-5xl font-black text-base-content/70">{{ res.startTime | date:'d' }}</p>
+          <div class="flex flex-col items-center">
+            <p class="text-base-content/50 font-bold uppercase tracking-wider text-xs mt-1 md:mt-2">{{ res.startTime |
+              date:'MMM yyyy' }}</p>
+            <p class="text-sm font-medium text-base-content/40 mt-1 md:mt-2">{{ res.startTime | date:'HH:mm' }}</p>
+          </div>
         </div>
 
-        @if (hasMorePast) {
-          <div class="text-center mt-8">
-            <button class="btn btn-primary btn-wide" (click)="loadMorePast()" [disabled]="isLoadingMorePast">
-              @if(isLoadingMorePast) { <span class="loading loading-spinner"></span> }
-              Pokaż więcej
-            </button>
+        <div class="p-6 md:p-8 flex flex-col justify-between w-full relative">
+
+          <div class="absolute top-6 right-6">
+            <span class="badge border-none p-3 shadow-sm font-bold text-[10px] uppercase tracking-wider" [ngClass]="{
+                    'bg-error/20 text-error': res.status.toLowerCase() === 'cancelled',
+                    'bg-base-200 text-base-content/60': res.status.toLowerCase() === 'completed'
+                  }">{{ res.status | reservationStatus }}</span>
           </div>
-        }
-      } @else {
-        <div class="text-center p-8 bg-base-200 rounded-lg">
-          <p>Nie masz żadnych historycznych rezerwacji.</p>
+
+          <div class="mb-4 pr-24">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              @if (res.isBundle) {
+                <span class="text-xs font-bold text-secondary/70 uppercase">Pakiet: {{ res.serviceName }}</span>
+              } @else {
+                <span class="text-xs font-bold text-base-content/50">{{ res.serviceName }}</span>
+                @if (res.variantName && res.variantName !== res.serviceName) {
+                  <span class="text-xs text-base-content/40 font-medium">({{ res.variantName }})</span>
+                }
+              }
+            </div>
+            <a (click)="navigateToBusiness(res.businessId)"
+              class="hover:text-base-content transition-colors inline-block group cursor-pointer"
+              title="Przejdź do profilu salonu">
+              <h3
+                class="text-xl font-bold pr-2 text-base-content/80 group-hover:text-base-content group-hover:underline underline-offset-4">
+                {{ res.businessName }}</h3>
+            </a>
+          </div>
+
+          <div class="flex flex-wrap items-center text-sm font-medium text-base-content/50 gap-4 mt-auto">
+            <div class="flex items-center gap-1.5">
+              @if (res.employeePhotoUrl) {
+              <img [src]="res.employeePhotoUrl" class="w-5 h-5 rounded-full object-cover grayscale opacity-70"
+                (error)="$any($event.target).src='assets/placeholder.svg'">
+              } @else {
+              <div class="w-5 h-5 rounded-full bg-base-200 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                  class="w-3 h-3 opacity-40">
+                  <path fill-rule="evenodd"
+                    d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+                    clip-rule="evenodd" />
+                </svg>
+              </div>
+              }
+              {{ res.employeeFullName }}
+            </div>
+            <div class="w-1 h-1 rounded-full bg-base-300 hidden sm:block"></div>
+            <p class="font-semibold text-base-content/60 flex items-center gap-1">
+              {{ res.agreedPrice }} zł
+            </p>
+          </div>
         </div>
+
+        <div
+          class="p-4 md:p-6 bg-base-200/20 md:bg-transparent md:border-l border-base-200 flex items-center justify-center shrink-0">
+          @if (res.status.toLowerCase() === 'completed' && !res.hasReview) {
+          <button class="btn btn-primary md:btn-md rounded-xl w-full shadow-lg shadow-primary/20 font-bold"
+            (click)="openReviewModal(res)">
+            Oceń wizytę
+          </button>
+          } @else if (res.hasReview) {
+          <div class="flex flex-col items-center gap-1 text-success font-bold text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-6 h-6">
+              <path fill-rule="evenodd"
+                d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z"
+                clip-rule="evenodd" />
+            </svg>
+            Oceniono
+          </div>
+          } @else {
+          <span
+            class="text-xs font-bold text-base-content/40 uppercase tracking-widest text-center">Brak<br>Operacji</span>
+          }
+        </div>
+      </div>
       }
+    </div>
+
+    @if (hasMorePast) {
+    <div class="text-center mt-10">
+      <button class="btn btn-base-200 btn-wide rounded-full font-bold shadow-sm" (click)="loadMorePast()"
+        [disabled]="isLoadingMorePast">
+        @if(isLoadingMorePast) { <span class="loading loading-spinner"></span> }
+        Przeglądaj historię
+      </button>
+    </div>
+    }
+    } @else {
+    <div
+      class="flex flex-col items-center justify-center text-center py-24 bg-base-100/50 rounded-[3rem] border-2 border-dashed border-base-300">
+      <div class="w-24 h-24 bg-base-200 rounded-full flex items-center justify-center mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-10 h-10 text-base-content/30">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+      </div>
+      <h3 class="text-2xl font-bold mb-3">Brak ukończonych wizyt</h3>
+      <p class="text-base-content/60 max-w-sm">Gdy sfinalizujesz usługę z sukcesem, pojawi się ona w Twojej historii –
+        możesz ją wtedy wycenić gwiazdkami i opinią!</p>
+    </div>
+    }
     }
   </div>
 </div>
 
 @if(isReviewModalVisible) {
-  <app-add-review-modal
-    [reservation]="reservationToReview!"
-    (closed)="closeReviewModal($event)">
-  </app-add-review-modal>
+<app-add-review-modal [reservation]="reservationToReview!" (closed)="closeReviewModal($event)">
+</app-add-review-modal>
 }

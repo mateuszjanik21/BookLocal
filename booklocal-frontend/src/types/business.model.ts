@@ -92,6 +92,7 @@ export interface BusinessSearchResult {
   averageRating: number;
   reviewCount: number;
   isVerified: boolean;
+  subscriptionPlanName?: string;
   mainCategories: string[];
 }
 

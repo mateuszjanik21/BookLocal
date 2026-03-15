@@ -45,6 +45,8 @@ namespace BookLocal.API.DTOs
 
         public bool HasReview { get; set; }
         public int? ServiceBundleId { get; set; }
+        public string? BundleName { get; set; }
+        public bool IsBundle { get; set; }
         public int LoyaltyPointsUsed { get; set; }
         public string PaymentMethod { get; set; }
     }

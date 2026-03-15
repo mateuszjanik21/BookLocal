@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ReservationService } from '../../core/services/reservation';
 import { Reservation } from '../../types/reservation.model';
@@ -17,6 +17,7 @@ import { finalize } from 'rxjs';
 export class MyReservationsComponent implements OnInit {
   private reservationService = inject(ReservationService);
   private toastr = inject(ToastrService);
+  private router = inject(Router);
 
   activeTab: 'upcoming' | 'past' = 'upcoming';
 
@@ -127,5 +128,10 @@ export class MyReservationsComponent implements OnInit {
     if (reviewAdded) {
       this.loadPastReservations(true);
     }
+  }
+
+  navigateToBusiness(businessId: number): void {
+    if (!businessId) return;
+    this.router.navigate(['/business', businessId]);
   }
 }

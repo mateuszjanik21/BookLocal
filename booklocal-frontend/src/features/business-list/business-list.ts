@@ -31,12 +31,23 @@ export class BusinessListComponent implements OnInit, OnDestroy {
 
   activeMainCategoryId: number | null = null;
   activeSortBy = 'rating_desc';
+  activeLocation = '';
+  onlyVerified = false;
+
+  promotedBusinesses: BusinessSearchResult[] = [];
+  regularBusinesses: BusinessSearchResult[] = [];
+  
+  activePromotedIndex = 0;
+  private promotedRotationInterval: any;
+
+  selectedBusinessQuickView: BusinessSearchResult | null = null;
 
   private searchSubject = new Subject<string>();
   private searchSubscription?: Subscription;
 
   ngOnInit(): void {
     this.categoryService.getMainCategories().subscribe(data => this.mainCategories = data);
+    this.loadPromotedBusinesses();
     this.fetchResults();
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(300),
@@ -47,18 +58,39 @@ export class BusinessListComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadPromotedBusinesses(): void {
+    this.businessService.searchBusinesses({
+      sortBy: 'rating_desc',
+      pageNumber: 1,
+      pageSize: 20
+    }).subscribe({
+      next: (data) => {
+        if (data && data.items && data.items.length > 0) {
+           const eligible = data.items.filter(b => b.isVerified && b.subscriptionPlanName === 'Gold' && b.averageRating >= 4.5);
+           const finalEligible = eligible.length > 0 ? eligible : data.items.filter(b => b.isVerified && b.averageRating >= 4.5);
+           const shuffled = finalEligible.sort(() => 0.5 - Math.random());
+           this.promotedBusinesses = shuffled.slice(0, 4);
+           this.startPromotedRotation();
+        }
+      }
+    });
+  }
+
   fetchResults(): void {
     this.isLoading = true;
     const params = {
       searchTerm: this.searchInput?.nativeElement.value,
+      locationTerm: this.activeLocation || undefined,
       mainCategoryId: this.activeMainCategoryId ?? undefined,
       sortBy: this.activeSortBy,
+      onlyVerified: this.onlyVerified,
       pageNumber: this.pageNumber,
       pageSize: this.pageSize
     };
     this.businessService.searchBusinesses(params).subscribe({
       next: (data) => {
         this.pagedResult = data;
+        this.regularBusinesses = data.items || [];
         this.isLoading = false;
       },
       error: () => this.isLoading = false
@@ -72,6 +104,21 @@ export class BusinessListComponent implements OnInit, OnDestroy {
   onFilterChange(): void {
     this.pageNumber = 1;
     this.fetchResults();
+  }
+
+  selectCategory(id: number | null): void {
+    this.activeMainCategoryId = id;
+    this.onFilterChange();
+  }
+
+  openQuickView(business: BusinessSearchResult): void {
+    this.selectedBusinessQuickView = business;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeQuickView(): void {
+    this.selectedBusinessQuickView = null;
+    document.body.style.overflow = '';
   }
   
   pageChanged(newPage: number): void {
@@ -96,8 +143,30 @@ export class BusinessListComponent implements OnInit, OnDestroy {
     pages.push(totalPages);
     return pages;
   }
+  
+  startPromotedRotation(): void {
+    this.stopPromotedRotation();
+    if (this.promotedBusinesses.length > 1) {
+      this.promotedRotationInterval = setInterval(() => {
+        this.activePromotedIndex = (this.activePromotedIndex + 1) % this.promotedBusinesses.length;
+      }, 5000);
+    }
+  }
+
+  stopPromotedRotation(): void {
+    if (this.promotedRotationInterval) {
+      clearInterval(this.promotedRotationInterval);
+    }
+  }
+  
+  setPromotedIndex(index: number): void {
+      this.activePromotedIndex = index;
+      this.startPromotedRotation();
+  }
 
   ngOnDestroy(): void {
     this.searchSubscription?.unsubscribe();
+    this.stopPromotedRotation();
+    document.body.style.overflow = '';
   }
 }

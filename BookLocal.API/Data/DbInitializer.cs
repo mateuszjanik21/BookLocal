@@ -82,19 +82,19 @@ public static class DbInitializer
             await context.SaveChangesAsync();
         }
 
-        // --- SUPER ADMIN ---
+        // --- Admin ---
         var superAdmin = new User
         {
             FirstName = "Admin",
             LastName = "System",
-            UserName = "admin@booklocal.com",
-            Email = "admin@booklocal.com",
+            UserName = "admin@test.com",
+            Email = "admin@test.com",
             PhotoUrl = "https://ui-avatars.com/api/?name=Admin+System&background=random"
         };
 
         if (await userManager.FindByEmailAsync(superAdmin.Email) == null)
         {
-            await userManager.CreateAsync(superAdmin, "Admin123!");
+            await userManager.CreateAsync(superAdmin, "P@ssword1");
             await userManager.AddToRoleAsync(superAdmin, "superadmin");
         }
 
@@ -262,9 +262,9 @@ public static class DbInitializer
                 {
                     Employee = emp,
                     ContractType = faker.PickRandom<ContractType>(),
-                    BaseSalary = faker.Random.Decimal(4000, 8000),
-                    StartDate = new DateOnly(2024, 1, 1),
-                    EndDate = new DateOnly(2025, 12, 31),
+                    BaseSalary = Math.Round(faker.Random.Decimal(4500, 9500) / 100) * 100,
+                    StartDate = new DateOnly(2023, 1, 1),
+                    EndDate = null,
                     IsActive = true
                 });
             }
@@ -283,6 +283,44 @@ public static class DbInitializer
                 IsActive = true
             };
             context.Discounts.Add(discount);
+
+            // --- Pakiety Usług ---
+            int bundlesCount = faker.Random.Number(1, 2);
+            var allVariants = businessCategories.SelectMany(c => c.Services).SelectMany(s => s.Variants).ToList();
+
+
+            for (int j = 0; j < bundlesCount; j++)
+            {
+                if (allVariants.Count >= 2)
+                {
+                    var selectedVariants = faker.PickRandom(allVariants, faker.Random.Number(2, 3)).ToList();
+                    var bundlePrice = Math.Round(selectedVariants.Sum(v => v.Price) * 0.85m / 5) * 5; // 15% zniżki
+
+                    var bundle = new ServiceBundle
+                    {
+                        Business = business,
+                        Name = j == 0 ? "Pakiet Relaksacyjny" : "Zestaw Premium",
+                        Description = "Specjalnie dobrany zestaw usług w atrakcyjnej cenie.",
+                        TotalPrice = bundlePrice,
+                        IsActive = true,
+                        BundleItems = selectedVariants.Select((v, idx) => new ServiceBundleItem
+                        {
+                            ServiceVariant = v,
+                            SequenceOrder = idx + 1
+                        }).ToList()
+                    };
+                    context.ServiceBundles.Add(bundle);
+                }
+            }
+
+            // --- Konfiguracja Lojalnościowa ---
+            var loyaltyConfig = new LoyaltyProgramConfig
+            {
+                Business = business,
+                IsActive = faker.Random.Bool(0.7f),
+                SpendAmountForOnePoint = faker.PickRandom(new decimal[] { 5, 10, 15, 20 })
+            };
+            context.LoyaltyProgramConfigs.Add(loyaltyConfig);
         }
         await context.Businesses.AddRangeAsync(businesses);
         await context.SaveChangesAsync();
@@ -452,7 +490,7 @@ public static class DbInitializer
                 TransactionDate = res.EndTime
             });
 
-            // Faktura (50% chance)
+            // Faktura
             if (faker.Random.Bool())
             {
                 decimal net = Math.Round(res.AgreedPrice / 1.23m, 2);
@@ -600,8 +638,17 @@ public static class DbInitializer
         await context.SaveChangesAsync();
         Console.WriteLine($"Wygenerowano {reportsToAdd.Count} raportów dziennych.");
 
-        // Profile klientów
         Console.WriteLine("Generowanie profili klientów (CRM)...");
+
+        context.LoyaltyTransactions.RemoveRange(context.LoyaltyTransactions);
+        context.LoyaltyPoints.RemoveRange(context.LoyaltyPoints);
+        context.EmployeePayrolls.RemoveRange(context.EmployeePayrolls);
+        await context.SaveChangesAsync();
+
+        var allergyTemplates = new[] { "Uczulenie na orzechy", "Uczulenie na hennę", "Wrażliwa skóra", "Alergia na lateks", "Uczulenie na nikiel" };
+        var formulaTemplates = new[] { "Farba 7.1 + 3%", "Mieszanka olejków relaksujących A+B", "Podkład nawilżający nr 2", "Wosk twardy bezzapachowy" };
+        var noteTemplates = new[] { "Lubi mocną kawę", "Ostatnio narzekał na ból karku", "Preferuje cichą wizytę", "Zwraca uwagę na detale", "Stały klient, poleca nas znajomym" };
+
         var profiles = reservations
             .GroupBy(r => new { r.BusinessId, CustomerId = r.Customer.Id })
             .Select(g => new CustomerBusinessProfile
@@ -610,11 +657,64 @@ public static class DbInitializer
                 CustomerId = g.Key.CustomerId,
                 LastVisitDate = g.Where(r => r.Status == ReservationStatus.Completed).Max(r => (DateTime?)r.StartTime) ?? DateTime.MinValue,
                 TotalSpent = g.Where(r => r.Status == ReservationStatus.Completed).Sum(r => r.AgreedPrice),
-                NoShowCount = g.Count(r => r.Status == ReservationStatus.NoShow)
+                NoShowCount = g.Count(r => r.Status == ReservationStatus.NoShow),
+                PrivateNotes = faker.Random.Bool(0.6f) ? faker.PickRandom(noteTemplates) : null,
+                Allergies = faker.Random.Bool(0.2f) ? faker.PickRandom(allergyTemplates) : null,
+                Formulas = faker.Random.Bool(0.4f) ? faker.PickRandom(formulaTemplates) : null,
+                IsVIP = g.Where(r => r.Status == ReservationStatus.Completed).Sum(r => r.AgreedPrice) > 1000
             }).ToList();
 
         await context.CustomerBusinessProfiles.AddRangeAsync(profiles);
         await context.SaveChangesAsync();
-        Console.WriteLine($"Stworzono {profiles.Count} profili CRM.");
+
+        // --- Listy Płac ---
+        Console.WriteLine("Generowanie historycznych list płac...");
+        var contracts = await context.EmploymentContracts.Include(c => c.Employee).ToListAsync();
+        var payrolls = new List<EmployeePayroll>();
+
+        var monthsBack = 3;
+        var now = DateTime.UtcNow;
+
+        foreach (var contract in contracts)
+        {
+            for (int i = 1; i <= monthsBack; i++)
+            {
+                var periodDate = now.AddMonths(-i);
+                var baseSal = contract.BaseSalary;
+                var comm = 0m;
+                var bonus = 0m;
+                var gross = baseSal + comm + bonus;
+
+                var zus = Math.Round(gross * 0.1371m, 2);
+                var nfz = Math.Round((gross - zus) * 0.09m, 2);
+                var pit = Math.Round((gross - zus) * 0.12m - 300, 2);
+                if (pit < 0) pit = 0;
+
+                var net = gross - zus - nfz - pit;
+
+                payrolls.Add(new EmployeePayroll
+                {
+                    EmployeeId = contract.EmployeeId,
+                    PeriodMonth = periodDate.Month,
+                    PeriodYear = periodDate.Year,
+                    BaseSalaryComponent = baseSal,
+                    CommissionComponent = comm,
+                    BonusComponent = bonus,
+                    GrossAmount = gross,
+                    SocialSecurityTax = zus,
+                    HealthInsuranceTax = nfz,
+                    IncomeTaxAdvance = pit,
+                    NetAmount = net,
+                    TotalEmployerCost = Math.Round(gross * 1.2048m, 2),
+                    Status = PayrollStatus.Paid,
+                    GeneratedAt = DateOnly.FromDateTime(periodDate.AddDays(28)),
+                    PaidAt = DateOnly.FromDateTime(periodDate.AddMonths(1).AddDays(10))
+                });
+            }
+        }
+        await context.EmployeePayrolls.AddRangeAsync(payrolls);
+        await context.SaveChangesAsync();
+
+        Console.WriteLine($"Stworzono {profiles.Count} profili CRM i {payrolls.Count} list płac.");
     }
 }

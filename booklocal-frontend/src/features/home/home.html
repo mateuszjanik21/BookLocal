@@ -228,21 +228,23 @@
     </div>
 
     @if(pagedResult && pagedResult.totalPages > 1) {
-    <div class="flex justify-center mt-8">
-      <div class="join">
-        <button class="join-item btn" [disabled]="pagedResult.pageNumber === 1"
+    <div class="flex justify-center mt-12 pb-12">
+      <div class="join bg-base-100 p-1 rounded-2xl border border-base-300 shadow-sm">
+        <button class="join-item btn btn-ghost" [disabled]="pagedResult.pageNumber === 1"
           (click)="pageChanged(pagedResult.pageNumber - 1)">«</button>
         @for(page of paginationPages; track $index) {
         @if(page === '...') {
-        <button class="join-item btn btn-disabled">...</button>
+        <button class="join-item btn btn-disabled bg-transparent">...</button>
         } @else {
-        <button class="join-item btn" [class.btn-primary]="page === pagedResult.pageNumber"
-          (click)="pageChanged(+page)">
+        <button class="join-item btn rounded-xl mx-0.5" 
+                [class.btn-primary]="page === pagedResult.pageNumber"
+                [class.btn-ghost]="page !== pagedResult.pageNumber"
+                (click)="pageChanged(+page)">
           {{ page }}
         </button>
         }
         }
-        <button class="join-item btn" [disabled]="pagedResult.pageNumber === pagedResult.totalPages"
+        <button class="join-item btn btn-ghost" [disabled]="pagedResult.pageNumber === pagedResult.totalPages"
           (click)="pageChanged(pagedResult.pageNumber + 1)">»</button>
       </div>
     </div>
