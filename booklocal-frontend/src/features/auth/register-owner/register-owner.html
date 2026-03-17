@@ -37,11 +37,25 @@
             <label class="label"><span class="label-text">Email</span></label>
             <input type="email" placeholder="Email" class="input input-bordered" formControlName="email"
               [class.input-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" />
+            @if (registerForm.get('email')?.errors?.['email'] && registerForm.get('email')?.touched) {
+              <label class="label"><span class="label-text-alt text-error">Podaj poprawny adres email</span></label>
+            }
           </div>
           <div class="form-control">
             <label class="label"><span class="label-text">Hasło</span></label>
-            <input type="password" placeholder="Hasło" class="input input-bordered" formControlName="password"
+            <input type="password" placeholder="Min. 6 znaków" class="input input-bordered" formControlName="password"
               [class.input-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" />
+            @if (registerForm.get('password')?.errors?.['minlength'] && registerForm.get('password')?.touched) {
+              <label class="label"><span class="label-text-alt text-error">Hasło musi mieć min. 6 znaków</span></label>
+            }
+          </div>
+          <div class="form-control md:col-span-2">
+            <label class="label"><span class="label-text">Numer telefonu</span></label>
+            <input type="tel" placeholder="np. 500600700" class="input input-bordered" formControlName="phoneNumber"
+              [class.input-error]="registerForm.get('phoneNumber')?.invalid && registerForm.get('phoneNumber')?.touched" />
+            @if (registerForm.get('phoneNumber')?.errors?.['pattern'] && registerForm.get('phoneNumber')?.touched) {
+              <label class="label"><span class="label-text-alt text-error">Podaj 9 cyfr bez spacji</span></label>
+            }
           </div>
         </div>
 
@@ -54,20 +68,43 @@
           </div>
           <div class="form-control">
             <label class="label"><span class="label-text">NIP</span></label>
-            <input type="text" placeholder="NIP" class="input input-bordered" formControlName="nip"
+            <input type="text" placeholder="10 cyfr" class="input input-bordered" formControlName="nip"
               [class.input-error]="registerForm.get('nip')?.invalid && registerForm.get('nip')?.touched" />
-          </div>
-          <div class="form-control">
-            <label class="label"><span class="label-text">Adres (opcjonalnie)</span></label>
-            <input type="text" placeholder="Ulica i numer" class="input input-bordered" formControlName="address" />
-          </div>
-          <div class="form-control">
-            <label class="label"><span class="label-text">Miasto (opcjonalnie)</span></label>
-            <input type="text" placeholder="Miasto" class="input input-bordered" formControlName="city" />
+            @if (registerForm.get('nip')?.errors?.['pattern'] && registerForm.get('nip')?.touched) {
+              <label class="label"><span class="label-text-alt text-error">NIP musi zawierać dokładnie 10 cyfr</span></label>
+            }
           </div>
         </div>
-        <div class="form-control">
-          <label class="label"><span class="label-text">Opis (opcjonalnie)</span></label> <br>
+
+        <div class="divider text-sm my-4">Adres firmy</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="form-control md:col-span-2">
+            <label class="label"><span class="label-text">Ulica</span></label>
+            <input type="text" placeholder="np. Kwiatowa" class="input input-bordered" formControlName="street"
+              [class.input-error]="registerForm.get('street')?.invalid && registerForm.get('street')?.touched" />
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Numer</span></label>
+            <input type="text" placeholder="np. 12A" class="input input-bordered" formControlName="streetNumber"
+              [class.input-error]="registerForm.get('streetNumber')?.invalid && registerForm.get('streetNumber')?.touched" />
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text">Kod pocztowy</span></label>
+            <input type="text" placeholder="00-000" class="input input-bordered" formControlName="postalCode"
+              [class.input-error]="registerForm.get('postalCode')?.invalid && registerForm.get('postalCode')?.touched" />
+            @if (registerForm.get('postalCode')?.errors?.['pattern'] && registerForm.get('postalCode')?.touched) {
+              <label class="label"><span class="label-text-alt text-error">Format: XX-XXX (np. 00-001)</span></label>
+            }
+          </div>
+          <div class="form-control md:col-span-2">
+            <label class="label"><span class="label-text">Miasto</span></label>
+            <input type="text" placeholder="np. Warszawa" class="input input-bordered" formControlName="city"
+              [class.input-error]="registerForm.get('city')?.invalid && registerForm.get('city')?.touched" />
+          </div>
+        </div>
+
+        <div class="form-control mt-4">
+          <label class="label"><span class="label-text">Opis (opcjonalnie)</span></label>
           <textarea class="textarea textarea-bordered w-full" placeholder="Krótki opis działalności"
             formControlName="description"></textarea>
         </div>

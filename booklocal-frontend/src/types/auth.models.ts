@@ -20,6 +20,7 @@ export interface EntrepreneurRegisterPayload {
   password:  string;
   firstName: string;
   lastName: string;
+  phoneNumber: string;
   businessName: string;
   nip: string;
   address: string;
@@ -34,6 +35,7 @@ export interface UserDto {
   lastName: string;
   roles: string[];
   photoUrl?: string;
+  phoneNumber?: string;
 }
 
 export interface ChangePasswordPayload {

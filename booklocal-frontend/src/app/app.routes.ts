@@ -23,6 +23,7 @@ console.log('App Routes Loaded');
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
+    { path: 'about', loadComponent: () => import('../features/about/about').then(m => m.AboutComponent) },
     { path: 'businesses', loadComponent: () => import('../features/business-list/business-list').then(m => m.BusinessListComponent) },
     { path: 'services', loadComponent: () => import('../features/service-list/service-list').then(m => m.ServiceListComponent) },
     { path: 'business/:id', component: BusinessDetailComponent },

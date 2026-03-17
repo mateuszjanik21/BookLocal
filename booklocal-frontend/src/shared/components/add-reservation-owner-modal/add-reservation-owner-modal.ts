@@ -111,6 +111,16 @@ export class AddReservationOwnerModalComponent implements OnInit {
          this.loyaltyPointsBalance = res.balance.pointsBalance;
       });
   }
+  
+  get filteredServices(): Service[] {
+    const employeeId = this.reservationForm.get('employeeId')?.value;
+    if (!employeeId) return this.services;
+
+    const selectedEmployee = this.employees.find(e => e.id.toString() === employeeId);
+    if (!selectedEmployee || !selectedEmployee.assignedServiceIds) return this.services;
+
+    return this.services.filter(s => selectedEmployee.assignedServiceIds?.includes(s.id));
+  }
 
   get currentPrice(): number {
       const serviceId = Number(this.reservationForm.get('serviceId')?.value);

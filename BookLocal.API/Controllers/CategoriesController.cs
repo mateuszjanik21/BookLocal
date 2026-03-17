@@ -23,7 +23,7 @@ namespace BookLocal.API.Controllers
                 .Include(sc => sc.Business)
                 .Include(sc => sc.Services)
                     .ThenInclude(s => s.Variants)
-                .Where(sc => sc.Services.Any(s => !s.IsArchived && s.Variants.Any(v => v.IsActive)))
+                .Where(sc => sc.Services.Any(s => !s.IsArchived && s.Variants.Any(v => v.IsActive) && _context.EmployeeServices.Any(es => es.ServiceId == s.ServiceId)))
                 .Select(sc => new ServiceCategoryFeedDto
                 {
                     ServiceCategoryId = sc.ServiceCategoryId,
@@ -33,7 +33,7 @@ namespace BookLocal.API.Controllers
                     BusinessName = sc.Business.Name,
                     BusinessCity = sc.Business.City,
                     Services = sc.Services
-                        .Where(s => !s.IsArchived)
+                        .Where(s => !s.IsArchived && _context.EmployeeServices.Any(es => es.ServiceId == s.ServiceId))
                         .Select(s => new ServiceDto
                         {
                             Id = s.ServiceId,

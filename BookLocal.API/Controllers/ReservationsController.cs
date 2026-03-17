@@ -153,6 +153,40 @@ namespace BookLocal.API.Controllers
             return Ok(new { Message = "Rezerwacja została pomyślnie utworzona." });
         }
 
+        [HttpGet("my-stats")]
+        [Authorize(Roles = "customer")]
+        public async Task<ActionResult<CustomerStatsDto>> GetMyStats()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var completedReservations = _context.Reservations
+                .AsNoTracking()
+                .Where(r => r.CustomerId == userId && r.Status == ReservationStatus.Completed);
+
+            var totalVisits = await completedReservations.CountAsync();
+            var totalSpent = totalVisits > 0 ? await completedReservations.SumAsync(r => r.AgreedPrice) : 0;
+            var uniqueBusinesses = await completedReservations.Select(r => r.BusinessId).Distinct().CountAsync();
+
+            string? favoriteBusinessName = null;
+            if (totalVisits > 0)
+            {
+                favoriteBusinessName = await completedReservations
+                    .GroupBy(r => new { r.BusinessId, r.Business.Name })
+                    .OrderByDescending(g => g.Count())
+                    .Select(g => g.Key.Name)
+                    .FirstOrDefaultAsync();
+            }
+
+            return Ok(new CustomerStatsDto
+            {
+                TotalVisits = totalVisits,
+                TotalSpent = totalSpent,
+                UniqueBusinesses = uniqueBusinesses,
+                FavoriteBusinessName = favoriteBusinessName
+            });
+        }
+
         // GET: api/reservations/my-reservations
         [HttpGet("my-reservations")]
         public async Task<ActionResult<IEnumerable<ReservationDto>>> GetMyReservations(

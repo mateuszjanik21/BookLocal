@@ -31,4 +31,18 @@
         public DateTime BusinessCreatedAt { get; set; }
         public List<ServiceDto> Services { get; set; } = new();
     }
+
+    public class RebookSuggestionDto
+    {
+        public int ServiceCategoryId { get; set; }
+        public required string CategoryName { get; set; }
+        public string? CategoryPhotoUrl { get; set; }
+        public int BusinessId { get; set; }
+        public required string BusinessName { get; set; }
+        public string? BusinessCity { get; set; }
+        public required string EmployeeName { get; set; }
+        public string? EmployeePhotoUrl { get; set; }
+        public DateTime LastVisitDate { get; set; }
+        public int VisitCount { get; set; }
+    }
 }

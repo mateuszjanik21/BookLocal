@@ -44,7 +44,7 @@
       </p>
     </div>
 
-    <div class="flex gap-2 justify-center w-full overflow-x-auto pb-2 scrollbar-hide">
+    <div class="flex gap-2 md:justify-center w-full overflow-x-auto pb-2 scrollbar-hide">
       <button class="btn btn-sm rounded-full category-pill transition-all" 
               [class.btn-primary]="!activeMainCategoryId"
               [class.bg-base-200]="activeMainCategoryId"
@@ -91,7 +91,7 @@
   } @else {
   
   @if (promotedBusinesses.length > 0) {
-    <div class="mb-16 relative w-full rounded-[2.5rem] overflow-hidden shadow-2xl bg-base-300 min-h-[300px] md:min-h-[400px] flex items-center z-10">
+    <div class="mb-16 relative w-full rounded-[2.5rem] overflow-hidden shadow-2xl bg-base-300 min-h-[400px] md:min-h-[500px] flex items-center z-10">
       
       @for(business of promotedBusinesses; track business.businessId; let i = $index) {
         <div class="absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out"

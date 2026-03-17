@@ -28,7 +28,7 @@ public class SearchController : ControllerBase
                 .ThenInclude(b => b.Reviews)
             .Include(s => s.ServiceCategory)
                 .ThenInclude(sc => sc.MainCategory)
-            .Where(s => !s.IsArchived && s.Variants.Any(v => v.IsActive))
+            .Where(s => !s.IsArchived && s.Variants.Any(v => v.IsActive) && _context.EmployeeServices.Any(es => es.ServiceId == s.ServiceId))
             .AsQueryable();
 
         if (mainCategoryId.HasValue)
@@ -172,11 +172,7 @@ public class SearchController : ControllerBase
     {
         var query = _context.ServiceCategories
             .AsNoTracking()
-            .Include(sc => sc.Business)
-                .ThenInclude(b => b.Reviews)
-            .Include(sc => sc.Services)
-                .ThenInclude(s => s.Variants)
-            .Where(sc => sc.Services.Any(s => !s.IsArchived))
+            .Where(sc => sc.Services.Any(s => !s.IsArchived && _context.EmployeeServices.Any(es => es.ServiceId == s.ServiceId)))
             .AsQueryable();
 
         if (mainCategoryId.HasValue)
@@ -201,61 +197,53 @@ public class SearchController : ControllerBase
                                       (sc.Business.Address != null && sc.Business.Address.ToLower().Contains(lTerm)));
         }
 
-        var projectedQuery = query.Select(sc => new
+        var projectedQuery = query.Select(sc => new ServiceCategorySearchResultDto
         {
-            ServiceCategory = sc,
-            Business = sc.Business,
+            ServiceCategoryId = sc.ServiceCategoryId,
+            Name = sc.Name,
+            PhotoUrl = sc.PhotoUrl,
+            BusinessId = sc.BusinessId,
+            BusinessName = sc.Business.Name,
+            BusinessCity = sc.Business.City,
+            MainCategoryName = sc.MainCategory != null ? sc.MainCategory.Name : null,
             AverageRating = sc.Business.Reviews.Any() ? sc.Business.Reviews.Average(r => r.Rating) : 0,
-            ReviewCount = sc.Business.Reviews.Count()
+            ReviewCount = sc.Business.Reviews.Count(),
+            BusinessCreatedAt = sc.Business.CreatedAt,
+            Services = sc.Services
+                .Where(s => !s.IsArchived && _context.EmployeeServices.Any(es => es.ServiceId == s.ServiceId))
+                .Select(s => new ServiceDto
+                {
+                    Id = s.ServiceId,
+                    Name = s.Name,
+                    Description = s.Description,
+                    ServiceCategoryId = s.ServiceCategoryId,
+                    IsArchived = s.IsArchived,
+                    Variants = s.Variants.Select(v => new ServiceVariantDto
+                    {
+                        ServiceVariantId = v.ServiceVariantId,
+                        Name = v.Name,
+                        Price = v.Price,
+                        DurationMinutes = v.DurationMinutes,
+                        IsDefault = v.IsDefault
+                    }).ToList()
+                }).ToList()
         });
 
-        projectedQuery = sortBy switch
+        IOrderedQueryable<ServiceCategorySearchResultDto> sortedQuery = sortBy switch
         {
             "rating_desc" => projectedQuery.OrderByDescending(x => x.AverageRating).ThenByDescending(x => x.ReviewCount),
             "reviews_desc" => projectedQuery.OrderByDescending(x => x.ReviewCount),
-            "newest_desc" => projectedQuery.OrderByDescending(x => x.Business.CreatedAt),
-            "name_asc" => projectedQuery.OrderBy(x => x.Business.Name),
+            "newest_desc" => projectedQuery.OrderByDescending(x => x.BusinessCreatedAt),
+            "name_asc" => projectedQuery.OrderBy(x => x.BusinessName),
             _ => projectedQuery.OrderByDescending(x => x.AverageRating).ThenByDescending(x => x.ReviewCount)
         };
 
         var totalCount = await projectedQuery.CountAsync();
 
-        var itemsData = await projectedQuery
+        var resultItems = await sortedQuery
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
-
-        var resultItems = itemsData.Select(x => new ServiceCategorySearchResultDto
-        {
-            ServiceCategoryId = x.ServiceCategory.ServiceCategoryId,
-            Name = x.ServiceCategory.Name,
-            PhotoUrl = x.ServiceCategory.PhotoUrl,
-            BusinessId = x.ServiceCategory.BusinessId,
-            BusinessName = x.ServiceCategory.Business.Name,
-            BusinessCity = x.ServiceCategory.Business.City,
-            MainCategoryName = x.ServiceCategory.MainCategory?.Name,
-            AverageRating = x.AverageRating,
-            ReviewCount = x.ReviewCount,
-            BusinessCreatedAt = x.Business.CreatedAt,
-            Services = x.ServiceCategory.Services
-                    .Where(s => !s.IsArchived)
-                    .Select(s => new ServiceDto
-                    {
-                        Id = s.ServiceId,
-                        Name = s.Name,
-                        Description = s.Description,
-                        ServiceCategoryId = s.ServiceCategoryId,
-                        IsArchived = s.IsArchived,
-                        Variants = s.Variants.Select(v => new ServiceVariantDto
-                        {
-                            ServiceVariantId = v.ServiceVariantId,
-                            Name = v.Name,
-                            Price = v.Price,
-                            DurationMinutes = v.DurationMinutes,
-                            IsDefault = v.IsDefault
-                        }).ToList()
-                    }).ToList()
-        }).ToList();
 
         var pagedResult = new PagedResultDto<ServiceCategorySearchResultDto>
         {
@@ -266,5 +254,44 @@ public class SearchController : ControllerBase
         };
 
         return Ok(pagedResult);
+    }
+
+    [HttpGet("rebook-suggestions")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "customer")]
+    public async Task<IActionResult> GetRebookSuggestions()
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var suggestions = await _context.Reservations
+            .AsNoTracking()
+            .Where(r => r.CustomerId == userId && r.Status == ReservationStatus.Completed)
+            .GroupBy(r => new
+            {
+                r.ServiceVariant.Service.ServiceCategoryId,
+                CategoryName = r.ServiceVariant.Service.ServiceCategory.Name,
+                CategoryPhotoUrl = r.ServiceVariant.Service.ServiceCategory.PhotoUrl,
+                r.BusinessId,
+                BusinessName = r.Business.Name,
+                BusinessCity = r.Business.City
+            })
+            .Select(g => new RebookSuggestionDto
+            {
+                ServiceCategoryId = g.Key.ServiceCategoryId,
+                CategoryName = g.Key.CategoryName,
+                CategoryPhotoUrl = g.Key.CategoryPhotoUrl,
+                BusinessId = g.Key.BusinessId,
+                BusinessName = g.Key.BusinessName,
+                BusinessCity = g.Key.BusinessCity,
+                EmployeeName = g.OrderByDescending(r => r.StartTime).First().Employee.FirstName + " " + g.OrderByDescending(r => r.StartTime).First().Employee.LastName,
+                EmployeePhotoUrl = g.OrderByDescending(r => r.StartTime).First().Employee.PhotoUrl,
+                LastVisitDate = g.Max(r => r.StartTime),
+                VisitCount = g.Count()
+            })
+            .OrderByDescending(s => s.LastVisitDate)
+            .Take(8)
+            .ToListAsync();
+
+        return Ok(suggestions);
     }
 }

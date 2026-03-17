@@ -36,7 +36,7 @@ namespace BookLocal.API.Controllers
 
             if (!isOwner)
             {
-                query = query.Where(sb => sb.IsActive);
+                query = query.Where(sb => sb.IsActive && sb.BundleItems.All(i => _context.EmployeeServices.Any(es => es.ServiceId == i.ServiceVariant.ServiceId)));
             }
 
             var dtos = await query

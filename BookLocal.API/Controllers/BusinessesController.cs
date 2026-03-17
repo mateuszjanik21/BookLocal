@@ -74,6 +74,8 @@ namespace BookLocal.API.Controllers
                     .ThenInclude(e => e.FinanceSettings)
                 .Include(b => b.Employees)
                     .ThenInclude(e => e.EmployeeDetails)
+                .Include(b => b.Employees)
+                    .ThenInclude(e => e.EmployeeServices)
                 .Include(b => b.Owner)
                 .FirstOrDefaultAsync(b => b.BusinessId == id);
 
@@ -81,6 +83,12 @@ namespace BookLocal.API.Controllers
 
             var isVerified = await _context.BusinessVerifications
                 .AnyAsync(v => v.BusinessId == id && v.Status == VerificationStatus.Approved);
+
+            var serviceIdsWithEmployees = await _context.EmployeeServices
+                .Where(es => es.Service.BusinessId == id)
+                .Select(es => es.ServiceId)
+                .Distinct()
+                .ToListAsync();
 
             var businessDto = new BusinessDetailDto
             {
@@ -106,7 +114,7 @@ namespace BookLocal.API.Controllers
                     Name = c.Name,
                     PhotoUrl = c.PhotoUrl,
                     Services = c.Services
-                        .Where(s => !s.IsArchived)
+                        .Where(s => !s.IsArchived && serviceIdsWithEmployees.Contains(s.ServiceId))
                         .Select(s => new ServiceDto
                         {
                             Id = s.ServiceId,
@@ -139,7 +147,8 @@ namespace BookLocal.API.Controllers
                     Bio = e.EmployeeDetails != null ? e.EmployeeDetails.Bio : null,
                     InstagramProfileUrl = e.EmployeeDetails != null ? e.EmployeeDetails.InstagramProfileUrl : null,
                     PortfolioUrl = e.EmployeeDetails != null ? e.EmployeeDetails.PortfolioUrl : null,
-                    IsStudent = e.FinanceSettings != null ? e.FinanceSettings.IsStudent : false
+                    IsStudent = e.FinanceSettings != null ? e.FinanceSettings.IsStudent : false,
+                    AssignedServiceIds = e.EmployeeServices.Select(es => es.ServiceId).ToList()
                 }).ToList()
             };
 
@@ -276,7 +285,8 @@ namespace BookLocal.API.Controllers
                         AssignedServicesCount = e.EmployeeServices.Count,
                         CompletedReservationsCount = completedThisMonth.Count,
                         ActiveContractType = activeContract?.ContractType.ToString(),
-                        EstimatedMonthlyRevenue = completedThisMonth.Sum(r => r.AgreedPrice)
+                        EstimatedMonthlyRevenue = completedThisMonth.Sum(r => r.AgreedPrice),
+                        AssignedServiceIds = e.EmployeeServices.Select(es => es.ServiceId).ToList()
                     };
                 }).ToList()
             };

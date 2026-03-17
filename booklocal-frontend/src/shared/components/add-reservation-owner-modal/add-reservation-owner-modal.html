@@ -102,7 +102,7 @@
                                     class="label-text text-xs font-bold opacity-60">Usługa</span></label>
                             <select class="select select-bordered rounded-xl w-full" formControlName="serviceId">
                                 <option disabled selected value="">Wybierz usługę...</option>
-                                @for (service of services; track service.id) {
+                                @for (service of filteredServices; track service.id) {
                                 <option [value]="service.id">
                                     {{ service.name }} — {{ service.variants[0].durationMinutes }} min · {{
                                     service.variants[0].price }} zł

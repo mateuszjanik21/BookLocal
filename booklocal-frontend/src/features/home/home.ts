@@ -6,7 +6,8 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { BusinessService } from '../../core/services/business-service';
 import { CategoryService } from '../../core/services/category';
-import { MainCategory, PagedResult, ServiceCategorySearchResult } from '../../types/business.model';
+import { AuthService } from '../../core/services/auth-service';
+import { MainCategory, PagedResult, RebookSuggestion, ServiceCategorySearchResult } from '../../types/business.model';
 
 @Component({
   selector: 'app-home',
@@ -18,9 +19,11 @@ import { MainCategory, PagedResult, ServiceCategorySearchResult } from '../../ty
 export class HomeComponent implements OnInit, OnDestroy {
   private businessService = inject(BusinessService);
   private categoryService = inject(CategoryService);
+  private authService = inject(AuthService);
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
   @ViewChild('locationInput') locationInput!: ElementRef<HTMLInputElement>;
   @ViewChild('chipsContainer') chipsContainer!: ElementRef<HTMLDivElement>;
+  @ViewChild('rebookContainer') rebookContainer!: ElementRef<HTMLDivElement>;
   
   locationTerm: string = '';
   Math = Math;
@@ -36,6 +39,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   activeSortBy = 'rating_desc';
   isLocationLoading = false;
   isLoading = false;
+  rebookSuggestions: RebookSuggestion[] = [];
 
   private searchSubject = new Subject<void>();
   private searchSubscription?: Subscription;
@@ -55,6 +59,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.currentBackgroundImage = this.backgroundImages[0];
     this.startImageRotation();
     this.categoryService.getMainCategories().subscribe(data => this.mainCategories = data);
+    this.loadRebookSuggestions();
     this.fetchResults();
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(300),
@@ -74,7 +79,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (this.isLoading) {
         this.isSkeletonVisible = true;
       }
-    }, 250);
+    }, 250); // Pokaż szkielet tylko jeśli ładowanie trwa dłużej niż 250ms
 
     const params = {
       searchTerm: this.searchInput?.nativeElement.value,
@@ -203,6 +208,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     return pages;
   }
   
+  loadRebookSuggestions(): void {
+    if (this.authService.isLoggedIn() && this.authService.hasRole('customer')) {
+      this.businessService.getRebookSuggestions().subscribe({
+        next: (data) => this.rebookSuggestions = data,
+        error: () => {} // Silently ignore (e.g. 401)
+      });
+    }
+  }
+
   clearSearch(): void {
     if (this.searchInput) {
       this.searchInput.nativeElement.value = '';
@@ -217,6 +231,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   scrollChips(amount: number): void {
     if (this.chipsContainer) {
       this.chipsContainer.nativeElement.scrollBy({ left: amount, behavior: 'smooth' });
+    }
+  }
+
+  scrollRebook(amount: number): void {
+    if (this.rebookContainer) {
+      this.rebookContainer.nativeElement.scrollBy({ left: amount, behavior: 'smooth' });
     }
   }
   

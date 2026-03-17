@@ -77,6 +77,7 @@ public class AuthController : ControllerBase
             Email = dto.Email,
             FirstName = dto.FirstName,
             LastName = dto.LastName,
+            PhoneNumber = dto.PhoneNumber,
             PhotoUrl = "https://api.dicebear.com/8.x/initials/svg?seed=" + dto.FirstName + " " + dto.LastName
         };
 
@@ -164,6 +165,7 @@ public class AuthController : ControllerBase
             FirstName = user.FirstName,
             LastName = user.LastName,
             PhotoUrl = user.PhotoUrl,
+            PhoneNumber = user.PhoneNumber,
             Roles = (List<string>)roles
         };
     }
@@ -177,6 +179,7 @@ public class AuthController : ControllerBase
 
         user.FirstName = updateDto.FirstName;
         user.LastName = updateDto.LastName;
+        user.PhoneNumber = updateDto.PhoneNumber;
 
         var result = await _userManager.UpdateAsync(user);
 
@@ -190,6 +193,7 @@ public class AuthController : ControllerBase
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 PhotoUrl = user.PhotoUrl,
+                PhoneNumber = user.PhoneNumber,
                 Roles = (List<string>)roles
             };
         }
@@ -210,6 +214,7 @@ public class AuthController : ControllerBase
             FirstName = user.FirstName,
             LastName = user.LastName,
             PhotoUrl = user.PhotoUrl,
+            PhoneNumber = user.PhoneNumber,
             Roles = (List<string>)roles
         };
 

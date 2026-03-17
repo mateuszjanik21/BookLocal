@@ -27,12 +27,15 @@
         public string? PortfolioUrl { get; set; }
 
         public ICollection<EmployeeCertificateDto> Certificates { get; set; } = new List<EmployeeCertificateDto>();
+
         public bool IsStudent { get; set; }
         public bool IsArchived { get; set; }
+
         public int AssignedServicesCount { get; set; }
         public int CompletedReservationsCount { get; set; }
         public string? ActiveContractType { get; set; }
         public decimal EstimatedMonthlyRevenue { get; set; }
+        public List<int> AssignedServiceIds { get; set; } = new List<int>();
     }
 
     public class EmployeeDetailDto

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace BookLocal.API.DTOs
 {
     public enum CustomerStatusFilter
@@ -72,5 +75,13 @@ namespace BookLocal.API.DTOs
     {
         public bool IsVIP { get; set; }
         public bool IsBanned { get; set; }
+    }
+
+    public class CustomerStatsDto
+    {
+        public int TotalVisits { get; set; }
+        public decimal TotalSpent { get; set; }
+        public int UniqueBusinesses { get; set; }
+        public string? FavoriteBusinessName { get; set; }
     }
 }

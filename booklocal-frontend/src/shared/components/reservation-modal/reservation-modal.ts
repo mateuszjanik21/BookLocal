@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Service, Employee, BusinessDetail } from '../../../types/business.model';
+import { Service, Employee, BusinessDetail, ServiceCategory } from '../../../types/business.model';
 import { ReservationService } from '../../../core/services/reservation';
 import { DiscountService, VerifyDiscountResult } from '../../../core/services/discount-service';
 import { LoyaltyService } from '../../../core/services/loyalty-service';
@@ -237,7 +237,6 @@ export class ReservationModalComponent implements OnChanges {
 
   nextStep(): void {
     if (this.currentStep === 1 && this.service) {
-      // Jeśli już mamy wybraną usługę (np. kliknięte z cennika), pomijamy krok 2
       this.currentStep = 3;
       this.onDateChange();
       return;
@@ -268,7 +267,6 @@ export class ReservationModalComponent implements OnChanges {
     this.verifiedDiscount = null;
     this.discountError = null;
     this.loyaltyPointsToUse = 0;
-    // Nie zerujemy loyaltyPointsBalance - zostanie odświeżone w showModal()
   }
   
   showModal(): void {
@@ -277,6 +275,20 @@ export class ReservationModalComponent implements OnChanges {
   }
 
   private _showModalBusinessId: number | undefined;
+
+  get filteredCategories(): ServiceCategory[] {
+    if (!this.business?.categories) return [];
+    const employeeId = this.reservationForm.get('employeeId')?.value;
+    if (!employeeId) return this.business.categories;
+
+    const selectedEmployee = this.employees.find(e => e.id.toString() === employeeId);
+    if (!selectedEmployee || !selectedEmployee.assignedServiceIds) return this.business.categories;
+
+    return this.business.categories.map(cat => ({
+      ...cat,
+      services: cat.services.filter(s => selectedEmployee.assignedServiceIds?.includes(s.id))
+    })).filter(cat => cat.services.length > 0);
+  }
 
   closeModal(): void {
     this.dialog.nativeElement.close();
@@ -308,14 +320,11 @@ export class ReservationModalComponent implements OnChanges {
       const currentUser: any = this.authService.currentUserValue;
       const businessId = this._showModalBusinessId ?? this.businessId ?? this.service?.businessId ?? this.business?.id;
       if (!currentUser?.id || !businessId) {
-          console.log('[Loyalty] Brak userId lub businessId:', { userId: currentUser?.id, businessId, inputBusinessId: this.businessId, service: this.service?.businessId, business: this.business?.id });
           return;
       }
-      console.log('[Loyalty] Ładowanie punktów dla businessId:', businessId, 'userId:', currentUser.id);
       this.loyaltyService.getCustomerLoyalty(businessId, currentUser.id).subscribe({
           next: (data) => {
               this.loyaltyPointsBalance = data.balance.pointsBalance;
-              console.log('[Loyalty] Saldo punktów:', this.loyaltyPointsBalance);
           },
           error: (err) => {
               console.warn('[Loyalty] Błąd ładowania punktów:', err);

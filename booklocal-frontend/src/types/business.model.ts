@@ -59,6 +59,7 @@ export interface Employee {
   completedReservationsCount?: number;
   activeContractType?: string;
   estimatedMonthlyRevenue?: number;
+  assignedServiceIds?: number[];
 }
 
 export interface Business {
@@ -134,6 +135,19 @@ export interface ServiceCategoryFeed {
   businessId: number;
   businessName: string;
   businessCity: string | null;
+}
+
+export interface RebookSuggestion {
+  serviceCategoryId: number;
+  categoryName: string;
+  categoryPhotoUrl: string | null;
+  businessId: number;
+  businessName: string;
+  businessCity: string | null;
+  employeeName: string;
+  employeePhotoUrl: string | null;
+  lastVisitDate: string;
+  visitCount: number;
 }
 
 export interface PagedResult<T> {

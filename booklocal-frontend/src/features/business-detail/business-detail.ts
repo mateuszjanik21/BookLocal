@@ -276,7 +276,6 @@ export class BusinessDetailComponent implements OnInit {
       this.serviceBundleService.getBundles(businessId).subscribe({
         next: (bundles) => {
           this.bundles = bundles;
-          console.log('Loaded bundles:', bundles);
         },
         error: (err) => console.error('Error loading bundles:', err)
       });

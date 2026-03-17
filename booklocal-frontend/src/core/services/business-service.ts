@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { Business, BusinessDetail, BusinessSearchResult, Employee, PagedResult, ServiceCategorySearchResult, ServiceSearchResult } from '../../types/business.model';
+import { Business, BusinessDetail, BusinessSearchResult, Employee, PagedResult, RebookSuggestion, ServiceCategorySearchResult, ServiceSearchResult } from '../../types/business.model';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -78,6 +78,11 @@ export class BusinessService {
     
     return this.http.get<PagedResult<ServiceCategorySearchResult>>(`${this.apiUrl}/search/category-feed`, { params: httpParams });
   }
+
+  getRebookSuggestions(): Observable<RebookSuggestion[]> {
+    return this.http.get<RebookSuggestion[]>(`${this.apiUrl}/search/rebook-suggestions`);
+  }
+
   generateContract(employeeId: number): Observable<Blob> {
       return this.http.get(`${this.apiUrl}/document/generate-contract/${employeeId}`, { responseType: 'blob' });
   }

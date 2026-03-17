@@ -21,17 +21,37 @@ export class RegisterOwnerComponent {
     lastName: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
+    phoneNumber: ['', [Validators.required, Validators.pattern(/^\d{9}$/)]],
     businessName: ['', Validators.required],
-    nip: ['', Validators.required],
-    address: [''],
-    city: [''],
+    nip: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+    street: ['', Validators.required],
+    streetNumber: ['', Validators.required],
+    postalCode: ['', [Validators.required, Validators.pattern(/^\d{2}-\d{3}$/)]],
+    city: ['', Validators.required],
     description: ['']
   });
 
   onSubmit() {
-    if (this.registerForm.invalid) return;
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      return;
+    }
 
-    this.authService.registerOwner(this.registerForm.value).subscribe({
+    const v = this.registerForm.value;
+    const payload = {
+      firstName: v.firstName,
+      lastName: v.lastName,
+      email: v.email,
+      password: v.password,
+      phoneNumber: v.phoneNumber,
+      businessName: v.businessName,
+      nip: v.nip,
+      address: `${v.street} ${v.streetNumber}`,
+      city: `${v.postalCode} ${v.city}`,
+      description: v.description
+    };
+
+    this.authService.registerOwner(payload).subscribe({
       next: () => {
         this.router.navigate(['/']);
       },
