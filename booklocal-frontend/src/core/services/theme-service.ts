@@ -4,15 +4,9 @@ import { Injectable, signal } from '@angular/core';
   providedIn: 'root'
 })
 export class ThemeService {
-<<<<<<< HEAD
   private themeSignal = signal<'booklocal_theme' | 'booklocal-dark' | 'purple_night'>('booklocal_theme');
   private userPreference: 'booklocal_theme' | 'booklocal-dark' = 'booklocal_theme';
   private forcedTheme: 'booklocal_theme' | 'booklocal-dark' | 'purple_night' | null = null;
-=======
-  private themeSignal = signal<'booklocal_theme' | 'booklocal-dark'>('booklocal_theme');
-  private userPreference: 'booklocal_theme' | 'booklocal-dark' = 'booklocal_theme';
-  private forcedTheme: 'booklocal_theme' | 'booklocal-dark' | null = null;
->>>>>>> 4c72ec2fbd0529d607afe301fd1930bdf361b105
 
   constructor() {
     this.initTheme();
@@ -32,26 +26,16 @@ export class ThemeService {
     this.setTheme(newTheme, true);
   }
 
-<<<<<<< HEAD
   setTheme(theme: 'booklocal_theme' | 'booklocal-dark' | 'purple_night', saveToStorage: boolean = true) {
     this.themeSignal.set(theme);
     if (saveToStorage && theme !== 'purple_night') {
-=======
-  setTheme(theme: 'booklocal_theme' | 'booklocal-dark', saveToStorage: boolean = true) {
-    this.themeSignal.set(theme);
-    if (saveToStorage) {
->>>>>>> 4c72ec2fbd0529d607afe301fd1930bdf361b105
       this.userPreference = theme;
       localStorage.setItem('theme', theme);
     }
     document.documentElement.setAttribute('data-theme', theme);
   }
 
-<<<<<<< HEAD
   forceTheme(theme: 'booklocal_theme' | 'booklocal-dark' | 'purple_night' | null) {
-=======
-  forceTheme(theme: 'booklocal_theme' | 'booklocal-dark' | null) {
->>>>>>> 4c72ec2fbd0529d607afe301fd1930bdf361b105
     this.forcedTheme = theme;
     if (theme) {
       this.setTheme(theme, false);

@@ -53,30 +53,24 @@
 }
 
 @plugin "daisyui/theme" {
-<<<<<<< HEAD
   name: "purple_night";
   color-scheme: dark;
   --color-primary: #8b5cf6;
-=======
-  name: "booklocal-dark";
-  color-scheme: dark;
-  --color-primary: #16a34a;
->>>>>>> 4c72ec2fbd0529d607afe301fd1930bdf361b105
   --color-primary-content: #ffffff;
 
-  --color-secondary: #15803d;
+  --color-secondary: #7c3aed;
   --color-secondary-content: #ffffff;
 
-  --color-accent: #4ade80;
-  --color-accent-content: #1c1917;
+  --color-accent: #c4b5fd;
+  --color-accent-content: #1f2937;
 
   --color-neutral: #374151;
-  --color-neutral-content: #f3f4f6;
+  --color-neutral-content: #d1d5db;
 
-  --color-base-100: #111827;
-  --color-base-200: #1f2937;
-  --color-base-300: #374151;
-  --color-base-content: #f3f4f6;
+  --color-base-100: #1f2937;
+  --color-base-200: #374151;
+  --color-base-300: #4b5563;
+  --color-base-content: #d1d5db;
 
   --color-success: #36d399;
   --color-warning: #fbbd23;
