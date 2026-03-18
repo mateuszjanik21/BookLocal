@@ -65,6 +65,7 @@ export class BusinessDetailComponent implements OnInit {
   favoriteVariantIds = new Set<number>();
 
   selectedEmployee: Employee | null = null;
+  currentUserId: string | null = null;
 
   ngOnInit(): void {
     const businessId = this.route.snapshot.paramMap.get('id');
@@ -85,8 +86,11 @@ export class BusinessDetailComponent implements OnInit {
     }
     
     this.authService.currentUser$.subscribe(user => {
-        if (user && user.roles.includes('customer')) {
-            this.loadFavorites();
+        if (user) {
+            this.currentUserId = user.id;
+            if (user.roles.includes('customer')) {
+                this.loadFavorites();
+            }
         }
     });
   }
@@ -276,6 +280,7 @@ export class BusinessDetailComponent implements OnInit {
       this.serviceBundleService.getBundles(businessId).subscribe({
         next: (bundles) => {
           this.bundles = bundles;
+          console.log('Loaded bundles:', bundles);
         },
         error: (err) => console.error('Error loading bundles:', err)
       });

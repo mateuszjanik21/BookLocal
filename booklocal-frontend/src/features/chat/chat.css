@@ -31,19 +31,6 @@
   transition: all 0.3s ease;
 }
 
-.conversation-item {
-  border-left: 4px solid transparent;
-  transition: background-color 0.2s ease-in-out, border-left-color 0.2s ease-in-out;
-}
-
-.conversation-item:hover {
-  background-color: hsl(var(--b3));
-}
-
-.conversation-item.active {
-  background-color: hsl(var(--p) / 0.1);
-  border-left-color: hsl(var(--p));
-}
 
 .online-indicator {
   animation: pulse 2s infinite;

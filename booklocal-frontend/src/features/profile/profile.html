@@ -187,7 +187,7 @@
     <div class="tab-panel">
       @if (favorites.length > 0) {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @for (fav of favorites; track fav.serviceVariantId) {
+        @for (fav of paginatedFavorites; track fav.serviceVariantId) {
         <div class="card bg-base-100 shadow-md border border-base-200 hover:shadow-lg transition-shadow">
           <div class="card-body p-4 flex-row items-center gap-4">
             <div class="avatar shrink-0">
@@ -224,6 +224,28 @@
         </div>
         }
       </div>
+      
+      @if (totalPages > 1) {
+      <div class="flex justify-center mt-8 pb-4">
+        <div class="join bg-base-100 p-1 rounded-2xl border border-base-300 shadow-sm">
+          <button class="join-item btn btn-ghost" [disabled]="currentPage === 1"
+            (click)="pageChanged(currentPage - 1)">«</button>
+          @for(page of paginationPages; track $index) {
+            @if(page === '...') {
+              <button class="join-item btn btn-disabled bg-transparent">...</button>
+            } @else {
+              <button class="join-item btn rounded-xl mx-0.5" [class.btn-primary]="page === currentPage"
+                [class.btn-ghost]="page !== currentPage" (click)="pageChanged($any(page))">
+                {{ page }}
+              </button>
+            }
+          }
+          <button class="join-item btn btn-ghost" [disabled]="currentPage === totalPages"
+            (click)="pageChanged(currentPage + 1)">»</button>
+        </div>
+      </div>
+      }
+      
       } @else {
       <div class="text-center py-16">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-base-content/20 mb-4" fill="none"

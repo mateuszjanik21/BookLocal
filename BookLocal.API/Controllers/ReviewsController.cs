@@ -46,12 +46,26 @@ namespace BookLocal.API.Controllers
                 );
             }
 
-            query = sortBy switch
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (currentUserId != null)
             {
-                "highest" => query.OrderByDescending(r => r.Rating).ThenByDescending(r => r.CreatedAt),
-                "lowest" => query.OrderBy(r => r.Rating).ThenByDescending(r => r.CreatedAt),
-                _ => query.OrderByDescending(r => r.CreatedAt)
-            };
+                query = sortBy switch
+                {
+                    "highest" => query.OrderByDescending(r => r.UserId == currentUserId).ThenByDescending(r => r.Rating).ThenByDescending(r => r.CreatedAt),
+                    "lowest" => query.OrderByDescending(r => r.UserId == currentUserId).ThenBy(r => r.Rating).ThenByDescending(r => r.CreatedAt),
+                    _ => query.OrderByDescending(r => r.UserId == currentUserId).ThenByDescending(r => r.CreatedAt)
+                };
+            }
+            else
+            {
+                query = sortBy switch
+                {
+                    "highest" => query.OrderByDescending(r => r.Rating).ThenByDescending(r => r.CreatedAt),
+                    "lowest" => query.OrderBy(r => r.Rating).ThenByDescending(r => r.CreatedAt),
+                    _ => query.OrderByDescending(r => r.CreatedAt)
+                };
+            }
 
             var totalCount = await query.CountAsync();
 

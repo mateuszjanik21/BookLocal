@@ -32,7 +32,26 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   messageContent = '';
   activeConversationId: number | null = null;
   activeParticipantName: string | null = null;
+  activeParticipantPhotoUrl: string | null = null;
   needsScroll = false;
+  searchQuery = '';
+
+  get filteredConversations(): Conversation[] {
+    let convos = [...this.conversations];
+    
+    if (this.searchQuery.trim()) {
+      const q = this.searchQuery.toLowerCase().trim();
+      convos = convos.filter(c => c.participantName.toLowerCase().includes(q));
+    }
+    
+    convos.sort((a, b) => {
+      const dateA = new Date(a.lastMessageAt || 0).getTime();
+      const dateB = new Date(b.lastMessageAt || 0).getTime();
+      return dateB - dateA;
+    });
+    
+    return convos;
+  }
 
   ngOnInit(): void {
     this.subscriptions.add(
@@ -68,9 +87,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   async selectConversation(id: number): Promise<void> {
     this.activeConversationId = id;
-    this.activeParticipantName = this.conversations.find(c => c.conversationId === id)?.participantName || null;
-
+    
     const selectedConvo = this.conversations.find(c => c.conversationId === id);
+    this.activeParticipantName = selectedConvo?.participantName || null;
+    this.activeParticipantPhotoUrl = selectedConvo?.participantPhotoUrl || null;
+
     if (selectedConvo) {
       selectedConvo.unreadCount = 0;
     }
@@ -116,7 +137,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
-  getInitials(name: string): string {
+  getInitials(name: string | null | undefined): string {
     if (!name) return '';
     const parts = name.trim().split(' ');
     return parts.length > 1

@@ -80,10 +80,15 @@
           <div class="mb-4 pr-24">
             <div class="flex flex-wrap items-center gap-2 mb-3">
               @if (res.isBundle) {
-              <span class="badge badge-secondary text-xs font-bold uppercase tracking-wider">Pakiet: {{ res.serviceName
-                }}</span>
+              <span
+                class="bg-secondary text-secondary-content text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-2xl inline-block leading-normal">
+                Pakiet: {{ res.serviceName }}
+              </span>
               } @else {
-              <span class="badge badge-neutral text-xs font-bold">{{ res.serviceName }}</span>
+              <span
+                class="bg-neutral text-neutral-content text-xs font-bold px-3 py-1.5 rounded-2xl inline-block leading-normal">
+                {{ res.serviceName }}
+              </span>
               @if (res.variantName && res.variantName !== res.serviceName) {
               <span class="text-xs text-base-content/60 font-medium">{{ res.variantName }}</span>
               }

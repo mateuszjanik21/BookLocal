@@ -1,93 +1,167 @@
-<div class="chat-container container p-4 md:p-8 mx-auto max-w-350 min-h-screen">
-  <div class="flex border rounded-2xl shadow-2xl h-[80vh] bg-base-100 overflow-hidden">
+<div class="chat-container container p-4 md:p-8 mx-auto max-w-6xl min-h-screen content-fade-in">
+  
+  <div class="mb-6 px-2">
+    <h2 class="text-3xl md:text-4xl font-black tracking-tight text-base-content leading-tight">
+      Twoje <span class="text-primary italic">Wiadomości</span>
+    </h2>
+    <p class="text-base-content/60 mt-2 text-sm font-medium">Bądź w kontakcie ze swoimi ulubionymi salonami</p>
+  </div>
+
+  <div class="flex border border-base-200/60 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] h-[75vh] bg-base-100/80 backdrop-blur-xl overflow-hidden relative">
 
     <div 
-      class="w-full md:w-1/3 lg:w-1/4 border-r bg-base-200/50 flex-col conversation-list"
+      class="w-full md:w-80 lg:w-96 bg-base-200/30 flex-col conversation-list border-r border-base-200/50"
       [ngClass]="{ 'hidden': activeConversationId, 'md:flex': true }">
-      <div class="p-4 font-bold text-lg border-b sticky top-0 bg-base-200/80 backdrop-blur-sm z-10">Konwersacje</div>
-      <div class="overflow-y-auto">
-        @for(convo of conversations; track convo.conversationId){
-          <div class="conversation-item flex items-center gap-4 p-4 cursor-pointer"
-            (click)="selectConversation(convo.conversationId)"
-            [class.active]="convo.conversationId === activeConversationId">
-            <div class="indicator">
+      
+      <div class="p-4 md:p-6 font-bold text-lg border-b border-base-200/50 sticky top-0 bg-base-200/50 backdrop-blur-md z-10 flex flex-col gap-3">
+        <h3 class="mb-1 leading-none">Konwersacje</h3>
+        <label class="input input-sm input-bordered flex items-center gap-2 rounded-full bg-base-100/60 shadow-inner border-transparent focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 transition-all px-3">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 opacity-40 shrink-0"><path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" /></svg>
+          <input type="text" class="grow font-medium text-sm border-none bg-transparent" placeholder="Szukaj nazwy..." [(ngModel)]="searchQuery" />
+        </label>
+      </div>
+      
+      <div class="overflow-y-auto p-3 space-y-1">
+        @for(convo of filteredConversations; track convo.conversationId){
+          <div class="conversation-item flex items-center gap-4 p-3 cursor-pointer rounded-2xl transition-all duration-300 border border-transparent"
+               [class.bg-base-100]="convo.conversationId !== activeConversationId"
+               [class.hover:bg-base-200]="convo.conversationId !== activeConversationId"
+               [class.shadow-sm]="convo.conversationId !== activeConversationId"
+               [class.hover:-translate-y-0.5]="convo.conversationId !== activeConversationId"
+               [class.hover:shadow-md]="convo.conversationId !== activeConversationId"
+               [class.bg-primary]="convo.conversationId === activeConversationId"
+               [class.text-primary-content]="convo.conversationId === activeConversationId"
+               [class.shadow-lg]="convo.conversationId === activeConversationId"
+               [class.shadow-primary]="convo.conversationId === activeConversationId"
+             (click)="selectConversation(convo.conversationId)">
+             
+            <div class="indicator shrink-0">
               @if ((presenceService.onlineUsers$ | async)?.includes(convo.participantId)) {
-                <span class="online-indicator indicator-item badge badge-success badge-xs indicator-bottom indicator-end mr-2 mb-2"></span>
+                <span class="online-indicator indicator-item badge badge-success badge-xs border-2 indicator-bottom indicator-end mb-1 mr-1" [class.border-primary]="convo.conversationId === activeConversationId" [class.border-base-100]="convo.conversationId !== activeConversationId"></span>
               }
               <div class="avatar">
-                <div class="w-12 h-12 rounded-full bg-base-300 flex items-center justify-center">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center bg-base-200 shadow-inner" [class.ring-2]="convo.conversationId === activeConversationId" [class.ring-primary-content]="convo.conversationId === activeConversationId">
                   @if(convo.participantPhotoUrl){
-                    <img [src]="convo.participantPhotoUrl" alt="Avatar rozmówcy" />
+                    <img [src]="convo.participantPhotoUrl" alt="Avatar rozmówcy" class="object-cover" />
                   } @else {
-                    <span class="font-bold text-lg">{{ getInitials(convo.participantName) }}</span>
+                    <span class="font-bold text-lg" [class.text-primary-content]="convo.conversationId === activeConversationId" [class.text-base-content]="convo.conversationId !== activeConversationId">
+                      {{ getInitials(convo.participantName) }}
+                    </span>
                   }
                 </div>
               </div>
             </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex justify-between items-center">
-                <div class="font-bold truncate" [class.font-extrabold]="convo.unreadCount > 0">
+            
+            <div class="flex-1 min-w-0 pr-1">
+              <div class="flex justify-between items-center mb-0.5">
+                <div class="font-bold truncate text-sm" [class.font-extrabold]="convo.unreadCount > 0">
                   {{ convo.participantName }}
                 </div>
                 @if (convo.unreadCount > 0) {
-                  <span class="badge badge-primary badge-sm">{{ convo.unreadCount }}</span>
+                  <span class="badge badge-sm font-bold border-none" 
+                        [class.bg-white]="convo.conversationId === activeConversationId"
+                        [class.text-primary]="convo.conversationId === activeConversationId"
+                        [class.bg-primary]="convo.conversationId !== activeConversationId"
+                        [class.text-primary-content]="convo.conversationId !== activeConversationId">
+                    {{ convo.unreadCount }}
+                  </span>
                 }
               </div>
-              <p class="text-sm text-base-content/60 truncate" [class.font-bold]="convo.unreadCount > 0">
-                {{ convo.lastMessage }}
+              <p class="text-xs truncate transition-colors" 
+                 [class.opacity-90]="convo.conversationId === activeConversationId"
+                 [class.text-base-content]="convo.conversationId !== activeConversationId"
+                 [class.font-bold]="convo.unreadCount > 0 && convo.conversationId !== activeConversationId">
+                {{ convo.lastMessage || 'Brak wiadomości' }}
               </p>
             </div>
           </div>
         } @empty {
-          <p class="p-4 text-sm text-base-content/70">Brak konwersacji.</p>
+          <div class="flex flex-col items-center justify-center text-center py-12 px-4 opacity-50">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-12 h-12 mb-3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.068.157 2.148.279 3.238.364.466.037.893.281 1.153.671L12 21l2.652-3.978c.26-.39.687-.634 1.153-.67 1.09-.086 2.17-.208 3.238-.365 1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+            </svg>
+            <p class="text-sm font-medium">Brak historii konwersacji</p>
+          </div>
         }
       </div>
     </div>
 
     <div 
-      class="w-full md:w-2/3 lg:w-3/4 flex flex-col"
-      [ngClass]="{ 'hidden': !activeConversationId, 'md:flex': true }">
+      class="w-full md:flex-1 flex flex-col relative bg-base-100/50"
+      [ngClass]="{ 'hidden': !activeConversationId, 'flex': true }">
       
       @if(activeConversationId && (chatService.messageThread$ | async); as messages) {
-        <div class="p-4 border-b font-bold text-lg bg-base-200/80 backdrop-blur-sm flex items-center gap-2 z-10">
-          <button (click)="activeConversationId = null" class="btn btn-ghost btn-circle btn-sm md:hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        
+        <div class="px-6 py-4 border-b border-base-200/50 bg-base-100/80 backdrop-blur-md flex items-center gap-4 z-20 shadow-sm sticky top-0">
+          <button (click)="activeConversationId = null" class="btn btn-ghost btn-circle btn-sm md:hidden hover:bg-base-200 shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
             </svg>
           </button>
-          <span>{{ activeParticipantName }}</span>
+          
+          <div class="flex items-center gap-3">
+             <div class="avatar" [class.placeholder]="!activeParticipantPhotoUrl">
+               <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-inner overflow-hidden" 
+                    [class.bg-primary]="!activeParticipantPhotoUrl" 
+                    [class.text-primary]="!activeParticipantPhotoUrl" 
+                    [class.font-bold]="!activeParticipantPhotoUrl">
+                 @if(activeParticipantPhotoUrl){
+                    <img [src]="activeParticipantPhotoUrl" alt="Avatar" class="object-cover w-full h-full" />
+                 } @else {
+                    <span>{{ getInitials(activeParticipantName) }}</span>
+                 }
+               </div>
+             </div>
+             <div>
+               <h3 class="font-bold text-base-content leading-tight">{{ activeParticipantName }}</h3>
+               <p class="text-[10px] text-base-content/50 font-medium uppercase tracking-wider">Rozmówca</p>
+             </div>
+          </div>
         </div>
 
-        <div #messageContainer class="flex-1 p-4 overflow-y-auto bg-base-100">
+        <div #messageContainer class="flex-1 p-4 md:p-6 overflow-y-auto space-y-4 relative scrollbar-hide">
+          <div class="text-center pt-2 pb-6">
+            <span class="bg-base-200/50 text-base-content/40 text-[10px] uppercase tracking-widest font-bold px-4 py-1.5 rounded-full">Początek konwersacji</span>
+          </div>
+
           @for(message of messages; track message.messageId; let isLast = $last) {
             <div class="chat message-bubble" [class.chat-end]="message.senderId === currentUser?.id"
               [class.chat-start]="message.senderId !== currentUser?.id">
               <div class="chat-image avatar">
-                <div class="w-10 rounded-full">
+                <div class="w-8 h-8 rounded-full shadow-sm ring-1 ring-base-200 overflow-hidden">
                   @if(message.senderPhotoUrl){
-                    <img alt="Avatar nadawcy" [src]="message.senderPhotoUrl" />
+                    <img alt="Avatar nadawcy" [src]="message.senderPhotoUrl" class="object-cover" />
                   } @else {
-                    <div class="w-10 h-10 rounded-full bg-neutral text-neutral-content flex items-center justify-center">
-                      <span class="font-bold text-sm">{{ getInitials(message.senderFullName) }}</span>
+                    <div class="w-full h-full bg-base-200 text-base-content/50 flex items-center justify-center">
+                      <span class="font-bold text-xs">{{ getInitials(message.senderFullName) }}</span>
                     </div>
                   }
                 </div>
               </div>
-              <div class="chat-header text-xs opacity-60">
-                {{ message.senderFullName }}
-                <time class="ml-2">{{ message.sentAt | date:'HH:mm' }}</time>
+              
+              <div class="chat-header text-[10px] opacity-50 mb-1 flex items-center gap-2" [class.flex-row-reverse]="message.senderId === currentUser?.id">
+                <span class="font-bold hidden sm:inline">{{ message.senderFullName }}</span>
+                <time class="font-medium tracking-wide">{{ message.sentAt | date:'HH:mm' }}</time>
               </div>
-              <div class="chat-bubble rounded-2xl max-w-lg break-words text-base"
+              
+              <div class="chat-bubble leading-relaxed text-sm backdrop-blur-sm"
                 [class.chat-bubble-primary]="message.senderId === currentUser?.id"
-                [class.bg-base-300]="message.senderId !== currentUser?.id">
+                [class.shadow-md]="message.senderId === currentUser?.id"
+                [class.shadow-primary]="message.senderId === currentUser?.id"
+                [class.bg-base-200]="message.senderId !== currentUser?.id"
+                [class.text-base-content]="message.senderId !== currentUser?.id"
+                [class.shadow-sm]="message.senderId !== currentUser?.id">
                 {{ message.content }}
               </div>
+              
               @if (isLast && message.senderId === currentUser?.id) {
-                <div class="chat-footer opacity-50 text-xs mt-1">
+                <div class="chat-footer opacity-50 text-[10px] font-medium mt-1.5 flex items-center gap-0.5">
                   @if (message.isRead) { 
-                    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 inline-block -mt-1 text-info"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg> Przeczytano</span> 
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5 text-success"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg> 
+                    <span>Odczytano</span> 
                   } @else { 
-                    <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 inline-block -mt-1"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg> Wysłano</span> 
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3.5 h-3.5"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg> 
+                    <span>Wysłano</span> 
                   }
                 </div>
               }
@@ -95,23 +169,30 @@
           }
         </div>
 
-        <div class="p-4 border-t bg-base-200">
-          <div class="flex items-center gap-2">
-            <textarea [(ngModel)]="messageContent" (keydown.enter)="sendMessage(); $event.preventDefault()"
-              class="textarea textarea-bordered w-full resize-none" placeholder="Napisz wiadomość..." rows="1"></textarea>
-            <button (click)="sendMessage()" class="btn btn-primary btn-square" [disabled]="!messageContent.trim()">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+        <div class="p-4 md:p-6 bg-base-100/90 backdrop-blur-md border-t border-base-200/50 z-20">
+          <div class="relative flex items-end gap-3 max-w-4xl mx-auto">
+            <div class="relative flex-1">
+              <textarea [(ngModel)]="messageContent" (keydown.enter)="sendMessage(); $event.preventDefault()"
+                class="textarea w-full resize-none bg-base-200/50 border-transparent focus:bg-base-100 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl pl-5 pr-12 py-3.5 text-sm min-h-[52px] max-h-32 transition-all shadow-inner" 
+                placeholder="Napisz swoją wiadomość..." rows="1"></textarea>
+            </div>
+            
+            <button (click)="sendMessage()" class="btn btn-primary btn-circle shadow-lg shadow-primary/30 shrink-0 mb-0.5 hover:-translate-y-1 transition-transform" [disabled]="!(messageContent || '').trim()">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5 ml-1">
                 <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
               </svg>
             </button>
           </div>
         </div>
       } @else {
-        <div class="hidden md:flex flex-col items-center justify-center h-full text-center">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-24 h-24 text-base-content/20 mb-4">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
-          </svg>
-          <p class="text-lg text-base-content/60">Wybierz konwersację, aby rozpocząć.</p>
+        <div class="hidden md:flex flex-col items-center justify-center h-full text-center bg-base-100/30 p-8">
+          <div class="w-32 h-32 bg-primary/5 rounded-full flex items-center justify-center mb-6 shadow-inner ring-1 ring-base-200/50">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 text-primary/40">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z" />
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-base-content mb-2 tracking-tight">Gotowy na rozmowę?</h3>
+          <p class="text-base-content/50 max-w-sm mx-auto text-sm">Wybierz konwersację z listy po lewej stronie, aby swobodnie wymieniać wiadomości z wybranym salonem.</p>
         </div>
       }
     </div>

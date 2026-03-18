@@ -84,29 +84,31 @@
       </h2>
       <div class="carousel-bundles flex gap-4 overflow-x-auto pb-6 scrollbar-hide px-2">
           @for (bundle of bundles; track bundle.serviceBundleId) {
-          <div class="bundle-card-premium shrink-0 w-[280px] md:w-[320px] card bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl transition-transform hover:scale-[1.02] cursor-pointer"
+          <div class="bundle-card-premium shrink-0 w-[280px] md:w-[320px] card bg-base-100 border-2 border-success/30 hover:border-success shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer overflow-hidden relative group"
                (click)="openBookBundleModal(bundle, bundle_modal)">
-              <div class="card-body p-6">
-                  <div class="flex justify-between items-start">
-                    <h3 class="card-title text-xl font-bold leading-tight">{{ bundle.name }}</h3>
+              <div class="absolute inset-0 bg-gradient-to-br from-success/5 to-transparent pointer-events-none"></div>
+              
+              <div class="card-body p-6 relative z-10">
+                  <div class="flex justify-between items-start gap-2">
+                    <h3 class="card-title text-xl font-bold leading-tight text-base-content">{{ bundle.name }}</h3>
                     @if (getBundleDiscount(bundle) > 0) {
-                      <div class="badge badge-ghost bg-white/20 border-none text-white font-bold">-{{ getBundleDiscount(bundle) }}%</div>
+                      <div class="badge badge-success text-success-content font-bold border-none shadow-sm h-auto py-1">-{{ getBundleDiscount(bundle) }}%</div>
                     }
                   </div>
                   @if(bundle.description) {
-                    <p class="text-sm opacity-90 mt-2 line-clamp-3">{{ bundle.description }}</p>
+                    <p class="text-sm text-base-content/70 mt-2 line-clamp-3">{{ bundle.description }}</p>
                   }
-                  <div class="divider before:bg-white/20 after:bg-white/20 my-4"></div>
+                  <div class="divider my-4"></div>
                   <div class="flex justify-between items-end mt-auto">
                       <div class="flex flex-col">
                         @if (getBundleOriginalPrice(bundle) > bundle.totalPrice) {
-                          <span class="text-xs opacity-70 line-through">{{ formatPrice(getBundleOriginalPrice(bundle)) }}</span>
+                          <span class="text-xs text-base-content/50 line-through">{{ formatPrice(getBundleOriginalPrice(bundle)) }}</span>
                         }
-                        <span class="text-3xl font-black">{{ formatPrice(bundle.totalPrice) }}</span>
-                        <span class="text-[10px] uppercase font-bold opacity-60 tracking-wider">Cena za pakiet</span>
+                        <span class="text-3xl font-black text-success">{{ formatPrice(bundle.totalPrice) }}</span>
+                        <span class="text-[10px] uppercase font-bold text-base-content/50 tracking-wider mt-0.5">Cena za pakiet</span>
                       </div>
-                      <div class="bg-white/20 p-2 rounded-xl backdrop-blur-sm border border-white/10">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                      <div class="bg-success/10 p-3 rounded-2xl text-success transition-transform duration-300 group-hover:scale-110 group-hover:bg-success/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                       </div>
                   </div>
               </div>
@@ -308,7 +310,7 @@
                           }
                         </div>
                         @if ((authService.currentUser$ | async); as user) {
-                        @if (user.id === review.userId) {
+                        @if (user.id == review.userId) {
                         <div class="dropdown dropdown-end">
                           <label tabindex="0" class="btn btn-ghost btn-xs btn-circle">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>
