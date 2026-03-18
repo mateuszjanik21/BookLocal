@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../../core/services/auth-service';
 import { PresenceService } from '../../core/services/presence-service';
 import { ThemeService } from '../../core/services/theme-service';
@@ -13,7 +13,7 @@ import { filter } from 'rxjs';
   templateUrl: './header.html',
   styleUrl: './header.css'
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   presenceService = inject(PresenceService);
   themeService = inject(ThemeService);
@@ -38,6 +38,10 @@ export class HeaderComponent implements OnInit {
     } else {
       this.themeService.forceTheme(null);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.themeService.forceTheme(null);
   }
 
   closeMobileMenu(): void {

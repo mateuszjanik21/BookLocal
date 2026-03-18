@@ -26,6 +26,7 @@
   --color-warning: #fbbd23;
   --color-error: #f87272;
 }
+
 @plugin "daisyui/theme" {
   name: "booklocal-dark";
   color-scheme: dark;
@@ -45,6 +46,31 @@
   --color-base-200: #1f2937;
   --color-base-300: #374151;
   --color-base-content: #f3f4f6;
+
+  --color-success: #36d399;
+  --color-warning: #fbbd23;
+  --color-error: #f87272;
+}
+
+@plugin "daisyui/theme" {
+  name: "purple_night";
+  color-scheme: dark;
+  --color-primary: #8b5cf6;
+  --color-primary-content: #ffffff;
+
+  --color-secondary: #7c3aed;
+  --color-secondary-content: #ffffff;
+
+  --color-accent: #c4b5fd;
+  --color-accent-content: #1f2937;
+
+  --color-neutral: #374151;
+  --color-neutral-content: #d1d5db;
+
+  --color-base-100: #1f2937;
+  --color-base-200: #374151;
+  --color-base-300: #4b5563;
+  --color-base-content: #d1d5db;
 
   --color-success: #36d399;
   --color-warning: #fbbd23;

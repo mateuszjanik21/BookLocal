@@ -4,9 +4,9 @@ import { Injectable, signal } from '@angular/core';
   providedIn: 'root'
 })
 export class ThemeService {
-  private themeSignal = signal<'booklocal_theme' | 'booklocal-dark'>('booklocal_theme');
+  private themeSignal = signal<'booklocal_theme' | 'booklocal-dark' | 'purple_night'>('booklocal_theme');
   private userPreference: 'booklocal_theme' | 'booklocal-dark' = 'booklocal_theme';
-  private forcedTheme: 'booklocal_theme' | 'booklocal-dark' | null = null;
+  private forcedTheme: 'booklocal_theme' | 'booklocal-dark' | 'purple_night' | null = null;
 
   constructor() {
     this.initTheme();
@@ -26,16 +26,16 @@ export class ThemeService {
     this.setTheme(newTheme, true);
   }
 
-  setTheme(theme: 'booklocal_theme' | 'booklocal-dark', saveToStorage: boolean = true) {
+  setTheme(theme: 'booklocal_theme' | 'booklocal-dark' | 'purple_night', saveToStorage: boolean = true) {
     this.themeSignal.set(theme);
-    if (saveToStorage) {
+    if (saveToStorage && theme !== 'purple_night') {
       this.userPreference = theme;
       localStorage.setItem('theme', theme);
     }
     document.documentElement.setAttribute('data-theme', theme);
   }
 
-  forceTheme(theme: 'booklocal_theme' | 'booklocal-dark' | null) {
+  forceTheme(theme: 'booklocal_theme' | 'booklocal-dark' | 'purple_night' | null) {
     this.forcedTheme = theme;
     if (theme) {
       this.setTheme(theme, false);

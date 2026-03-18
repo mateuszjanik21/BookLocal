@@ -7,6 +7,7 @@ import { take } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { PresenceService } from '../../core/services/presence-service';
 import { SubscriptionService } from '../../core/services/subscription-service';
+import { ThemeService } from '../../core/services/theme-service';
 
 @Component({
   selector: 'app-owner-layout',
@@ -19,6 +20,7 @@ export class OwnerLayoutComponent implements OnInit, OnDestroy {
   private businessService = inject(BusinessService);
   private subscriptionService = inject(SubscriptionService);
   public presenceService = inject(PresenceService);
+  private themeService = inject(ThemeService);
   private router = inject(Router);
 
   public businessName: string | null = null;
@@ -49,6 +51,8 @@ export class OwnerLayoutComponent implements OnInit, OnDestroy {
         }
       });
 
+    this.themeService.forceTheme('purple_night');
+
     this.router.events.subscribe(() => {
        this.closeDrawer();
     });
@@ -62,5 +66,6 @@ export class OwnerLayoutComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.notificationService.stopConnection();
+    this.themeService.forceTheme(null);
   }
 }
