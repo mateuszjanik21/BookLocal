@@ -27,7 +27,7 @@
 
 .header-text {
   opacity: 0;
-  animation: fadeInUp 0.5s 0.5s ease-out forwards;
+  animation: fadeInUpGlobal 0.5s 0.5s ease-out forwards;
 }
 
 
