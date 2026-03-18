@@ -217,11 +217,12 @@ export class BusinessDetailComponent implements OnInit {
           
           if (employeeId) {
             modal.reservationForm.get('employeeId')?.setValue(employeeId.toString());
-            modal.currentStep = 2; 
+            modal.currentStep = 3; 
             modal.onDateChange();
           } else if (employees.length === 1) {
             modal.reservationForm.get('employeeId')?.setValue(employees[0].id.toString());
-            modal.currentStep = 2;
+            modal.currentStep = 3;
+            modal.onDateChange();
           }
 
           modal.showModal();

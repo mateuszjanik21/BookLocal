@@ -7,7 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Observable } from 'rxjs';
 import { PhotoService } from '../../core/services/photo';
 import { ImageUploadComponent } from '../../shared/components/image-upload/image-upload';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FavoriteService, FavoriteServiceDto } from '../../core/services/favourite-service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
@@ -34,6 +34,7 @@ export class ProfileComponent implements OnInit {
   private favoriteService = inject(FavoriteService);
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   user$: Observable<UserDto | null> = this.authService.currentUser$;
   isUploading = false;
@@ -100,11 +101,11 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      if (params['tab']) {
-        const tab = params['tab'];
-        if (['dane', 'logowanie', 'ulubione', 'statystyki'].includes(tab)) {
-          this.setTab(tab as any);
-        }
+      const tab = params['tab'];
+      if (tab && ['dane', 'logowanie', 'ulubione', 'statystyki'].includes(tab)) {
+        this.applyTab(tab as any);
+      } else {
+        this.applyTab('dane');
       }
     });
 
@@ -120,6 +121,14 @@ export class ProfileComponent implements OnInit {
   }
 
   setTab(tab: 'dane' | 'logowanie' | 'ulubione' | 'statystyki'): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+    });
+  }
+
+  private applyTab(tab: 'dane' | 'logowanie' | 'ulubione' | 'statystyki'): void {
     this.activeTab = tab;
     if (tab === 'ulubione' && this.favorites.length === 0) {
       this.loadFavorites();

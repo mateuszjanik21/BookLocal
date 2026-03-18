@@ -168,6 +168,7 @@ export class BookBundleModalComponent implements OnInit {
   }
 
   confirmBooking() {
+      if (this.isSaving) return;
       if (!this.selectedSlot || !this.selectedEmployee || !this.bundle) {return;}
       
       if (this.isOwnerMode && !this.guestName) {

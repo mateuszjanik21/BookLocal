@@ -36,7 +36,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   pageSize = 12;
 
   activeMainCategoryId: number | null = null;
-  activeSortBy = 'rating_desc';
+  activeSortBy = '';
   isLocationLoading = false;
   isLoading = false;
   rebookSuggestions: RebookSuggestion[] = [];

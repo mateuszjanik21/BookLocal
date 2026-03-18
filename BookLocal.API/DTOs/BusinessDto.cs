@@ -43,6 +43,7 @@
         public int ReviewCount { get; set; }
         public bool IsVerified { get; set; }
         public string? SubscriptionPlanName { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         public List<string> MainCategories { get; set; } = new();
     }
