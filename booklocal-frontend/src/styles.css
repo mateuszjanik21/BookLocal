@@ -27,24 +27,24 @@
   --color-error: #f87272;
 }
 @plugin "daisyui/theme" {
-  name: "purple_night";
-  default: true;
-  --color-primary: #8b5cf6;
+  name: "booklocal-dark";
+  color-scheme: dark;
+  --color-primary: #16a34a;
   --color-primary-content: #ffffff;
 
-  --color-secondary: #7c3aed;
+  --color-secondary: #15803d;
   --color-secondary-content: #ffffff;
 
-  --color-accent: #c4b5fd;
-  --color-accent-content: #1f2937;
+  --color-accent: #4ade80;
+  --color-accent-content: #1c1917;
 
   --color-neutral: #374151;
-  --color-neutral-content: #d1d5db;
+  --color-neutral-content: #f3f4f6;
 
-  --color-base-100: #1f2937;
-  --color-base-200: #374151;
-  --color-base-300: #4b5563;
-  --color-base-content: #d1d5db;
+  --color-base-100: #111827;
+  --color-base-200: #1f2937;
+  --color-base-300: #374151;
+  --color-base-content: #f3f4f6;
 
   --color-success: #36d399;
   --color-warning: #fbbd23;
@@ -53,20 +53,28 @@
 
 
 .toast-container .ngx-toastr {
-  @apply w-auto max-w-sm cursor-pointer rounded-lg bg-gray-100 text-base-content shadow-lg border-l-4;
-  padding: 1rem !important;
+  @apply w-auto max-w-sm cursor-pointer border border-white/20 transition-all rounded-2xl;
+  padding: 1rem 1.25rem 1rem 3.5rem !important;
+  color: #ffffff !important;
+  background-position: 15px center !important;
+  background-repeat: no-repeat !important;
+  background-size: 24px !important;
+}
+
+.toast-container .ngx-toastr:hover {
+  @apply shadow-2xl scale-[1.02];
 }
 
 .ngx-toastr .toast-title {
-  @apply mb-1 font-bold pl-7;
+  @apply mb-0.5 font-black text-[0.7rem] uppercase tracking-widest opacity-90;
 }
 
 .ngx-toastr .toast-message {
-  @apply pl-7;
+  @apply font-semibold text-sm opacity-100;
 }
 
 .toast-progress {
-  @apply bg-primary opacity-70;
+  @apply bg-white opacity-40;
 }
 
 .toast-close-button {
@@ -74,19 +82,28 @@
 }
 
 .toast-success {
-  border-left-color: oklch(var(--su));
+  @apply !bg-primary;
+  box-shadow: 0 10px 30px -5px rgba(22, 163, 74, 0.4) !important;
 }
 
 .toast-error {
-  border-left-color: oklch(var(--er));
+  @apply !bg-error;
+  box-shadow: 0 10px 30px -5px rgba(248, 114, 114, 0.4) !important;
 }
 
 .toast-warning {
-  border-left-color: oklch(var(--wa));
+  @apply !bg-warning;
+  box-shadow: 0 10px 30px -5px rgba(251, 189, 35, 0.4) !important;
+  color: #1c1917 !important;
+}
+
+.toast-warning .toast-progress {
+  @apply bg-black opacity-30;
 }
 
 .toast-info {
-  border-left-color: oklch(var(--in));
+  @apply !bg-neutral;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4) !important;
 }
 
 .cal-week-view .cal-hour-segment, .cal-day-view .cal-hour-segment {
@@ -96,4 +113,33 @@
 .cal-week-view .cal-hour:nth-child(odd) .cal-hour-segment, 
 .cal-day-view .cal-hour:nth-child(odd) .cal-hour-segment {
   @apply bg-base-200/60;
+}
+
+@keyframes contentFadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.content-fade-in {
+  animation: contentFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUpGlobal {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUpGlobal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInDownGlobal {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-down {
+  opacity: 0;
+  animation: fadeInDownGlobal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

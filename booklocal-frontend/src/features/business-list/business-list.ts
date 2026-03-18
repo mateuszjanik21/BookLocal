@@ -30,7 +30,7 @@ export class BusinessListComponent implements OnInit, OnDestroy {
   pageSize = 12;
 
   activeMainCategoryId: number | null = null;
-  activeSortBy = 'rating_desc';
+  activeSortBy = '';
   activeLocation = '';
   onlyVerified = false;
 

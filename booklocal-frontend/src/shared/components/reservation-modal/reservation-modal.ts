@@ -208,6 +208,7 @@ export class ReservationModalComponent implements OnChanges {
   }
 
   finalizeReservation() {
+    if (this.isReserving) return;
     this.isReserving = true;
     const { employeeId, startTime, discountCode, paymentMethod } = this.reservationForm.value;
 
@@ -276,12 +277,17 @@ export class ReservationModalComponent implements OnChanges {
 
   private _showModalBusinessId: number | undefined;
 
+  get selectedEmployee(): Employee | undefined {
+    const employeeId = this.reservationForm.get('employeeId')?.value;
+    return this.employees.find(e => e.id.toString() === employeeId);
+  }
+
   get filteredCategories(): ServiceCategory[] {
     if (!this.business?.categories) return [];
     const employeeId = this.reservationForm.get('employeeId')?.value;
     if (!employeeId) return this.business.categories;
 
-    const selectedEmployee = this.employees.find(e => e.id.toString() === employeeId);
+    const selectedEmployee = this.selectedEmployee;
     if (!selectedEmployee || !selectedEmployee.assignedServiceIds) return this.business.categories;
 
     return this.business.categories.map(cat => ({

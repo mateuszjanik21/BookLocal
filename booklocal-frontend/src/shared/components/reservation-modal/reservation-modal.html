@@ -153,6 +153,34 @@
 
         @if(currentStep === 4) {
         <div class="animate-fade-in space-y-4 pb-10">
+          
+          <div class="bg-base-200/50 rounded-3xl p-5 border border-base-300 space-y-4">
+            <h4 class="text-xs font-black uppercase opacity-40 tracking-widest mb-2">Podsumowanie wizyty</h4>
+            <div class="flex items-center gap-4">
+              <div class="avatar shrink-0">
+                <div class="w-12 h-12 rounded-full ring-2 ring-primary/20 ring-offset-base-100 ring-offset-2">
+                  <img [src]="selectedEmployee?.photoUrl || 'assets/placeholder.svg'" (error)="$any($event.target).src='assets/placeholder.svg'" />
+                </div>
+              </div>
+              <div class="flex-grow min-w-0">
+                <p class="font-bold text-sm truncate w-full">{{ service?.name }}</p>
+                <p class="text-[0.65rem] opacity-60 font-black uppercase truncate">{{ selectedEmployee?.firstName }} {{ selectedEmployee?.lastName }} • {{ service?.variants?.[0]?.name && service?.variants?.[0]?.name !== 'Standard' ? service?.variants?.[0]?.name + ' • ' : '' }}{{ service?.variants?.[0]?.durationMinutes }} min</p>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-3 bg-base-100 rounded-2xl p-3 border border-base-200 shadow-sm">
+               <div class="bg-primary/10 text-primary p-2 rounded-xl shrink-0">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                   <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                 </svg>
+               </div>
+               <div>
+                 <p class="text-xs font-bold text-base-content/60 uppercase tracking-wider">Termin</p>
+                 <p class="font-black text-sm text-primary">{{ reservationForm.get('date')?.value | date:'dd.MM.yyyy' }} <span class="opacity-50 mx-1">•</span> {{ reservationForm.get('startTime')?.value }}</p>
+               </div>
+            </div>
+          </div>
+
           <div class="bg-base-200/50 rounded-2xl p-5 space-y-4 border border-base-300">
             <div class="flex justify-between items-center">
               <span class="text-sm font-bold text-base-content/60">Do zapłaty:</span>

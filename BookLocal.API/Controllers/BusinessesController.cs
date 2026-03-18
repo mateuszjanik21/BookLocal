@@ -49,7 +49,8 @@ namespace BookLocal.API.Controllers
                     PhotoUrl = b.PhotoUrl,
                     AverageRating = b.Reviews.Any() ? b.Reviews.Average(r => r.Rating) : 0,
                     ReviewCount = b.Reviews.Count,
-                    IsVerified = false
+                    IsVerified = false,
+                    CreatedAt = b.CreatedAt
                 })
                 .ToListAsync();
 
@@ -85,7 +86,8 @@ namespace BookLocal.API.Controllers
                 .AnyAsync(v => v.BusinessId == id && v.Status == VerificationStatus.Approved);
 
             var serviceIdsWithEmployees = await _context.EmployeeServices
-                .Where(es => es.Service.BusinessId == id)
+                .Include(es => es.Employee)
+                .Where(es => es.Service.BusinessId == id && !es.Employee.IsArchived)
                 .Select(es => es.ServiceId)
                 .Distinct()
                 .ToListAsync();
@@ -114,7 +116,7 @@ namespace BookLocal.API.Controllers
                     Name = c.Name,
                     PhotoUrl = c.PhotoUrl,
                     Services = c.Services
-                        .Where(s => !s.IsArchived && serviceIdsWithEmployees.Contains(s.ServiceId))
+                        .Where(s => !s.IsArchived && serviceIdsWithEmployees.Contains(s.ServiceId) && s.Variants.Any())
                         .Select(s => new ServiceDto
                         {
                             Id = s.ServiceId,
@@ -133,9 +135,9 @@ namespace BookLocal.API.Controllers
                                 FavoritesCount = v.UserFavoriteServices != null ? v.UserFavoriteServices.Count : 0
                             }).ToList()
                         }).ToList()
-                }).ToList(),
+                }).Where(c => c.Services.Any()).ToList(),
 
-                Employees = business.Employees.Select(e => new EmployeeDto
+                Employees = business.Employees.Where(e => !e.IsArchived).Select(e => new EmployeeDto
                 {
                     Id = e.EmployeeId,
                     FirstName = e.FirstName,

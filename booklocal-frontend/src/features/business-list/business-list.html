@@ -75,8 +75,10 @@
       <span class="text-sm font-medium text-base-content/60 hidden md:inline">Sortuj:</span>
       <select class="select select-bordered select-sm md:select-md rounded-full shadow-sm bg-base-100"
               [(ngModel)]="activeSortBy" (ngModelChange)="onFilterChange()">
-        <option value="rating_desc">Najlepiej oceniane</option>
-        <option value="name_asc">Nazwa A-Z</option>
+        <option value="">Polecane</option>
+        <option value="rating_desc">Najwyżej oceniane</option>
+        <option value="reviews_desc">Najbardziej popularne</option>
+        <option value="newest_desc">Nowości na BookLocal</option>
       </select>
     </div>
   </div>
