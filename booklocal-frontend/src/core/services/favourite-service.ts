@@ -17,6 +17,14 @@ export interface FavoriteServiceDto {
   isServiceArchived: boolean;
 }
 
+export interface FavoritePagedResult {
+  items: FavoriteServiceDto[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,8 +32,8 @@ export class FavoriteService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/favorites`;
 
-  getFavorites(): Observable<FavoriteServiceDto[]> {
-    return this.http.get<FavoriteServiceDto[]>(this.apiUrl);
+  getFavorites(pageNumber: number = 1, pageSize: number = 12): Observable<FavoritePagedResult> {
+    return this.http.get<FavoritePagedResult>(`${this.apiUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`);
   }
 
   addFavorite(serviceVariantId: number): Observable<void> {

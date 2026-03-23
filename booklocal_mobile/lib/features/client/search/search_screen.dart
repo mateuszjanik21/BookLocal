@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/models/business_list_item_dto.dart';
 import '../../../core/services/client_service.dart';
-import '../home/business_details_screen.dart'; // Żeby móc wejść w firmę z wyników
+import '../business_detail/business_details_screen.dart'; // Żeby móc wejść w firmę z wyników
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});

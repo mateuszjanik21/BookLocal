@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/models/reservation_models.dart';
+import '../../../../core/models/reservation_models.dart';
+import '../../../../core/models/business_list_item_dto.dart';
+import '../../business_detail/business_details_screen.dart';
 import 'package:intl/intl.dart';
 
 class ReservationCard extends StatelessWidget {
@@ -38,9 +40,29 @@ class ReservationCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: cardColor,
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          final businessItem = BusinessListItemDto(
+            id: reservation.businessId,
+            name: reservation.businessName,
+            category: reservation.serviceName,
+            city: '',
+            photoUrl: null,
+            rating: 0,
+            reviewCount: 0,
+          );
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BusinessDetailsScreen(business: businessItem),
+            ),
+          );
+        },
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Lewa kolumna: DATA
             Container(
@@ -145,6 +167,7 @@ class ReservationCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

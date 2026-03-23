@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/models/service_category_search_result.dart';
+import '../../../../core/models/business_list_item_dto.dart';
+import '../../business_detail/business_details_screen.dart';
 
 class ServiceCategoryCard extends StatelessWidget {
   final ServiceCategorySearchResult item;
@@ -13,10 +15,24 @@ class ServiceCategoryCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        // Docelowo: powiązanie z widokiem biznesu. BusinessListItemDto czy Id? 
-        // Konstruktor BusinessDetailsScreen oczekiwał BusinessListItemDto. 
-        // Będzie wymagał refaktoryzacji, na razie wyłączamy nawigację rzucając komentarz
-        // Navigator.push(context, MaterialPageRoute(builder: (_) => BusinessDetailsScreen(business: item.businessId)));
+        final businessItem = BusinessListItemDto(
+          id: item.businessId,
+          name: item.businessName,
+          category: item.name,
+          city: item.businessCity ?? '',
+          photoUrl: item.photoUrl,
+          rating: item.averageRating,
+          reviewCount: item.reviewCount,
+        );
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BusinessDetailsScreen(
+              business: businessItem,
+            ),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(

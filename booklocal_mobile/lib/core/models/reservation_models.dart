@@ -1,5 +1,6 @@
 class ReservationDto {
   final int reservationId;
+  final int businessId;
   final String businessName;
   final String serviceName;
   final String employeeName; // Dodano (employeeFullName w TS)
@@ -10,6 +11,7 @@ class ReservationDto {
 
   ReservationDto({
     required this.reservationId,
+    required this.businessId,
     required this.businessName,
     required this.serviceName,
     required this.employeeName,
@@ -28,6 +30,7 @@ class ReservationDto {
   factory ReservationDto.fromJson(Map<String, dynamic> json) {
     return ReservationDto(
       reservationId: json['reservationId'] ?? 0,
+      businessId: json['businessId'] ?? 0,
       businessName: json['businessName'] ?? 'Firma',
       serviceName: json['serviceName'] ?? 'Usługa',
       employeeName: json['employeeFullName'] ?? '', 

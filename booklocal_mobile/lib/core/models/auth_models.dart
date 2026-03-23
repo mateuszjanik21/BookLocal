@@ -17,6 +17,7 @@ class UserDto {
   final String email;
   final String firstName;
   final String lastName;
+  final String? phoneNumber;
   final String? photoUrl;
   final List<String> roles;
 
@@ -25,6 +26,7 @@ class UserDto {
     required this.email,
     required this.firstName,
     required this.lastName,
+    this.phoneNumber,
     this.photoUrl,
     required this.roles
   });
@@ -35,9 +37,22 @@ class UserDto {
       email: json['email'] ?? '',
       firstName: json['firstName'] ?? '',
       lastName: json['lastName'] ?? '',
+      phoneNumber: json['phoneNumber'],
       photoUrl: json['photoUrl'],
       roles: List<String>.from(json['roles'] ?? []),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'firstName': firstName,
+      'lastName': lastName,
+      'phoneNumber': phoneNumber,
+      'photoUrl': photoUrl,
+      'roles': roles,
+    };
   }
 
   bool get isOwner => roles.contains('owner');

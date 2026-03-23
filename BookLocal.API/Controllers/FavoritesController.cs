@@ -20,16 +20,23 @@ namespace BookLocal.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<FavoriteServiceDto>>> GetFavorites()
+        public async Task<ActionResult<PagedResultDto<FavoriteServiceDto>>> GetFavorites([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return Unauthorized();
 
-            var favorites = await _context.UserFavoriteServices
+            var query = _context.UserFavoriteServices
                 .Include(f => f.ServiceVariant)
                     .ThenInclude(v => v.Service)
                         .ThenInclude(s => s.Business)
-                .Where(f => f.UserId == userId)
+                .Where(f => f.UserId == userId);
+
+            var totalCount = await query.CountAsync();
+
+            var favorites = await query
+                .OrderByDescending(f => f.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(f => new FavoriteServiceDto
                 {
                     ServiceVariantId = f.ServiceVariantId,
@@ -46,7 +53,15 @@ namespace BookLocal.API.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(favorites);
+            var result = new PagedResultDto<FavoriteServiceDto>
+            {
+                Items = favorites,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Ok(result);
         }
 
         [HttpPost("{serviceVariantId}")]
@@ -55,15 +70,13 @@ namespace BookLocal.API.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null) return Unauthorized();
 
-            // Check if variant exists
             var variantExists = await _context.ServiceVariants.AnyAsync(v => v.ServiceVariantId == serviceVariantId);
             if (!variantExists) return NotFound("Wariant usługi nie istnieje.");
 
-            // Check if already favorite
             var existing = await _context.UserFavoriteServices
                 .FirstOrDefaultAsync(f => f.UserId == userId && f.ServiceVariantId == serviceVariantId);
 
-            if (existing != null) return Ok(); // Idempotent
+            if (existing != null) return Ok(); 
 
             var favorite = new UserFavoriteService
             {

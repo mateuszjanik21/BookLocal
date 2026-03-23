@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/home_provider.dart';
 import '../../../../core/models/rebook_suggestion.dart';
+import '../../../../core/models/business_list_item_dto.dart';
+import '../../business_detail/business_details_screen.dart';
 
 class RebookSection extends StatelessWidget {
   const RebookSection({super.key});
@@ -97,7 +99,24 @@ class RebookSection extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          // Tutaj przejście do ekranu docelowego np: Navigator.push(... BusinessDetailsScreen)
+          final businessItem = BusinessListItemDto(
+            id: item.businessId,
+            name: item.businessName,
+            category: item.categoryName,
+            city: item.businessCity ?? '',
+            photoUrl: item.categoryPhotoUrl,
+            rating: 0,
+            reviewCount: 0,
+          );
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BusinessDetailsScreen(
+                business: businessItem,
+              ),
+            ),
+          );
         },
         child: Column(
           children: [

@@ -75,4 +75,63 @@ class AuthService with ChangeNotifier {
     await _storage.deleteAll();
     notifyListeners();
   }
+
+  Future<bool> updateProfile(String firstName, String lastName, String? phoneNumber) async {
+    if (_token == null) return false;
+    final url = Uri.parse('${ApiConfig.baseUrl}/auth/profile');
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: jsonEncode({
+          'firstName': firstName,
+          'lastName': lastName,
+          'phoneNumber': phoneNumber,
+        }),
+      );
+      if (response.statusCode == 200) {
+        if (_currentUser != null) {
+          _currentUser = UserDto(
+            id: _currentUser!.id,
+            email: _currentUser!.email,
+            firstName: firstName,
+            lastName: lastName,
+            phoneNumber: phoneNumber,
+            photoUrl: _currentUser!.photoUrl,
+            roles: _currentUser!.roles,
+          );
+          await _storage.write(key: 'user_data', value: jsonEncode(_currentUser!.toJson()));
+          notifyListeners();
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> changePassword(String currentPassword, String newPassword) async {
+    if (_token == null) return false;
+    final url = Uri.parse('${ApiConfig.baseUrl}/auth/change-password');
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: jsonEncode({
+          'currentPassword': currentPassword,
+          'newPassword': newPassword,
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
 }

@@ -4,6 +4,9 @@ class EmployeeDto {
   final String lastName;
   final String? position;
   final String? photoUrl;
+  final String? specialization;
+  final String? bio;
+  final bool isStudent;
 
   EmployeeDto({
     required this.id,
@@ -11,6 +14,9 @@ class EmployeeDto {
     required this.lastName,
     this.position,
     this.photoUrl,
+    this.specialization,
+    this.bio,
+    this.isStudent = false,
   });
 
   String get fullName => "$firstName $lastName";
@@ -22,6 +28,9 @@ class EmployeeDto {
       lastName: json['lastName'] ?? '',
       position: json['position'],
       photoUrl: json['photoUrl'],
+      specialization: json['specialization'],
+      bio: json['bio'],
+      isStudent: json['isStudent'] ?? false,
     );
   }
 }

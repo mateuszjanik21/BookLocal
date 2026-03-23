@@ -44,14 +44,15 @@ export class ProfileComponent implements OnInit {
 
   currentPage = 1;
   pageSize = 12;
+  totalFavorites = 0;
+  totalPagesCount = 0;
 
   get paginatedFavorites(): FavoriteServiceDto[] {
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    return this.favorites.slice(startIndex, startIndex + this.pageSize);
+    return this.favorites;
   }
 
   get totalPages(): number {
-    return Math.ceil(this.favorites.length / this.pageSize);
+    return this.totalPagesCount;
   }
 
   get paginationPages(): (number | string)[] {
@@ -77,6 +78,7 @@ export class ProfileComponent implements OnInit {
   pageChanged(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.loadFavorites();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
@@ -188,8 +190,12 @@ export class ProfileComponent implements OnInit {
   }
 
   loadFavorites(): void {
-    this.favoriteService.getFavorites().subscribe({
-      next: (favs) => this.favorites = favs,
+    this.favoriteService.getFavorites(this.currentPage, this.pageSize).subscribe({
+      next: (res) => {
+        this.favorites = res.items;
+        this.totalFavorites = res.totalCount;
+        this.totalPagesCount = res.totalPages;
+      },
       error: () => this.toastr.error('Nie udało się pobrać ulubionych usług.')
     });
   }
@@ -197,10 +203,7 @@ export class ProfileComponent implements OnInit {
   removeFavorite(variantId: number): void {
     this.favoriteService.removeFavorite(variantId).subscribe({
       next: () => {
-        this.favorites = this.favorites.filter(f => f.serviceVariantId !== variantId);
-        if (this.currentPage > this.totalPages && this.totalPages > 0) {
-            this.currentPage = this.totalPages;
-        }
+        this.loadFavorites();
         this.toastr.success('Usunięto z ulubionych');
       },
       error: () => this.toastr.error('Nie udało się usunąć z ulubionych')

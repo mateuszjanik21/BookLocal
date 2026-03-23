@@ -107,16 +107,19 @@ class ProfileScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildProfileOption(Icons.person_outline, "Edytuj dane", () {}),
-                  const Divider(height: 1),
-                  _buildProfileOption(Icons.lock_outline, "Zmiana hasła", () {}),
-                  const Divider(height: 1),
-                  _buildProfileOption(Icons.history, "Historia rezerwacji", () {
-                    // Przełącz na zakładkę rezerwacji (indeks 2)
-                    // Wymagałoby dostępu do MainScreen, na razie zostawmy puste
+                  _buildProfileOption(Icons.person_outline, "Edytuj dane", () {
+                    _showEditProfileDialog(context, authService);
                   }),
                   const Divider(height: 1),
-                  _buildProfileOption(Icons.notifications_outlined, "Powiadomienia", () {}),
+                  _buildProfileOption(Icons.lock_outline, "Zmiana hasła", () {
+                    _showChangePasswordDialog(context, authService);
+                  }),
+                  const Divider(height: 1),
+                  _buildProfileOption(Icons.notifications_outlined, "Powiadomienia", () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Funkcja w budowie")),
+                    );
+                  }),
                 ],
               ),
             ),
@@ -174,6 +177,119 @@ class ProfileScreen extends StatelessWidget {
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
       onTap: onTap,
+    );
+  }
+
+  void _showEditProfileDialog(BuildContext context, AuthService auth) {
+    final user = auth.currentUser;
+    final firstNameCtrl = TextEditingController(text: user?.firstName ?? "");
+    final lastNameCtrl = TextEditingController(text: user?.lastName ?? "");
+    final phoneCtrl = TextEditingController(text: user?.phoneNumber ?? "");
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Edytuj dane"),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: firstNameCtrl,
+                decoration: const InputDecoration(labelText: "Imię"),
+                validator: (val) => val != null && val.isEmpty ? "To pole jest wymagane" : null,
+              ),
+              TextFormField(
+                controller: lastNameCtrl,
+                decoration: const InputDecoration(labelText: "Nazwisko"),
+                validator: (val) => val != null && val.isEmpty ? "To pole jest wymagane" : null,
+              ),
+              TextFormField(
+                controller: phoneCtrl,
+                decoration: const InputDecoration(labelText: "Numer telefonu"),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Anuluj")),
+          ElevatedButton(
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                final success = await auth.updateProfile(
+                  firstNameCtrl.text.trim(),
+                  lastNameCtrl.text.trim(),
+                  phoneCtrl.text.trim().isEmpty ? null : phoneCtrl.text.trim(),
+                );
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(success ? "Dane zaktualizowane" : "Błąd aktualizacji")),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16a34a), foregroundColor: Colors.white),
+            child: const Text("Zapisz"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog(BuildContext context, AuthService auth) {
+    final currentPasswordCtrl = TextEditingController();
+    final newPasswordCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Zmiana hasła"),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: currentPasswordCtrl,
+                decoration: const InputDecoration(labelText: "Obecne hasło"),
+                obscureText: true,
+                validator: (val) => val != null && val.isEmpty ? "To pole jest wymagane" : null,
+              ),
+              TextFormField(
+                controller: newPasswordCtrl,
+                decoration: const InputDecoration(labelText: "Nowe hasło"),
+                obscureText: true,
+                validator: (val) => val != null && val.length < 6 ? "Minimum 6 znaków" : null,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Anuluj")),
+          ElevatedButton(
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                final success = await auth.changePassword(
+                  currentPasswordCtrl.text,
+                  newPasswordCtrl.text,
+                );
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(success ? "Hasło zmienione" : "Błąd zmiany hasła. Sprawdź obecne hasło.")),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16a34a), foregroundColor: Colors.white),
+            child: const Text("Zmień hasło"),
+          ),
+        ],
+      ),
     );
   }
 }

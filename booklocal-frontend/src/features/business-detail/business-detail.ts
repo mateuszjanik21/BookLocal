@@ -96,10 +96,10 @@ export class BusinessDetailComponent implements OnInit {
   }
 
   loadFavorites() {
-      this.favoriteService.getFavorites().subscribe({
-          next: (favorites) => {
+      this.favoriteService.getFavorites(1, 1000).subscribe({
+          next: (res) => {
               this.favoriteVariantIds.clear();
-              favorites.forEach(f => this.favoriteVariantIds.add(f.serviceVariantId));
+              res.items.forEach(f => this.favoriteVariantIds.add(f.serviceVariantId));
           },
           error: (err) => console.error('Error loading favorites', err)
       });

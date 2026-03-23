@@ -6,8 +6,23 @@ import 'package:booklocal_mobile/core/models/service_models.dart';
 import 'package:http/http.dart' as http;
 import '../constants/api_config.dart';
 import '../models/business_list_item_dto.dart';
+import '../models/business_detail_dto.dart';
 
 class ClientService {
+  Future<BusinessDetailDto?> getBusinessById(int id) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/businesses/$id');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        return BusinessDetailDto.fromJson(jsonDecode(response.body));
+      }
+      return null;
+    } catch (e) {
+      print("Błąd pobierania szczegółów biznesu: $e");
+      return null;
+    }
+  }
+
   Future<List<ServiceDto>> getBusinessServices(int businessId) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/businesses/$businessId');
 
