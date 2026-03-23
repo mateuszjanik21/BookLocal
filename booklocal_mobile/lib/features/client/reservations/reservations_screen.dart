@@ -144,7 +144,6 @@ class _PastTab extends StatelessWidget {
           isPast: true,
           onReview: res.status == 'completed' && !res.hasReview
               ? () {
-                  // TODO: W 8 fazie modal do oceniania!
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Ocenianie pojawi się w kolejnym etapie!')),
                   );
