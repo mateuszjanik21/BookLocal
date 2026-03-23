@@ -1,9 +1,9 @@
 class ReviewDto {
   final int reviewId;
-  final String reviewerName;
-  final String? reviewerPhotoUrl;
+  final String reviewerName; // Zmiana z userName
+  final String? reviewerPhotoUrl; // Zmiana z userPhotoUrl
   final int rating;
-  final String comment;
+  final String comment; // Zmiana z content
   final DateTime createdAt;
 
   ReviewDto({
@@ -18,15 +18,18 @@ class ReviewDto {
   factory ReviewDto.fromJson(Map<String, dynamic> json) {
     return ReviewDto(
       reviewId: json['reviewId'] ?? 0,
+      // Mapowanie nazw z backendu (Angular: reviewerName)
       reviewerName: json['reviewerName'] ?? 'Anonim',
       reviewerPhotoUrl: json['reviewerPhotoUrl'],
       rating: json['rating'] ?? 5,
+      // Mapowanie nazw z backendu (Angular: comment)
       comment: json['comment'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
     );
   }
 }
 
+// Model do stronicowania (zostaje bez zmian logicznych, tylko typ generyczny)
 class PagedReviewsResult {
   final List<ReviewDto> items;
   final int totalCount;

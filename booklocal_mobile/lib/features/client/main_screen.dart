@@ -7,8 +7,8 @@ import 'profile/profile_screen.dart';
 
 
 class MainScreen extends StatefulWidget {
-  final int initialIndex;
-  const MainScreen({super.key, this.initialIndex = 0}); 
+  final int initialIndex; // Dodaj ten parametr
+  const MainScreen({super.key, this.initialIndex = 0}); // Domyślnie 0 (Home)
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -17,6 +17,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
+  // Lista naszych widoków (kolejność musi pasować do ikon na dole)
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     SearchScreen(),
@@ -28,6 +29,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    // Przypisujemy wartość przekazaną w konstruktorze do zmiennej stanu
     _selectedIndex = widget.initialIndex;
   }
 
@@ -39,13 +41,16 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Główny kolor aplikacji
     const primaryColor = Color(0xFF16a34a);
 
     return Scaffold(
+      // Wyświetla wybrany widget z listy
       body: SafeArea(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       
+      // Dolny pasek nawigacji
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -88,10 +93,10 @@ class _MainScreenState extends State<MainScreen> {
           selectedItemColor: primaryColor,
           unselectedItemColor: Colors.grey,
           showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
+          type: BottomNavigationBarType.fixed, // Ważne przy 5 elementach!
           onTap: _onItemTapped,
           backgroundColor: Colors.white,
-          elevation: 0,
+          elevation: 0, // Cień robimy sami w Containerze wyżej
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           unselectedLabelStyle: const TextStyle(fontSize: 12),
         ),

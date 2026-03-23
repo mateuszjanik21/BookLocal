@@ -117,6 +117,7 @@ class _BookingScreenState extends State<BookingScreen> {
       minute,
     );
 
+    // Loader na czas rezerwacji
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -131,7 +132,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
 
     if (!mounted) return;
-    Navigator.pop(context);
+    Navigator.pop(context); // Zamknij loader
 
     if (success) {
       Navigator.of(context).pushAndRemoveUntil(
@@ -152,10 +153,12 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Format daty: np. "piątek, 20 grudnia"
     final dateStr = DateFormat('EEEE, d MMMM', 'pl_PL').format(_selectedDate); 
+    // Jeśli nie masz locale pl_PL, użyj: DateFormat('EEEE, d MMMM').format(_selectedDate)
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFF8F9FA), // Jasne tło
       appBar: AppBar(
         title: const Text("Rezerwacja", style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
@@ -174,10 +177,12 @@ class _BookingScreenState extends State<BookingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 1. KARTA USŁUGI
                   _buildServiceSummaryCard(),
                   
                   const SizedBox(height: 30),
 
+                  // 2. WYBÓR PRACOWNIKA
                   const Text(
                     "Wybierz specjalistę",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
@@ -199,6 +204,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                   const SizedBox(height: 30),
 
+                  // 3. WYBÓR DATY
                   const Text(
                     "Wybierz termin",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
@@ -234,6 +240,7 @@ class _BookingScreenState extends State<BookingScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
+                                // Uppercase pierwszej litery (np. Piątek)
                                 toBeginningOfSentenceCase(dateStr) ?? dateStr,
                                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
@@ -248,6 +255,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                   const SizedBox(height: 30),
 
+                  // 4. SLOTY GODZINOWE
                   const Text(
                     "Dostępne godziny",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
@@ -320,11 +328,12 @@ class _BookingScreenState extends State<BookingScreen> {
                                 );
                               },
                             ),
-                  const SizedBox(height: 100),
+                  const SizedBox(height: 100), // Miejsce na bottom bar
                 ],
               ),
             ),
       
+      // DOLNY PASEK PODSUMOWANIA
       bottomSheet: Container(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
         decoration: BoxDecoration(
@@ -373,6 +382,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  // --- WIDGETY POMOCNICZE ---
 
   Widget _buildServiceSummaryCard() {
     return Container(
@@ -447,7 +457,7 @@ class _BookingScreenState extends State<BookingScreen> {
           Stack(
             children: [
               Container(
-                padding: const EdgeInsets.all(3),
+                padding: const EdgeInsets.all(3), // Border width
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -456,7 +466,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   ),
                 ),
                 child: CircleAvatar(
-                  radius: 32, 
+                  radius: 32, // Większy rozmiar
                   backgroundColor: Colors.grey[200],
                   backgroundImage: emp.photoUrl != null ? NetworkImage(emp.photoUrl!) : null,
                   child: emp.photoUrl == null

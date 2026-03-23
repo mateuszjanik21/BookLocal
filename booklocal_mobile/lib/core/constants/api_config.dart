@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 class ApiConfig {
   static String get baseUrl {
     if (kReleaseMode) {
-      return 'https://azure.net/api';
+      return 'https://azure.net/api'; //produkcja
     }
 
     if (Platform.isAndroid) {

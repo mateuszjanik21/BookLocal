@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/services/auth_service.dart';
-import '../client/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -77,11 +76,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       final user = authService.currentUser;
       
       if (user != null && user.isOwner) {
-        
+        // Możesz dodać nawigację specjalnie dla profilu biznesowego w przyszłości
       } else {
-        Navigator.pushReplacement(
-        context, 
-        MaterialPageRoute(builder: (context) => const MainScreen()));
+        // NAVIGATOR USUNIĘTY. Przechwytywanie przeniesiono na poziom main.dart,
+        // Consumer sam zareaguje na zmianę stanu logowania odświeżając UI by nie kraszować drzewa.
       }
     } else {
       if (!mounted) return;

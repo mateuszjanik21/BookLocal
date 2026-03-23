@@ -7,7 +7,7 @@ import '../models/auth_models.dart';
 
 class AuthService with ChangeNotifier {
   final _storage = const FlutterSecureStorage();
-  
+
   UserDto? _currentUser;
   String? _token;
   bool _isAuthenticated = false;
@@ -15,7 +15,7 @@ class AuthService with ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   UserDto? get currentUser => _currentUser;
   String? get token => _token;
-  
+
   Future<bool> tryAutoLogin() async {
     try {
       final storedToken = await _storage.read(key: 'jwt_token');
@@ -28,7 +28,7 @@ class AuthService with ChangeNotifier {
       _token = storedToken;
       _currentUser = UserDto.fromJson(jsonDecode(storedUserData));
       _isAuthenticated = true;
-      
+
       notifyListeners();
       return true;
     } catch (e) {
@@ -63,7 +63,7 @@ class AuthService with ChangeNotifier {
       } else {
         return false;
       }
-    } catch (e) { 
+    } catch (e) {
       return false;
     }
   }

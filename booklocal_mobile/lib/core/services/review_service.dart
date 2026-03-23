@@ -9,6 +9,7 @@ class ReviewService {
   ReviewService([this._authService]);
   
   Future<PagedReviewsResult> getReviews(int businessId, {int pageNumber = 1, int pageSize = 5}) async {
+    // POPRAWNY URL zgodny z Angularem: /api/businesses/{id}/reviews
     final uri = Uri.parse('${ApiConfig.baseUrl}/businesses/$businessId/reviews').replace(queryParameters: {
       'pageNumber': pageNumber.toString(),
       'pageSize': pageSize.toString(),
