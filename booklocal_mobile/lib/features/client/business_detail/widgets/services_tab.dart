@@ -24,6 +24,7 @@ class ServicesTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
       child: SectionCard(
         title: "Cennik Usług",
@@ -46,12 +47,38 @@ class ServicesTab extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 8.0, bottom: 12.0),
                             child: Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF16a34a))),
                           ),
-                          ...category.services.expand((service) => service.variants.map((variant) => _buildServiceRow(context, service, variant))),
+                          ...category.services.map((service) => _buildServiceAccordion(context, service)),
                           const SizedBox(height: 16),
                         ],
                       );
                     },
                   ),
+      ),
+    );
+  }
+
+  Widget _buildServiceAccordion(BuildContext context, Service service) {
+    if (service.variants.isEmpty) return const SizedBox.shrink();
+
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        key: PageStorageKey<String>('service_${service.id}'),
+        title: Text(
+          service.name,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Color(0xFF1F2937)),
+        ),
+        subtitle: service.description != null && service.description!.trim().isNotEmpty
+            ? Text(
+                service.description!,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              )
+            : null,
+        childrenPadding: EdgeInsets.zero,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+        children: service.variants.map((variant) => _buildServiceRow(context, service, variant)).toList(),
       ),
     );
   }
@@ -76,6 +103,8 @@ class ServicesTab extends StatelessWidget {
               builder: (context) => BookingScreen(
                 business: business,
                 service: dummyDto,
+                originalServiceId: service.id,
+                serviceVariantId: variant.serviceVariantId,
               ),
             ),
           );
@@ -91,9 +120,9 @@ class ServicesTab extends StatelessWidget {
                   children: [
                     Text(
                       variant.name.toLowerCase() == "domyślny" || variant.name.toLowerCase() == "default"
-                          ? service.name
-                          : "${service.name} - ${variant.name}",
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Color(0xFF1F2937)),
+                          ? "Wariant domyślny"
+                          : variant.name,
+                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Color(0xFF374151)),
                     ),
                     const SizedBox(height: 6),
                     Row(
@@ -115,30 +144,29 @@ class ServicesTab extends StatelessWidget {
                     "${variant.price.toInt()} zł",
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF16a34a)),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   Consumer<FavoritesProvider>(
                     builder: (context, provider, child) {
                       final isFav = provider.favorites.any((f) => f.serviceVariantId == variant.serviceVariantId);
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: InkWell(
-                          onTap: () async {
-                            if (isFav) {
-                              await provider.removeFavorite(variant.serviceVariantId);
-                            } else {
-                              await provider.addFavorite(variant.serviceVariantId);
-                            }
-                          },
-                          child: Icon(
-                            isFav ? Icons.favorite : Icons.favorite_border,
-                            size: 20,
-                            color: isFav ? Colors.redAccent : Colors.grey[400],
-                          ),
+                      return IconButton(
+                        icon: Icon(
+                          isFav ? Icons.favorite : Icons.favorite_border,
+                          size: 24,
+                          color: isFav ? Colors.redAccent : Colors.grey[400],
                         ),
+                        onPressed: () async {
+                          if (isFav) {
+                            await provider.removeFavorite(variant.serviceVariantId);
+                          } else {
+                            await provider.addFavorite(variant.serviceVariantId);
+                          }
+                        },
+                        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                        padding: EdgeInsets.zero,
+                        splashRadius: 24,
                       );
                     },
                   ),
-                  const SizedBox(width: 4),
                   Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey[300]),
                 ],
               ),

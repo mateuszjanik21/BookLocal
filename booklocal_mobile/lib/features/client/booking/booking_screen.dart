@@ -11,11 +11,15 @@ import '../../../core/services/reservation_service.dart';
 class BookingScreen extends StatefulWidget {
   final BusinessListItemDto business;
   final ServiceDto service;
+  final int originalServiceId;
+  final int serviceVariantId;
 
   const BookingScreen({
     super.key,
     required this.business,
     required this.service,
+    required this.originalServiceId,
+    required this.serviceVariantId,
   });
 
   @override
@@ -44,7 +48,7 @@ class _BookingScreenState extends State<BookingScreen> {
     final clientService = Provider.of<ClientService>(context, listen: false);
     final emps = await clientService.getEmployeesForService(
       widget.business.id,
-      widget.service.id,
+      widget.originalServiceId,
     );
 
     if (mounted) {
@@ -70,7 +74,7 @@ class _BookingScreenState extends State<BookingScreen> {
     final resService = Provider.of<ReservationService>(context, listen: false);
     final slots = await resService.getAvailableSlots(
       _selectedEmployee!.id,
-      widget.service.id,
+      widget.serviceVariantId,
       _selectedDate,
     );
 
@@ -126,7 +130,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
     final resService = Provider.of<ReservationService>(context, listen: false);
     final success = await resService.createReservation(
-      widget.service.id,
+      widget.serviceVariantId,
       _selectedEmployee!.id,
       fullDate,
     );

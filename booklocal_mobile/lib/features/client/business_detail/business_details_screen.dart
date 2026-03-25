@@ -15,6 +15,7 @@ import 'widgets/bundles_tab.dart';
 import 'widgets/reviews_tab.dart';
 import 'widgets/services_tab.dart';
 import 'widgets/team_tab.dart';
+import '../favorites/providers/favorites_provider.dart';
 
 class BusinessDetailsScreen extends StatefulWidget {
   final BusinessListItemDto business;
@@ -90,6 +91,29 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
     }
   }
 
+  Future<void> _handleRefresh() async {
+    setState(() {
+      _isLoadingBusiness = true;
+      _isLoadingReviews = true;
+      _isLoadingBundles = true;
+    });
+    
+    await Future.wait([
+      _loadBusinessDetails(),
+      _loadReviews(),
+      _loadBundles(),
+    ]);
+
+    if (mounted) {
+      // Import FavoritesProvider to refresh it (added in next edit if needed, or already works if imported)
+      try {
+        Provider.of<FavoritesProvider>(context, listen: false).fetchFavorites(refresh: true);
+      } catch (e) {
+        // Zignoruj jeśli provider nie jest dostępny
+      }
+    }
+  }
+
   void _startChat() async {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Otwieranie czatu..."), duration: Duration(seconds: 1)),
@@ -131,6 +155,7 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
       child: Scaffold(
         backgroundColor: backgroundColor,
         body: NestedScrollView(
+          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
             return <Widget>[
               // 1. HEADER (Banner z rozmyciem)
@@ -250,31 +275,51 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
           },
           body: TabBarView(
             children: [
-              AboutTab(
-                fullBusiness: _fullBusiness,
-                fallbackCity: widget.business.city,
-                isLoading: _isLoadingBusiness,
-                onStartChat: _startChat,
+              RefreshIndicator(
+                color: primaryColor,
+                onRefresh: _handleRefresh,
+                child: AboutTab(
+                  fullBusiness: _fullBusiness,
+                  fallbackCity: widget.business.city,
+                  isLoading: _isLoadingBusiness,
+                  onStartChat: _startChat,
+                ),
               ),
-              ServicesTab(
-                fullBusiness: _fullBusiness,
-                business: widget.business,
-                isLoading: _isLoadingBusiness,
+              RefreshIndicator(
+                color: primaryColor,
+                onRefresh: _handleRefresh,
+                child: ServicesTab(
+                  fullBusiness: _fullBusiness,
+                  business: widget.business,
+                  isLoading: _isLoadingBusiness,
+                ),
               ),
-              BundlesTab(
-                bundles: _bundles,
-                isLoading: _isLoadingBundles,
+              RefreshIndicator(
+                color: primaryColor,
+                onRefresh: _handleRefresh,
+                child: BundlesTab(
+                  bundles: _bundles,
+                  isLoading: _isLoadingBundles,
+                ),
               ),
-              TeamTab(
-                fullBusiness: _fullBusiness,
-                isLoading: _isLoadingBusiness,
+              RefreshIndicator(
+                color: primaryColor,
+                onRefresh: _handleRefresh,
+                child: TeamTab(
+                  fullBusiness: _fullBusiness,
+                  isLoading: _isLoadingBusiness,
+                ),
               ),
-              ReviewsTab(
-                reviews: _reviews,
-                isLoading: _isLoadingReviews,
-                isLoadingMore: _isLoadingMoreReviews,
-                hasMore: _hasMoreReviews,
-                onLoadMore: () => _loadReviews(loadMore: true),
+              RefreshIndicator(
+                color: primaryColor,
+                onRefresh: _handleRefresh,
+                child: ReviewsTab(
+                  reviews: _reviews,
+                  isLoading: _isLoadingReviews,
+                  isLoadingMore: _isLoadingMoreReviews,
+                  hasMore: _hasMoreReviews,
+                  onLoadMore: () => _loadReviews(loadMore: true),
+                ),
               ),
             ],
           ),

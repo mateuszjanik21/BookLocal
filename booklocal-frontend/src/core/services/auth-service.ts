@@ -80,7 +80,7 @@ export class AuthService {
     }
   }
   
-  updateProfile(payload: { firstName: string, lastName: string }): Observable<UserDto> {
+  updateProfile(payload: { firstName: string, lastName: string, phoneNumber?: string }): Observable<UserDto> {
     return this.http.put<UserDto>(`${this.apiUrl}/auth/profile`, payload).pipe(
       tap(updatedUser => {
         const currentUser = this.currentUserSubject.getValue();

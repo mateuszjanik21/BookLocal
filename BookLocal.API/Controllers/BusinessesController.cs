@@ -24,6 +24,7 @@ namespace BookLocal.API.Controllers
         {
             var query = _context.Businesses
                 .Include(b => b.Reviews)
+                .Include(b => b.Owner)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchQuery))
@@ -49,6 +50,7 @@ namespace BookLocal.API.Controllers
                     PhotoUrl = b.PhotoUrl,
                     AverageRating = b.Reviews.Any() ? b.Reviews.Average(r => r.Rating) : 0,
                     ReviewCount = b.Reviews.Count,
+                    PhoneNumber = b.Owner != null ? b.Owner.PhoneNumber : null,
                     IsVerified = false,
                     CreatedAt = b.CreatedAt
                 })
@@ -101,6 +103,7 @@ namespace BookLocal.API.Controllers
                 City = business.City,
                 Description = business.Description,
                 PhotoUrl = business.PhotoUrl,
+                PhoneNumber = business.Owner?.PhoneNumber,
                 IsVerified = isVerified,
                 AverageRating = business.Reviews.Any() ? business.Reviews.Average(r => r.Rating) : 0,
                 ReviewCount = business.Reviews.Count,
@@ -223,6 +226,7 @@ namespace BookLocal.API.Controllers
                 City = business.City,
                 Description = business.Description,
                 PhotoUrl = business.PhotoUrl,
+                PhoneNumber = business.Owner?.PhoneNumber,
                 IsVerified = isVerified,
                 AverageRating = business.Reviews.Any() ? business.Reviews.Average(r => r.Rating) : 0,
                 ReviewCount = business.Reviews.Count,

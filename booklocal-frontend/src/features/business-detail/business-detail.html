@@ -7,7 +7,6 @@
 <div class="bg-base-200/40 min-h-screen">
 
   <div class="header-banner relative rounded-none md:rounded-b-3xl overflow-hidden shadow-lg">
-    <!-- Przycisk powrotu -->
     <button (click)="goBack()" 
             class="absolute top-4 left-4 z-50 btn btn-circle btn-sm md:btn-md bg-black/20 border-white/30 text-white hover:bg-black/40 backdrop-blur-md shadow-lg transition-all active:scale-95" 
             title="Wróć">
@@ -373,8 +372,8 @@
 
               <div class="space-y-3 text-sm">
                 @if(business.address) {
-                <div class="flex items-start gap-3">
-                  <div class="mt-4 rounded-xl overflow-hidden grayscale-[0.2] hover:grayscale-0 transition-all shadow-md border border-base-300 h-32 relative group">
+                <div class="flex flex-col sm:flex-row items-start gap-4">
+                  <div class="w-full sm:w-1/2 mt-2 rounded-xl overflow-hidden grayscale-[0.2] hover:grayscale-0 transition-all shadow-md border border-base-300 h-32 relative group shrink-0">
                     <img [src]="'https://maps.googleapis.com/maps/api/staticmap?center=' + business.city + ',' + business.address + '&zoom=14&size=400x150&key=YOUR_KEY_HERE'" 
                          (error)="$any($event.target).src='https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=400&q=80'"
                          class="w-full h-full object-cover" alt="Map preview" />
@@ -385,29 +384,25 @@
                       </button>
                     </div>
                   </div>
-                  <div class="mt-3">
-                    <p class="font-medium">Adres</p>
-                    <p class="text-base-content/60">{{ business.address }}, {{ business.city }}</p>
-                  </div>
-                </div>
-                }
 
-                @if(business.nip) {
-                <div class="flex items-start gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/40 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                  <div>
-                    <p class="font-medium">NIP</p>
-                    <p class="text-base-content/60">{{ business.nip }}</p>
-                  </div>
-                </div>
-                }
+                  <div class="flex flex-col gap-4 mt-2">
+                    <div class="flex items-start gap-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/40 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      <div>
+                        <p class="font-medium">Adres</p>
+                        <p class="text-base-content/60">{{ business.address }}, {{ business.city }}</p>
+                      </div>
+                    </div>
 
-                @if(business.owner) {
-                <div class="flex items-start gap-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/40 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                  <div>
-                    <p class="font-medium">Właściciel</p>
-                    <p class="text-base-content/60">{{ business.owner.firstName }} {{ business.owner.lastName }}</p>
+                    @if(business.owner) {
+                    <div class="flex items-start gap-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-base-content/40 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                      <div>
+                        <p class="font-medium">Właściciel</p>
+                        <p class="text-base-content/60">{{ business.owner.firstName }} {{ business.owner.lastName }}</p>
+                      </div>
+                    </div>
+                    }
                   </div>
                 </div>
                 }

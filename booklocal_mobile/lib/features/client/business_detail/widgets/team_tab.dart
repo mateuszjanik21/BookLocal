@@ -16,6 +16,7 @@ class TeamTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
       child: SectionCard(
         title: "Nasz Zespół",

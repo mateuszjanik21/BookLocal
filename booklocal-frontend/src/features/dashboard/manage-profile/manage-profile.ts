@@ -39,7 +39,8 @@ export class ManageProfileComponent implements OnInit {
   isEditingProfile = false;
   editProfileForm = {
     firstName: '',
-    lastName: ''
+    lastName: '',
+    phoneNumber: ''
   };
 
   isEditingBusiness = false;
@@ -69,7 +70,8 @@ export class ManageProfileComponent implements OnInit {
   startEditingProfile(user: UserDto): void {
     this.editProfileForm = {
       firstName: user.firstName,
-      lastName: user.lastName
+      lastName: user.lastName,
+      phoneNumber: user.phoneNumber || ''
     };
     this.isEditingProfile = true;
   }

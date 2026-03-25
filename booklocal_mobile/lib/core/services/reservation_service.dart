@@ -11,11 +11,11 @@ class ReservationService {
   ReservationService([this._authService]); 
 
   // 1. Pobierz wolne sloty (godziny)
-  Future<List<String>> getAvailableSlots(int employeeId, int serviceId, DateTime date) async {
+  Future<List<String>> getAvailableSlots(int employeeId, int serviceVariantId, DateTime date) async {
     // Format daty zgodny z backendem (yyyy-MM-dd)
     final dateStr = DateFormat('yyyy-MM-dd').format(date);
     
-    final url = Uri.parse('${ApiConfig.baseUrl}/employees/$employeeId/availability?serviceId=$serviceId&date=$dateStr');
+    final url = Uri.parse('${ApiConfig.baseUrl}/employees/$employeeId/availability?serviceVariantId=$serviceVariantId&date=$dateStr');
 
     try {
       final response = await http.get(url);
@@ -32,7 +32,7 @@ class ReservationService {
   }
 
   // 2. Utwórz rezerwację
-  Future<bool> createReservation(int serviceId, int employeeId, DateTime fullDate) async {
+  Future<bool> createReservation(int serviceVariantId, int employeeId, DateTime fullDate) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/reservations');
     final token = _authService?.token;
     final startTimeStr = fullDate.toUtc().toIso8601String();
@@ -45,7 +45,7 @@ class ReservationService {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'serviceId': serviceId,
+          'serviceVariantId': serviceVariantId,
           'employeeId': employeeId,
           'startTime': startTimeStr,
         }),
