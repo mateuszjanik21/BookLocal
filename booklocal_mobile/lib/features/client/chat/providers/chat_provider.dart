@@ -1,29 +1,45 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/models/chat_models.dart';
 import '../../../../core/services/chat_services.dart';
+import '../../../../core/services/presence_service.dart';
 
-class ChatProvider with ChangeNotifier {
+class ChatProvider extends ChangeNotifier {
   final ChatService _chatService;
-
-  ChatProvider(this._chatService);
+  PresenceService? _presenceService;
 
   List<ConversationDto> _conversations = [];
   bool _isLoadingConversations = false;
-
-  List<ConversationDto> get conversations => _conversations;
-  bool get isLoadingConversations => _isLoadingConversations;
+  int? _activeConversationId;
 
   List<MessageDto> _currentMessages = [];
   bool _isLoadingMessages = false;
 
+  ChatProvider(this._chatService);
+
+  /// Ustawiane z zewnątrz z poziomu UI (ConversationScreen), 
+  /// aby powiązać z PresenceService do odświeżania badge'a.
+  void setPresenceService(PresenceService ps) {
+    _presenceService = ps;
+  }
+
+  List<ConversationDto> get conversations => _conversations;
+  bool get isLoadingConversations => _isLoadingConversations;
   List<MessageDto> get currentMessages => _currentMessages;
   bool get isLoadingMessages => _isLoadingMessages;
+
+  void setActiveConversationId(int? id) {
+    _activeConversationId = id;
+  }
 
   Future<void> loadMyConversations() async {
     _isLoadingConversations = true;
     notifyListeners();
     try {
       _conversations = await _chatService.getMyConversations();
+      for (var c in _conversations) {
+        print('[ChatProvider] Konwersacja ${c.conversationId} (${c.participantName}): unreadCount=${c.unreadCount}');
+      }
     } catch (e) {
       _conversations = [];
     } finally {
@@ -46,19 +62,66 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
+  /// Wzór Angular: Otwieramy ChatHub, rejestrujemy listenery, 
+  /// POTEM markujemy jako przeczytane.
   Future<void> startListening(int conversationId) async {
     await _chatService.startHubConnection(conversationId);
-    _chatService.onMessageReceived = (newMessage) {
-      if (!_currentMessages.any((msg) => msg.id == newMessage.id && msg.id != 0)) {
-         _currentMessages.add(newMessage);
-         notifyListeners();
+
+    // Rejestruj handlery PRZED markAsRead
+    _chatService.onMessageReceived = (newMessage) async {
+      // Szukaj tymczasowej wiadomości (id=0) o tej samej treści i nadawcy
+      // — to echo naszej własnej wiadomości wracające z serwera
+      final tempIndex = _currentMessages.indexWhere(
+        (m) => m.id == 0 && m.senderId == newMessage.senderId && m.content == newMessage.content,
+      );
+
+      if (tempIndex != -1) {
+        // Zastąp tymczasową prawdziwą wersją z serwera
+        _currentMessages[tempIndex] = newMessage;
+      } else if (newMessage.id == 0 || !_currentMessages.any((m) => m.id == newMessage.id)) {
+        // Nowa wiadomość od drugiej strony
+        _currentMessages.add(newMessage);
+      } else {
+        // Duplikat, ignoruj
+        return;
+      }
+
+      notifyListeners();
+
+      // Automatycznie oznacz jako przeczytane jeśli jesteśmy w tej konwersacji
+      if (_activeConversationId == conversationId) {
+        await _chatService.markMessagesAsRead(conversationId);
       }
     };
+
+    _chatService.onMessagesRead = (convId) {
+      print('[ChatProvider] onMessagesRead dla konwersacji $convId');
+      if (convId == _activeConversationId) {
+        for (var m in _currentMessages) {
+          m.isRead = true;
+        }
+        notifyListeners();
+      }
+      // Odśwież badge globalny
+      _presenceService?.refreshUnreadCount();
+    };
+
+    // TERAZ oznacz jako przeczytane (Angular wzór: listenery zarejestrowane PRZED)
+    await _chatService.markMessagesAsRead(conversationId);
+
+    // Lokalnie zeruj w UI
+    final idx = _conversations.indexWhere((c) => c.conversationId == conversationId);
+    if (idx != -1) {
+      _conversations[idx].unreadCount = 0;
+      notifyListeners();
+    }
+
+    // Odśwież badge globalny
+    _presenceService?.refreshUnreadCount();
   }
 
   void stopListening() {
     _chatService.stopHubConnection();
-    _chatService.onMessageReceived = null;
   }
 
   Future<void> sendMessage(int conversationId, String text, String currentUserId) async {
@@ -80,5 +143,9 @@ class ChatProvider with ChangeNotifier {
       notifyListeners();
       rethrow;
     }
+  }
+
+  Future<int?> startConversation(int businessId) async {
+    return await _chatService.startConversation(businessId);
   }
 }

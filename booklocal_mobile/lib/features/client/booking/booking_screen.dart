@@ -1,18 +1,25 @@
-import 'package:booklocal_mobile/features/client/booking/booking_success_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
 import 'package:provider/provider.dart';
+
 import '../../../core/models/business_list_item_dto.dart';
 import '../../../core/models/service_models.dart';
 import '../../../core/models/employee_models.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../core/services/client_service.dart';
 import '../../../core/services/reservation_service.dart';
+
+import 'widgets/step_employee.dart';
+import 'widgets/step_datetime.dart';
+import 'widgets/step_summary.dart';
+import 'booking_success_screen.dart';
 
 class BookingScreen extends StatefulWidget {
   final BusinessListItemDto business;
   final ServiceDto service;
   final int originalServiceId;
   final int serviceVariantId;
+  final EmployeeDto? preselectedEmployee;
 
   const BookingScreen({
     super.key,
@@ -20,6 +27,7 @@ class BookingScreen extends StatefulWidget {
     required this.service,
     required this.originalServiceId,
     required this.serviceVariantId,
+    this.preselectedEmployee,
   });
 
   @override
@@ -27,22 +35,65 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
+  static const _primaryColor = Color(0xFF16a34a);
+
+  // --- WIZARD STATE ---
+  int _currentStep = 1; // 1=Employee, 2=DateTime, 3=Summary
+
+  // Step 1
+  List<EmployeeDto> _employees = [];
+  EmployeeDto? _selectedEmployee;
+  bool _isLoadingEmployees = true;
+
+  // Step 2
   DateTime _selectedDate = DateTime.now();
   String? _selectedTime;
-  EmployeeDto? _selectedEmployee;
-
-  List<EmployeeDto> _employees = [];
   List<String> _availableSlots = [];
-  bool _isLoadingEmployees = true;
+  Map<String, List<String>> _timeGroups = {
+    'Rano': [],
+    'Południe': [],
+    'Popołudnie': [],
+    'Wieczór': [],
+  };
+  String _activeGroup = 'Rano';
   bool _isLoadingSlots = false;
 
-  final primaryColor = const Color(0xFF16a34a);
+  // Step 3
+  String _paymentMethod = 'Cash';
+  final TextEditingController _discountController = TextEditingController();
+  Map<String, dynamic>? _verifiedDiscount;
+  bool _isVerifyingDiscount = false;
+  int _loyaltyPointsBalance = 0;
+  int _loyaltyPointsToUse = 0;
+
+  // Reservation
+  bool _isReserving = false;
+  bool _isProcessingPayment = false;
+
+  // --- LIFECYCLE ---
 
   @override
   void initState() {
     super.initState();
-    _loadEmployees();
+    if (widget.preselectedEmployee != null) {
+      _selectedEmployee = widget.preselectedEmployee;
+      _employees = [widget.preselectedEmployee!];
+      _isLoadingEmployees = false;
+      _currentStep = 2;
+      _loadSlots();
+    } else {
+      _loadEmployees();
+    }
+    _loadLoyaltyBalance();
   }
+
+  @override
+  void dispose() {
+    _discountController.dispose();
+    super.dispose();
+  }
+
+  // --- DATA LOADING ---
 
   Future<void> _loadEmployees() async {
     final clientService = Provider.of<ClientService>(context, listen: false);
@@ -50,22 +101,15 @@ class _BookingScreenState extends State<BookingScreen> {
       widget.business.id,
       widget.originalServiceId,
     );
-
-    if (mounted) {
-      setState(() {
-        _employees = emps;
-        _isLoadingEmployees = false;
-        if (emps.isNotEmpty) {
-          _selectedEmployee = emps.first;
-          _loadSlots();
-        }
-      });
-    }
+    if (!mounted) return;
+    setState(() {
+      _employees = emps;
+      _isLoadingEmployees = false;
+    });
   }
 
   Future<void> _loadSlots() async {
     if (_selectedEmployee == null) return;
-
     setState(() {
       _isLoadingSlots = true;
       _selectedTime = null;
@@ -77,25 +121,75 @@ class _BookingScreenState extends State<BookingScreen> {
       widget.serviceVariantId,
       _selectedDate,
     );
+    if (!mounted) return;
+    setState(() {
+      _availableSlots = slots;
+      _groupSlots(slots);
+      _isLoadingSlots = false;
+    });
+  }
 
-    if (mounted) {
-      setState(() {
-        _availableSlots = slots;
-        _isLoadingSlots = false;
-      });
+  void _groupSlots(List<String> slots) {
+    final groups = <String, List<String>>{
+      'Rano': [],
+      'Południe': [],
+      'Popołudnie': [],
+      'Wieczór': [],
+    };
+    for (final slot in slots) {
+      int hour;
+      if (slot.contains('T')) {
+        hour = DateTime.parse(slot).hour;
+      } else if (slot.contains(':')) {
+        hour = int.parse(slot.split(':')[0]);
+      } else {
+        continue;
+      }
+      if (hour >= 6 && hour < 11) {
+        groups['Rano']!.add(slot);
+      } else if (hour >= 11 && hour < 15) {
+        groups['Południe']!.add(slot);
+      } else if (hour >= 15 && hour < 18) {
+        groups['Popołudnie']!.add(slot);
+      } else if (hour >= 18) {
+        groups['Wieczór']!.add(slot);
+      }
+    }
+    _timeGroups = groups;
+    if (_timeGroups[_activeGroup]?.isEmpty ?? true) {
+      _activeGroup = _timeGroups.entries
+          .firstWhere(
+            (e) => e.value.isNotEmpty,
+            orElse: () => _timeGroups.entries.first,
+          )
+          .key;
     }
   }
 
+  Future<void> _loadLoyaltyBalance() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final user = authService.currentUser;
+    if (user == null) return;
+    final resService = Provider.of<ReservationService>(context, listen: false);
+    final balance = await resService.getLoyaltyBalance(
+      businessId: widget.business.id,
+      customerId: user.id,
+    );
+    if (mounted) setState(() => _loyaltyPointsBalance = balance);
+  }
+
+  // --- ACTIONS ---
+
   Future<void> _pickDate() async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 30)),
+      locale: const Locale('pl'),
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.light(primary: primaryColor),
-          dialogBackgroundColor: Colors.white,
+          colorScheme: const ColorScheme.light(primary: _primaryColor),
         ),
         child: child!,
       ),
@@ -106,43 +200,98 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  Future<void> _verifyDiscount() async {
+    final code = _discountController.text.trim();
+    if (code.isEmpty) return;
+    setState(() => _isVerifyingDiscount = true);
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final resService = Provider.of<ReservationService>(context, listen: false);
+    final result = await resService.verifyDiscount(
+      businessId: widget.business.id,
+      code: code,
+      serviceId: widget.originalServiceId,
+      customerId: authService.currentUser?.id ?? '',
+      originalPrice: widget.service.price,
+    );
+    if (!mounted) return;
+    setState(() => _isVerifyingDiscount = false);
+
+    if (result != null && result['isValid'] == true) {
+      setState(() => _verifiedDiscount = result);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result?['message'] ?? 'Kod nieprawidłowy.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _removeDiscount() {
+    setState(() {
+      _verifiedDiscount = null;
+      _discountController.clear();
+    });
+  }
+
+  double get _discountAmount =>
+      (_verifiedDiscount?['discountAmount'] as num?)?.toDouble() ?? 0.0;
+
+  double get _finalPrice {
+    final price = widget.service.price - _discountAmount - _loyaltyPointsToUse;
+    return price < 0 ? 0 : price;
+  }
+
   Future<void> _confirmBooking() async {
     if (_selectedTime == null || _selectedEmployee == null) return;
 
-    final timeParts = _selectedTime!.split(':');
-    final hour = int.parse(timeParts[0]);
-    final minute = int.parse(timeParts[1]);
+    // Online payment simulation
+    if (_paymentMethod == 'Online' && _finalPrice > 0) {
+      setState(() => _isProcessingPayment = true);
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+      setState(() => _isProcessingPayment = false);
+    }
 
+    setState(() => _isReserving = true);
+
+    final timeParts = _selectedTime!.split(':');
     final fullDate = DateTime(
       _selectedDate.year,
       _selectedDate.month,
       _selectedDate.day,
-      hour,
-      minute,
+      int.parse(timeParts[0]),
+      int.parse(timeParts[1]),
     );
 
-    // Loader na czas rezerwacji
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator(color: Colors.white)),
-    );
-
-    final resService = Provider.of<ReservationService>(context, listen: false);
-    final success = await resService.createReservation(
-      widget.serviceVariantId,
-      _selectedEmployee!.id,
-      fullDate,
-    );
+    bool success = false;
+    try {
+      final resService = Provider.of<ReservationService>(
+        context,
+        listen: false,
+      );
+      success = await resService.createReservation(
+        widget.serviceVariantId,
+        _selectedEmployee!.id,
+        fullDate,
+        discountCode: _verifiedDiscount != null
+            ? _discountController.text.trim()
+            : null,
+        paymentMethod: _paymentMethod,
+        loyaltyPointsUsed: _loyaltyPointsToUse,
+      );
+    } catch (e) {
+      debugPrint("❌ Błąd rezerwacji: $e");
+    }
 
     if (!mounted) return;
-    Navigator.pop(context); // Zamknij loader
+    setState(() => _isReserving = false);
 
     if (success) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => const BookingSuccessScreen(),
-        ),
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const BookingSuccessScreen()),
         (route) => false,
       );
     } else {
@@ -155,355 +304,401 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  // --- STEP NAVIGATION ---
+
+  void _nextStep() {
+    if (_currentStep < 3) {
+      // Load slots when entering step 2
+      if (_currentStep == 1) {
+        _loadSlots();
+      }
+      setState(() => _currentStep++);
+    }
+  }
+
+  void _prevStep() {
+    if (_currentStep > 1) {
+      setState(() => _currentStep--);
+    }
+  }
+
+  bool get _canAdvance {
+    switch (_currentStep) {
+      case 1:
+        return _selectedEmployee != null;
+      case 2:
+        return _selectedTime != null;
+      case 3:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  // --- BUILD ---
+
   @override
   Widget build(BuildContext context) {
-    // Format daty: np. "piątek, 20 grudnia"
-    final dateStr = DateFormat('EEEE, d MMMM', 'pl_PL').format(_selectedDate); 
-    // Jeśli nie masz locale pl_PL, użyj: DateFormat('EEEE, d MMMM').format(_selectedDate)
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Jasne tło
+      backgroundColor: const Color(0xFFF8F9FA),
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text("Rezerwacja", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Rezerwacja",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () => Navigator.pop(context),
+          onPressed: _isReserving || _isProcessingPayment
+              ? null
+              : () {
+                  if (_currentStep > 1) {
+                    _prevStep();
+                  } else {
+                    Navigator.pop(context);
+                  }
+                },
         ),
       ),
-      body: _isLoadingEmployees
-          ? Center(child: CircularProgressIndicator(color: primaryColor))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 1. KARTA USŁUGI
-                  _buildServiceSummaryCard(),
-                  
-                  const SizedBox(height: 30),
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              // Step indicator
+              _buildStepIndicator(),
 
-                  // 2. WYBÓR PRACOWNIKA
-                  const Text(
-                    "Wybierz specjalistę",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 110,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _employees.length,
-                      separatorBuilder: (ctx, i) => const SizedBox(width: 16),
-                      itemBuilder: (context, index) {
-                        final emp = _employees[index];
-                        final isSelected = _selectedEmployee?.id == emp.id;
-                        return _buildEmployeeItem(emp, isSelected);
-                      },
-                    ),
-                  ),
+              // Service info bar
+              _buildServiceInfoBar(),
 
-                  const SizedBox(height: 30),
+              // Step content
+              Expanded(child: _buildCurrentStep()),
+            ],
+          ),
 
-                  // 3. WYBÓR DATY
-                  const Text(
-                    "Wybierz termin",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
-                  ),
-                  const SizedBox(height: 16),
-                  InkWell(
-                    onTap: _pickDate,
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(Icons.calendar_month, color: primaryColor),
-                          ),
-                          const SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Data wizyty",
-                                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                // Uppercase pierwszej litery (np. Piątek)
-                                toBeginningOfSentenceCase(dateStr) ?? dateStr,
-                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // 4. SLOTY GODZINOWE
-                  const Text(
-                    "Dostępne godziny",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  _isLoadingSlots
-                      ? Padding(
-                          padding: const EdgeInsets.all(40),
-                          child: Center(child: CircularProgressIndicator(color: primaryColor)),
-                        )
-                      : _availableSlots.isEmpty
-                          ? Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(30),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[100],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(Icons.event_busy, size: 40, color: Colors.grey[400]),
-                                  const SizedBox(height: 10),
-                                  Text("Brak wolnych terminów w tym dniu.", style: TextStyle(color: Colors.grey[600])),
-                                ],
-                              ),
-                            )
-                          : GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 4,
-                                childAspectRatio: 2.0,
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                              ),
-                              itemCount: _availableSlots.length,
-                              itemBuilder: (context, index) {
-                                final slot = _availableSlots[index];
-                                final displayTime = slot.contains('T')
-                                    ? DateFormat('HH:mm').format(DateTime.parse(slot))
-                                    : slot;
-                                final isSelected = _selectedTime == displayTime;
-
-                                return GestureDetector(
-                                  onTap: () => setState(() => _selectedTime = displayTime),
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    decoration: BoxDecoration(
-                                      color: isSelected ? primaryColor : Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: isSelected ? primaryColor : Colors.grey.shade300,
-                                        width: isSelected ? 2 : 1,
-                                      ),
-                                      boxShadow: isSelected 
-                                        ? [BoxShadow(color: primaryColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))] 
-                                        : [],
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      displayTime,
-                                      style: TextStyle(
-                                        color: isSelected ? Colors.white : Colors.black87,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                  const SizedBox(height: 100), // Miejsce na bottom bar
-                ],
-              ),
+          // Bottom bar (inside Stack so overlays cover it)
+          if (!_isLoadingEmployees)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomBar(),
             ),
-      
-      // DOLNY PASEK PODSUMOWANIA
-      bottomSheet: Container(
-        padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
-          ],
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Row(
-          children: [
+
+          // Overlays
+          if (_isProcessingPayment)
+            _buildOverlay(
+              "Przetwarzanie płatności...",
+              "Proszę nie zamykać aplikacji.",
+            ),
+          if (_isReserving) _buildOverlay("Rezerwuję wizytę...", null),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepIndicator() {
+    final steps = ['Kto', 'Termin', 'Finał'];
+    final displaySteps = steps;
+    final adjustedStep = _currentStep;
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        children: List.generate(displaySteps.length * 2 - 1, (index) {
+          if (index.isOdd) {
+            // Connector line
+            final stepBefore = (index ~/ 2) + 1;
+            return Expanded(
+              child: Container(
+                height: 2,
+                color: adjustedStep > stepBefore
+                    ? _primaryColor
+                    : Colors.grey[300],
+              ),
+            );
+          }
+          final stepIndex = (index ~/ 2) + 1;
+          final isActive = adjustedStep >= stepIndex;
+          final isCurrent = adjustedStep == stepIndex;
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: isCurrent ? 36 : 28,
+                height: isCurrent ? 36 : 28,
+                decoration: BoxDecoration(
+                  color: isActive ? _primaryColor : Colors.grey[200],
+                  shape: BoxShape.circle,
+                  boxShadow: isCurrent
+                      ? [
+                          BoxShadow(
+                            color: _primaryColor.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : [],
+                ),
+                child: Center(
+                  child: isActive && !isCurrent
+                      ? const Icon(Icons.check, size: 16, color: Colors.white)
+                      : Text(
+                          "$stepIndex",
+                          style: TextStyle(
+                            color: isActive ? Colors.white : Colors.grey[500],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                displaySteps[stepIndex - 1],
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.w500,
+                  color: isActive ? _primaryColor : Colors.grey[500],
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildServiceInfoBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      color: _primaryColor.withOpacity(0.05),
+      child: Row(
+        children: [
+          Icon(Icons.spa, size: 18, color: _primaryColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              "${widget.service.name} • ${widget.service.durationMinutes} min",
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Text(
+            "${widget.service.price.toStringAsFixed(2)} zł",
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: _primaryColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurrentStep() {
+    if (_isLoadingEmployees) {
+      return const Center(
+        child: CircularProgressIndicator(color: _primaryColor),
+      );
+    }
+
+    switch (_currentStep) {
+      case 1:
+        return StepEmployee(
+          employees: _employees,
+          selectedEmployee: _selectedEmployee,
+          primaryColor: _primaryColor,
+          onSelected: (emp) {
+            setState(() => _selectedEmployee = emp);
+          },
+        );
+      case 2:
+        return StepDatetime(
+          selectedDate: _selectedDate,
+          selectedTime: _selectedTime,
+          availableSlots: _availableSlots,
+          timeGroups: _timeGroups,
+          activeGroup: _activeGroup,
+          isLoadingSlots: _isLoadingSlots,
+          primaryColor: _primaryColor,
+          onPickDate: _pickDate,
+          onGroupSelected: (group) => setState(() => _activeGroup = group),
+          onSlotSelected: (time) {
+            setState(() => _selectedTime = time);
+          },
+        );
+      case 3:
+        return StepSummary(
+          service: widget.service,
+          employee: _selectedEmployee!,
+          selectedDate: _selectedDate,
+          selectedTime: _selectedTime!,
+          businessName: widget.business.name,
+          paymentMethod: _paymentMethod,
+          onPaymentMethodChanged: (v) => setState(() => _paymentMethod = v),
+          discountController: _discountController,
+          verifiedDiscount: _verifiedDiscount,
+          isVerifyingDiscount: _isVerifyingDiscount,
+          onVerifyDiscount: _verifyDiscount,
+          onRemoveDiscount: _removeDiscount,
+          loyaltyPointsBalance: _loyaltyPointsBalance,
+          loyaltyPointsToUse: _loyaltyPointsToUse,
+          onLoyaltyPointsChanged: (v) =>
+              setState(() => _loyaltyPointsToUse = v),
+          primaryColor: _primaryColor,
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildBottomBar() {
+    final hasDiscount = _discountAmount > 0 || _loyaltyPointsToUse > 0;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Row(
+        children: [
+          // Price info (show on step 3)
+          if (_currentStep == 3) ...[
             Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Całkowity koszt", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                Text(
-                  "${widget.service.price.toInt()} zł",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: primaryColor),
+                const Text(
+                  "Koszt",
+                  style: TextStyle(color: Colors.grey, fontSize: 11),
                 ),
-              ],
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: (_selectedTime != null && _selectedEmployee != null)
-                    ? _confirmBooking
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  disabledBackgroundColor: Colors.grey[300],
-                ),
-                child: const Text(
-                  "Zarezerwuj",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- WIDGETY POMOCNICZE ---
-
-  Widget _buildServiceSummaryCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.spa, color: primaryColor),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
+                    if (hasDiscount) ...[
+                      Text(
+                        "${widget.service.price.toInt()} zł",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[400],
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
                     Text(
-                      widget.business.name,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.service.name,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+                      "${_finalPrice.toStringAsFixed(2)} zł",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: _primaryColor,
+                      ),
                     ),
                   ],
                 ),
+              ],
+            ),
+            const SizedBox(width: 16),
+          ],
+
+          // Back button (not on step 1, or step 2 when only 1 employee)
+          if (_currentStep > 1) ...[
+            TextButton(
+              onPressed: _isReserving || _isProcessingPayment
+                  ? null
+                  : _prevStep,
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey[700],
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
-            ],
+              child: const Text(
+                "Wstecz",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+
+          Expanded(
+            child: ElevatedButton(
+              onPressed: _currentStep == 3
+                  ? (_selectedTime != null && !_isReserving
+                        ? _confirmBooking
+                        : null)
+                  : (_canAdvance ? _nextStep : null),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                disabledBackgroundColor: Colors.grey[300],
+              ),
+              child: Text(
+                _currentStep == 3
+                    ? (_paymentMethod == 'Online'
+                          ? "Zapłać i zarezerwuj"
+                          : "Potwierdź wizytę")
+                    : "Dalej",
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
-          const SizedBox(height: 20),
-          const Divider(),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Icon(Icons.schedule, size: 16, color: Colors.grey[500]),
-              const SizedBox(width: 6),
-              Text(
-                "Czas trwania: ${widget.service.durationMinutes} min",
-                style: TextStyle(color: Colors.grey[700], fontWeight: FontWeight.w500),
-              ),
-            ],
-          )
         ],
       ),
     );
   }
 
-  Widget _buildEmployeeItem(EmployeeDto emp, bool isSelected) {
-    return GestureDetector(
-      onTap: () {
-        setState(() => _selectedEmployee = emp);
-        _loadSlots();
-      },
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(3), // Border width
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected ? primaryColor : Colors.transparent,
-                    width: 2,
-                  ),
-                ),
-                child: CircleAvatar(
-                  radius: 32, // Większy rozmiar
-                  backgroundColor: Colors.grey[200],
-                  backgroundImage: emp.photoUrl != null ? NetworkImage(emp.photoUrl!) : null,
-                  child: emp.photoUrl == null
-                      ? Text(emp.firstName[0], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey))
-                      : null,
-                ),
-              ),
-              if (isSelected)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: primaryColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Icon(Icons.check, size: 12, color: Colors.white),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            emp.firstName,
-            style: TextStyle(
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              fontSize: 12,
-              color: isSelected ? Colors.black : Colors.grey[700],
+  Widget _buildOverlay(String title, String? subtitle) {
+    return Container(
+      color: Colors.white.withOpacity(0.95),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: _primaryColor),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-          ),
-        ],
+            if (subtitle != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

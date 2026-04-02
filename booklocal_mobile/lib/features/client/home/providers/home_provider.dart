@@ -31,9 +31,12 @@ class HomeProvider extends ChangeNotifier {
   List<MainCategory> mainCategories = [];
   List<RebookSuggestion> rebookSuggestions = [];
 
-  bool isLoading = false;
-  bool isSkeletonVisible = false;
+  bool isLoading = true;
+  bool isSkeletonVisible = true;
   bool isLocationLoading = false;
+  bool isRebookLoading = true;
+
+  final ScrollController mainScrollController = ScrollController();
 
   Timer? _debounceTimer;
   Timer? _skeletonTimer;
@@ -49,14 +52,16 @@ class HomeProvider extends ChangeNotifier {
     _skeletonTimer?.cancel();
     searchController.dispose();
     locationController.dispose();
+    mainScrollController.dispose();
     super.dispose();
   }
 
   Future<void> init(AuthService authService) async {
-    await Future.wait([
-      _fetchMainCategories(),
-      _fetchRebookSuggestions(authService),
-    ]);
+    // Odpalamy zapytania równolegle, nie czekając z jednym na drugie.
+    // Dzięki temu unikamy tzw. "jank" - nagłego przycięcia przy renderowaniu
+    // wszystkich trzech wielkich sekcji na raz.
+    _fetchMainCategories();
+    _fetchRebookSuggestions(authService);
     fetchResults();
   }
 
@@ -75,16 +80,11 @@ class HomeProvider extends ChangeNotifier {
 
   Future<void> fetchResults() async {
     isLoading = true;
-    isSkeletonVisible = false;
+    isSkeletonVisible = true;
     notifyListeners();
 
-    _skeletonTimer?.cancel();
-    _skeletonTimer = Timer(const Duration(milliseconds: 250), () {
-      if (isLoading) {
-        isSkeletonVisible = true;
-        notifyListeners();
-      }
-    });
+    // Wymuszone opóźnienie 1000ms, aby grid usług zaladował się jako ostatni (efekt wodospadu)
+    await Future.delayed(const Duration(milliseconds: 1000));
 
     try {
       final result = await _searchService.searchCategoryFeed(
@@ -107,7 +107,6 @@ class HomeProvider extends ChangeNotifier {
         totalPages: 0,
       );
     } finally {
-      _skeletonTimer?.cancel();
       isLoading = false;
       isSkeletonVisible = false;
       notifyListeners();
@@ -115,16 +114,27 @@ class HomeProvider extends ChangeNotifier {
   }
 
   Future<void> _fetchMainCategories() async {
-    mainCategories = await _searchService.getMainCategories();
+    final results = await Future.wait([
+      _searchService.getMainCategories(),
+      Future.delayed(const Duration(milliseconds: 300)), // Bardzo krótkie opóźnienie - najprostsze UI
+    ]);
+    mainCategories = results[0] as List<MainCategory>;
     notifyListeners();
   }
 
   Future<void> _fetchRebookSuggestions(AuthService authService) async {
     if (authService.isAuthenticated) {
       final token = authService.token;
-      rebookSuggestions = await _searchService.getRebookSuggestions(token);
-      notifyListeners();
+      final results = await Future.wait([
+        _searchService.getRebookSuggestions(token),
+        Future.delayed(const Duration(milliseconds: 600)), // Średnie opóźnienie
+      ]);
+      rebookSuggestions = results[0] as List<RebookSuggestion>;
+    } else {
+      await Future.delayed(const Duration(milliseconds: 600));
     }
+    isRebookLoading = false;
+    notifyListeners();
   }
 
   void setMainCategory(int? categoryId) {
@@ -133,6 +143,7 @@ class HomeProvider extends ChangeNotifier {
   }
 
   void setSortBy(String sortBy) {
+    if (activeSortBy == sortBy) return;
     activeSortBy = sortBy;
     onFilterChanged();
   }
@@ -141,6 +152,13 @@ class HomeProvider extends ChangeNotifier {
     if (pageNumber == newPage) return;
     pageNumber = newPage;
     fetchResults();
+    if (mainScrollController.hasClients) {
+      mainScrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   void clearSearch() {

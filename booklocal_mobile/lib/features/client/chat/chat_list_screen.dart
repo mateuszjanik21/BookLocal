@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/services/presence_service.dart';
 import 'providers/chat_provider.dart';
 import 'widgets/conversation_list_item.dart';
 
@@ -11,12 +12,38 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
+  late final ChatProvider _chatProvider;
+  late final PresenceService _presenceService;
+
   @override
   void initState() {
     super.initState();
+    _chatProvider = Provider.of<ChatProvider>(context, listen: false);
+    _presenceService = Provider.of<PresenceService>(context, listen: false);
+
+    // Nasłuchuj zmian PresenceService (nowe wiadomości) → odśwież listę
+    _presenceService.addListener(_onPresenceChanged);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<ChatProvider>(context, listen: false).loadMyConversations();
+      _refresh();
     });
+  }
+
+  void _onPresenceChanged() {
+    // Gdy PresenceService zmieni unread count (nowa wiadomość),
+    // odśwież listę konwersacji by pokazać nowe dane
+    _chatProvider.loadMyConversations();
+  }
+
+  @override
+  void dispose() {
+    _presenceService.removeListener(_onPresenceChanged);
+    super.dispose();
+  }
+
+  Future<void> _refresh() async {
+    await _chatProvider.loadMyConversations();
+    await _presenceService.refreshUnreadCount();
   }
 
   @override
@@ -36,32 +63,65 @@ class _ChatListScreenState extends State<ChatListScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final conversations = provider.conversations;
+          final conversations = List.of(provider.conversations)
+            ..sort((a, b) => b.lastMessageDate.compareTo(a.lastMessageDate));
+
           if (conversations.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.chat_bubble_outline, size: 60, color: Colors.grey),
-                  SizedBox(height: 10),
-                  Text("Brak wiadomości"),
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF16a34a).withOpacity(0.05),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.chat_bubble_outline_rounded, size: 48, color: const Color(0xFF16a34a).withOpacity(0.5)),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    "Brak wiadomości",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      "Tutaj pojawią się Twoje konwersacje z salonami. Umów wizytę, aby rozpocząć czat!",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.only(top: 12, bottom: 24),
-            itemCount: conversations.length,
-            itemBuilder: (context, index) {
-              final conv = conversations[index];
-              return ConversationListItem(
-                conversation: conv,
-                onReturn: () {
-                  provider.loadMyConversations();
-                },
-              );
-            },
+          return RefreshIndicator(
+            onRefresh: _refresh,
+            color: const Color(0xFF16a34a),
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(top: 8, bottom: 24),
+              itemCount: conversations.length,
+              itemBuilder: (context, index) {
+                final conv = conversations[index];
+                return ConversationListItem(
+                  conversation: conv,
+                  onReturn: () => _refresh(),
+                );
+              },
+            ),
           );
         },
       ),

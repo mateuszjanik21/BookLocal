@@ -30,9 +30,11 @@ class _HomeScreenBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<HomeProvider>(context, listen: false);
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAF9),
       body: CustomScrollView(
+        controller: provider.mainScrollController,
         slivers: [
           const SliverToBoxAdapter(
             child: HomeTopBar(),

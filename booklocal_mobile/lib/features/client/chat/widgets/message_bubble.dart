@@ -17,7 +17,7 @@ class MessageBubble extends StatelessWidget {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 6),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
@@ -57,13 +57,26 @@ class MessageBubble extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              DateFormat('HH:mm').format(message.messageSent.toLocal()),
-              style: TextStyle(
-                color: isMe ? Colors.white.withOpacity(0.8) : Colors.grey[500],
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  DateFormat('HH:mm').format(message.messageSent.toLocal()),
+                  style: TextStyle(
+                    color: isMe ? Colors.white.withOpacity(0.8) : Colors.grey[500],
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (isMe) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    message.isRead ? Icons.done_all : Icons.check,
+                    size: 14,
+                    color: message.isRead ? Colors.blue[100] : Colors.white.withOpacity(0.7),
+                  ),
+                ],
+              ],
             ),
           ],
         ),

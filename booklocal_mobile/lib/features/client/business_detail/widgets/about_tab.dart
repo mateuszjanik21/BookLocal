@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../core/models/business_detail_dto.dart';
 import 'section_card.dart';
 
@@ -80,22 +81,39 @@ class AboutTab extends StatelessWidget {
                           const Divider(height: 24),
                       ],
                       if (address.isNotEmpty) ...[
-                        Row(
-                          children: [
-                            const Icon(Icons.location_on, color: Color(0xFF16a34a), size: 20),
-                            const SizedBox(width: 12),
-                            Expanded(child: Text(address, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
-                          ],
+                        InkWell(
+                          onTap: () {
+                            final query = Uri.encodeComponent(address);
+                            launchUrlString("https://www.google.com/maps/search/?api=1&query=$query");
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.location_on, color: Color(0xFF16a34a), size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(child: Text(address, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                       if (phoneNumber != null && phoneNumber.isNotEmpty) ...[
                         if (address.isNotEmpty) const Divider(height: 24),
-                        Row(
-                          children: [
-                            const Icon(Icons.phone, color: Color(0xFF16a34a), size: 20),
-                            const SizedBox(width: 12),
-                            Expanded(child: Text(phoneNumber, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
-                          ],
+                        InkWell(
+                          onTap: () {
+                            launchUrlString("tel:${phoneNumber.replaceAll(' ', '')}");
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.phone, color: Color(0xFF16a34a), size: 20),
+                                const SizedBox(width: 12),
+                                Expanded(child: Text(phoneNumber, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF16a34a)))),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ],
@@ -121,7 +139,12 @@ class AboutTab extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Otwieranie mapy...")));
+                        if (address.isNotEmpty) {
+                          final query = Uri.encodeComponent(address);
+                          launchUrlString("https://www.google.com/maps/search/?api=1&query=$query");
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Brak dokładnego adresu.")));
+                        }
                       },
                       icon: const Icon(Icons.directions, size: 18),
                       label: const Text("Trasa"),

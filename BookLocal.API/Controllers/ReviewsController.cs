@@ -83,7 +83,7 @@ namespace BookLocal.API.Controllers
                     ReviewId = r.ReviewId,
                     Rating = r.Rating,
                     Comment = r.Comment,
-                    ReviewerName = r.ReviewerName,
+                    ReviewerName = r.User != null ? $"{r.User.FirstName} {r.User.LastName}" : r.ReviewerName,
                     CreatedAt = r.CreatedAt,
                     UserId = r.UserId,
                     ReviewerPhotoUrl = r.User.PhotoUrl,

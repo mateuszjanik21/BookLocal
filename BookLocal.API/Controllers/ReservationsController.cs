@@ -284,7 +284,13 @@ namespace BookLocal.API.Controllers
                         BundleName = first.ServiceBundle?.Name,
                         IsBundle = isBundle,
                         LoyaltyPointsUsed = g.Sum(r => r.LoyaltyPointsUsed),
-                        PaymentMethod = first.PaymentMethod.ToString()
+                        PaymentMethod = first.PaymentMethod.ToString(),
+                        SubItems = isBundle ? g.Select(r => new BundleSubItemDto
+                        {
+                            ReservationId = r.ReservationId,
+                            ServiceName = r.ServiceVariant?.Service?.Name ?? "Usługa",
+                            VariantName = r.ServiceVariant?.Name ?? ""
+                        }).ToList() : null
                     };
                 })
                 .OrderBy(d => scope == "past" ? d.StartTime : DateTime.MinValue)

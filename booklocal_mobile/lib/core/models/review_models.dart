@@ -5,6 +5,7 @@ class ReviewDto {
   final int rating;
   final String comment; // Zmiana z content
   final DateTime createdAt;
+  final String? userId; // Added userId
 
   ReviewDto({
     required this.reviewId,
@@ -13,6 +14,7 @@ class ReviewDto {
     required this.rating,
     required this.comment,
     required this.createdAt,
+    this.userId,
   });
 
   factory ReviewDto.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class ReviewDto {
       // Mapowanie nazw z backendu (Angular: comment)
       comment: json['comment'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+      userId: json['userId'],
     );
   }
 }

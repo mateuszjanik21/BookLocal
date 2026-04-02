@@ -76,7 +76,7 @@ class ServiceCategoryGrid extends StatelessWidget {
               crossAxisCount: crossAxisCount,
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
-              childAspectRatio: crossAxisCount == 1 ? 2.5 : 0.75, // Zmiana proporcji dla mobile (pozioma karta)
+              childAspectRatio: crossAxisCount == 1 ? 2.2 : 0.75, // Zmiana proporcji dla mobile (pozioma karta)
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -166,7 +166,7 @@ class ServiceCategoryGrid extends StatelessWidget {
         crossAxisCount: crossAxisCount,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
-        childAspectRatio: crossAxisCount == 1 ? 2.5 : 0.75,
+        childAspectRatio: crossAxisCount == 1 ? 2.2 : 0.75,
       ),
       delegate: SliverChildBuilderDelegate(
         (context, index) {

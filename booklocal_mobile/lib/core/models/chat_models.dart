@@ -4,7 +4,7 @@ class ConversationDto {
   final String? participantPhotoUrl;
   final String lastMessage;
   final DateTime lastMessageDate;
-  final int unreadCount;
+  int unreadCount;
 
   ConversationDto({
     required this.conversationId,
@@ -21,7 +21,7 @@ class ConversationDto {
       participantName: json['participantName'] ?? 'Rozmówca',
       participantPhotoUrl: json['participantPhotoUrl'],
       lastMessage: json['lastMessage'] ?? '',
-      lastMessageDate: DateTime.tryParse(json['lastMessageDate'] ?? '') ?? DateTime.now(),
+      lastMessageDate: DateTime.tryParse(json['lastMessageAt'] ?? json['lastMessageDate'] ?? '') ?? DateTime.now(),
       unreadCount: json['unreadCount'] ?? 0,
     );
   }
@@ -32,7 +32,7 @@ class MessageDto {
   final String senderId; // <--- ZMIANA: int -> String
   final String content;
   final DateTime messageSent;
-  final bool isRead;
+  bool isRead;
 
   MessageDto({
     required this.id,
@@ -44,11 +44,10 @@ class MessageDto {
 
   factory MessageDto.fromJson(Map<String, dynamic> json) {
     return MessageDto(
-      id: json['id'] ?? 0,
-      // Teraz bezpiecznie rzutujemy na String
-      senderId: json['senderId'].toString(), 
+      id: json['id'] ?? json['messageId'] ?? 0, // C# can send messageId
+      senderId: json['senderId']?.toString() ?? '', 
       content: json['content'] ?? '',
-      messageSent: DateTime.tryParse(json['messageSent'] ?? '') ?? DateTime.now(),
+      messageSent: DateTime.tryParse(json['sentAt']?.toString() ?? json['messageSent']?.toString() ?? '') ?? DateTime.now(),
       isRead: json['isRead'] ?? false,
     );
   }

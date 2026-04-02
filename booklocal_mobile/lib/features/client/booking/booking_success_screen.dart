@@ -46,9 +46,9 @@ class BookingSuccessScreen extends StatelessWidget {
                   onPressed: () {
                     // POPRAWKA: Nawigujemy do MainScreen z indeksem 2 (Wizyty)
                     // Dzięki temu załaduje się pasek menu i otworzy odpowiednia zakładka
-                    Navigator.of(context).pushAndRemoveUntil(
+                    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                       MaterialPageRoute(
-                        builder: (context) => const MainScreen(initialIndex: 2), 
+                        builder: (context) => const MainScreen(initialIndex: 1), 
                       ),
                       (route) => false,
                     );
@@ -61,7 +61,7 @@ class BookingSuccessScreen extends StatelessWidget {
               TextButton(
                 onPressed: () {
                    // Wróć do ekranu głównego (zakładka Home to index 0)
-                   Navigator.of(context).pushAndRemoveUntil(
+                   Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (context) => const MainScreen(initialIndex: 0)), 
                       (route) => false,
                     );

@@ -2,6 +2,7 @@ import 'dart:ui'; // Potrzebne do ImageFilter
 import 'package:booklocal_mobile/core/services/chat_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/models/business_detail_dto.dart';
 import '../../../core/models/business_list_item_dto.dart';
 import '../../../core/models/review_models.dart';
@@ -9,6 +10,7 @@ import '../../../core/models/service_bundle_dto.dart';
 import '../../../core/services/client_service.dart';
 import '../../../core/services/review_service.dart';
 import '../../../core/services/service_bundle_service.dart';
+import '../../../core/models/employee_models.dart';
 import '../chat/conversation_screen.dart';
 import 'widgets/about_tab.dart';
 import 'widgets/bundles_tab.dart';
@@ -19,14 +21,16 @@ import '../favorites/providers/favorites_provider.dart';
 
 class BusinessDetailsScreen extends StatefulWidget {
   final BusinessListItemDto business;
+  final int? highlightVariantId;
 
-  const BusinessDetailsScreen({super.key, required this.business});
+  const BusinessDetailsScreen({super.key, required this.business, this.highlightVariantId});
 
   @override
   State<BusinessDetailsScreen> createState() => _BusinessDetailsScreenState();
 }
 
-class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
+class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
+    with SingleTickerProviderStateMixin {
   BusinessDetailDto? _fullBusiness;
   bool _isLoadingBusiness = true;
   List<ReviewDto> _reviews = [];
@@ -36,13 +40,43 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
   bool _hasMoreReviews = true;
   List<ServiceBundleDto> _bundles = [];
   bool _isLoadingBundles = true;
+  EmployeeDto? _preselectedEmployee;
+  late final TabController _tabController;
+  late final ScrollController _scrollController;
+  String _sortBy = 'newest';
+  bool _isTitleVisible = false;
 
   @override
   void initState() {
     super.initState();
-    _loadBusinessDetails();
-    _loadReviews();
-    _loadBundles();
+    _scrollController = ScrollController()..addListener(_onScroll);
+    _tabController = TabController(length: 5, vsync: this);
+    
+    // Optymalizacja płynności (Anti-Jank): Opóźniamy pobieranie danych zewnętrznych 
+    // aż do momentu zakończenia natywnej animacji przejścia ekranu (z reguły ~300ms).
+    Future.delayed(const Duration(milliseconds: 350), () {
+      if (mounted) {
+        _loadBusinessDetails();
+        _loadReviews();
+        _loadBundles();
+      }
+    });
+  }
+
+  void _onScroll() {
+    if (_scrollController.hasClients) {
+      final shouldShowTitle = _scrollController.offset > 240;
+      if (_isTitleVisible != shouldShowTitle) {
+        setState(() => _isTitleVisible = shouldShowTitle);
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadReviews({bool loadMore = false}) async {
@@ -51,7 +85,18 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
     }
     final reviewService = Provider.of<ReviewService>(context, listen: false);
     final page = loadMore ? _reviewPage + 1 : 1;
-    final result = await reviewService.getReviews(widget.business.id, pageNumber: page, pageSize: 5);
+
+    if (loadMore) {
+      // Sztuczne opóźnienie, żeby animacja ładowania była widoczna dla lepszego wrażenia UX
+      await Future.delayed(const Duration(milliseconds: 800));
+    }
+
+    final result = await reviewService.getReviews(
+      widget.business.id, 
+      pageNumber: page, 
+      pageSize: 10,
+      sortBy: _sortBy,
+    );
 
     if (mounted) {
       setState(() {
@@ -63,7 +108,7 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
           _isLoadingReviews = false;
         }
         _reviewPage = page;
-        _hasMoreReviews = result.items.length >= 5;
+        _hasMoreReviews = result.items.length >= 10;
       });
     }
   }
@@ -150,21 +195,39 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
     const primaryColor = Color(0xFF16a34a);
     const backgroundColor = Color(0xFFF3F4F6);
 
-    return DefaultTabController(
-      length: 5,
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: backgroundColor,
         body: NestedScrollView(
-          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
             return <Widget>[
-              // 1. HEADER (Banner z rozmyciem)
               SliverAppBar(
                 expandedHeight: 320.0,
                 floating: false,
                 pinned: true,
                 backgroundColor: primaryColor,
                 stretch: true,
+                title: AnimatedOpacity(
+                  opacity: _isTitleVisible ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: Text(
+                    widget.business.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.share, color: Colors.white),
+                    onPressed: () {
+                      Share.share(
+                        'Sprawdź salon ${widget.business.name} w aplikacji BookLocal! Zarezerwuj wizytę wygodnie online: https://booklocal.pl/business/${widget.business.id}',
+                        subject: 'Salon ${widget.business.name} na BookLocal',
+                      );
+                    },
+                    tooltip: "Udostępnij salon",
+                  ),
+                ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
                     fit: StackFit.expand,
@@ -252,6 +315,7 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                 pinned: true,
                 delegate: _SliverAppBarDelegate(
                   TabBar(
+                    controller: _tabController,
                     isScrollable: true,
                     labelColor: primaryColor,
                     unselectedLabelColor: Colors.grey[600],
@@ -262,11 +326,11 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                     unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
                     labelPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                     tabs: const [
-                      Tab(text: "O Nas"),
                       Tab(text: "Usługi"),
                       Tab(text: "Pakiety"),
                       Tab(text: "Zespół"),
                       Tab(text: "Opinie"),
+                      Tab(text: "O Nas"),
                     ],
                   ),
                 ),
@@ -274,7 +338,77 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
             ];
           },
           body: TabBarView(
+            controller: _tabController,
             children: [
+              RefreshIndicator(
+                color: primaryColor,
+                onRefresh: _handleRefresh,
+                child: ServicesTab(
+                  fullBusiness: _fullBusiness,
+                  business: widget.business,
+                  isLoading: _isLoadingBusiness,
+                  preselectedEmployee: _preselectedEmployee,
+                  highlightVariantId: widget.highlightVariantId,
+                ),
+              ),
+              RefreshIndicator(
+                color: primaryColor,
+                onRefresh: _handleRefresh,
+                child: BundlesTab(
+                  bundles: _bundles,
+                  isLoading: _isLoadingBundles,
+                  business: widget.business,
+                ),
+              ),
+              RefreshIndicator(
+                color: primaryColor,
+                onRefresh: _handleRefresh,
+                child: TeamTab(
+                  fullBusiness: _fullBusiness,
+                  business: widget.business,
+                  isLoading: _isLoadingBusiness,
+                ),
+              ),
+              NotificationListener<ScrollNotification>(
+                onNotification: (ScrollNotification scrollInfo) {
+                  // Only listen to the inner scroll view (depth == 0) and when we reach the very bottom
+                  if (scrollInfo.depth == 0 &&
+                      scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 50 &&
+                      scrollInfo.metrics.maxScrollExtent > 0 &&
+                      !_isLoadingMoreReviews &&
+                      _hasMoreReviews) {
+                    Future.microtask(() => _loadReviews(loadMore: true));
+                  }
+                  return false;
+                },
+                child: RefreshIndicator(
+                  color: primaryColor,
+                  onRefresh: _handleRefresh,
+                  child: ReviewsTab(
+                    businessId: widget.business.id,
+                    reviews: _reviews,
+                    isLoading: _isLoadingReviews,
+                    isLoadingMore: _isLoadingMoreReviews,
+                    hasMore: _hasMoreReviews,
+                    sortBy: _sortBy,
+                    onSortChanged: (newSort) {
+                      setState(() {
+                        _sortBy = newSort;
+                        _isLoadingReviews = true;
+                        _reviewPage = 1;
+                      });
+                      _loadReviews();
+                    },
+                    onReviewChanged: () {
+                      setState(() {
+                        _isLoadingReviews = true;
+                        _reviewPage = 1;
+                      });
+                      _loadReviews();
+                    },
+                  ),
+                ),
+              ),
               RefreshIndicator(
                 color: primaryColor,
                 onRefresh: _handleRefresh,
@@ -285,47 +419,10 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen> {
                   onStartChat: _startChat,
                 ),
               ),
-              RefreshIndicator(
-                color: primaryColor,
-                onRefresh: _handleRefresh,
-                child: ServicesTab(
-                  fullBusiness: _fullBusiness,
-                  business: widget.business,
-                  isLoading: _isLoadingBusiness,
-                ),
-              ),
-              RefreshIndicator(
-                color: primaryColor,
-                onRefresh: _handleRefresh,
-                child: BundlesTab(
-                  bundles: _bundles,
-                  isLoading: _isLoadingBundles,
-                ),
-              ),
-              RefreshIndicator(
-                color: primaryColor,
-                onRefresh: _handleRefresh,
-                child: TeamTab(
-                  fullBusiness: _fullBusiness,
-                  isLoading: _isLoadingBusiness,
-                ),
-              ),
-              RefreshIndicator(
-                color: primaryColor,
-                onRefresh: _handleRefresh,
-                child: ReviewsTab(
-                  reviews: _reviews,
-                  isLoading: _isLoadingReviews,
-                  isLoadingMore: _isLoadingMoreReviews,
-                  hasMore: _hasMoreReviews,
-                  onLoadMore: () => _loadReviews(loadMore: true),
-                ),
-              ),
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }
 

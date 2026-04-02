@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import '../../../../core/models/business_detail_dto.dart';
+import '../../../../core/models/business_list_item_dto.dart';
 import '../../../../core/models/employee_models.dart';
+import '../../booking/employee_booking_screen.dart';
 import 'section_card.dart';
 
 class TeamTab extends StatelessWidget {
   final BusinessDetailDto? fullBusiness;
+  final BusinessListItemDto business;
   final bool isLoading;
 
   const TeamTab({
     super.key,
     required this.fullBusiness,
+    required this.business,
     required this.isLoading,
   });
 
@@ -93,7 +98,27 @@ class TeamTab extends StatelessWidget {
                   child: Text(employee.position ?? employee.specialization!,
                       style: const TextStyle(fontSize: 16, color: Color(0xFF16a34a), fontWeight: FontWeight.w500)),
                 ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              if ((employee.instagramProfileUrl != null && employee.instagramProfileUrl!.isNotEmpty) ||
+                  (employee.portfolioUrl != null && employee.portfolioUrl!.isNotEmpty))
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (employee.instagramProfileUrl != null && employee.instagramProfileUrl!.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.camera_alt_outlined, color: Colors.purple),
+                        onPressed: () => launchUrlString(employee.instagramProfileUrl!, mode: LaunchMode.externalApplication),
+                        tooltip: "Instagram",
+                      ),
+                    if (employee.portfolioUrl != null && employee.portfolioUrl!.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.language, color: Colors.blue),
+                        onPressed: () => launchUrlString(employee.portfolioUrl!, mode: LaunchMode.externalApplication),
+                        tooltip: "Portfolio",
+                      ),
+                  ],
+                ),
+              const SizedBox(height: 8),
               if (employee.bio != null && employee.bio!.isNotEmpty) ...[
                 const Align(
                   alignment: Alignment.centerLeft,
@@ -112,10 +137,21 @@ class TeamTab extends StatelessWidget {
                 child: ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pop(sheetContext);
-                    DefaultTabController.of(context).animateTo(1);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EmployeeBookingScreen(
+                          business: business,
+                          employee: employee,
+                        ),
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.calendar_today, size: 20),
-                  label: const Text("ZOBACZ USŁUGI", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  label: Text(
+                    "Wybierz usługę u ${employee.firstName}",
+                    style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF16a34a),
                     foregroundColor: Colors.white,

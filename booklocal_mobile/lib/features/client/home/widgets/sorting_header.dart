@@ -66,7 +66,7 @@ class SortingHeader extends StatelessWidget {
                       value: 'reviews_desc',
                       child: Text('Najbardziej popularne')),
                   DropdownMenuItem(
-                      value: 'newest_desc', child: Text('Nowości')),
+                      value: 'newest_desc', child: Text('Nowości na BookLocal')),
                 ],
               ),
             ),

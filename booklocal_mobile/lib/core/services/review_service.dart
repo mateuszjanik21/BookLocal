@@ -8,15 +8,26 @@ class ReviewService {
   final AuthService? _authService;
   ReviewService([this._authService]);
   
-  Future<PagedReviewsResult> getReviews(int businessId, {int pageNumber = 1, int pageSize = 5}) async {
-    // POPRAWNY URL zgodny z Angularem: /api/businesses/{id}/reviews
+  Future<PagedReviewsResult> getReviews(
+    int businessId, {
+    int pageNumber = 1,
+    int pageSize = 10,
+    String sortBy = 'newest',
+  }) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}/businesses/$businessId/reviews').replace(queryParameters: {
       'pageNumber': pageNumber.toString(),
       'pageSize': pageSize.toString(),
+      'sortBy': sortBy,
     });
 
+    final token = _authService?.token;
+    final headers = <String, String>{};
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+
     try {
-      final response = await http.get(uri);
+      final response = await http.get(uri, headers: headers);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -56,6 +67,49 @@ class ReviewService {
       }
     } catch (e) {
       print("Błąd sieci (addReview): $e");
+      return false;
+    }
+  }
+
+  Future<bool> updateReview(int businessId, int reviewId, int rating, String comment) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/businesses/$businessId/reviews/$reviewId');
+    final token = _authService?.token;
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'rating': rating,
+          'comment': comment,
+        }),
+      );
+
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print("Błąd sieci (updateReview): $e");
+      return false;
+    }
+  }
+
+  Future<bool> deleteReview(int businessId, int reviewId) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/businesses/$businessId/reviews/$reviewId');
+    final token = _authService?.token;
+
+    try {
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print("Błąd sieci (deleteReview): $e");
       return false;
     }
   }

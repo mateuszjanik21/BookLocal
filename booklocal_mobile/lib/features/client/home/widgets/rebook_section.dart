@@ -5,6 +5,7 @@ import '../providers/home_provider.dart';
 import '../../../../core/models/rebook_suggestion.dart';
 import '../../../../core/models/business_list_item_dto.dart';
 import '../../business_detail/business_details_screen.dart';
+import 'package:shimmer/shimmer.dart';
 
 class RebookSection extends StatelessWidget {
   const RebookSection({super.key});
@@ -14,7 +15,7 @@ class RebookSection extends StatelessWidget {
     final homeProvider = Provider.of<HomeProvider>(context);
     final suggestions = homeProvider.rebookSuggestions;
 
-    if (suggestions.isEmpty) {
+    if (!homeProvider.isRebookLoading && suggestions.isEmpty) {
       return const SizedBox.shrink(); // Ukrywa sekcję, jeżeli pusta (nie zalogowano lub brak wizyt)
     }
 
@@ -66,14 +67,23 @@ class RebookSection extends StatelessWidget {
           const SizedBox(height: 16),
           SizedBox(
             height: 180,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              itemCount: suggestions.length,
-              itemBuilder: (context, index) {
-                return _buildRebookCard(context, suggestions[index]);
-              },
-            ),
+            child: homeProvider.isRebookLoading
+                ? ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    itemCount: 3,
+                    itemBuilder: (context, index) {
+                      return _buildSkeletonCard();
+                    },
+                  )
+                : ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    itemCount: suggestions.length,
+                    itemBuilder: (context, index) {
+                      return _buildRebookCard(context, suggestions[index]);
+                    },
+                  ),
           ),
         ],
       ),
@@ -239,6 +249,57 @@ class RebookSection extends StatelessWidget {
                       Icons.arrow_forward_ios,
                       size: 14,
                       color: Colors.black26,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonCard() {
+    return Container(
+      width: 260,
+      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black12),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey.shade300,
+        highlightColor: Colors.grey.shade100,
+        child: Column(
+          children: [
+            Expanded(
+              flex: 3,
+              child: Container(color: Colors.white),
+            ),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Colors.white,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(width: 120, height: 14, color: Colors.white),
+                          const SizedBox(height: 6),
+                          Container(width: 80, height: 10, color: Colors.white),
+                        ],
+                      ),
                     ),
                   ],
                 ),

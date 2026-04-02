@@ -83,6 +83,24 @@ class ClientService {
     }
   }
 
+  /// Get all employees of a business (for bundle booking)
+  Future<List<EmployeeDto>> getEmployees(int businessId) async {
+    final url = Uri.parse(
+      '${ApiConfig.baseUrl}/businesses/$businessId/employees',
+    );
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => EmployeeDto.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      print("Błąd pobierania pracowników: $e");
+      return [];
+    }
+  }
+
   Future<List<BusinessListItemDto>> getBusinesses() async {
     // ZMIANA: Używamy endpointu do wyszukiwania, bo on zwraca kategorie!
     // Parametry pageNumber i pageSize są wymagane przez Twój backend

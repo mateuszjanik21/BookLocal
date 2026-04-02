@@ -32,10 +32,30 @@ class ReservationService {
   }
 
   // 2. Utwórz rezerwację
-  Future<bool> createReservation(int serviceVariantId, int employeeId, DateTime fullDate) async {
+  Future<bool> createReservation(
+    int serviceVariantId,
+    int employeeId,
+    DateTime fullDate, {
+    String? discountCode,
+    String paymentMethod = 'Cash',
+    int loyaltyPointsUsed = 0,
+  }) async {
     final url = Uri.parse('${ApiConfig.baseUrl}/reservations');
     final token = _authService?.token;
     final startTimeStr = fullDate.toUtc().toIso8601String();
+
+    final body = <String, dynamic>{
+      'serviceVariantId': serviceVariantId,
+      'employeeId': employeeId,
+      'startTime': startTimeStr,
+      'paymentMethod': paymentMethod,
+    };
+    if (discountCode != null && discountCode.isNotEmpty) {
+      body['discountCode'] = discountCode;
+    }
+    if (loyaltyPointsUsed > 0) {
+      body['loyaltyPointsUsed'] = loyaltyPointsUsed;
+    }
 
     try {
       final response = await http.post(
@@ -44,16 +64,13 @@ class ReservationService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({
-          'serviceVariantId': serviceVariantId,
-          'employeeId': employeeId,
-          'startTime': startTimeStr,
-        }),
+        body: jsonEncode(body),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
+        print("Błąd rezerwacji: ${response.statusCode} - ${response.body}");
         return false;
       }
     } catch (e) {
@@ -62,12 +79,80 @@ class ReservationService {
     }
   }
 
-  Future<List<ReservationDto>> getMyReservations({String scope = 'upcoming'}) async {
+  // 3. Weryfikacja kodu rabatowego
+  Future<Map<String, dynamic>?> verifyDiscount({
+    required int businessId,
+    required String code,
+    required int serviceId,
+    required String customerId,
+    required double originalPrice,
+  }) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/businesses/$businessId/discounts/verify');
+    final token = _authService?.token;
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'code': code,
+          'serviceId': serviceId,
+          'customerId': customerId,
+          'originalPrice': originalPrice,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      print("❌ Błąd weryfikacji kodu: $e");
+      return null;
+    }
+  }
+
+  // 4. Pobierz saldo punktów lojalnościowych
+  Future<int> getLoyaltyBalance({
+    required int businessId,
+    required String customerId,
+  }) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/businesses/$businessId/loyalty/customer/$customerId');
+    final token = _authService?.token;
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return (data['balance']?['pointsBalance'] ?? 0) as int;
+      }
+      return 0;
+    } catch (e) {
+      print("❌ Błąd pobierania punktów: $e");
+      return 0;
+    }
+  }
+
+  Future<List<ReservationDto>> getMyReservations({
+    String scope = 'upcoming', 
+    int pageNumber = 1, 
+    int pageSize = 10,
+  }) async {
     // Dynamicznie podstawiamy scope do URL
     final uri = Uri.parse('${ApiConfig.baseUrl}/reservations/my-reservations').replace(queryParameters: {
       'scope': scope, // 'upcoming' lub 'past'
-      'pageNumber': '1',
-      'pageSize': '50', // Pobieramy więcej, żeby na razie pominąć paginację
+      'pageNumber': pageNumber.toString(),
+      'pageSize': pageSize.toString(), 
     });
 
     final token = _authService?.token;
@@ -123,6 +208,35 @@ class ReservationService {
       }
     } catch (e) {
       print("Błąd sieci (cancel): $e");
+      return false;
+    }
+  }
+
+  Future<bool> submitReview(int reservationId, int rating, String comment) async {
+    final url = Uri.parse('${ApiConfig.baseUrl}/reservations/$reservationId/reviews');
+    final token = _authService?.token;
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'rating': rating,
+          'comment': comment,
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      } else {
+        print("Błąd wysyłania opinii: ${response.statusCode} - ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Błąd sieci (review): $e");
       return false;
     }
   }

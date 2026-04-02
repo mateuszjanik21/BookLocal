@@ -65,6 +65,9 @@ namespace BookLocal.API.Hubs
             await Clients.Group(conversationId.ToString()).SendAsync("ReceiveMessage", messageDto);
 
             var recipientId = senderId == conversation.CustomerId ? conversation.Business.OwnerId : conversation.CustomerId;
+
+            await Clients.User(recipientId).SendAsync("ReceiveGlobalMessage", messageDto);
+
             var recipient = await _userManager.FindByIdAsync(recipientId);
 
             var unreadCountForRecipient = await _context.Messages

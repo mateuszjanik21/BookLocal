@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../../core/models/reservation_models.dart';
-import '../../../../core/models/business_list_item_dto.dart';
-import '../../business_detail/business_details_screen.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/models/reservation_models.dart';
+import 'package:provider/provider.dart';
+import '../providers/reservations_provider.dart';
+import '../reservation_details_screen.dart';
 
 class ReservationCard extends StatelessWidget {
   final ReservationDto reservation;
@@ -18,190 +19,217 @@ class ReservationCard extends StatelessWidget {
     this.onReview,
   });
 
+  String _getRelativeDateText(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(date.year, date.month, date.day);
+    final difference = target.difference(today).inDays;
+
+    if (difference == 0) return "Dziś";
+    if (difference == 1) return "Jutro";
+    if (difference == 2) return "Pojutrze";
+    if (difference > 2 && difference <= 5) return "Za $difference dni";
+    
+    final dayFormatter = DateFormat('d', 'pl_PL');
+    final monthFormatter = DateFormat('MMM', 'pl_PL');
+    return "${dayFormatter.format(date)}\n${monthFormatter.format(date).toUpperCase().replaceAll('.', '')}";
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Formatowanie daty a'la Angularowa klasa Pipes!
-    final dayFormatter = DateFormat('d', 'pl_PL');
-    final monthYearFormatter = DateFormat('MMMM yyyy', 'pl_PL');
-    final timeFormatter = DateFormat('EEEE, HH:mm', 'pl_PL');
-
-    final day = dayFormatter.format(reservation.date);
-    final monthYear = monthYearFormatter.format(reservation.date);
-    final time = timeFormatter.format(reservation.date);
+    final timeFormatter = DateFormat('HH:mm', 'pl_PL');
 
     final bool isConfirmed = reservation.status == 'confirmed';
     final bool isCancelled = reservation.status == 'cancelled';
     final bool isCompleted = reservation.status == 'completed';
 
-    Color cardColor = isPast ? Colors.white.withOpacity(0.8) : Colors.white;
+    const Color primaryColor = Color(0xFF16a34a);
+    
+    Color accentColor = primaryColor;
+    if (isCancelled) accentColor = Colors.red;
+    if (isCompleted || isPast) accentColor = Colors.grey.shade400;
 
-    return Card(
-      elevation: 2,
+    final String relativeDate = _getRelativeDateText(reservation.startTime);
+    final time = timeFormatter.format(reservation.startTime);
+
+    void goToDetails() {
+      final provider = Provider.of<ReservationsProvider>(context, listen: false);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangeNotifierProvider.value(
+            value: provider,
+            child: ReservationDetailsScreen(reservation: reservation),
+          ),
+        ),
+      );
+    }
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: cardColor,
-      child: InkWell(
+      // Minimalistyczna karta w stylu premium
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          final businessItem = BusinessListItemDto(
-            id: reservation.businessId,
-            name: reservation.businessName,
-            category: reservation.serviceName,
-            city: '',
-            photoUrl: null,
-            rating: 0,
-            reviewCount: 0,
-          );
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BusinessDetailsScreen(business: businessItem),
-            ),
-          );
-        },
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Lewa kolumna: DATA
-            Container(
-              width: 110,
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-              decoration: BoxDecoration(
-                border: Border(right: BorderSide(color: Colors.grey.shade200)),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    day,
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
-                  ),
-                  Text(
-                    monthYear,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    time,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 11, color: Colors.black45),
-                  ),
-                ],
-              ),
-            ),
-            // Prawa kolumna: DETALE LOGICZNE
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                reservation.serviceName,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF16a34a),
+            children: [
+              // 1. Lewy pasek akcentujący
+              Container(width: 5, color: accentColor),
+              
+              // 2. Klikalna główna część karty
+              Expanded(
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: goToDetails,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 16, 8, 16),
+                      child: Row(
+                        children: [
+                          // Sekcja daty z relatywnym tekstem
+                          SizedBox(
+                            width: 74,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  relativeDate, 
+                                  style: TextStyle(
+                                    fontSize: relativeDate.contains("\n") ? 13 : 15, 
+                                    fontWeight: relativeDate == "Dziś" || relativeDate == "Jutro" ? FontWeight.w900 : FontWeight.bold, 
+                                    color: relativeDate == "Dziś" ? primaryColor : (isPast ? Colors.grey : Colors.black87),
+                                    height: 1.2,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${reservation.businessName} (${reservation.employeeName})',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 13, color: Colors.black87),
-                              ),
-                            ],
+                                const SizedBox(height: 6),
+                                Text(
+                                  time, 
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black54)
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Odznaka Statusu (Badge)
-                        _buildStatusBadge(reservation.status, isConfirmed, isCancelled, isCompleted),
-                      ],
+                          
+                          // Pionowa linia podziału
+                          Container(
+                            width: 1,
+                            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            color: Colors.grey.shade100,
+                          ),
+                          
+                          // Sekcja informacji o salonie i usłudze
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildStatusBadge(reservation.status, isConfirmed, isCancelled, isCompleted),
+                                const SizedBox(height: 6),
+                                Text(
+                                  reservation.isBundle ? (reservation.bundleName ?? 'Pakiet') : reservation.serviceName, 
+                                  maxLines: 1, 
+                                  overflow: TextOverflow.ellipsis, 
+                                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  reservation.businessName, 
+                                  maxLines: 1, 
+                                  overflow: TextOverflow.ellipsis, 
+                                  style: TextStyle(fontSize: 13, color: Colors.grey[600])
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(Icons.person_outline, size: 14, color: Colors.grey[400]),
+                                    const SizedBox(width: 4),
+                                    Text(reservation.employeeName, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const Spacer(),
-                    
-                    // Renderowanie Opcjonalnych Guzików Akcji (Zależnie czy jesteśmy w dacie nadchodzącej, czy np. zakończono rezerwacje)
-                    if (!isPast && isConfirmed && onCancel != null)
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: OutlinedButton(
-                          onPressed: onCancel,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.red,
-                            side: const BorderSide(color: Colors.red),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          child: const Text('Anuluj'),
-                        ),
-                      ),
-                    if (isPast && onReview != null)
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: ElevatedButton(
-                          onPressed: onReview,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF16a34a),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                          child: const Text('Oceń wizytę'),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
+              
+              // 3. Strefa przycisków akcji
+              if (isPast && isCompleted && !reservation.hasReview && onReview != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        onReview?.call();
+                      },
+                      behavior: HitTestBehavior.opaque,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: primaryColor.withOpacity(0.3)),
+                        ),
+                        child: const Text("OCEŃ", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: primaryColor)),
+                      ),
+                    ),
+                  ),
+                )
+              else if (!isPast && isConfirmed)
+                Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Center(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: IconButton(
+                        onPressed: goToDetails,
+                        icon: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
 
-  // Użycie instrukcji funkcyjnej jako osobny mały pod-komponent, który sam renderuje kontener barwiący zamiast wyciągania go do nowego pliku
   Widget _buildStatusBadge(String status, bool isConfirmed, bool isCancelled, bool isCompleted) {
-    Color bgColor = Colors.grey.shade200;
-    Color textColor = Colors.black54;
-    String label = status;
-
+    Color color = Colors.grey;
+    String label = status.toUpperCase();
     if (isConfirmed) {
-      bgColor = Colors.green.shade100;
-      textColor = Colors.green.shade800;
-      label = 'Potwierdzona';
+      color = const Color(0xFF16a34a);
+      label = "ZATWIERDZONA";
     } else if (isCancelled) {
-      bgColor = Colors.red.shade100;
-      textColor = Colors.red.shade800;
-      label = 'Anulowana';
+      color = Colors.red;
+      label = "ANULOWANA";
     } else if (isCompleted) {
-      bgColor = Colors.grey.shade300;
-      textColor = Colors.black54;
-      label = 'Zakończona';
+      color = Colors.blueGrey;
+      label = "ZAKOŃCZONA";
     }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: textColor),
-      ),
+    return Row(
+      children: [
+        Container(width: 6, height: 6, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 6),
+        Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: color.withOpacity(0.8), letterSpacing: 0.5)),
+      ],
     );
   }
 }

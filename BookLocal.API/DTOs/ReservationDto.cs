@@ -49,6 +49,14 @@ namespace BookLocal.API.DTOs
         public bool IsBundle { get; set; }
         public int LoyaltyPointsUsed { get; set; }
         public string PaymentMethod { get; set; }
+        public List<BundleSubItemDto>? SubItems { get; set; }
+    }
+
+    public class BundleSubItemDto
+    {
+        public int ReservationId { get; set; }
+        public string ServiceName { get; set; }
+        public string VariantName { get; set; }
     }
 
     public class UpdateReservationStatusDto
