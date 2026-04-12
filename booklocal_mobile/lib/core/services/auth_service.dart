@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/api_config.dart';
@@ -131,6 +132,45 @@ class AuthService with ChangeNotifier {
       );
       return response.statusCode == 200;
     } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> uploadProfilePhoto(File imageFile) async {
+    if (_token == null) return false;
+
+    final url = Uri.parse('${ApiConfig.baseUrl}/photos/upload-profile-photo');
+    
+    try {
+      var request = http.MultipartRequest('POST', url)
+        ..headers['Authorization'] = 'Bearer $_token'
+        ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String photoUrl = data['photoUrl'];
+
+        if (_currentUser != null) {
+          _currentUser = UserDto(
+            id: _currentUser!.id,
+            email: _currentUser!.email,
+            firstName: _currentUser!.firstName,
+            lastName: _currentUser!.lastName,
+            phoneNumber: _currentUser!.phoneNumber,
+            photoUrl: photoUrl,
+            roles: _currentUser!.roles,
+          );
+          await _storage.write(key: 'user_data', value: jsonEncode(_currentUser!.toJson()));
+          notifyListeners();
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('[AuthService] Error uploading photo: $e');
       return false;
     }
   }

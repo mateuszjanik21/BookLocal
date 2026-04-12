@@ -87,16 +87,21 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
     final page = loadMore ? _reviewPage + 1 : 1;
 
     if (loadMore) {
-      // Sztuczne opóźnienie, żeby animacja ładowania była widoczna dla lepszego wrażenia UX
+      // Sztuczne opóźnienie, żeby animacja ładowania była widoczna na dole
       await Future.delayed(const Duration(milliseconds: 800));
     }
 
-    final result = await reviewService.getReviews(
-      widget.business.id, 
-      pageNumber: page, 
-      pageSize: 10,
-      sortBy: _sortBy,
-    );
+    final results = await Future.wait([
+      reviewService.getReviews(
+        widget.business.id, 
+        pageNumber: page, 
+        pageSize: 10,
+        sortBy: _sortBy,
+      ),
+      if (!loadMore) Future.delayed(const Duration(milliseconds: 400)), // Wymuszenie szkieletu przy pierwszym wejściu
+    ]);
+    
+    final result = results[0] as PagedReviewsResult;
 
     if (mounted) {
       setState(() {
@@ -115,10 +120,13 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
 
   Future<void> _loadBundles() async {
     final bundleService = Provider.of<ServiceBundleService>(context, listen: false);
-    final bundles = await bundleService.getBundles(widget.business.id);
+    final results = await Future.wait([
+      bundleService.getBundles(widget.business.id),
+      Future.delayed(const Duration(milliseconds: 400)),
+    ]);
     if (mounted) {
       setState(() {
-        _bundles = bundles;
+        _bundles = results[0] as List<ServiceBundleDto>;
         _isLoadingBundles = false;
       });
     }
@@ -126,11 +134,14 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
 
   Future<void> _loadBusinessDetails() async {
     final clientService = Provider.of<ClientService>(context, listen: false);
-    final details = await clientService.getBusinessById(widget.business.id);
+    final results = await Future.wait([
+      clientService.getBusinessById(widget.business.id),
+      Future.delayed(const Duration(milliseconds: 400)),
+    ]);
 
     if (mounted) {
       setState(() {
-        _fullBusiness = details;
+        _fullBusiness = results[0] as BusinessDetailDto;
         _isLoadingBusiness = false;
       });
     }
@@ -296,7 +307,7 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
                                   Text(
                                     _fullBusiness != null
                                         ? "${_fullBusiness!.averageRating.toStringAsFixed(2)} (${_fullBusiness!.reviewCount} opinii)"
-                                        : "${widget.business.rating} (${widget.business.reviewCount} opinii)",
+                                        : "${widget.business.rating.toStringAsFixed(2)} (${widget.business.reviewCount} opinii)",
                                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                   ),
                                 ],

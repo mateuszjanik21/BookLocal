@@ -122,9 +122,17 @@ class _AuthenticatedGateState extends State<_AuthenticatedGate> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!_initialized) {
         _initialized = true;
+
+        // Celowe opóźnienie wywołania Hub'a SignalR oraz wiadomości,
+        // Zapobiega to "wąskiemu gardłu" sieci podczas logowania,
+        // dając najwyższy priorytet na wyrenderowanie i pobranie ekranu Home.
+        await Future.delayed(const Duration(milliseconds: 800));
+
+        if (!mounted) return;
+
         // Uruchom PresenceHub — dokładnie jak Angular createHubConnection() przy starcie
         final presence = Provider.of<PresenceService>(context, listen: false);
         presence.createHubConnection();
@@ -133,7 +141,7 @@ class _AuthenticatedGateState extends State<_AuthenticatedGate> {
         final chatProvider = Provider.of<ChatProvider>(context, listen: false);
         chatProvider.loadMyConversations();
 
-        print('[Main] PresenceHub uruchomiony globalnie po zalogowaniu');
+        print('[Main] ✅ PresenceHub uruchomiony globalnie po opóźnieniu optymalizacyjnym');
       }
     });
   }

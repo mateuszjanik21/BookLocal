@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/models/review_models.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/review_service.dart';
+import 'package:shimmer/shimmer.dart';
 import 'section_card.dart';
 
 class ReviewsTab extends StatelessWidget {
@@ -37,92 +38,146 @@ class ReviewsTab extends StatelessWidget {
       child: SectionCard(
         title: "Opinie Klientów",
         icon: Icons.star_outline,
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : reviews.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Center(child: Text("Brak opinii. Bądź pierwszy!", style: TextStyle(color: Colors.grey))),
-                  )
-                : Column(
-                    children: [
-                      // Opcje sortowania
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            const Text(
-                              "Sortuj:",
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[100],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: DropdownButton<String>(
-                                value: sortBy,
-                                isDense: true,
-                                icon: const Icon(Icons.keyboard_arrow_down,
-                                    size: 20),
-                                underline: const SizedBox(),
-                                style: const TextStyle(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: isLoading
+              ? _buildSkeletonList()
+              : reviews.isEmpty
+                  ? const Padding(
+                      key: ValueKey('reviews_empty'),
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Center(child: Text("Brak opinii. Bądź pierwszy!", style: TextStyle(color: Colors.grey))),
+                    )
+                  : Column(
+                      key: const ValueKey('reviews_loaded'),
+                      children: [
+                        // Opcje sortowania
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              const Text(
+                                "Sortuj:",
+                                style: TextStyle(
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1F2937)),
-                                onChanged: (value) {
-                                  if (value != null) onSortChanged(value);
-                                },
-                                items: const [
-                                  DropdownMenuItem(
-                                      value: 'newest',
-                                      child: Text("Najnowsze")),
-                                  DropdownMenuItem(
-                                      value: 'highest',
-                                      child: Text("Najwyższa ocena")),
-                                  DropdownMenuItem(
-                                      value: 'lowest',
-                                      child: Text("Najniższa ocena")),
-                                ],
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: DropdownButton<String>(
+                                  value: sortBy,
+                                  isDense: true,
+                                  icon: const Icon(Icons.keyboard_arrow_down,
+                                      size: 20),
+                                  underline: const SizedBox(),
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1F2937)),
+                                  onChanged: (value) {
+                                    if (value != null) onSortChanged(value);
+                                  },
+                                  items: const [
+                                    DropdownMenuItem(
+                                        value: 'newest',
+                                        child: Text("Najnowsze")),
+                                    DropdownMenuItem(
+                                        value: 'highest',
+                                        child: Text("Najwyższa ocena")),
+                                    DropdownMenuItem(
+                                        value: 'lowest',
+                                        child: Text("Najniższa ocena")),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: reviews.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 20),
-                        itemBuilder: (context, index) =>
-                            _ReviewItem(
-                              review: reviews[index],
-                              businessId: businessId,
-                              currentUserId: currentUserId,
-                              onChanged: onReviewChanged,
-                            ),
-                      ),
-                      if (isLoadingMore) ...[
-                        const SizedBox(height: 20),
-                        const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2)),
-                      ] else if (!hasMore && reviews.isNotEmpty) ...[
-                        const SizedBox(height: 30),
-                        const Center(
-                          child: Text("Brak więcej opinii",
-                              style: TextStyle(color: Colors.grey, fontSize: 13)),
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: reviews.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 20),
+                          itemBuilder: (context, index) =>
+                              _ReviewItem(
+                                review: reviews[index],
+                                businessId: businessId,
+                                currentUserId: currentUserId,
+                                onChanged: onReviewChanged,
+                              ),
                         ),
+                        if (isLoadingMore) ...[
+                          const SizedBox(height: 20),
+                          const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2)),
+                        ] else if (!hasMore && reviews.isNotEmpty) ...[
+                          const SizedBox(height: 30),
+                          const Center(
+                            child: Text("Brak więcej opinii",
+                                style: TextStyle(color: Colors.grey, fontSize: 13)),
+                          ),
+                        ],
                       ],
+                    ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonList() {
+    return ListView.separated(
+      key: const ValueKey('reviews_skeleton'),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 4,
+      separatorBuilder: (context, index) => const SizedBox(height: 20),
+      itemBuilder: (context, index) => Shimmer.fromColors(
+        baseColor: Colors.grey.shade300,
+        highlightColor: Colors.grey.shade100,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(width: 120, height: 14, color: Colors.white),
+                      Container(width: 60, height: 12, color: Colors.white),
                     ],
                   ),
+                  const SizedBox(height: 6),
+                  Container(width: 80, height: 12, color: Colors.white),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

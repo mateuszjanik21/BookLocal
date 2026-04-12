@@ -35,6 +35,7 @@ class HomeProvider extends ChangeNotifier {
   bool isSkeletonVisible = true;
   bool isLocationLoading = false;
   bool isRebookLoading = true;
+  bool isCategoryLoading = true;
 
   final ScrollController mainScrollController = ScrollController();
 
@@ -83,20 +84,20 @@ class HomeProvider extends ChangeNotifier {
     isSkeletonVisible = true;
     notifyListeners();
 
-    // Wymuszone opóźnienie 1000ms, aby grid usług zaladował się jako ostatni (efekt wodospadu)
-    await Future.delayed(const Duration(milliseconds: 1000));
-
     try {
-      final result = await _searchService.searchCategoryFeed(
-        searchTerm: searchController.text,
-        locationTerm: locationController.text,
-        mainCategoryId: activeMainCategoryId,
-        sortBy: activeSortBy,
-        pageNumber: pageNumber,
-        pageSize: pageSize,
-      );
+      final results = await Future.wait([
+        _searchService.searchCategoryFeed(
+          searchTerm: searchController.text,
+          locationTerm: locationController.text,
+          mainCategoryId: activeMainCategoryId,
+          sortBy: activeSortBy,
+          pageNumber: pageNumber,
+          pageSize: pageSize,
+        ),
+        Future.delayed(const Duration(milliseconds: 400)),
+      ]);
       
-      pagedResult = result;
+      pagedResult = results[0] as PagedResult<ServiceCategorySearchResult>;
     } catch (e) {
       print('Error w HomeProvider fetchResults: $e');
       pagedResult = PagedResult(
@@ -114,27 +115,42 @@ class HomeProvider extends ChangeNotifier {
   }
 
   Future<void> _fetchMainCategories() async {
-    final results = await Future.wait([
-      _searchService.getMainCategories(),
-      Future.delayed(const Duration(milliseconds: 300)), // Bardzo krótkie opóźnienie - najprostsze UI
-    ]);
-    mainCategories = results[0] as List<MainCategory>;
+    isCategoryLoading = true;
     notifyListeners();
+    try {
+      final results = await Future.wait([
+        _searchService.getMainCategories(),
+        Future.delayed(const Duration(milliseconds: 400)),
+      ]);
+      mainCategories = results[0] as List<MainCategory>;
+    } catch (e) {
+      print('Błąd ładowania kategorii na Home: $e');
+    } finally {
+      isCategoryLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> _fetchRebookSuggestions(AuthService authService) async {
-    if (authService.isAuthenticated) {
-      final token = authService.token;
-      final results = await Future.wait([
-        _searchService.getRebookSuggestions(token),
-        Future.delayed(const Duration(milliseconds: 600)), // Średnie opóźnienie
-      ]);
-      rebookSuggestions = results[0] as List<RebookSuggestion>;
-    } else {
-      await Future.delayed(const Duration(milliseconds: 600));
-    }
-    isRebookLoading = false;
+    isRebookLoading = true;
     notifyListeners();
+    try {
+      if (authService.isAuthenticated) {
+        final token = authService.token;
+        final results = await Future.wait([
+          _searchService.getRebookSuggestions(token),
+          Future.delayed(const Duration(milliseconds: 400)),
+        ]);
+        rebookSuggestions = results[0] as List<RebookSuggestion>;
+      } else {
+        await Future.delayed(const Duration(milliseconds: 400));
+      }
+    } catch (e) {
+      print('Błąd rebook: $e');
+    } finally {
+      isRebookLoading = false;
+      notifyListeners();
+    }
   }
 
   void setMainCategory(int? categoryId) {

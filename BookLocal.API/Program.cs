@@ -1,6 +1,7 @@
 using BookLocal.API.Configuration;
 using BookLocal.API.Data;
 using BookLocal.API.Hubs;
+using BookLocal.API.Interfaces;
 using BookLocal.API.Services;
 using BookLocal.Data.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -103,6 +104,9 @@ namespace BookLocal.API
             builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
             builder.Services.AddScoped<IPhotoService, PhotoService>();
             builder.Services.AddScoped<ILazyStateService, LazyStateService>();
+
+            builder.Services.AddScoped<IAdminService, AdminService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
 
             builder.Services.AddSignalR();
 

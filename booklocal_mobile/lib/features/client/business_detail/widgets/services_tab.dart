@@ -73,30 +73,34 @@ class _ServicesTabState extends State<ServicesTab> {
       child: SectionCard(
         title: "Cennik Usług",
         icon: Icons.list_alt,
-        child: widget.isLoading
-            ? _buildSkeletonLoader()
-            : widget.fullBusiness == null || widget.fullBusiness!.categories.isEmpty
-                ? const Text("Brak usług.", style: TextStyle(color: Colors.grey))
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: widget.fullBusiness!.categories.length,
-                    itemBuilder: (context, catIndex) {
-                      final category = widget.fullBusiness!.categories[catIndex];
-                      if (category.services.isEmpty) return const SizedBox.shrink();
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0, bottom: 12.0),
-                            child: Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF16a34a))),
-                          ),
-                          ...category.services.map((service) => _buildServiceAccordion(context, service)),
-                          const SizedBox(height: 16),
-                        ],
-                      );
-                    },
-                  ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: widget.isLoading
+              ? Container(key: const ValueKey('services_skeleton'), child: _buildSkeletonLoader())
+              : widget.fullBusiness == null || widget.fullBusiness!.categories.isEmpty
+                  ? const Text("Brak usług.", key: ValueKey('services_empty'), style: TextStyle(color: Colors.grey))
+                  : ListView.builder(
+                      key: const ValueKey('services_loaded'),
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: widget.fullBusiness!.categories.length,
+                      itemBuilder: (context, catIndex) {
+                        final category = widget.fullBusiness!.categories[catIndex];
+                        if (category.services.isEmpty) return const SizedBox.shrink();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0, bottom: 12.0),
+                              child: Text(category.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF16a34a))),
+                            ),
+                            ...category.services.map((service) => _buildServiceAccordion(context, service)),
+                            const SizedBox(height: 16),
+                          ],
+                        );
+                      },
+                    ),
+        ),
       ),
     );
   }

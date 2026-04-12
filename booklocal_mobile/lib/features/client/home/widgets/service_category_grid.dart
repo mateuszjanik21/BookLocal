@@ -157,7 +157,7 @@ class ServiceCategoryGrid extends StatelessWidget {
     );
   }
 
-  // Uproszczony skeleton build na potrzeby widoku (może zostać ulepszony w Fazie 5)
+  // Zaawansowany skeleton naśladujący prawdziwą kartę usługi
   Widget _buildSkeletonGrid(BuildContext context) {
     int crossAxisCount = MediaQuery.of(context).size.width >= 768 ? 2 : 1;
 
@@ -170,14 +170,94 @@ class ServiceCategoryGrid extends StatelessWidget {
       ),
       delegate: SliverChildBuilderDelegate(
         (context, index) {
-          return Shimmer.fromColors(
-            baseColor: Colors.grey.shade300,
-            highlightColor: Colors.grey.shade100,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
+          final isMobile = crossAxisCount == 1;
+
+          return Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.black12),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey.shade300,
+              highlightColor: Colors.grey.shade100,
+              child: isMobile
+                  ? Row(
+                      children: [
+                        Container(width: 140, color: Colors.white),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(width: double.infinity, height: 16, color: Colors.white),
+                                const SizedBox(height: 8),
+                                Container(width: 100, height: 12, color: Colors.white),
+                                const Spacer(),
+                                Row(
+                                  children: [
+                                    const CircleAvatar(radius: 10, backgroundColor: Colors.white),
+                                    const SizedBox(width: 4),
+                                    Container(width: 50, height: 10, color: Colors.white),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(width: 40, height: 16, color: Colors.white),
+                                    Container(
+                                      width: 60,
+                                      height: 28,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 4, child: Container(color: Colors.white)),
+                        Expanded(
+                          flex: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(width: double.infinity, height: 16, color: Colors.white),
+                                const SizedBox(height: 8),
+                                Container(width: 80, height: 12, color: Colors.white),
+                                const Spacer(),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Container(width: 50, height: 16, color: Colors.white),
+                                    Container(
+                                      width: 80,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           );
         },

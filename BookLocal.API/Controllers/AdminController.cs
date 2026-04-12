@@ -1,9 +1,7 @@
 ﻿using BookLocal.API.DTOs;
-using BookLocal.Data.Models;
+using BookLocal.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookLocal.API.Controllers
 {
@@ -12,209 +10,66 @@ namespace BookLocal.API.Controllers
     [Authorize(Roles = "superadmin")]
     public class AdminController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly UserManager<User> _userManager;
+        private readonly IAdminService _adminService;
 
-        public AdminController(AppDbContext context, UserManager<User> userManager)
+        public AdminController(IAdminService adminService)
         {
-            _context = context;
-            _userManager = userManager;
+            _adminService = adminService;
         }
-
 
         [HttpGet("plans")]
         public async Task<ActionResult<IEnumerable<SubscriptionPlanDto>>> GetPlans()
         {
-            var plans = await _context.SubscriptionPlans
-                .ToListAsync();
-
-            var dtos = plans.Select(p => new SubscriptionPlanDto
-            {
-                PlanId = p.PlanId,
-                Name = p.Name,
-                PriceMonthly = p.PriceMonthly,
-                PriceYearly = p.PriceYearly,
-                MaxEmployees = p.MaxEmployees,
-                MaxServices = p.MaxServices,
-                HasAdvancedReports = p.HasAdvancedReports,
-                HasMarketingTools = p.HasMarketingTools,
-                CommissionPercentage = p.CommissionPercentage,
-                IsActive = p.IsActive
-            }).ToList();
-
+            var dtos = await _adminService.GetPlansAsync();
             return Ok(dtos);
         }
 
         [HttpPost("plans")]
         public async Task<ActionResult<SubscriptionPlanDto>> CreatePlan(CreateSubscriptionPlanDto dto)
         {
-            var plan = new SubscriptionPlan
-            {
-                Name = dto.Name,
-                PriceMonthly = dto.PriceMonthly,
-                PriceYearly = dto.PriceYearly,
-                MaxEmployees = dto.MaxEmployees,
-                MaxServices = dto.MaxServices,
-                HasAdvancedReports = dto.HasAdvancedReports,
-                HasMarketingTools = dto.HasMarketingTools,
-                CommissionPercentage = dto.CommissionPercentage,
-                IsActive = true
-            };
-
-            _context.SubscriptionPlans.Add(plan);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetPlans), new { }, new SubscriptionPlanDto
-            {
-                PlanId = plan.PlanId,
-                Name = plan.Name,
-                PriceMonthly = plan.PriceMonthly,
-                PriceYearly = plan.PriceYearly,
-                MaxEmployees = plan.MaxEmployees,
-                MaxServices = plan.MaxServices,
-                HasAdvancedReports = plan.HasAdvancedReports,
-                HasMarketingTools = plan.HasMarketingTools,
-                CommissionPercentage = plan.CommissionPercentage,
-                IsActive = plan.IsActive
-            });
+            var result = await _adminService.CreatePlanAsync(dto);
+            return CreatedAtAction(nameof(GetPlans), new { }, result);
         }
 
         [HttpPut("plans/{id}")]
         public async Task<IActionResult> UpdatePlan(int id, CreateSubscriptionPlanDto dto)
         {
-            var plan = await _context.SubscriptionPlans.FindAsync(id);
-            if (plan == null) return NotFound("Nie znaleziono planu.");
+            var success = await _adminService.UpdatePlanAsync(id, dto);
+            if (!success) return NotFound("Nie znaleziono planu.");
 
-            plan.Name = dto.Name;
-            plan.PriceMonthly = dto.PriceMonthly;
-            plan.PriceYearly = dto.PriceYearly;
-            plan.MaxEmployees = dto.MaxEmployees;
-            plan.MaxServices = dto.MaxServices;
-            plan.HasAdvancedReports = dto.HasAdvancedReports;
-            plan.HasMarketingTools = dto.HasMarketingTools;
-            plan.CommissionPercentage = dto.CommissionPercentage;
-
-            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpDelete("plans/{id}")]
         public async Task<IActionResult> DeletePlan(int id)
         {
-            var plan = await _context.SubscriptionPlans.FindAsync(id);
-            if (plan == null) return NotFound("Nie znaleziono planu.");
-
-            plan.IsActive = false;
-            await _context.SaveChangesAsync();
+            var success = await _adminService.DeletePlanAsync(id);
+            if (!success) return NotFound("Nie znaleziono planu.");
 
             return NoContent();
         }
 
-
         [HttpGet("businesses")]
         public async Task<ActionResult<IEnumerable<AdminBusinessListDto>>> GetBusinesses([FromQuery] string? status = null)
         {
-            var query = _context.Businesses
-                .Include(b => b.Owner)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(status) && Enum.TryParse<VerificationStatus>(status, true, out var statusEnum))
-            {
-                query = query.Where(b => b.VerificationStatus == statusEnum);
-            }
-
-            var businesses = await query.ToListAsync();
-
-            var businessIds = businesses.Select(b => b.BusinessId).ToList();
-            var activeSubs = await _context.BusinessSubscriptions
-                .Include(bs => bs.Plan)
-                .Where(bs => businessIds.Contains(bs.BusinessId) && bs.IsActive)
-                .ToListAsync();
-
-            var dtos = businesses.Select(b =>
-            {
-                var sub = activeSubs.FirstOrDefault(s => s.BusinessId == b.BusinessId);
-                return new AdminBusinessListDto
-                {
-                    BusinessId = b.BusinessId,
-                    Name = b.Name ?? "Brak nazwy",
-                    OwnerEmail = b.Owner.Email,
-                    CreatedAt = b.CreatedAt,
-                    IsVerified = b.IsVerified,
-                    VerificationStatus = b.VerificationStatus.ToString(),
-                    SubscriptionPlanName = sub?.Plan?.Name ?? "Brak (Free?)"
-                };
-            }).ToList();
-
+            var dtos = await _adminService.GetBusinessesAsync(status);
             return Ok(dtos);
         }
 
         [HttpPatch("businesses/{id}/verify")]
         public async Task<IActionResult> VerifyBusiness(int id, [FromBody] VerifyBusinessDto dto)
         {
-            var business = await _context.Businesses.FindAsync(id);
-            if (business == null) return NotFound("Nie znaleziono firmy.");
+            var result = await _adminService.VerifyBusinessAsync(id, dto);
+            if (!result.Success) return NotFound(result.Message);
 
-            if (dto.IsApproved)
-            {
-                business.IsVerified = true;
-                business.VerificationStatus = VerificationStatus.Approved;
-                var verification = new BusinessVerification
-                {
-                    BusinessId = id,
-                    Status = VerificationStatus.Approved,
-                    ReviewedAt = DateTime.UtcNow,
-                    AdminNotes = "Zatwierdzono przez Administratora."
-                };
-                _context.BusinessVerifications.Add(verification);
-            }
-            else
-            {
-                business.IsVerified = false;
-                business.VerificationStatus = VerificationStatus.Rejected;
-                var verification = new BusinessVerification
-                {
-                    BusinessId = id,
-                    Status = VerificationStatus.Rejected,
-                    ReviewedAt = DateTime.UtcNow,
-                    RejectionReason = dto.RejectionReason,
-                    AdminNotes = "Odrzucono przez Administratora."
-                };
-                _context.BusinessVerifications.Add(verification);
-            }
-
-            await _context.SaveChangesAsync();
-            return Ok(new { Message = dto.IsApproved ? "Firma zatwierdzona." : "Firma odrzucona." });
+            return Ok(new { Message = result.Message });
         }
 
         [HttpGet("stats")]
         public async Task<ActionResult<AdminStatsDto>> GetStats()
         {
-            var now = DateTime.UtcNow;
-            var startOfMonth = new DateTime(now.Year, now.Month, 1);
-
-            var totalBusinesses = await _context.Businesses.CountAsync();
-            var newBusinesses = await _context.Businesses.CountAsync(b => b.CreatedAt >= startOfMonth);
-
-            var pendingVerifications = await _context.Businesses.CountAsync(b => b.VerificationStatus == VerificationStatus.Pending);
-
-            var paidSubs = await _context.BusinessSubscriptions
-                .Include(bs => bs.Plan)
-                .Where(bs => bs.IsActive && bs.Plan.PriceMonthly > 0)
-                .ToListAsync();
-
-            var activeSubsCount = paidSubs.Count;
-
-            var monthlyRevenue = paidSubs.Sum(bs => bs.Plan.PriceMonthly);
-
-            return Ok(new AdminStatsDto
-            {
-                TotalBusinesses = totalBusinesses,
-                NewBusinessesThisMonth = newBusinesses,
-                ActiveSubscriptions = activeSubsCount,
-                TotalRevenue = monthlyRevenue,
-                PendingVerifications = pendingVerifications
-            });
+            var stats = await _adminService.GetStatsAsync();
+            return Ok(stats);
         }
     }
 }

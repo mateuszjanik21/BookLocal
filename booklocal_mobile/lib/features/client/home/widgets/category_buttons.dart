@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/home_provider.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CategoryButtons extends StatelessWidget {
   const CategoryButtons({super.key});
@@ -26,37 +27,43 @@ class CategoryButtons extends StatelessWidget {
     final homeProvider = Provider.of<HomeProvider>(context);
     final categories = homeProvider.mainCategories;
 
-    return Container(
-      height: 95,
-      margin: const EdgeInsets.only(top: 16.0, bottom: 4.0),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        itemCount: categories.length + 1, // Zawsze dodajemy przycisk "Wszystkie"
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            final isSelected = homeProvider.activeMainCategoryId == null;
-            return _buildCategoryTile(
-              context: context,
-              label: 'Wszystkie',
-              iconData: Icons.apps,
-              isSelected: isSelected,
-              onTap: () => homeProvider.setMainCategory(null),
-            );
-          }
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      child: homeProvider.isCategoryLoading
+          ? _buildSkeleton(context)
+          : Container(
+              key: const ValueKey('category_loaded'),
+              height: 95,
+              margin: const EdgeInsets.only(top: 16.0, bottom: 4.0),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                itemCount: categories.length + 1, // Zawsze dodajemy przycisk "Wszystkie"
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    final isSelected = homeProvider.activeMainCategoryId == null;
+                    return _buildCategoryTile(
+                      context: context,
+                      label: 'Wszystkie',
+                      iconData: Icons.apps,
+                      isSelected: isSelected,
+                      onTap: () => homeProvider.setMainCategory(null),
+                    );
+                  }
 
-          final category = categories[index - 1];
-          final isSelected =
-              homeProvider.activeMainCategoryId == category.mainCategoryId;
-          return _buildCategoryTile(
-            context: context,
-            label: category.name,
-            iconData: _getIconForCategory(category.name),
-            isSelected: isSelected,
-            onTap: () => homeProvider.setMainCategory(category.mainCategoryId),
-          );
-        },
-      ),
+                  final category = categories[index - 1];
+                  final isSelected =
+                      homeProvider.activeMainCategoryId == category.mainCategoryId;
+                  return _buildCategoryTile(
+                    context: context,
+                    label: category.name,
+                    iconData: _getIconForCategory(category.name),
+                    isSelected: isSelected,
+                    onTap: () => homeProvider.setMainCategory(category.mainCategoryId),
+                  );
+                },
+              ),
+            ),
     );
   }
 
@@ -124,6 +131,54 @@ class CategoryButtons extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSkeleton(BuildContext context) {
+    return Container(
+      height: 95,
+      margin: const EdgeInsets.only(top: 16.0, bottom: 4.0),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        itemCount: 5,
+        itemBuilder: (context, index) {
+          return Container(
+            width: 80,
+            margin: const EdgeInsets.only(right: 12.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Shimmer.fromColors(
+                  baseColor: Colors.grey.shade300,
+                  highlightColor: Colors.grey.shade100,
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Shimmer.fromColors(
+                  baseColor: Colors.grey.shade300,
+                  highlightColor: Colors.grey.shade100,
+                  child: Container(
+                    width: 48,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4.0),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

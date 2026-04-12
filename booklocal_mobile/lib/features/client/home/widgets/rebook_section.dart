@@ -67,23 +67,28 @@ class RebookSection extends StatelessWidget {
           const SizedBox(height: 16),
           SizedBox(
             height: 180,
-            child: homeProvider.isRebookLoading
-                ? ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    itemCount: 3,
-                    itemBuilder: (context, index) {
-                      return _buildSkeletonCard();
-                    },
-                  )
-                : ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    itemCount: suggestions.length,
-                    itemBuilder: (context, index) {
-                      return _buildRebookCard(context, suggestions[index]);
-                    },
-                  ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: homeProvider.isRebookLoading
+                  ? ListView.builder(
+                      key: const ValueKey('rebook_skeleton'),
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      itemCount: 3,
+                      itemBuilder: (context, index) {
+                        return _buildSkeletonCard();
+                      },
+                    )
+                  : ListView.builder(
+                      key: const ValueKey('rebook_loaded'),
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                      itemCount: suggestions.length,
+                      itemBuilder: (context, index) {
+                        return _buildRebookCard(context, suggestions[index]);
+                      },
+                    ),
+            ),
           ),
         ],
       ),
