@@ -70,7 +70,7 @@ namespace BookLocal.API
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
                     ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? string.Empty))
                 };
             });
 
@@ -107,6 +107,32 @@ namespace BookLocal.API
 
             builder.Services.AddScoped<IAdminService, AdminService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<ICategoriesService, CategoriesService>();
+            builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
+            builder.Services.AddScoped<IBusinessService, BusinessService>();
+            builder.Services.AddScoped<ICustomersService, CustomersService>();
+            builder.Services.AddScoped<IDiscountsService, DiscountsService>();
+            builder.Services.AddScoped<IDocumentService, DocumentService>();
+            builder.Services.AddScoped<IFavoritesService, FavoritesService>();
+            builder.Services.AddScoped<IEmployeeFinanceService, EmployeeFinanceService>();
+            builder.Services.AddScoped<IEmployeesService, EmployeesService>();
+            builder.Services.AddScoped<IFinanceService, FinanceService>();
+            builder.Services.AddScoped<IInvoicesService, InvoicesService>();
+            builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
+            builder.Services.AddScoped<IMainCategoriesService, MainCategoriesService>();
+            builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
+            builder.Services.AddScoped<IMessagesService, MessagesService>();
+            builder.Services.AddScoped<IPaymentsService, PaymentsService>();
+            builder.Services.AddScoped<IPhotosService, PhotosUploadService>();
+            builder.Services.AddScoped<IReservationsService, ReservationsService>();
+            builder.Services.AddScoped<IReviewsService, ReviewsService>();
+            builder.Services.AddScoped<IRolesService, RolesService>();
+            builder.Services.AddScoped<ISchedulesService, SchedulesService>();
+            builder.Services.AddScoped<ISearchService, SearchService>();
+            builder.Services.AddScoped<IServiceBundlesService, ServiceBundlesService>();
+            builder.Services.AddScoped<IServiceCategoriesService, ServiceCategoriesService>();
+            builder.Services.AddScoped<IServicesService, ServicesService>();
+            builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
             builder.Services.AddSignalR();
 

@@ -1,0 +1,212 @@
+using BookLocal.API.DTOs;
+using BookLocal.API.Interfaces;
+using BookLocal.Data.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+
+namespace BookLocal.API.Services
+{
+    public class ServiceBundlesService : IServiceBundlesService
+    {
+        private readonly AppDbContext _context;
+
+        public ServiceBundlesService(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<(bool Success, IEnumerable<ServiceBundleDto>? Data, string? ErrorMessage)> GetBundlesAsync(int businessId, ClaimsPrincipal user)
+        {
+            var ownerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isOwner = false;
+
+            if (ownerId != null)
+            {
+                isOwner = await _context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
+            }
+
+            var query = _context.ServiceBundles
+                .AsNoTracking()
+                .Where(sb => sb.BusinessId == businessId);
+
+            if (!isOwner)
+            {
+                query = query.Where(sb => sb.IsActive && sb.BundleItems.All(i => _context.EmployeeServices.Any(es => es.ServiceId == i.ServiceVariant.ServiceId)));
+            }
+
+            var dtos = await query
+                .Select(b => new ServiceBundleDto
+                {
+                    ServiceBundleId = b.ServiceBundleId,
+                    BusinessId = b.BusinessId,
+                    Name = b.Name,
+                    Description = b.Description,
+                    TotalPrice = b.TotalPrice,
+                    PhotoUrl = b.PhotoUrl,
+                    IsActive = b.IsActive,
+                    Items = b.BundleItems.OrderBy(i => i.SequenceOrder).Select(i => new ServiceBundleItemDto
+                    {
+                        ServiceBundleItemId = i.ServiceBundleItemId,
+                        ServiceVariantId = i.ServiceVariantId,
+                        VariantName = i.ServiceVariant.Name,
+                        ServiceName = i.ServiceVariant.Service != null ? i.ServiceVariant.Service.Name : string.Empty,
+                        DurationMinutes = i.ServiceVariant.DurationMinutes,
+                        SequenceOrder = i.SequenceOrder,
+                        OriginalPrice = i.ServiceVariant.Price
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return (true, dtos, null);
+        }
+
+        public async Task<(bool Success, ServiceBundleDto? Data, string? ErrorMessage)> GetBundleAsync(int businessId, int id)
+        {
+            var dto = await _context.ServiceBundles
+                .AsNoTracking()
+                .Where(sb => sb.ServiceBundleId == id && sb.BusinessId == businessId)
+                .Select(b => new ServiceBundleDto
+                {
+                    ServiceBundleId = b.ServiceBundleId,
+                    BusinessId = b.BusinessId,
+                    Name = b.Name,
+                    Description = b.Description,
+                    TotalPrice = b.TotalPrice,
+                    PhotoUrl = b.PhotoUrl,
+                    IsActive = b.IsActive,
+                    Items = b.BundleItems.OrderBy(i => i.SequenceOrder).Select(i => new ServiceBundleItemDto
+                    {
+                        ServiceBundleItemId = i.ServiceBundleItemId,
+                        ServiceVariantId = i.ServiceVariantId,
+                        VariantName = i.ServiceVariant.Name,
+                        ServiceName = i.ServiceVariant.Service != null ? i.ServiceVariant.Service.Name : string.Empty,
+                        DurationMinutes = i.ServiceVariant.DurationMinutes,
+                        SequenceOrder = i.SequenceOrder,
+                        OriginalPrice = i.ServiceVariant.Price
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (dto == null) return (false, null, "Nie znaleziono pakietu.");
+
+            return (true, dto, null);
+        }
+
+        public async Task<(bool Success, ServiceBundleDto? Data, string? ErrorMessage)> CreateBundleAsync(int businessId, CreateServiceBundleDto dto, ClaimsPrincipal user)
+        {
+            var ownerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
+
+            if (business == null) return (false, null, "Brak uprawnień.");
+
+            var variantIds = dto.Items.Select(i => i.ServiceVariantId).ToList();
+            var variantsCount = await _context.ServiceVariants
+                .Where(v => variantIds.Contains(v.ServiceVariantId) && v.Service != null && v.Service.BusinessId == businessId)
+                .CountAsync();
+
+            if (variantsCount != variantIds.Distinct().Count())
+            {
+                return (false, null, "Jeden lub więcej wybranych wariantów nie istnieje lub nie należy do Twojego biznesu.");
+            }
+
+            var bundle = new ServiceBundle
+            {
+                BusinessId = businessId,
+                Name = dto.Name,
+                Description = dto.Description,
+                TotalPrice = dto.TotalPrice,
+                IsActive = dto.IsActive,
+                BundleItems = dto.Items.Select(i => new ServiceBundleItem
+                {
+                    ServiceVariantId = i.ServiceVariantId,
+                    SequenceOrder = i.SequenceOrder
+                }).ToList()
+            };
+
+            _context.ServiceBundles.Add(bundle);
+            await _context.SaveChangesAsync();
+
+            var resultDto = await _context.ServiceBundles
+                .AsNoTracking()
+                .Where(sb => sb.ServiceBundleId == bundle.ServiceBundleId)
+                .Select(b => new ServiceBundleDto
+                {
+                    ServiceBundleId = b.ServiceBundleId,
+                    BusinessId = b.BusinessId,
+                    Name = b.Name,
+                    Description = b.Description,
+                    TotalPrice = b.TotalPrice,
+                    PhotoUrl = b.PhotoUrl,
+                    IsActive = b.IsActive,
+                    Items = b.BundleItems.OrderBy(i => i.SequenceOrder).Select(i => new ServiceBundleItemDto
+                    {
+                        ServiceBundleItemId = i.ServiceBundleItemId,
+                        ServiceVariantId = i.ServiceVariantId,
+                        VariantName = i.ServiceVariant.Name,
+                        ServiceName = i.ServiceVariant.Service != null ? i.ServiceVariant.Service.Name : string.Empty,
+                        DurationMinutes = i.ServiceVariant.DurationMinutes,
+                        SequenceOrder = i.SequenceOrder,
+                        OriginalPrice = i.ServiceVariant.Price
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            return (true, resultDto, null);
+        }
+
+        public async Task<(bool Success, ServiceBundleDto? Data, string? ErrorMessage)> UpdateBundleAsync(int businessId, int id, CreateServiceBundleDto dto, ClaimsPrincipal user)
+        {
+            var ownerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            var bundle = await _context.ServiceBundles
+                .Include(sb => sb.Business)
+                .Include(sb => sb.BundleItems)
+                .FirstOrDefaultAsync(sb => sb.ServiceBundleId == id && sb.BusinessId == businessId);
+
+            if (bundle == null) return (false, null, "Nie znaleziono pakietu.");
+            if (bundle.Business == null || bundle.Business.OwnerId != ownerId) return (false, null, "Brak uprawnień.");
+
+            var variantIds = dto.Items.Select(i => i.ServiceVariantId).ToList();
+            var variantsCount = await _context.ServiceVariants
+                .Where(v => variantIds.Contains(v.ServiceVariantId) && v.Service != null && v.Service.BusinessId == businessId)
+                .CountAsync();
+
+            if (variantsCount != variantIds.Distinct().Count())
+            {
+                return (false, null, "Jeden lub więcej wybranych wariantów nie istnieje lub nie należy do Twojego biznesu.");
+            }
+
+            bundle.Name = dto.Name;
+            bundle.Description = dto.Description;
+            bundle.TotalPrice = dto.TotalPrice;
+            bundle.IsActive = dto.IsActive;
+
+            _context.ServiceBundleItems.RemoveRange(bundle.BundleItems);
+            bundle.BundleItems = dto.Items.Select(i => new ServiceBundleItem
+            {
+                ServiceBundleId = id,
+                ServiceVariantId = i.ServiceVariantId,
+                SequenceOrder = i.SequenceOrder
+            }).ToList();
+
+            await _context.SaveChangesAsync();
+
+            return (true, new ServiceBundleDto { ServiceBundleId = bundle.ServiceBundleId }, null);
+        }
+
+        public async Task<(bool Success, string? Message, string? ErrorMessage)> DeleteBundleAsync(int businessId, int id, ClaimsPrincipal user)
+        {
+            var ownerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            var bundle = await _context.ServiceBundles
+                .Include(sb => sb.Business)
+                .FirstOrDefaultAsync(sb => sb.ServiceBundleId == id && sb.BusinessId == businessId);
+
+            if (bundle == null) return (false, null, "Nie znaleziono pakietu.");
+            if (bundle.Business == null || bundle.Business.OwnerId != ownerId) return (false, null, "Brak uprawnień.");
+
+            bundle.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            return (true, "Pakiet został pomyślnie usunięty.", null);
+        }
+    }
+}

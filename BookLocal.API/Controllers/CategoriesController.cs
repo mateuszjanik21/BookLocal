@@ -1,6 +1,6 @@
 ﻿using BookLocal.API.DTOs;
+using BookLocal.API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookLocal.API.Controllers
 {
@@ -8,51 +8,17 @@ namespace BookLocal.API.Controllers
     [Route("api/[controller]")]
     public class CategoriesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ICategoriesService _categoriesService;
 
-        public CategoriesController(AppDbContext context)
+        public CategoriesController(ICategoriesService categoriesService)
         {
-            _context = context;
+            _categoriesService = categoriesService;
         }
 
         [HttpGet("feed")]
         public async Task<ActionResult<IEnumerable<ServiceCategoryFeedDto>>> GetCategoryFeed()
         {
-            var feed = await _context.ServiceCategories
-                .AsNoTracking()
-                .Include(sc => sc.Business)
-                .Include(sc => sc.Services)
-                    .ThenInclude(s => s.Variants)
-                .Where(sc => sc.Services.Any(s => !s.IsArchived && s.Variants.Any(v => v.IsActive) && _context.EmployeeServices.Any(es => es.ServiceId == s.ServiceId)))
-                .Select(sc => new ServiceCategoryFeedDto
-                {
-                    ServiceCategoryId = sc.ServiceCategoryId,
-                    Name = sc.Name,
-                    PhotoUrl = sc.PhotoUrl,
-                    BusinessId = sc.BusinessId,
-                    BusinessName = sc.Business.Name,
-                    BusinessCity = sc.Business.City,
-                    Services = sc.Services
-                        .Where(s => !s.IsArchived && _context.EmployeeServices.Any(es => es.ServiceId == s.ServiceId))
-                        .Select(s => new ServiceDto
-                        {
-                            Id = s.ServiceId,
-                            Name = s.Name,
-                            Description = s.Description,
-                            ServiceCategoryId = s.ServiceCategoryId,
-                            IsArchived = s.IsArchived,
-                            Variants = s.Variants.Select(v => new ServiceVariantDto
-                            {
-                                ServiceVariantId = v.ServiceVariantId,
-                                Name = v.Name,
-                                Price = v.Price,
-                                DurationMinutes = v.DurationMinutes,
-                                IsDefault = v.IsDefault
-                            }).ToList()
-                        }).ToList()
-                })
-                .ToListAsync();
-
+            var feed = await _categoriesService.GetCategoryFeedAsync();
             return Ok(feed);
         }
     }

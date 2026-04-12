@@ -1,28 +1,25 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using BookLocal.API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-[ApiController]
-[Route("api/[controller]")]
-public class RolesController : ControllerBase
+namespace BookLocal.API.Controllers
 {
-    private readonly RoleManager<IdentityRole> _roleManager;
-
-    public RolesController(RoleManager<IdentityRole> roleManager)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class RolesController : ControllerBase
     {
-        _roleManager = roleManager;
-    }
+        private readonly IRolesService _rolesService;
 
-    [HttpPost("setup")]
-    public async Task<IActionResult> SetupRoles()
-    {
-        if (!await _roleManager.RoleExistsAsync("customer"))
+        public RolesController(IRolesService rolesService)
         {
-            await _roleManager.CreateAsync(new IdentityRole("customer"));
+            _rolesService = rolesService;
         }
-        if (!await _roleManager.RoleExistsAsync("owner"))
+
+        [HttpPost("setup")]
+        public async Task<IActionResult> SetupRoles()
         {
-            await _roleManager.CreateAsync(new IdentityRole("owner"));
+            var result = await _rolesService.SetupRolesAsync();
+
+            return Ok(result.Message);
         }
-        return Ok("Role zostały skonfigurowane.");
     }
 }

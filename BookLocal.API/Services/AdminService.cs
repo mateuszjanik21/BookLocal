@@ -121,7 +121,7 @@ namespace BookLocal.API.Services
                 {
                     BusinessId = b.BusinessId,
                     Name = b.Name ?? "Brak nazwy",
-                    OwnerEmail = b.Owner.Email,
+                    OwnerEmail = b.Owner.Email ?? "",
                     CreatedAt = b.CreatedAt,
                     IsVerified = b.IsVerified,
                     VerificationStatus = b.VerificationStatus.ToString(),

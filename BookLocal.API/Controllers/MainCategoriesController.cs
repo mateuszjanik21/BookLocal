@@ -1,26 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using BookLocal.API.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
 public class MainCategoriesController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IMainCategoriesService _mainCategoriesService;
 
-    public MainCategoriesController(AppDbContext context)
+    public MainCategoriesController(IMainCategoriesService mainCategoriesService)
     {
-        _context = context;
+        _mainCategoriesService = mainCategoriesService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetMainCategories()
     {
-        var categories = await _context.MainCategories
-            .AsNoTracking()
-            .Select(c => new { c.MainCategoryId, c.Name })
-            .OrderBy(c => c.Name)
-            .ToListAsync();
-
+        var categories = await _mainCategoriesService.GetMainCategoriesAsync();
         return Ok(categories);
     }
 }

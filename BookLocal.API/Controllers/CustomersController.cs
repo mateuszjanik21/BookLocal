@@ -1,10 +1,7 @@
 using BookLocal.API.DTOs;
-using BookLocal.Data.Models;
+using BookLocal.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace BookLocal.API.Controllers
 {
@@ -13,13 +10,11 @@ namespace BookLocal.API.Controllers
     [Authorize(Roles = "owner")]
     public class CustomersController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        private readonly UserManager<User> _userManager;
+        private readonly ICustomersService _customersService;
 
-        public CustomersController(AppDbContext context, UserManager<User> userManager)
+        public CustomersController(ICustomersService customersService)
         {
-            _context = context;
-            _userManager = userManager;
+            _customersService = customersService;
         }
 
         [HttpGet]
@@ -32,137 +27,22 @@ namespace BookLocal.API.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20)
         {
-            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
-            if (business == null) return Forbid();
+            var result = await _customersService.GetCustomersAsync(businessId, User, search, status, history, spent, page, pageSize);
 
-            var query = from p in _context.CustomerBusinessProfiles
-                        where p.BusinessId == businessId
-                        let loyalty = _context.LoyaltyPoints.FirstOrDefault(lp => lp.BusinessId == businessId && lp.CustomerId == p.CustomerId)
-                        let nextVisit = _context.Reservations
-                                        .Where(r => r.BusinessId == businessId && r.CustomerId == p.CustomerId && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
-                                        .OrderBy(r => r.StartTime)
-                                        .Select(r => (DateTime?)r.StartTime)
-                                        .FirstOrDefault()
-                        select new CustomerListItemDto
-                        {
-                            ProfileId = p.ProfileId,
-                            UserId = p.CustomerId,
-                            FullName = p.Customer.FirstName + " " + p.Customer.LastName,
-                            PhoneNumber = p.Customer.PhoneNumber,
-                            Email = p.Customer.Email,
-                            PhotoUrl = p.Customer.PhotoUrl,
-                            LastVisitDate = p.LastVisitDate,
-                            NextVisitDate = nextVisit,
-                            CancelledCount = p.CancelledCount,
-                            TotalSpent = p.TotalSpent,
-                            IsVIP = p.IsVIP,
-                            IsBanned = p.IsBanned,
-                            PointsBalance = loyalty != null ? loyalty.PointsBalance : 0
-                        };
+            if (!result.Success) return Forbid();
 
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var term = search.ToLower();
-                query = query.Where(c =>
-                    c.FullName.ToLower().Contains(term) ||
-                    (c.Email != null && c.Email.ToLower().Contains(term)) ||
-                    (c.PhoneNumber != null && c.PhoneNumber.Contains(term))
-                );
-            }
-
-            if (status != CustomerStatusFilter.All)
-            {
-                if (status == CustomerStatusFilter.VIP) query = query.Where(c => c.IsVIP);
-                else if (status == CustomerStatusFilter.Banned) query = query.Where(c => c.IsBanned);
-                else if (status == CustomerStatusFilter.Standard) query = query.Where(c => !c.IsVIP && !c.IsBanned);
-            }
-
-            if (history != CustomerHistoryFilter.All)
-            {
-                var defaultDate = new DateTime(1, 1, 1, 0, 0, 0);
-                if (history == CustomerHistoryFilter.WithHistory)
-                    query = query.Where(c => c.LastVisitDate != defaultDate);
-                else if (history == CustomerHistoryFilter.WithoutHistory)
-                    query = query.Where(c => c.LastVisitDate == defaultDate);
-            }
-
-            if (spent != CustomerSpentFilter.All)
-            {
-                if (spent == CustomerSpentFilter.Any) query = query.Where(c => c.TotalSpent > 0);
-                else if (spent == CustomerSpentFilter.Over100) query = query.Where(c => c.TotalSpent >= 100);
-                else if (spent == CustomerSpentFilter.Over500) query = query.Where(c => c.TotalSpent >= 500);
-                else if (spent == CustomerSpentFilter.Over1000) query = query.Where(c => c.TotalSpent >= 1000);
-            }
-
-            var totalCount = await query.CountAsync();
-
-            var customers = await query
-                .OrderByDescending(c => c.LastVisitDate)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            var result = new PagedResultDto<CustomerListItemDto>
-            {
-                Items = customers,
-                TotalCount = totalCount,
-                PageNumber = page,
-                PageSize = pageSize
-            };
-
-            return Ok(result);
+            return Ok(result.Data);
         }
 
         [HttpGet("{customerId}")]
         public async Task<ActionResult<CustomerDetailDto>> GetCustomerDetails(int businessId, string customerId)
         {
-            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
-            if (business == null) return Forbid();
+            var result = await _customersService.GetCustomerDetailsAsync(businessId, customerId, User);
 
-            var profile = await _context.CustomerBusinessProfiles
-                .Include(p => p.Customer)
-                .FirstOrDefaultAsync(p => p.BusinessId == businessId && p.CustomerId == customerId);
+            if (!result.Success) return Forbid();
+            if (result.Data == null) return NotFound(result.ErrorMessage);
 
-            if (profile == null)
-            {
-                return NotFound("Profil klienta nie istnieje w tej firmie.");
-            }
-
-            var visitCount = await _context.Reservations
-                .CountAsync(r => r.BusinessId == businessId && r.CustomerId == customerId && r.Status == ReservationStatus.Completed);
-
-            var dto = new CustomerDetailDto
-            {
-                ProfileId = profile.ProfileId,
-                UserId = profile.CustomerId,
-                FullName = profile.Customer.FirstName + " " + profile.Customer.LastName,
-                PhoneNumber = profile.Customer.PhoneNumber,
-                Email = profile.Customer.Email,
-                PhotoUrl = profile.Customer.PhotoUrl,
-                LastVisitDate = profile.LastVisitDate,
-                NextVisitDate = await _context.Reservations
-                    .Where(r => r.BusinessId == businessId && r.CustomerId == customerId && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
-                    .OrderBy(r => r.StartTime)
-                    .Select(r => (DateTime?)r.StartTime)
-                    .FirstOrDefaultAsync(),
-                TotalSpent = profile.TotalSpent,
-                PointsBalance = await _context.LoyaltyPoints
-                        .Where(lp => lp.BusinessId == businessId && lp.CustomerId == customerId)
-                        .Select(lp => lp.PointsBalance)
-                        .FirstOrDefaultAsync(),
-                IsVIP = profile.IsVIP,
-                IsBanned = profile.IsBanned,
-                NoShowCount = profile.NoShowCount,
-                PrivateNotes = profile.PrivateNotes,
-                Allergies = profile.Allergies,
-                Formulas = profile.Formulas,
-                VisitCount = visitCount,
-                History = new List<ReservationHistoryDto>()
-            };
-
-            return Ok(dto);
+            return Ok(result.Data);
         }
 
         [HttpGet("{customerId}/history")]
@@ -172,105 +52,30 @@ namespace BookLocal.API.Controllers
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
-            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
-            if (business == null) return Forbid();
+            var result = await _customersService.GetCustomerHistoryAsync(businessId, customerId, User, page, pageSize);
 
-            var query = _context.Reservations
-                .Include(r => r.ServiceVariant.Service)
-                .Include(r => r.Employee)
-                .Include(r => r.ServiceBundle)
-                .Where(r => r.BusinessId == businessId && r.CustomerId == customerId);
+            if (!result.Success) return Forbid();
 
-            var rawReservations = await query
-                .OrderByDescending(r => r.StartTime)
-                .ToListAsync();
-
-            var groupedHistory = rawReservations
-                .GroupBy(r => r.ServiceBundleId.HasValue
-                    ? $"Bundle_{r.ServiceBundleId}_{r.StartTime.Date:yyyy-MM-dd}"
-                    : $"Single_{r.ReservationId}")
-                .Select(g =>
-                {
-                    var first = g.OrderBy(x => x.StartTime).First();
-                    if (first.ServiceBundleId.HasValue && first.ServiceBundle != null)
-                    {
-                        var empNames = g.Select(x => x.Employee.FirstName + " " + x.Employee.LastName).Distinct();
-                        return new ReservationHistoryDto
-                        {
-                            ReservationId = first.ReservationId,
-                            StartTime = first.StartTime,
-                            ServiceName = $"[PAKIET] {first.ServiceBundle.Name} ({g.Count()} usługi)",
-                            EmployeeName = string.Join(", ", empNames),
-                            Price = g.Sum(x => x.AgreedPrice),
-                            Status = first.Status.ToString()
-                        };
-                    }
-
-                    return new ReservationHistoryDto
-                    {
-                        ReservationId = first.ReservationId,
-                        StartTime = first.StartTime,
-                        ServiceName = first.ServiceVariant?.Service?.Name + " (" + first.ServiceVariant?.Name + ")",
-                        EmployeeName = first.Employee?.FirstName + " " + first.Employee?.LastName,
-                        Price = first.AgreedPrice,
-                        Status = first.Status.ToString()
-                    };
-                })
-                .OrderByDescending(h => h.StartTime)
-                .ToList();
-
-            var totalCount = groupedHistory.Count;
-            var pagedItems = groupedHistory
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return Ok(new PagedResultDto<ReservationHistoryDto>
-            {
-                Items = pagedItems,
-                TotalCount = totalCount,
-                PageNumber = page,
-                PageSize = pageSize
-            });
+            return Ok(result.Data);
         }
 
         [HttpPut("{customerId}/notes")]
         public async Task<IActionResult> UpdateNotes(int businessId, string customerId, UpdateCustomerNoteDto dto)
         {
-            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
-            if (business == null) return Forbid();
+            var success = await _customersService.UpdateNotesAsync(businessId, customerId, dto, User);
 
-            var profile = await _context.CustomerBusinessProfiles
-                .FirstOrDefaultAsync(p => p.BusinessId == businessId && p.CustomerId == customerId);
+            if (!success) return NotFound();
 
-            if (profile == null) return NotFound();
-
-            profile.PrivateNotes = dto.PrivateNotes;
-            profile.Allergies = dto.Allergies;
-            profile.Formulas = dto.Formulas;
-
-            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpPut("{customerId}/status")]
         public async Task<IActionResult> UpdateStatus(int businessId, string customerId, UpdateCustomerStatusDto dto)
         {
-            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var business = await _context.Businesses.FirstOrDefaultAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId);
-            if (business == null) return Forbid();
+            var success = await _customersService.UpdateStatusAsync(businessId, customerId, dto, User);
 
-            var profile = await _context.CustomerBusinessProfiles
-                .FirstOrDefaultAsync(p => p.BusinessId == businessId && p.CustomerId == customerId);
+            if (!success) return NotFound();
 
-            if (profile == null) return NotFound();
-
-            profile.IsVIP = dto.IsVIP;
-            profile.IsBanned = dto.IsBanned;
-
-            await _context.SaveChangesAsync();
             return NoContent();
         }
     }

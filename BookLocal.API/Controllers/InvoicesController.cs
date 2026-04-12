@@ -1,9 +1,7 @@
 ﻿using BookLocal.API.DTOs;
-using BookLocal.Data.Models;
+using BookLocal.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace BookLocal.API.Controllers
 {
@@ -12,92 +10,27 @@ namespace BookLocal.API.Controllers
     [Authorize(Roles = "owner")]
     public class InvoicesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IInvoicesService _invoicesService;
 
-        public InvoicesController(AppDbContext context)
+        public InvoicesController(IInvoicesService invoicesService)
         {
-            _context = context;
+            _invoicesService = invoicesService;
         }
 
         [HttpPost("generate")]
         public async Task<ActionResult<InvoiceDto>> GenerateInvoice(int businessId, [FromBody] CreateReservationInvoiceDto dto)
         {
-            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId))
-                return Forbid();
+            var result = await _invoicesService.GenerateInvoiceAsync(businessId, dto, User);
 
-            var reservation = await _context.Reservations
-                .Include(r => r.ServiceVariant)
-                    .ThenInclude(sv => sv.Service)
-                .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.ReservationId == dto.ReservationId && r.BusinessId == businessId);
-
-            if (reservation == null) return NotFound("Rezerwacja nie istnieje.");
-            if (reservation.Status != ReservationStatus.Completed) return BadRequest("Fakturę można wystawić tylko do zakończonej rezerwacji.");
-
-            var existingInvoice = await _context.Invoices.AnyAsync(i => i.ReservationId == dto.ReservationId);
-            if (existingInvoice) return Conflict("Faktura do tej rezerwacji została już wystawiona.");
-
-            var now = DateTime.Now;
-            var startOfMonth = new DateTime(now.Year, now.Month, 1);
-            var endOfMonth = startOfMonth.AddMonths(1).AddTicks(-1);
-
-            var countThisMonth = await _context.Invoices
-                .CountAsync(i => i.BusinessId == businessId && i.IssueDate >= startOfMonth && i.IssueDate <= endOfMonth);
-
-            var seqNumber = countThisMonth + 1;
-            var invoiceNumber = $"FV/{now.Year}/{now.Month:D2}/{seqNumber:D3}";
-
-            while (await _context.Invoices.AnyAsync(i => i.BusinessId == businessId && i.InvoiceNumber == invoiceNumber))
+            if (!result.Success)
             {
-                seqNumber++;
-                invoiceNumber = $"FV/{now.Year}/{now.Month:D2}/{seqNumber:D3}";
+                if (result.ErrorMessage == "Brak uprawnień.") return Forbid();
+                if (result.ErrorMessage!.Contains("nie istnieje")) return NotFound(result.ErrorMessage);
+                if (result.ErrorMessage.Contains("już wystawiona")) return Conflict(result.ErrorMessage);
+                return BadRequest(result.ErrorMessage);
             }
 
-            decimal vatRate = 0.23m;
-            decimal grossAmount = reservation.AgreedPrice;
-
-            decimal netAmount = Math.Round(grossAmount / (1 + vatRate), 2);
-            decimal vatAmount = grossAmount - netAmount;
-
-            var invoice = new Invoice
-            {
-                BusinessId = businessId,
-                ReservationId = reservation.ReservationId,
-                CustomerId = reservation.CustomerId ?? "",
-
-                InvoiceNumber = invoiceNumber,
-                IssueDate = now,
-                SaleDate = reservation.EndTime,
-                PaymentMethod = reservation.PaymentMethod,
-                TotalNet = netAmount,
-                TotalTax = vatAmount,
-                TotalGross = grossAmount,
-                Items = new List<InvoiceItem>
-                {
-                    new InvoiceItem
-                    {
-                        Name = $"{reservation.ServiceVariant.Service.Name} - {reservation.ServiceVariant.Name}",
-                        Quantity = 1,
-                        UnitPriceNet = netAmount,
-                        VatRate = vatRate,
-                        NetValue = netAmount,
-                        TaxValue = vatAmount,
-                        GrossValue = grossAmount
-                    }
-                }
-            };
-
-            if (string.IsNullOrEmpty(reservation.CustomerId))
-            {
-                return BadRequest("Faktury są obecnie dostępne tylko dla zarejestrowanych klientów (wymagane konto klienta).");
-            }
-            invoice.CustomerId = reservation.CustomerId;
-
-            _context.Invoices.Add(invoice);
-            await _context.SaveChangesAsync();
-
-            return Ok(MapToDto(invoice, reservation.Customer?.FirstName + " " + reservation.Customer?.LastName));
+            return Ok(result.Data);
         }
 
         [HttpGet]
@@ -108,77 +41,11 @@ namespace BookLocal.API.Controllers
             [FromQuery] string? search = null,
             [FromQuery] string? month = null)
         {
-            var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == ownerId))
-                return Forbid();
+            var result = await _invoicesService.GetInvoicesAsync(businessId, page, pageSize, search, month, User);
 
-            var query = _context.Invoices
-               .Include(i => i.Items)
-               .Include(i => i.Customer)
-               .Where(i => i.BusinessId == businessId);
+            if (!result.Success) return Forbid();
 
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var s = search.Trim().ToLower();
-                query = query.Where(i => i.InvoiceNumber.ToLower().Contains(s)
-                    || (i.Customer.FirstName + " " + i.Customer.LastName).ToLower().Contains(s));
-            }
-
-            if (!string.IsNullOrWhiteSpace(month) && month.Length == 7)
-            {
-                if (int.TryParse(month.Substring(0, 4), out int year) && int.TryParse(month.Substring(5, 2), out int mon))
-                {
-                    var startOfMonth = new DateTime(year, mon, 1);
-                    var endOfMonth = startOfMonth.AddMonths(1);
-                    query = query.Where(i => i.IssueDate >= startOfMonth && i.IssueDate < endOfMonth);
-                }
-            }
-
-            var totalCount = await query.CountAsync();
-            var totalGrossSum = await query.SumAsync(i => i.TotalGross);
-
-            var invoices = await query
-               .OrderByDescending(i => i.IssueDate)
-               .Skip((page - 1) * pageSize)
-               .Take(pageSize)
-               .ToListAsync();
-
-            var dtos = invoices.Select(i => MapToDto(i, i.Customer.FirstName + " " + i.Customer.LastName)).ToList();
-
-            return Ok(new
-            {
-                Items = dtos,
-                TotalCount = totalCount,
-                PageNumber = page,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize),
-                TotalGrossSum = totalGrossSum
-            });
-        }
-
-        private InvoiceDto MapToDto(Invoice i, string customerName)
-        {
-            return new InvoiceDto
-            {
-                InvoiceId = i.InvoiceId,
-                InvoiceNumber = i.InvoiceNumber,
-                IssueDate = i.IssueDate,
-                SaleDate = i.SaleDate,
-                CustomerName = customerName,
-                TotalNet = i.TotalNet,
-                TotalTax = i.TotalTax,
-                TotalGross = i.TotalGross,
-                PaymentMethod = i.PaymentMethod,
-                Items = i.Items.Select(item => new InvoiceItemDto
-                {
-                    Name = item.Name,
-                    Quantity = item.Quantity,
-                    UnitPriceNet = item.UnitPriceNet,
-                    VatRate = item.VatRate,
-                    NetValue = item.NetValue,
-                    GrossValue = item.GrossValue
-                }).ToList()
-            };
+            return Ok(result.Data);
         }
     }
 }

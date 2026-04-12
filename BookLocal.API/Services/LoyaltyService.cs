@@ -1,0 +1,182 @@
+using BookLocal.API.DTOs;
+using BookLocal.API.Interfaces;
+using BookLocal.Data.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace BookLocal.API.Services
+{
+    public class LoyaltyService : ILoyaltyService
+    {
+        private readonly AppDbContext _context;
+
+        public LoyaltyService(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<(bool Success, LoyaltyConfigDto? Data)> GetConfigAsync(int businessId)
+        {
+            var config = await _context.LoyaltyProgramConfigs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.BusinessId == businessId);
+
+            if (config == null)
+            {
+                return (true, new LoyaltyConfigDto { IsActive = false, SpendAmountForOnePoint = 10.00m });
+            }
+
+            return (true, new LoyaltyConfigDto
+            {
+                IsActive = config.IsActive,
+                SpendAmountForOnePoint = config.SpendAmountForOnePoint
+            });
+        }
+
+        public async Task<(bool Success, object? Data)> UpdateConfigAsync(int businessId, LoyaltyConfigDto dto)
+        {
+            var config = await _context.LoyaltyProgramConfigs
+                .FirstOrDefaultAsync(c => c.BusinessId == businessId);
+
+            if (config == null)
+            {
+                config = new LoyaltyProgramConfig { BusinessId = businessId };
+                _context.LoyaltyProgramConfigs.Add(config);
+            }
+
+            config.IsActive = dto.IsActive;
+            config.SpendAmountForOnePoint = dto.SpendAmountForOnePoint;
+
+            await _context.SaveChangesAsync();
+            return (true, config);
+        }
+
+        public async Task<(bool Success, LoyaltyStatsDto? Data)> GetStatsAsync(int businessId)
+        {
+            var activeCustomersCount = await _context.LoyaltyPoints
+                .Where(lp => lp.BusinessId == businessId && (lp.PointsBalance > 0 || lp.TotalPointsEarned > 0))
+                .CountAsync();
+
+            var pointsIssued = await _context.LoyaltyTransactions
+                .Where(t => t.LoyaltyPoint.BusinessId == businessId && t.Type == LoyaltyTransactionType.Earned)
+                .SumAsync(t => (int?)t.PointsAmount) ?? 0;
+
+            var pointsRedeemed = await _context.LoyaltyTransactions
+                .Where(t => t.LoyaltyPoint.BusinessId == businessId && t.Type == LoyaltyTransactionType.Redeemed)
+                .SumAsync(t => (int?)t.PointsAmount) ?? 0;
+
+            var pendingLiability = await _context.LoyaltyPoints
+                .Where(lp => lp.BusinessId == businessId)
+                .SumAsync(lp => (int?)lp.PointsBalance) ?? 0;
+
+            var stats = new LoyaltyStatsDto
+            {
+                TotalActiveCustomers = activeCustomersCount,
+                TotalPointsIssued = pointsIssued,
+                TotalPointsRedeemed = pointsRedeemed,
+                PendingPointsLiability = pendingLiability
+            };
+
+            return (true, stats);
+        }
+
+        public async Task<(bool Success, object? Data)> GetCustomerLoyaltyAsync(int businessId, string customerId)
+        {
+            var points = await _context.LoyaltyPoints
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.BusinessId == businessId && p.CustomerId == customerId);
+
+            var balanceDto = new LoyaltyBalanceDto
+            {
+                PointsBalance = points?.PointsBalance ?? 0,
+                TotalPointsEarned = points?.TotalPointsEarned ?? 0
+            };
+
+            var transactions = await _context.LoyaltyTransactions
+                .AsNoTracking()
+                .Where(t => t.LoyaltyPoint != null && t.LoyaltyPoint.BusinessId == businessId && t.LoyaltyPoint.CustomerId == customerId)
+                .OrderByDescending(t => t.CreatedAt)
+                .Select(t => new LoyaltyTransactionDto
+                {
+                    TransactionId = t.TransactionId,
+                    PointsAmount = t.PointsAmount,
+                    Type = t.Type.ToString(),
+                    Description = t.Description,
+                    CreatedAt = t.CreatedAt
+                })
+                .ToListAsync();
+
+            return (true, new { Balance = balanceDto, Transactions = transactions });
+        }
+
+        public async Task<(bool Success, string? Message, string? ErrorMessage)> RecalculatePointsAsync(int businessId)
+        {
+            var config = await _context.LoyaltyProgramConfigs
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.BusinessId == businessId);
+
+            if (config == null || !config.IsActive || config.SpendAmountForOnePoint <= 0)
+            {
+                return (false, null, "Program lojalnościowy nie jest aktywny lub nie został skonfigurowany.");
+            }
+
+            var completedReservations = await _context.Reservations
+                .Where(r => r.BusinessId == businessId && r.Status == ReservationStatus.Completed && r.CustomerId != null)
+                .ToListAsync();
+
+            var existingTransactions = await _context.LoyaltyTransactions
+                .Where(t => t.LoyaltyPoint.BusinessId == businessId && t.ReservationId != null)
+                .Select(t => t.ReservationId.Value)
+                .ToListAsync();
+
+            var existingTransactionsSet = new HashSet<int>(existingTransactions);
+            int addedPointsCount = 0;
+            int processedReservations = 0;
+
+            foreach (var reservation in completedReservations)
+            {
+                if (existingTransactionsSet.Contains(reservation.ReservationId)) continue;
+                if (reservation.CustomerId == null) continue;
+
+                var pointsToEarn = (int)(reservation.AgreedPrice / config.SpendAmountForOnePoint);
+                if (pointsToEarn <= 0) continue;
+
+                var loyaltyPoint = await _context.LoyaltyPoints
+                    .FirstOrDefaultAsync(p => p.BusinessId == businessId && p.CustomerId == reservation.CustomerId);
+
+                if (loyaltyPoint == null)
+                {
+                    loyaltyPoint = new LoyaltyPoint
+                    {
+                        BusinessId = businessId,
+                        CustomerId = reservation.CustomerId,
+                        PointsBalance = 0,
+                        TotalPointsEarned = 0
+                    };
+                    _context.LoyaltyPoints.Add(loyaltyPoint);
+                }
+
+                loyaltyPoint.PointsBalance += pointsToEarn;
+                loyaltyPoint.TotalPointsEarned += pointsToEarn;
+                loyaltyPoint.LastUpdated = DateTime.UtcNow;
+
+                var transaction = new LoyaltyTransaction
+                {
+                    LoyaltyPoint = loyaltyPoint,
+                    PointsAmount = pointsToEarn,
+                    Type = LoyaltyTransactionType.Earned,
+                    Description = $"Wizyta (ID: {reservation.ReservationId}) - Przeliczenie",
+                    ReservationId = reservation.ReservationId,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.LoyaltyTransactions.Add(transaction);
+                processedReservations++;
+                addedPointsCount += pointsToEarn;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return (true, $"Przeliczono punkty. Dodano {addedPointsCount} punktów dla {processedReservations} wizyt.", null);
+        }
+    }
+}

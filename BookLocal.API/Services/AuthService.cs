@@ -152,9 +152,9 @@ namespace BookLocal.API.Services
             return new UserDto
             {
                 Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                Email = user.Email ?? string.Empty,
+                FirstName = user.FirstName ?? string.Empty,
+                LastName = user.LastName ?? string.Empty,
                 PhotoUrl = user.PhotoUrl,
                 PhoneNumber = user.PhoneNumber,
                 Roles = (List<string>)roles
@@ -178,9 +178,9 @@ namespace BookLocal.API.Services
                 var userDto = new UserDto
                 {
                     Id = user.Id,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
+                    Email = user.Email ?? string.Empty,
+                    FirstName = user.FirstName ?? string.Empty,
+                    LastName = user.LastName ?? string.Empty,
                     PhotoUrl = user.PhotoUrl,
                     PhoneNumber = user.PhoneNumber,
                     Roles = (List<string>)roles
@@ -200,9 +200,9 @@ namespace BookLocal.API.Services
             var userDto = new UserDto
             {
                 Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                Email = user.Email ?? string.Empty,
+                FirstName = user.FirstName ?? string.Empty,
+                LastName = user.LastName ?? string.Empty,
                 PhotoUrl = user.PhotoUrl,
                 PhoneNumber = user.PhoneNumber,
                 Roles = (List<string>)roles

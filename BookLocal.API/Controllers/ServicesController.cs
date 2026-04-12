@@ -1,314 +1,96 @@
 ﻿using BookLocal.API.DTOs;
-using BookLocal.Data.Models;
+using BookLocal.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
-[ApiController]
-[Route("api/businesses/{businessId}/[controller]")]
-public class ServicesController : ControllerBase
+namespace BookLocal.API.Controllers
 {
-    private readonly AppDbContext _context;
-    private readonly UserManager<User> _userManager;
-
-    public ServicesController(AppDbContext context, UserManager<User> userManager)
+    [ApiController]
+    [Route("api/businesses/{businessId}/[controller]")]
+    public class ServicesController : ControllerBase
     {
-        _context = context;
-        _userManager = userManager;
-    }
+        private readonly IServicesService _servicesService;
 
-    [HttpGet]
-    [AllowAnonymous]
-    public async Task<ActionResult<IEnumerable<Service>>> GetServicesForBusiness(int businessId)
-    {
-        if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId))
+        public ServicesController(IServicesService servicesService)
         {
-            return NotFound("Firma o podanym ID nie istnieje.");
+            _servicesService = servicesService;
         }
 
-        var services = await _context.Services
-            .Include(s => s.Variants)
-            .Where(s => s.BusinessId == businessId)
-            .ToListAsync();
-
-        var serviceDtos = services.Select(s => new ServiceDto
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetServicesForBusiness(int businessId)
         {
-            Id = s.ServiceId,
-            Name = s.Name,
-            ServiceCategoryId = s.ServiceCategoryId,
-            IsArchived = s.IsArchived,
-            Variants = s.Variants
-                .Where(v => v.IsActive)
-                .Select(v => new ServiceVariantDto
-                {
-                    ServiceVariantId = v.ServiceVariantId,
-                    Name = v.Name,
-                    Price = v.Price,
-                    DurationMinutes = v.DurationMinutes,
-                    CleanupTimeMinutes = v.CleanupTimeMinutes,
-                    IsDefault = v.IsDefault,
-                    IsActive = v.IsActive,
-                    FavoritesCount = _context.UserFavoriteServices.Count(ufs => ufs.ServiceVariantId == v.ServiceVariantId)
-                }).ToList()
-        });
+            var result = await _servicesService.GetServicesForBusinessAsync(businessId);
 
-        return Ok(serviceDtos);
-    }
+            if (!result.Success) return NotFound(result.ErrorMessage);
 
-    [HttpPost]
-    [Authorize(Roles = "owner")]
-    public async Task<ActionResult<ServiceDto>> AddService(int businessId, ServiceUpsertDto serviceDto)
-    {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        var categoryExists = await _context.ServiceCategories
-            .AnyAsync(sc => sc.ServiceCategoryId == serviceDto.ServiceCategoryId && sc.BusinessId == businessId && sc.Business.OwnerId == ownerId);
-
-        if (!categoryExists)
-        {
-            return Forbid();
+            return Ok(result.Data);
         }
 
-        var service = new Service
+        [HttpPost]
+        [Authorize(Roles = "owner")]
+        public async Task<ActionResult<ServiceDto>> AddService(int businessId, ServiceUpsertDto serviceDto)
         {
-            Name = serviceDto.Name,
-            Description = serviceDto.Description,
-            ServiceCategoryId = serviceDto.ServiceCategoryId,
-            BusinessId = businessId,
-            Variants = serviceDto.Variants.Select(v => new ServiceVariant
-            {
-                Name = v.Name,
-                Price = v.Price,
-                DurationMinutes = v.DurationMinutes,
-                CleanupTimeMinutes = v.CleanupTimeMinutes,
-                IsDefault = v.IsDefault,
-                IsActive = true
-            }).ToList()
-        };
+            var result = await _servicesService.AddServiceAsync(businessId, serviceDto, User);
 
-        _context.Services.Add(service);
-        await _context.SaveChangesAsync();
+            if (!result.Success) return Forbid();
 
-        var serviceToReturn = new ServiceDto
-        {
-            Id = service.ServiceId,
-            Name = service.Name,
-            ServiceCategoryId = service.ServiceCategoryId,
-            Variants = service.Variants.Select(v => new ServiceVariantDto
-            {
-                ServiceVariantId = v.ServiceVariantId,
-                Name = v.Name,
-                Price = v.Price,
-                DurationMinutes = v.DurationMinutes,
-                IsDefault = v.IsDefault
-            }).ToList()
-        };
-
-        return CreatedAtAction(nameof(GetServicesForBusiness), new { businessId = businessId, id = service.ServiceId }, serviceToReturn);
-
-    }
-
-    [HttpPut("{serviceId}")]
-    [Authorize(Roles = "owner")]
-    public async Task<IActionResult> UpdateService(int businessId, int serviceId, ServiceUpsertDto serviceDto)
-    {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var service = await _context.Services
-            .Include(s => s.Variants)
-            .FirstOrDefaultAsync(s => s.ServiceId == serviceId && s.BusinessId == businessId && s.Business.OwnerId == ownerId);
-
-        if (service == null)
-        {
-            return NotFound("Usługa nie została znaleziona lub nie masz do niej dostępu.");
+            return CreatedAtAction(nameof(GetServicesForBusiness), new { businessId, id = result.Data!.Id }, result.Data);
         }
 
-        service.Name = serviceDto.Name;
-        service.Description = serviceDto.Description;
-        service.ServiceCategoryId = serviceDto.ServiceCategoryId;
-
-        var existingVariants = service.Variants.ToList();
-        var incomingVariantIds = serviceDto.Variants
-            .Where(v => v.ServiceVariantId.HasValue)
-            .Select(v => v.ServiceVariantId.Value)
-            .ToList();
-
-        foreach (var incomingVariant in serviceDto.Variants.Where(v => v.ServiceVariantId.HasValue))
+        [HttpPut("{serviceId}")]
+        [Authorize(Roles = "owner")]
+        public async Task<IActionResult> UpdateService(int businessId, int serviceId, ServiceUpsertDto serviceDto)
         {
-            var existingVariant = existingVariants.FirstOrDefault(v => v.ServiceVariantId == incomingVariant.ServiceVariantId.Value);
-            if (existingVariant != null)
-            {
-                existingVariant.Name = incomingVariant.Name;
-                existingVariant.Price = incomingVariant.Price;
-                existingVariant.DurationMinutes = incomingVariant.DurationMinutes;
-                existingVariant.CleanupTimeMinutes = incomingVariant.CleanupTimeMinutes;
-                existingVariant.IsDefault = incomingVariant.IsDefault;
-            }
+            var result = await _servicesService.UpdateServiceAsync(businessId, serviceId, serviceDto, User);
+
+            if (!result.Success) return NotFound(result.ErrorMessage);
+
+            return NoContent();
         }
 
-        var newVariants = serviceDto.Variants.Where(v => !v.ServiceVariantId.HasValue).ToList();
-        foreach (var newVariantDto in newVariants)
+        [HttpDelete("{serviceId}")]
+        [Authorize(Roles = "owner")]
+        public async Task<IActionResult> DeleteService(int businessId, int serviceId)
         {
-            service.Variants.Add(new ServiceVariant
-            {
-                Name = newVariantDto.Name,
-                Price = newVariantDto.Price,
-                DurationMinutes = newVariantDto.DurationMinutes,
-                CleanupTimeMinutes = newVariantDto.CleanupTimeMinutes,
-                IsDefault = newVariantDto.IsDefault,
-                IsActive = true,
-                ServiceId = serviceId
-            });
+            var result = await _servicesService.DeleteServiceAsync(businessId, serviceId, User);
+
+            if (!result.Success) return NotFound(result.ErrorMessage);
+
+            return NoContent();
         }
 
-        var variantsToDelete = existingVariants
-            .Where(v => !incomingVariantIds.Contains(v.ServiceVariantId) && v.IsActive)
-            .ToList();
-
-        foreach (var variantToDelete in variantsToDelete)
+        [HttpDelete("{serviceId}/variants/{variantId}")]
+        [Authorize(Roles = "owner")]
+        public async Task<IActionResult> DeleteServiceVariant(int businessId, int serviceId, int variantId)
         {
-            var futureReservations = await _context.Reservations
-                .Where(r => r.ServiceVariantId == variantToDelete.ServiceVariantId && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
-                .ToListAsync();
+            var result = await _servicesService.DeleteServiceVariantAsync(businessId, serviceId, variantId, User);
 
-            foreach (var reservation in futureReservations)
-            {
-                reservation.Status = ReservationStatus.Cancelled;
-            }
+            if (!result.Success) return NotFound(result.ErrorMessage);
 
-            variantToDelete.IsActive = false;
+            return NoContent();
         }
 
-        await _context.SaveChangesAsync();
-        return NoContent();
-    }
-
-    [HttpDelete("{serviceId}")]
-    [Authorize(Roles = "owner")]
-    public async Task<IActionResult> DeleteService(int businessId, int serviceId)
-    {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var service = await _context.Services
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(s => s.ServiceId == serviceId && s.BusinessId == businessId && s.Business.OwnerId == ownerId);
-
-        if (service == null)
+        [HttpPatch("{serviceId}/restore")]
+        [Authorize(Roles = "owner")]
+        public async Task<IActionResult> RestoreService(int businessId, int serviceId)
         {
-            return NotFound("Usługa nie została znaleziona lub nie masz do niej dostępu.");
+            var result = await _servicesService.RestoreServiceAsync(businessId, serviceId, User);
+
+            if (!result.Success) return NotFound(result.ErrorMessage);
+
+            return NoContent();
         }
 
-        var variants = await _context.ServiceVariants
-            .Where(v => v.ServiceId == serviceId)
-            .ToListAsync();
-
-        var variantIds = variants.Select(v => v.ServiceVariantId).ToList();
-
-        var futureReservations = await _context.Reservations
-            .Where(r => variantIds.Contains(r.ServiceVariantId) && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
-            .ToListAsync();
-
-        foreach (var reservation in futureReservations)
+        [HttpPatch("{serviceId}/variants/{variantId}/restore")]
+        [Authorize(Roles = "owner")]
+        public async Task<IActionResult> RestoreServiceVariant(int businessId, int serviceId, int variantId)
         {
-            reservation.Status = ReservationStatus.Cancelled;
+            var result = await _servicesService.RestoreServiceVariantAsync(businessId, serviceId, variantId, User);
+
+            if (!result.Success) return NotFound(result.ErrorMessage);
+
+            return NoContent();
         }
-
-        foreach (var variant in variants)
-        {
-            variant.IsActive = false;
-        }
-
-        service.IsArchived = true;
-        await _context.SaveChangesAsync();
-        return NoContent();
-    }
-
-    [HttpDelete("{serviceId}/variants/{variantId}")]
-    [Authorize(Roles = "owner")]
-    public async Task<IActionResult> DeleteServiceVariant(int businessId, int serviceId, int variantId)
-    {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        var variant = await _context.ServiceVariants
-            .Include(v => v.Service)
-            .ThenInclude(s => s.Business)
-            .FirstOrDefaultAsync(v => v.ServiceVariantId == variantId && v.ServiceId == serviceId && v.Service.BusinessId == businessId && v.Service.Business.OwnerId == ownerId);
-
-        if (variant == null)
-        {
-            return NotFound("Wariant nie został znaleziony lub nie masz do niego dostępu.");
-        }
-
-        var futureReservations = await _context.Reservations
-            .Where(r => r.ServiceVariantId == variantId && r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
-            .ToListAsync();
-
-        foreach (var reservation in futureReservations)
-        {
-            reservation.Status = ReservationStatus.Cancelled;
-        }
-
-        variant.IsActive = false;
-
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    [HttpPatch("{serviceId}/restore")]
-    [Authorize(Roles = "owner")]
-    public async Task<IActionResult> RestoreService(int businessId, int serviceId)
-    {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        var service = await _context.Services
-            .Include(s => s.ServiceCategory)
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(s => s.ServiceId == serviceId && s.BusinessId == businessId && s.Business.OwnerId == ownerId);
-
-        if (service == null)
-        {
-            return NotFound("Usługa nie została znaleziona lub nie masz do niej dostępu.");
-        }
-
-        service.IsArchived = false;
-
-        if (service.ServiceCategory != null && service.ServiceCategory.IsArchived)
-        {
-            service.ServiceCategory.IsArchived = false;
-        }
-
-        await _context.SaveChangesAsync();
-
-        return NoContent();
-    }
-
-    [HttpPatch("{serviceId}/variants/{variantId}/restore")]
-    [Authorize(Roles = "owner")]
-    public async Task<IActionResult> RestoreServiceVariant(int businessId, int serviceId, int variantId)
-    {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        var variant = await _context.ServiceVariants
-            .Include(v => v.Service)
-            .ThenInclude(s => s.Business)
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(v => v.ServiceVariantId == variantId && v.ServiceId == serviceId && v.Service.BusinessId == businessId && v.Service.Business.OwnerId == ownerId);
-
-        if (variant == null)
-        {
-            return NotFound("Wariant nie został znaleziony lub nie masz do niego dostępu.");
-        }
-
-        variant.IsActive = true;
-
-        if (variant.Service.IsArchived)
-        {
-            variant.Service.IsArchived = false;
-        }
-
-        await _context.SaveChangesAsync();
-
-        return NoContent();
     }
 }

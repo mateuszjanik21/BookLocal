@@ -1,133 +1,90 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BookLocal.API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class PhotosController : ControllerBase
 {
-    private readonly IPhotoService _photoService;
-    private readonly AppDbContext _context;
+    private readonly IPhotosService _photosService;
 
-    public PhotosController(IPhotoService photoService, AppDbContext context)
+    public PhotosController(IPhotosService photosService)
     {
-        _photoService = photoService;
-        _context = context;
+        _photosService = photosService;
     }
 
     [HttpPost("upload-profile-photo")]
     public async Task<ActionResult<object>> UploadProfilePhoto(IFormFile file)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId == null) return Unauthorized();
+        var result = await _photosService.UploadProfilePhotoAsync(file, User);
 
-        var uploadResult = await _photoService.UploadPhotoAsync(file);
-        if (uploadResult.Error != null) return BadRequest(uploadResult.Error.Message);
-
-        var photoUrl = uploadResult.SecureUrl.AbsoluteUri;
-
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null) return NotFound();
-        user.PhotoUrl = photoUrl;
-
-        if (User.IsInRole("owner"))
+        if (!result.Success)
         {
-            var ownerAsEmployee = await _context.Employees
-                .Include(e => e.Business)
-                .FirstOrDefaultAsync(e => e.Business.OwnerId == userId && e.Position == "Właściciel");
-
-            if (ownerAsEmployee != null)
-            {
-                ownerAsEmployee.PhotoUrl = photoUrl;
-            }
+            if (result.ErrorMessage == "Unauthorized") return Unauthorized();
+            return BadRequest(result.ErrorMessage);
         }
 
-        await _context.SaveChangesAsync();
-        return Ok(new { photoUrl = user.PhotoUrl });
+        return Ok(new { photoUrl = result.PhotoUrl });
     }
 
     [HttpPost("business")]
     [Authorize(Roles = "owner")]
     public async Task<ActionResult<object>> UploadBusinessPhoto(IFormFile file)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var business = await _context.Businesses.FirstOrDefaultAsync(b => b.OwnerId == ownerId);
-        if (business == null) return Forbid();
+        var result = await _photosService.UploadBusinessPhotoAsync(file, User);
 
-        var uploadResult = await _photoService.UploadPhotoAsync(file);
-        if (uploadResult.Error != null) return BadRequest(uploadResult.Error.Message);
+        if (!result.Success)
+        {
+            if (result.ErrorMessage == "Brak uprawnień.") return Forbid();
+            return BadRequest(result.ErrorMessage);
+        }
 
-        business.PhotoUrl = uploadResult.SecureUrl.AbsoluteUri;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { photoUrl = business.PhotoUrl });
+        return Ok(new { photoUrl = result.PhotoUrl });
     }
 
     [HttpPost("employee/{employeeId}")]
     [Authorize(Roles = "owner")]
     public async Task<ActionResult<object>> UploadEmployeePhoto(int employeeId, IFormFile file)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var employee = await _context.Employees
-            .Include(e => e.Business)
-            .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.Business.OwnerId == ownerId);
+        var result = await _photosService.UploadEmployeePhotoAsync(employeeId, file, User);
 
-        if (employee == null)
+        if (!result.Success)
         {
-            return Forbid();
+            if (result.ErrorMessage == "Brak uprawnień.") return Forbid();
+            return BadRequest(result.ErrorMessage);
         }
 
-        var uploadResult = await _photoService.UploadPhotoAsync(file);
-        if (uploadResult.Error != null) return BadRequest(uploadResult.Error.Message);
-
-        employee.PhotoUrl = uploadResult.SecureUrl.AbsoluteUri;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { photoUrl = employee.PhotoUrl });
+        return Ok(new { photoUrl = result.PhotoUrl });
     }
 
     [HttpPost("category/{categoryId}")]
     [Authorize(Roles = "owner")]
     public async Task<ActionResult<object>> UploadCategoryPhoto(int categoryId, IFormFile file)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var category = await _context.ServiceCategories
-            .Include(sc => sc.Business)
-            .FirstOrDefaultAsync(sc => sc.ServiceCategoryId == categoryId && sc.Business.OwnerId == ownerId);
+        var result = await _photosService.UploadCategoryPhotoAsync(categoryId, file, User);
 
-        if (category == null)
+        if (!result.Success)
         {
-            return Forbid();
+            if (result.ErrorMessage == "Brak uprawnień.") return Forbid();
+            return BadRequest(result.ErrorMessage);
         }
 
-        var uploadResult = await _photoService.UploadPhotoAsync(file);
-        if (uploadResult.Error != null) return BadRequest(uploadResult.Error.Message);
-
-        category.PhotoUrl = uploadResult.SecureUrl.AbsoluteUri;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { photoUrl = category.PhotoUrl });
+        return Ok(new { photoUrl = result.PhotoUrl });
     }
 
     [HttpPost("bundle/{bundleId}")]
     [Authorize(Roles = "owner")]
     public async Task<ActionResult<object>> UploadBundlePhoto(int bundleId, IFormFile file)
     {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var bundle = await _context.ServiceBundles
-            .Include(sb => sb.Business)
-            .FirstOrDefaultAsync(sb => sb.ServiceBundleId == bundleId && sb.Business.OwnerId == ownerId);
+        var result = await _photosService.UploadBundlePhotoAsync(bundleId, file, User);
 
-        if (bundle == null) return Forbid();
+        if (!result.Success)
+        {
+            if (result.ErrorMessage == "Brak uprawnień.") return Forbid();
+            return BadRequest(result.ErrorMessage);
+        }
 
-        var uploadResult = await _photoService.UploadPhotoAsync(file);
-        if (uploadResult.Error != null) return BadRequest(uploadResult.Error.Message);
-
-        bundle.PhotoUrl = uploadResult.SecureUrl.AbsoluteUri;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { photoUrl = bundle.PhotoUrl });
+        return Ok(new { photoUrl = result.PhotoUrl });
     }
 }

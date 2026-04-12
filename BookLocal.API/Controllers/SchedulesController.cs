@@ -1,169 +1,49 @@
 ﻿using BookLocal.API.DTOs;
-using BookLocal.Data.Models;
+using BookLocal.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
-[ApiController]
-[Route("api/[controller]")]
-[Authorize(Roles = "owner")]
-public class SchedulesController : ControllerBase
+namespace BookLocal.API.Controllers
 {
-    private readonly AppDbContext _context;
-
-    public SchedulesController(AppDbContext context)
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize(Roles = "owner")]
+    public class SchedulesController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly ISchedulesService _schedulesService;
 
-    [HttpGet("{employeeId}")]
-    public async Task<ActionResult<IEnumerable<WorkScheduleDto>>> GetSchedule(int employeeId)
-    {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        var employee = await _context.Employees
-            .AsNoTracking()
-            .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.Business.OwnerId == ownerId);
-
-        if (employee == null)
+        public SchedulesController(ISchedulesService schedulesService)
         {
-            return Forbid("Brak dostępu do tego pracownika.");
+            _schedulesService = schedulesService;
         }
 
-        var schedule = await _context.WorkSchedules
-            .Where(ws => ws.EmployeeId == employeeId)
-            .OrderBy(ws => ws.DayOfWeek)
-            .Select(ws => new WorkScheduleDto
-            {
-                DayOfWeek = ws.DayOfWeek,
-                IsDayOff = ws.IsDayOff,
-                StartTime = ws.StartTime != null ? ws.StartTime.Value.ToString(@"hh\:mm") : null,
-                EndTime = ws.EndTime != null ? ws.EndTime.Value.ToString(@"hh\:mm") : null
-            })
-            .ToListAsync();
-
-        return Ok(schedule);
-    }
-
-    [HttpPut("{employeeId}")]
-    public async Task<IActionResult> UpdateSchedule(int employeeId, [FromBody] List<WorkScheduleDto> schedulePayload)
-    {
-        var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        var employee = await _context.Employees
-            .Include(e => e.WorkSchedules)
-            .Include(e => e.Business)
-            .FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.Business.OwnerId == ownerId);
-
-        if (employee == null)
+        [HttpGet("{employeeId}")]
+        public async Task<ActionResult<IEnumerable<WorkScheduleDto>>> GetSchedule(int employeeId)
         {
-            return Forbid();
+            var result = await _schedulesService.GetScheduleAsync(employeeId, User);
+
+            if (!result.Success)
+            {
+                if (result.ErrorMessage!.Contains("dostęp")) return Forbid();
+                return BadRequest(result.ErrorMessage);
+            }
+
+            return Ok(result.Data);
         }
 
-        var now = DateTime.Now;
-        var futureReservations = await _context.Reservations
-            .Where(r => r.EmployeeId == employeeId
-                && r.Status == ReservationStatus.Confirmed
-                && r.StartTime > now)
-            .ToListAsync();
-
-        if (futureReservations.Any())
+        [HttpPut("{employeeId}")]
+        public async Task<IActionResult> UpdateSchedule(int employeeId, [FromBody] List<WorkScheduleDto> schedulePayload)
         {
-            var polishDays = new Dictionary<DayOfWeek, string>
+            var result = await _schedulesService.UpdateScheduleAsync(employeeId, schedulePayload, User);
+
+            if (!result.Success)
             {
-                { DayOfWeek.Monday, "Poniedziałek" },
-                { DayOfWeek.Tuesday, "Wtorek" },
-                { DayOfWeek.Wednesday, "Środa" },
-                { DayOfWeek.Thursday, "Czwartek" },
-                { DayOfWeek.Friday, "Piątek" },
-                { DayOfWeek.Saturday, "Sobota" },
-                { DayOfWeek.Sunday, "Niedziela" }
-            };
-
-            var conflicts = new List<string>();
-
-            foreach (var dayPayload in schedulePayload)
-            {
-                var reservationsOnDay = futureReservations
-                    .Where(r => r.StartTime.DayOfWeek == dayPayload.DayOfWeek)
-                    .ToList();
-
-                if (!reservationsOnDay.Any()) continue;
-
-                var dayName = polishDays.GetValueOrDefault(dayPayload.DayOfWeek, dayPayload.DayOfWeek.ToString());
-
-                if (dayPayload.IsDayOff)
-                {
-                    conflicts.Add($"{dayName} (dzień wolny)");
-                    continue;
-                }
-
-                TimeSpan? newStart = null, newEnd = null;
-                if (!string.IsNullOrEmpty(dayPayload.StartTime) && TimeSpan.TryParse(dayPayload.StartTime, out var ns))
-                    newStart = ns;
-                if (!string.IsNullOrEmpty(dayPayload.EndTime) && TimeSpan.TryParse(dayPayload.EndTime, out var ne))
-                    newEnd = ne;
-
-                if (newStart == null || newEnd == null) continue;
-
-                var hasConflict = reservationsOnDay.Any(r =>
-                {
-                    var resStart = r.StartTime.TimeOfDay;
-                    var resEnd = r.EndTime.TimeOfDay;
-                    return resStart < newStart.Value || resEnd > newEnd.Value;
-                });
-
-                if (hasConflict)
-                {
-                    conflicts.Add($"{dayName} (skrócenie godzin)");
-                }
+                if (result.ErrorMessage == "Brak uprawnień.") return Forbid();
+                if (result.ErrorMessage!.Contains("kolidujące")) return Conflict(new { message = result.ErrorMessage });
+                return BadRequest(result.ErrorMessage);
             }
 
-            if (conflicts.Any())
-            {
-                return Conflict(new
-                {
-                    message = $"Nie można zmienić grafiku. Pracownik ma potwierdzone wizyty kolidujące ze zmianami: {string.Join(", ", conflicts)}. Najpierw anuluj te wizyty."
-                });
-            }
+            return NoContent();
         }
-
-        foreach (var dayPayload in schedulePayload)
-        {
-            var scheduleDay = employee.WorkSchedules.FirstOrDefault(ws => ws.DayOfWeek == dayPayload.DayOfWeek);
-
-            TimeSpan? start = null;
-            TimeSpan? end = null;
-
-            if (!string.IsNullOrEmpty(dayPayload.StartTime) && TimeSpan.TryParse(dayPayload.StartTime, out var s))
-                start = s;
-
-            if (!string.IsNullOrEmpty(dayPayload.EndTime) && TimeSpan.TryParse(dayPayload.EndTime, out var e))
-                end = e;
-
-            if (scheduleDay != null)
-            {
-                scheduleDay.IsDayOff = dayPayload.IsDayOff;
-                scheduleDay.StartTime = dayPayload.IsDayOff ? null : start;
-                scheduleDay.EndTime = dayPayload.IsDayOff ? null : end;
-            }
-            else
-            {
-                var newSchedule = new WorkSchedule
-                {
-                    EmployeeId = employeeId,
-                    DayOfWeek = dayPayload.DayOfWeek,
-                    IsDayOff = dayPayload.IsDayOff,
-                    StartTime = dayPayload.IsDayOff ? null : start,
-                    EndTime = dayPayload.IsDayOff ? null : end
-                };
-                _context.WorkSchedules.Add(newSchedule);
-            }
-        }
-
-        await _context.SaveChangesAsync();
-
-        return NoContent();
     }
 }

@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using BookLocal.API.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BookLocal.API.Controllers
 {
@@ -7,144 +7,31 @@ namespace BookLocal.API.Controllers
     [Route("api/employees/{employeeId}/availability")]
     public class AvailabilityController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IAvailabilityService _availabilityService;
 
-        public AvailabilityController(AppDbContext context)
+        public AvailabilityController(IAvailabilityService availabilityService)
         {
-            _context = context;
+            _availabilityService = availabilityService;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DateTime>>> GetAvailableSlots(int employeeId, [FromQuery] DateTime date, [FromQuery] int serviceVariantId)
         {
-            var variant = await _context.ServiceVariants
-                .AsNoTracking()
-                .FirstOrDefaultAsync(v => v.ServiceVariantId == serviceVariantId);
+            var result = await _availabilityService.GetAvailableSlotsAsync(employeeId, date, serviceVariantId);
 
-            if (variant == null) return BadRequest("Wariant usługi nie istnieje.");
+            if (!result.Success) return BadRequest(result.ErrorMessage);
 
-            var dayOfWeek = date.DayOfWeek;
-            var workSchedule = await _context.WorkSchedules
-                .AsNoTracking()
-                .FirstOrDefaultAsync(ws => ws.EmployeeId == employeeId && ws.DayOfWeek == dayOfWeek);
-
-            if (workSchedule == null || workSchedule.IsDayOff || !workSchedule.StartTime.HasValue || !workSchedule.EndTime.HasValue)
-            {
-                return Ok(new List<DateTime>());
-            }
-
-            var reservations = await _context.Reservations
-                .AsNoTracking()
-                .Where(r => r.EmployeeId == employeeId &&
-                            r.StartTime.Date == date.Date &&
-                            r.Status != ReservationStatus.Cancelled)
-                .Select(r => new { r.StartTime, r.EndTime })
-                .ToListAsync();
-
-            var availableSlots = new List<DateTime>();
-            var bookingInterval = 15;
-
-            var requiredDuration = variant.DurationMinutes + variant.CleanupTimeMinutes;
-
-            var dayStart = date.Date + workSchedule.StartTime.Value;
-            var dayEnd = date.Date + workSchedule.EndTime.Value;
-
-            var now = DateTime.UtcNow.AddHours(1);
-            var firstPossibleMoment = (date.Date == now.Date && now > dayStart) ? RoundUpToNearestInterval(now, bookingInterval) : dayStart;
-
-            for (var potentialStart = dayStart; potentialStart < dayEnd; potentialStart = potentialStart.AddMinutes(bookingInterval))
-            {
-                if (potentialStart < firstPossibleMoment)
-                {
-                    continue;
-                }
-
-                var potentialEnd = potentialStart.AddMinutes(requiredDuration);
-
-                if (potentialEnd > dayEnd)
-                {
-                    break;
-                }
-
-                var isSlotTaken = reservations.Any(r =>
-                    potentialStart < r.EndTime && r.StartTime < potentialEnd);
-
-                if (!isSlotTaken)
-                {
-                    availableSlots.Add(potentialStart);
-                }
-            }
-
-            return Ok(availableSlots);
+            return Ok(result.Slots);
         }
 
         [HttpGet("bundle")]
         public async Task<ActionResult<IEnumerable<DateTime>>> GetBundleAvailableSlots(int employeeId, [FromQuery] DateTime date, [FromQuery] int bundleId)
         {
-            var bundle = await _context.ServiceBundles
-                .Include(sb => sb.BundleItems)
-                .ThenInclude(i => i.ServiceVariant)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(sb => sb.ServiceBundleId == bundleId);
+            var result = await _availabilityService.GetBundleAvailableSlotsAsync(employeeId, date, bundleId);
 
-            if (bundle == null) return BadRequest("Pakiet nie istnieje.");
+            if (!result.Success) return BadRequest(result.ErrorMessage);
 
-            var totalDurationMinutes = bundle.BundleItems.Sum(i => i.ServiceVariant.DurationMinutes + i.ServiceVariant.CleanupTimeMinutes);
-            if (totalDurationMinutes == 0) return Ok(new List<DateTime>());
-
-            var dayOfWeek = date.DayOfWeek;
-            var workSchedule = await _context.WorkSchedules
-                .AsNoTracking()
-                .FirstOrDefaultAsync(ws => ws.EmployeeId == employeeId && ws.DayOfWeek == dayOfWeek);
-
-            if (workSchedule == null || workSchedule.IsDayOff || !workSchedule.StartTime.HasValue || !workSchedule.EndTime.HasValue)
-            {
-                return Ok(new List<DateTime>());
-            }
-
-            var reservations = await _context.Reservations
-                .AsNoTracking()
-                .Where(r => r.EmployeeId == employeeId &&
-                            r.StartTime.Date == date.Date &&
-                            r.Status != ReservationStatus.Cancelled)
-                .Select(r => new { r.StartTime, r.EndTime })
-                .ToListAsync();
-
-            var availableSlots = new List<DateTime>();
-            var bookingInterval = 15;
-
-            var dayStart = date.Date + workSchedule.StartTime.Value;
-            var dayEnd = date.Date + workSchedule.EndTime.Value;
-
-            var now = DateTime.UtcNow.AddHours(1);
-            var firstPossibleMoment = (date.Date == now.Date && now > dayStart) ? RoundUpToNearestInterval(now, bookingInterval) : dayStart;
-
-            for (var potentialStart = dayStart; potentialStart < dayEnd; potentialStart = potentialStart.AddMinutes(bookingInterval))
-            {
-                if (potentialStart < firstPossibleMoment) continue;
-
-                var potentialEnd = potentialStart.AddMinutes(totalDurationMinutes);
-
-                if (potentialEnd > dayEnd) break;
-
-                var isSlotTaken = reservations.Any(r =>
-                    potentialStart < r.EndTime && r.StartTime < potentialEnd);
-
-                if (!isSlotTaken)
-                {
-                    availableSlots.Add(potentialStart);
-                }
-            }
-
-            return Ok(availableSlots);
-        }
-
-        private DateTime RoundUpToNearestInterval(DateTime dt, int intervalMinutes)
-        {
-            var delta = intervalMinutes - (dt.Minute % intervalMinutes);
-            if (delta == intervalMinutes) delta = 0;
-
-            return dt.AddMinutes(delta).AddSeconds(-dt.Second).AddMilliseconds(-dt.Millisecond);
+            return Ok(result.Slots);
         }
     }
 }

@@ -68,7 +68,7 @@ namespace BookLocal.API.Controllers
                 return BadRequest(result.Errors);
             }
 
-            return Ok(new { Id = result.UserId, Email = result.Email });
+            return Ok(new { Id = result.UserId, result.Email });
         }
 
         [HttpPost("change-password")]

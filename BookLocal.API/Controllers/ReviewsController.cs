@@ -1,9 +1,7 @@
 ﻿using BookLocal.API.DTOs;
-using BookLocal.Data.Models;
+using BookLocal.API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace BookLocal.API.Controllers
 {
@@ -11,117 +9,36 @@ namespace BookLocal.API.Controllers
     [Route("api/businesses/{businessId}/reviews")]
     public class ReviewsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IReviewsService _reviewsService;
 
-        public ReviewsController(AppDbContext context)
+        public ReviewsController(IReviewsService reviewsService)
         {
-            _context = context;
+            _reviewsService = reviewsService;
         }
 
         [HttpGet]
         [AllowAnonymous]
         public async Task<ActionResult<PagedResultDto<ReviewDto>>> GetReviews(int businessId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 5, [FromQuery] int? rating = null, [FromQuery] string? search = null, [FromQuery] string? sortBy = "newest")
         {
-            if (!await _context.Businesses.AnyAsync(b => b.BusinessId == businessId))
-                return NotFound("Firma nie istnieje.");
+            var result = await _reviewsService.GetReviewsAsync(businessId, pageNumber, pageSize, rating, search, sortBy, User);
 
-            var query = _context.Reviews
-                .Where(r => r.BusinessId == businessId)
-                .AsQueryable();
+            if (!result.Success) return NotFound(result.ErrorMessage);
 
-            if (rating.HasValue && rating.Value > 0)
-            {
-                query = query.Where(r => r.Rating == rating.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var lowerSearch = search.ToLower();
-                query = query.Where(r =>
-                    r.ReviewerName.ToLower().Contains(lowerSearch) ||
-                    (r.Comment != null && r.Comment.ToLower().Contains(lowerSearch)) ||
-                    (r.Reservation != null && r.Reservation.Employee.FirstName.ToLower().Contains(lowerSearch)) ||
-                    (r.Reservation != null && r.Reservation.Employee.LastName.ToLower().Contains(lowerSearch)) ||
-                    (r.Reservation != null && r.Reservation.ServiceVariant != null && r.Reservation.ServiceVariant.Service.Name.ToLower().Contains(lowerSearch))
-                );
-            }
-
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (currentUserId != null)
-            {
-                query = sortBy switch
-                {
-                    "highest" => query.OrderByDescending(r => r.UserId == currentUserId).ThenByDescending(r => r.Rating).ThenByDescending(r => r.CreatedAt),
-                    "lowest" => query.OrderByDescending(r => r.UserId == currentUserId).ThenBy(r => r.Rating).ThenByDescending(r => r.CreatedAt),
-                    _ => query.OrderByDescending(r => r.UserId == currentUserId).ThenByDescending(r => r.CreatedAt)
-                };
-            }
-            else
-            {
-                query = sortBy switch
-                {
-                    "highest" => query.OrderByDescending(r => r.Rating).ThenByDescending(r => r.CreatedAt),
-                    "lowest" => query.OrderBy(r => r.Rating).ThenByDescending(r => r.CreatedAt),
-                    _ => query.OrderByDescending(r => r.CreatedAt)
-                };
-            }
-
-            var totalCount = await query.CountAsync();
-
-            var reviewsData = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .Include(r => r.User)
-                .Include(r => r.Reservation)
-                    .ThenInclude(res => res.ServiceVariant)
-                        .ThenInclude(v => v.Service)
-                .Include(r => r.Reservation)
-                    .ThenInclude(res => res.Employee)
-                .Select(r => new ReviewDto
-                {
-                    ReviewId = r.ReviewId,
-                    Rating = r.Rating,
-                    Comment = r.Comment,
-                    ReviewerName = r.User != null ? $"{r.User.FirstName} {r.User.LastName}" : r.ReviewerName,
-                    CreatedAt = r.CreatedAt,
-                    UserId = r.UserId,
-                    ReviewerPhotoUrl = r.User.PhotoUrl,
-                    ServiceName = r.Reservation != null && r.Reservation.ServiceVariant != null
-                        ? $"{r.Reservation.ServiceVariant.Service.Name} ({r.Reservation.ServiceVariant.Name})"
-                        : "Usługa nieznana",
-                    EmployeeFullName = r.Reservation != null ? $"{r.Reservation.Employee.FirstName} {r.Reservation.Employee.LastName}" : null,
-                    ReservationDate = r.Reservation != null ? r.Reservation.StartTime : (DateTime?)null
-                })
-                .ToListAsync();
-
-            var paginatedResult = new PagedResultDto<ReviewDto>
-            {
-                Items = reviewsData,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalCount = totalCount
-            };
-
-            return Ok(paginatedResult);
+            return Ok(result.Data);
         }
 
         [HttpPut("{reviewId}")]
         [Authorize(Roles = "customer")]
         public async Task<IActionResult> UpdateReview(int businessId, int reviewId, UpdateReviewDto updateReviewDto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var review = await _context.Reviews
-                .FirstOrDefaultAsync(r => r.ReviewId == reviewId && r.BusinessId == businessId);
+            var result = await _reviewsService.UpdateReviewAsync(businessId, reviewId, updateReviewDto, User);
 
-            if (review == null) return NotFound();
-            if (review.UserId != userId) return Forbid();
+            if (!result.Success)
+            {
+                if (result.ErrorMessage == "Brak uprawnień.") return Forbid();
+                return NotFound(result.ErrorMessage);
+            }
 
-            review.Rating = updateReviewDto.Rating;
-            review.Comment = updateReviewDto.Comment;
-            review.CreatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
             return NoContent();
         }
 
@@ -129,15 +46,14 @@ namespace BookLocal.API.Controllers
         [Authorize(Roles = "customer")]
         public async Task<IActionResult> DeleteReview(int businessId, int reviewId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var review = await _context.Reviews
-                .FirstOrDefaultAsync(r => r.ReviewId == reviewId && r.BusinessId == businessId);
+            var result = await _reviewsService.DeleteReviewAsync(businessId, reviewId, User);
 
-            if (review == null) return NotFound();
-            if (review.UserId != userId) return Forbid();
+            if (!result.Success)
+            {
+                if (result.ErrorMessage == "Brak uprawnień.") return Forbid();
+                return NotFound(result.ErrorMessage);
+            }
 
-            _context.Reviews.Remove(review);
-            await _context.SaveChangesAsync();
             return NoContent();
         }
 
@@ -145,73 +61,29 @@ namespace BookLocal.API.Controllers
         [Authorize(Roles = "customer")]
         public async Task<ActionResult<ReviewDto>> PostReviewForReservation(int reservationId, CreateReviewDto createReviewDto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var result = await _reviewsService.PostReviewForReservationAsync(reservationId, createReviewDto, User);
 
-            var reservation = await _context.Reservations
-                .Include(r => r.ServiceVariant)
-                    .ThenInclude(v => v.Service)
-                .FirstOrDefaultAsync(r => r.ReservationId == reservationId);
-
-            if (reservation == null) return NotFound("Rezerwacja nie istnieje.");
-            if (reservation.CustomerId != userId) return Forbid("To nie jest Twoja rezerwacja.");
-
-            var endTime = reservation.EndTime;
-
-            bool isEffectivelyCompleted = reservation.Status == ReservationStatus.Completed ||
-                                          (reservation.Status == ReservationStatus.Confirmed && endTime < DateTime.UtcNow);
-
-            if (!isEffectivelyCompleted)
+            if (!result.Success)
             {
-                return BadRequest("Możesz ocenić tylko zakończone wizyty.");
+                if (result.ErrorMessage == "Brak uprawnień." || result.ErrorMessage == "To nie jest Twoja rezerwacja.") return Forbid();
+                if (result.ErrorMessage == "Unauthorized") return Unauthorized();
+                if (result.ErrorMessage!.Contains("już oceniona")) return Conflict(result.ErrorMessage);
+                if (result.ErrorMessage.Contains("nie istnieje")) return NotFound(result.ErrorMessage);
+                return BadRequest(result.ErrorMessage);
             }
 
-            var existingReview = await _context.Reviews.AnyAsync(r => r.ReservationId == reservationId);
-            if (existingReview) return Conflict("Ta wizyta została już oceniona.");
-
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null) return Unauthorized();
-
-            var newReview = new Review
-            {
-                BusinessId = reservation.BusinessId,
-                ReservationId = reservationId,
-                Rating = createReviewDto.Rating,
-                Comment = createReviewDto.Comment,
-                UserId = userId,
-                ReviewerName = $"{user.FirstName} {user.LastName}"
-            };
-
-            _context.Reviews.Add(newReview);
-            await _context.SaveChangesAsync();
-
-            var reviewToReturn = new ReviewDto
-            {
-                ReviewId = newReview.ReviewId,
-                Rating = newReview.Rating,
-                Comment = newReview.Comment,
-                ReviewerName = newReview.ReviewerName,
-                CreatedAt = newReview.CreatedAt,
-                ReviewerPhotoUrl = user.PhotoUrl,
-                ServiceName = reservation.ServiceVariant != null
-                    ? $"{reservation.ServiceVariant.Service.Name} ({reservation.ServiceVariant.Name})"
-                    : "Usługa",
-            };
-
-            return CreatedAtAction(nameof(GetReviews), new { businessId = newReview.BusinessId }, reviewToReturn);
+            return CreatedAtAction(nameof(GetReviews), new { businessId = result.BusinessId }, result.Data);
         }
 
         [HttpGet("can-review")]
         [Authorize(Roles = "customer")]
         public async Task<ActionResult<object>> CanUserReview(int businessId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var result = await _reviewsService.CanUserReviewAsync(businessId, User);
 
-            var hasAlreadyReviewed = await _context.Reviews
-                .AnyAsync(r => r.BusinessId == businessId && r.UserId == userId);
+            if (!result.Success) return Unauthorized();
 
-            return Ok(new { canReview = !hasAlreadyReviewed });
+            return Ok(result.Data);
         }
     }
 }

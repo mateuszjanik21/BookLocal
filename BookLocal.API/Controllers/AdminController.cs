@@ -62,7 +62,7 @@ namespace BookLocal.API.Controllers
             var result = await _adminService.VerifyBusinessAsync(id, dto);
             if (!result.Success) return NotFound(result.Message);
 
-            return Ok(new { Message = result.Message });
+            return Ok(new { result.Message });
         }
 
         [HttpGet("stats")]
