@@ -857,7 +857,6 @@ namespace BookLocal.API.Services
             return (true, new { previousId, nextId }, null);
         }
 
-        // ======================== PRIVATE HELPERS ========================
 
         private async Task EnsureCustomerProfile(int businessId, string customerId)
         {

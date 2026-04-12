@@ -20,8 +20,8 @@ public class TokenService
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.NameIdentifier, user.Id)
+            new(ClaimTypes.Email, user.Email),
+            new(ClaimTypes.NameIdentifier, user.Id)
         };
 
         var roles = await _userManager.GetRolesAsync(user);

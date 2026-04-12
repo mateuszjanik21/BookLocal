@@ -21,7 +21,7 @@ namespace BookLocal.API.Services
             if (userId == null) return (false, null);
 
             var query = _context.UserFavoriteServices
-                .AsNoTracking() // OPTYMALIZACJA
+                .AsNoTracking()
                 .Include(f => f.ServiceVariant)
                     .ThenInclude(v => v.Service)
                         .ThenInclude(s => s.Business)
