@@ -34,7 +34,6 @@ class _MainScreenState extends State<MainScreen> {
     _selectedIndex = widget.initialIndex;
     _visitedTabs = List<bool>.generate(5, (index) => index == _selectedIndex);
 
-    // Jeśli startujemy na zakładce Czat, od razu wycisz toasty
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final presence = Provider.of<PresenceService>(context, listen: false);
       presence.setChatScreenActive(_selectedIndex == 2);
@@ -53,8 +52,6 @@ class _MainScreenState extends State<MainScreen> {
     final presence = Provider.of<PresenceService>(context, listen: false);
     presence.setChatScreenActive(index == 2);
 
-    // Gdy wychodzimy z Czatu → wyczyść aktywną konwersację
-    // (IndexedStack nie niszczy ConversationScreen, więc dispose() się nie wywołuje)
     if (index != 2) {
       presence.setActiveConversationId(null);
     }

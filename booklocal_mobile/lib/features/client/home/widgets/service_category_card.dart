@@ -59,7 +59,6 @@ class ServiceCategoryCard extends StatelessWidget {
   Widget _buildHorizontalLayout() {
     return Row(
       children: [
-        // ZDJĘCIE (lewa strona)
         SizedBox(
           width: 120,
           height: double.infinity,
@@ -90,7 +89,6 @@ class ServiceCategoryCard extends StatelessWidget {
             ],
           ),
         ),
-        // TREŚĆ (prawa strona)
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(12.0),

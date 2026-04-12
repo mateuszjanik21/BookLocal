@@ -91,7 +91,6 @@ class ReservationDto {
     );
   }
 
-  // Kompatybilność wsteczna
   DateTime get date => startTime;
   double get price => agreedPrice;
 }

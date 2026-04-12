@@ -16,7 +16,7 @@ class RebookSection extends StatelessWidget {
     final suggestions = homeProvider.rebookSuggestions;
 
     if (!homeProvider.isRebookLoading && suggestions.isEmpty) {
-      return const SizedBox.shrink(); // Ukrywa sekcję, jeżeli pusta (nie zalogowano lub brak wizyt)
+      return const SizedBox.shrink();
     }
 
     return Padding(
@@ -135,7 +135,6 @@ class RebookSection extends StatelessWidget {
         },
         child: Column(
           children: [
-            // Część ze zdjęciem głównym kategorii
             Expanded(
               flex: 3,
               child: Stack(
@@ -160,7 +159,6 @@ class RebookSection extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Nazwa Kategorii i licznik wizyt
                   Positioned(
                     bottom: 8,
                     left: 12,
@@ -204,7 +202,6 @@ class RebookSection extends StatelessWidget {
                 ],
               ),
             ),
-            // Część dolna - Informacje o profilu i biznesie
             Expanded(
               flex: 2,
               child: Padding(

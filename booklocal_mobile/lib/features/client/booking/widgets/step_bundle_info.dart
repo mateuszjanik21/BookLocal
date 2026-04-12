@@ -35,7 +35,6 @@ class StepBundleInfo extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Bundle items list
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -97,7 +96,6 @@ class StepBundleInfo extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Price card
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -176,7 +174,7 @@ class StepBundleInfo extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 80), // space for bottom bar
+          const SizedBox(height: 80),
         ],
       ),
     );

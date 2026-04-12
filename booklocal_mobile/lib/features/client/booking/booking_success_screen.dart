@@ -14,7 +14,6 @@ class BookingSuccessScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 1. Animacja lub Ikona Sukcesu
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -25,7 +24,6 @@ class BookingSuccessScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               
-              // 2. Teksty
               const Text(
                 "Rezerwacja udana!",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -39,13 +37,10 @@ class BookingSuccessScreen extends StatelessWidget {
               
               const SizedBox(height: 50),
 
-              // 3. Przyciski
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // POPRAWKA: Nawigujemy do MainScreen z indeksem 2 (Wizyty)
-                    // Dzięki temu załaduje się pasek menu i otworzy odpowiednia zakładka
                     Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                       MaterialPageRoute(
                         builder: (context) => const MainScreen(initialIndex: 1), 
@@ -60,7 +55,6 @@ class BookingSuccessScreen extends StatelessWidget {
               const SizedBox(height: 15),
               TextButton(
                 onPressed: () {
-                   // Wróć do ekranu głównego (zakładka Home to index 0)
                    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (context) => const MainScreen(initialIndex: 0)), 
                       (route) => false,

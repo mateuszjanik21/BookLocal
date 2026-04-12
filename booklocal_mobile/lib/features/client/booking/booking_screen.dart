@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-
 import 'package:provider/provider.dart';
-
 import '../../../core/models/business_list_item_dto.dart';
 import '../../../core/models/service_models.dart';
 import '../../../core/models/employee_models.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/client_service.dart';
 import '../../../core/services/reservation_service.dart';
-
 import 'widgets/step_employee.dart';
 import 'widgets/step_datetime.dart';
 import 'widgets/step_summary.dart';
@@ -37,15 +34,12 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   static const _primaryColor = Color(0xFF16a34a);
 
-  // --- WIZARD STATE ---
-  int _currentStep = 1; // 1=Employee, 2=DateTime, 3=Summary
+  int _currentStep = 1;
 
-  // Step 1
   List<EmployeeDto> _employees = [];
   EmployeeDto? _selectedEmployee;
   bool _isLoadingEmployees = true;
 
-  // Step 2
   DateTime _selectedDate = DateTime.now();
   String? _selectedTime;
   List<String> _availableSlots = [];
@@ -58,7 +52,6 @@ class _BookingScreenState extends State<BookingScreen> {
   String _activeGroup = 'Rano';
   bool _isLoadingSlots = false;
 
-  // Step 3
   String _paymentMethod = 'Cash';
   final TextEditingController _discountController = TextEditingController();
   Map<String, dynamic>? _verifiedDiscount;
@@ -66,11 +59,9 @@ class _BookingScreenState extends State<BookingScreen> {
   int _loyaltyPointsBalance = 0;
   int _loyaltyPointsToUse = 0;
 
-  // Reservation
   bool _isReserving = false;
   bool _isProcessingPayment = false;
 
-  // --- LIFECYCLE ---
 
   @override
   void initState() {
@@ -92,8 +83,6 @@ class _BookingScreenState extends State<BookingScreen> {
     _discountController.dispose();
     super.dispose();
   }
-
-  // --- DATA LOADING ---
 
   Future<void> _loadEmployees() async {
     final clientService = Provider.of<ClientService>(context, listen: false);
@@ -178,8 +167,6 @@ class _BookingScreenState extends State<BookingScreen> {
     if (mounted) setState(() => _loyaltyPointsBalance = balance);
   }
 
-  // --- ACTIONS ---
-
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -247,7 +234,6 @@ class _BookingScreenState extends State<BookingScreen> {
   Future<void> _confirmBooking() async {
     if (_selectedTime == null || _selectedEmployee == null) return;
 
-    // Online payment simulation
     if (_paymentMethod == 'Online' && _finalPrice > 0) {
       setState(() => _isProcessingPayment = true);
       await Future.delayed(const Duration(seconds: 2));
@@ -283,7 +269,7 @@ class _BookingScreenState extends State<BookingScreen> {
         loyaltyPointsUsed: _loyaltyPointsToUse,
       );
     } catch (e) {
-      debugPrint("❌ Błąd rezerwacji: $e");
+      debugPrint("Błąd rezerwacji: $e");
     }
 
     if (!mounted) return;
@@ -304,11 +290,8 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
-  // --- STEP NAVIGATION ---
-
   void _nextStep() {
     if (_currentStep < 3) {
-      // Load slots when entering step 2
       if (_currentStep == 1) {
         _loadSlots();
       }
@@ -334,8 +317,6 @@ class _BookingScreenState extends State<BookingScreen> {
         return false;
     }
   }
-
-  // --- BUILD ---
 
   @override
   Widget build(BuildContext context) {
@@ -368,18 +349,12 @@ class _BookingScreenState extends State<BookingScreen> {
         children: [
           Column(
             children: [
-              // Step indicator
               _buildStepIndicator(),
-
-              // Service info bar
               _buildServiceInfoBar(),
-
-              // Step content
               Expanded(child: _buildCurrentStep()),
             ],
           ),
 
-          // Bottom bar (inside Stack so overlays cover it)
           if (!_isLoadingEmployees)
             Positioned(
               left: 0,
@@ -388,7 +363,6 @@ class _BookingScreenState extends State<BookingScreen> {
               child: _buildBottomBar(),
             ),
 
-          // Overlays
           if (_isProcessingPayment)
             _buildOverlay(
               "Przetwarzanie płatności...",
@@ -411,7 +385,6 @@ class _BookingScreenState extends State<BookingScreen> {
       child: Row(
         children: List.generate(displaySteps.length * 2 - 1, (index) {
           if (index.isOdd) {
-            // Connector line
             final stepBefore = (index ~/ 2) + 1;
             return Expanded(
               child: Container(
@@ -582,7 +555,6 @@ class _BookingScreenState extends State<BookingScreen> {
       ),
       child: Row(
         children: [
-          // Price info (show on step 3)
           if (_currentStep == 3) ...[
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -621,7 +593,6 @@ class _BookingScreenState extends State<BookingScreen> {
             const SizedBox(width: 16),
           ],
 
-          // Back button (not on step 1, or step 2 when only 1 employee)
           if (_currentStep > 1) ...[
             TextButton(
               onPressed: _isReserving || _isProcessingPayment

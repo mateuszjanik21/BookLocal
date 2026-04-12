@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:convert';
 import 'package:booklocal_mobile/core/models/employee_models.dart';
 import 'package:booklocal_mobile/core/models/service_models.dart';
@@ -33,28 +31,22 @@ class ClientService {
         final Map<String, dynamic> data = jsonDecode(response.body);
         List<ServiceDto> allServices = [];
 
-        // 1. Sprawdź listę główną 'services' (jeśli backend tam coś wrzuca)
         if (data['services'] != null) {
           final List<dynamic> servicesJson = data['services'];
           allServices.addAll(servicesJson.map((json) => ServiceDto.fromJson(json)));
         }
 
-        // 2. Sprawdź listę 'categories' i wyciągnij usługi z każdej kategorii
-        // To jest kluczowe, bo Angular korzysta właśnie z tego pola
         if (data['categories'] != null) {
           final List<dynamic> categoriesJson = data['categories'];
           
           for (var cat in categoriesJson) {
-            // Sprawdź czy kategoria ma usługi
             if (cat['services'] != null) {
               final List<dynamic> catServices = cat['services'];
-              // Dodaj usługi z tej kategorii do naszej głównej listy
               allServices.addAll(catServices.map((json) => ServiceDto.fromJson(json)));
             }
           }
         }
         
-        // Opcjonalnie: Usuń duplikaty (jeśli usługa jest i w 'services' i w 'categories')
         final ids = <int>{};
         allServices.retainWhere((x) => ids.add(x.id));
 
@@ -83,7 +75,6 @@ class ClientService {
     }
   }
 
-  /// Get all employees of a business (for bundle booking)
   Future<List<EmployeeDto>> getEmployees(int businessId) async {
     final url = Uri.parse(
       '${ApiConfig.baseUrl}/businesses/$businessId/employees',
@@ -102,8 +93,6 @@ class ClientService {
   }
 
   Future<List<BusinessListItemDto>> getBusinesses() async {
-    // ZMIANA: Używamy endpointu do wyszukiwania, bo on zwraca kategorie!
-    // Parametry pageNumber i pageSize są wymagane przez Twój backend
     final url = Uri.parse('${ApiConfig.baseUrl}/search/businesses?pageNumber=1&pageSize=100');
 
     try {
@@ -112,7 +101,6 @@ class ClientService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         
-        // Twój endpoint zwraca PagedResult, więc lista firm jest w polu 'items'
         if (jsonResponse.containsKey('items') && jsonResponse['items'] is List) {
           final List<dynamic> items = jsonResponse['items'];
           return items.map((json) => BusinessListItemDto.fromJson(json)).toList();

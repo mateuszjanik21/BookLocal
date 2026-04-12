@@ -67,7 +67,7 @@ class EmptyStateWidget extends StatelessWidget {
                     backgroundColor: const Color(0xFF16a34a),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: 0, // Płaski, premium wygląd
+                    elevation: 0,
                   ),
                   child: Text(
                     actionLabel!,

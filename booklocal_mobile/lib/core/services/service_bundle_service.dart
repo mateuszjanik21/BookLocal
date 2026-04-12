@@ -32,7 +32,6 @@ class ServiceBundleService {
     }
   }
 
-  /// Get available time slots for a bundle reservation
   Future<List<String>> getBundleAvailableSlots(
     int employeeId,
     String date,
@@ -58,7 +57,6 @@ class ServiceBundleService {
     }
   }
 
-  /// Create a bundle reservation (customer-facing)
   Future<bool> createBundleReservation({
     required int serviceBundleId,
     required int employeeId,
@@ -75,20 +73,20 @@ class ServiceBundleService {
       'paymentMethod': paymentMethod,
       if (loyaltyPointsUsed > 0) 'loyaltyPointsUsed': loyaltyPointsUsed,
     };
-    print("📦 Bundle reservation payload: $payload");
+    print("Bundle reservation payload: $payload");
     try {
       final response = await http.post(
         url,
         headers: _headers,
         body: jsonEncode(payload),
       );
-      print("📦 Bundle reservation response: ${response.statusCode} - ${response.body}");
+      print("Bundle reservation response: ${response.statusCode} - ${response.body}");
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       }
       return false;
     } catch (e) {
-      print("❌ Błąd tworzenia rezerwacji pakietu: $e");
+      print("Błąd tworzenia rezerwacji pakietu: $e");
       return false;
     }
   }

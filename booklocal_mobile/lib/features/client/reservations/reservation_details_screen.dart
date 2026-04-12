@@ -224,11 +224,9 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // 1. Status Section
             _buildStatusHeader(res, primaryColor),
             const SizedBox(height: 20),
 
-            // 2. Service Details Card
             _buildCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +269,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             ),
             const SizedBox(height: 20),
 
-            // 3. Business Info Card
             _buildCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,7 +365,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             
             const SizedBox(height: 40),
 
-            // 4. Rate Button or Reviewed Status
             if (res.status == 'completed')
               if (!res.hasReview)
                 SizedBox(
@@ -408,7 +404,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                   ),
                 ),
 
-            // 5. Cancel Button
             if (isUpcoming && isConfirmed)
               SizedBox(
                 width: double.infinity,

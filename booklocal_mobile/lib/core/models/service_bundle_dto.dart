@@ -51,18 +51,15 @@ class ServiceBundleDto {
     required this.items,
   });
 
-  /// Suma oryginalnych cen wszystkich pozycji
   double get originalTotalPrice =>
       items.fold(0.0, (sum, item) => sum + item.originalPrice);
 
-  /// Procent zniżki (np. 20%)
   int get discountPercent {
     final original = originalTotalPrice;
     if (original <= 0) return 0;
     return ((1 - totalPrice / original) * 100).round();
   }
 
-  /// Łączny czas trwania (suma minut)
   int get totalDurationMinutes =>
       items.fold(0, (sum, item) => sum + item.durationMinutes);
 

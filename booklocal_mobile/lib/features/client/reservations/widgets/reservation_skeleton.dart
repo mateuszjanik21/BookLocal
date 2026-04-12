@@ -22,7 +22,6 @@ class ReservationSkeleton extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // Date Column Skeleton
                 Container(
                   width: 100,
                   decoration: BoxDecoration(
@@ -37,7 +36,6 @@ class ReservationSkeleton extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Content Skeleton
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),

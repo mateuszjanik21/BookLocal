@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Ogólna biała karta sekcji (jak w Angularze 'card bg-base-100')
 class SectionCard extends StatelessWidget {
   final String title;
   final IconData icon;

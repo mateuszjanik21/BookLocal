@@ -15,37 +15,37 @@
 
     <div class="w-full md:w-1/2">
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="card-body p-8 md:p-12">
-        <h1 class="text-3xl font-bold mb-6 text-center md:text-left">Rejestracja Klienta</h1>
+        <h1 class="text-3xl font-bold mb-4 text-center md:text-left">Rejestracja Klienta</h1>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div class="form-control">
-            <label class="label"><span class="label-text">Imię</span></label>
+            <label class="label py-1.5"><span class="label-text font-medium">Imię</span></label>
             <input type="text" placeholder="Imię" class="input input-bordered" formControlName="firstName"
               [class.input-error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched" />
           </div>
           <div class="form-control">
-            <label class="label"><span class="label-text">Nazwisko</span></label>
+            <label class="label py-1.5"><span class="label-text font-medium">Nazwisko</span></label>
             <input type="text" placeholder="Nazwisko" class="input input-bordered" formControlName="lastName"
               [class.input-error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched" />
           </div>
         </div>
 
-        <div class="form-control mt-4">
-          <label class="label"><span class="label-text">Email</span></label>
-          <input type="email" placeholder="Email" class="input input-bordered" formControlName="email"
+        <div class="form-control mt-2">
+          <label class="label py-1.5"><span class="label-text font-medium">Email</span></label>
+          <input type="email" placeholder="Email" class="input input-bordered w-full" formControlName="email"
             [class.input-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" />
         </div>
 
-        <div class="form-control mt-4">
-          <label class="label"><span class="label-text">Hasło</span></label>
-          <input type="password" placeholder="Hasło" class="input input-bordered" formControlName="password"
+        <div class="form-control mt-2">
+          <label class="label py-1.5"><span class="label-text font-medium">Hasło</span></label>
+          <input type="password" placeholder="Min. 6 znaków" class="input input-bordered w-full" formControlName="password"
             [class.input-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" />
           @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
           <span class="label-text-alt text-error mt-1">Hasło musi mieć min. 6 znaków.</span>
           }
         </div>
 
-        <div class="form-control mt-8">
+        <div class="form-control mt-6">
           <button class="btn btn-primary btn-lg w-full" type="submit" [disabled]="registerForm.invalid">Zarejestruj
             się</button>
         </div>

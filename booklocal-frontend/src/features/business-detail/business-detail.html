@@ -81,7 +81,7 @@
         Pakiety Usług
         <span class="badge badge-secondary badge-sm ml-2">BESTSELLER</span>
       </h2>
-      <div class="carousel-bundles flex gap-4 overflow-x-auto pb-6 scrollbar-hide px-2">
+      <div class="carousel-bundles flex gap-4 overflow-x-auto pt-4 pb-6 scrollbar-hide px-2">
           @for (bundle of bundles; track bundle.serviceBundleId) {
           <div class="bundle-card-premium shrink-0 w-[280px] md:w-[320px] card bg-base-100 border-2 border-success/30 hover:border-success shadow-sm hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer overflow-hidden relative group"
                (click)="openBookBundleModal(bundle, bundle_modal)">

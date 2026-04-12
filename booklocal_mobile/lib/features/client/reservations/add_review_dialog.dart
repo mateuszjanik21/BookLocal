@@ -51,7 +51,6 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
           ),
           const SizedBox(height: 32),
           
-          // Stars
           Center(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

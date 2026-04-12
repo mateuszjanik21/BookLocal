@@ -25,8 +25,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
   final ScrollController _scrollController = ScrollController();
   String _currentUserId = "";
 
-  // Zapisujemy referencje w initState — KLUCZOWE!
-  // Provider.of(context) w dispose() NIE DZIAŁA niezawodnie.
   late final ChatProvider _chatProvider;
   late final PresenceService _presenceService;
 
@@ -36,22 +34,17 @@ class _ConversationScreenState extends State<ConversationScreen> {
     final authService = Provider.of<AuthService>(context, listen: false);
     _currentUserId = authService.currentUser?.id ?? "";
 
-    // Zapisz referencje RAZ — będą użyte w dispose()
     _chatProvider = Provider.of<ChatProvider>(context, listen: false);
     _presenceService = Provider.of<PresenceService>(context, listen: false);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      // Połącz ChatProvider z PresenceService (dla badge'a)
       _chatProvider.setPresenceService(_presenceService);
 
-      // Ustaw aktywną konwersację — blokuje toasty dla tego czatu
       _chatProvider.setActiveConversationId(widget.conversationId);
       _presenceService.setActiveConversationId(widget.conversationId);
 
-      // Załaduj historię wiadomości
       await _chatProvider.loadMessageThread(widget.conversationId);
 
-      // Rozpocznij nasłuch SignalR + oznacz jako przeczytane
       await _chatProvider.startListening(widget.conversationId);
 
       _scrollToBottom();
@@ -93,14 +86,12 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   @override
   void dispose() {
-    // Używamy ZAPISANYCH referencji — NIE Provider.of(context)!
     _chatProvider.setActiveConversationId(null);
     _presenceService.setActiveConversationId(null);
 
     _chatProvider.stopListening();
     _chatProvider.removeListener(_onMessagesUpdated);
 
-    // Odśwież listę konwersacji i badge po wyjściu
     _chatProvider.loadMyConversations();
     _presenceService.refreshUnreadCount();
 
@@ -189,9 +180,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
                     final msg = messages[msgIndex];
                     final isMe = msg.senderId == _currentUserId;
 
-                    // Sprawdź czy trzeba pokazać separator daty.
-                    // W reversed list: separator pokazujemy PO bąbelku (wizualnie = NAD nim).
-                    // Pokazuj jeśli to pierwsza wiadomość lub poprzednia (chronologicznie) jest z innego dnia.
                     bool showDateSeparator = false;
                     if (msgIndex == 0) {
                       showDateSeparator = true;

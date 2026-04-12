@@ -51,7 +51,7 @@ class NotificationProvider with ChangeNotifier {
 
   void _handleNotification(Map<String, dynamic> data) {
     final payload = NotificationPayload.fromMap(data);
-    _notifications.insert(0, payload); // Najnowsze na górze
+    _notifications.insert(0, payload);
     _unreadCount++;
     notifyListeners();
   }

@@ -14,19 +14,15 @@ import 'package:http/http.dart' as http;
 class HomeProvider extends ChangeNotifier {
   final SearchService _searchService = SearchService();
 
-  // Konfiguracja paginacji
   int pageNumber = 1;
   final int pageSize = 12;
 
-  // Kontrolery wprowadzania tekstu
   final TextEditingController searchController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
 
-  // Filtry i parametry wyszukiwania
   int? activeMainCategoryId;
   String activeSortBy = '';
 
-  // Stan
   PagedResult<ServiceCategorySearchResult>? pagedResult;
   List<MainCategory> mainCategories = [];
   List<RebookSuggestion> rebookSuggestions = [];
@@ -58,9 +54,6 @@ class HomeProvider extends ChangeNotifier {
   }
 
   Future<void> init(AuthService authService) async {
-    // Odpalamy zapytania równolegle, nie czekając z jednym na drugie.
-    // Dzięki temu unikamy tzw. "jank" - nagłego przycięcia przy renderowaniu
-    // wszystkich trzech wielkich sekcji na raz.
     _fetchMainCategories();
     _fetchRebookSuggestions(authService);
     fetchResults();

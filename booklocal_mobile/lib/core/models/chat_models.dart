@@ -29,7 +29,7 @@ class ConversationDto {
 
 class MessageDto {
   final int id;
-  final String senderId; // <--- ZMIANA: int -> String
+  final String senderId;
   final String content;
   final DateTime messageSent;
   bool isRead;
@@ -44,7 +44,7 @@ class MessageDto {
 
   factory MessageDto.fromJson(Map<String, dynamic> json) {
     return MessageDto(
-      id: json['id'] ?? json['messageId'] ?? 0, // C# can send messageId
+      id: json['id'] ?? json['messageId'] ?? 0,
       senderId: json['senderId']?.toString() ?? '', 
       content: json['content'] ?? '',
       messageSent: DateTime.tryParse(json['sentAt']?.toString() ?? json['messageSent']?.toString() ?? '') ?? DateTime.now(),

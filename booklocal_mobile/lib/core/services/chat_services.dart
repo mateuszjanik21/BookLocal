@@ -5,19 +5,14 @@ import '../constants/api_config.dart';
 import '../models/chat_models.dart';
 import 'auth_service.dart';
 
-/// ChatService — obsługuje ChatHub (per-konwersacja) oraz REST API.
-/// Jest singletonem — tworzony RAZ w main.dart.
 class ChatService {
   final AuthService _authService;
   HubConnection? _hubConnection;
 
-  // Callbacki do powiadamiania UI
   Function(MessageDto)? onMessageReceived;
   Function(int)? onMessagesRead;
 
   ChatService(this._authService);
-
-  // ─── REST API ───────────────────────────────────────────────
 
   Future<List<ConversationDto>> getMyConversations() async {
     final token = _authService.token;
@@ -87,12 +82,7 @@ class ChatService {
     }
   }
 
-  // ─── SignalR ChatHub (per-konwersacja) ──────────────────────
-
-  /// Wzorowane na Angular `createHubConnection(conversationId)`.
-  /// Otwiera ChatHub, dołącza do grupy, rejestruje ReceiveMessage + MessagesRead.
   Future<void> startHubConnection(int conversationId) async {
-    // Zamknij stare połączenie
     await stopHubConnection();
 
     final token = _authService.token;
@@ -105,7 +95,6 @@ class ChatService {
         .withAutomaticReconnect()
         .build();
 
-    // Rejestruj PRZED start() — tak jak Angular
     _hubConnection!.on('ReceiveMessage', (arguments) {
       if (arguments != null && arguments.isNotEmpty) {
         try {

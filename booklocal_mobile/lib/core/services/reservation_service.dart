@@ -1,18 +1,16 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart'; // Dodaj intl do pubspec.yaml jeśli nie masz
+import 'package:intl/intl.dart';
 import '../constants/api_config.dart';
 import '../models/reservation_models.dart';
-import 'auth_service.dart'; // Potrzebujemy tokena do rezerwacji
+import 'auth_service.dart';
 
 class ReservationService {
   final AuthService? _authService;
 
   ReservationService([this._authService]); 
 
-  // 1. Pobierz wolne sloty (godziny)
   Future<List<String>> getAvailableSlots(int employeeId, int serviceVariantId, DateTime date) async {
-    // Format daty zgodny z backendem (yyyy-MM-dd)
     final dateStr = DateFormat('yyyy-MM-dd').format(date);
     
     final url = Uri.parse('${ApiConfig.baseUrl}/employees/$employeeId/availability?serviceVariantId=$serviceVariantId&date=$dateStr');
@@ -31,7 +29,6 @@ class ReservationService {
     }
   }
 
-  // 2. Utwórz rezerwację
   Future<bool> createReservation(
     int serviceVariantId,
     int employeeId,
@@ -74,12 +71,11 @@ class ReservationService {
         return false;
       }
     } catch (e) {
-      print("❌ Błąd sieci rezerwacji: $e");
+      print("Błąd sieci rezerwacji: $e");
       return false;
     }
   }
 
-  // 3. Weryfikacja kodu rabatowego
   Future<Map<String, dynamic>?> verifyDiscount({
     required int businessId,
     required String code,
@@ -110,12 +106,11 @@ class ReservationService {
       }
       return null;
     } catch (e) {
-      print("❌ Błąd weryfikacji kodu: $e");
+      print("Błąd weryfikacji kodu: $e");
       return null;
     }
   }
 
-  // 4. Pobierz saldo punktów lojalnościowych
   Future<int> getLoyaltyBalance({
     required int businessId,
     required String customerId,
@@ -138,7 +133,7 @@ class ReservationService {
       }
       return 0;
     } catch (e) {
-      print("❌ Błąd pobierania punktów: $e");
+      print("Błąd pobierania punktów: $e");
       return 0;
     }
   }
@@ -148,9 +143,8 @@ class ReservationService {
     int pageNumber = 1, 
     int pageSize = 10,
   }) async {
-    // Dynamicznie podstawiamy scope do URL
     final uri = Uri.parse('${ApiConfig.baseUrl}/reservations/my-reservations').replace(queryParameters: {
-      'scope': scope, // 'upcoming' lub 'past'
+      'scope': scope, 
       'pageNumber': pageNumber.toString(),
       'pageSize': pageSize.toString(), 
     });
@@ -169,7 +163,6 @@ class ReservationService {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
         
-        // Wyciągamy dane z pola 'items' (PagedResult)
         if (jsonResponse.containsKey('items') && jsonResponse['items'] is List) {
           final List<dynamic> items = jsonResponse['items'];
           return items.map((json) => ReservationDto.fromJson(json)).toList();
@@ -196,7 +189,6 @@ class ReservationService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        // PATCH często nie wymaga body, jeśli ID jest w URL, ale czasem warto wysłać puste {}
         body: jsonEncode({}), 
       );
 

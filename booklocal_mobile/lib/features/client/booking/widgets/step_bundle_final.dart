@@ -62,7 +62,6 @@ class StepBundleFinal extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Summary card
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -162,7 +161,6 @@ class StepBundleFinal extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Price
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -194,13 +192,11 @@ class StepBundleFinal extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Loyalty points
           if (loyaltyPointsBalance > 0) ...[
             _buildLoyaltySection(),
             const SizedBox(height: 20),
           ],
 
-          // Payment method
           const Text(
             "Forma płatności",
             style: TextStyle(

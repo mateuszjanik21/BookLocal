@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
 import '../../../core/models/business_list_item_dto.dart';
 import '../../../core/models/employee_models.dart';
 import '../../../core/models/service_bundle_dto.dart';
@@ -9,7 +8,6 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/services/client_service.dart';
 import '../../../core/services/reservation_service.dart';
 import '../../../core/services/service_bundle_service.dart';
-
 import 'booking_success_screen.dart';
 import 'widgets/step_bundle_info.dart';
 import 'widgets/step_bundle_final.dart';
@@ -34,15 +32,12 @@ class BundleBookingScreen extends StatefulWidget {
 class _BundleBookingScreenState extends State<BundleBookingScreen> {
   static const Color _primaryColor = Color(0xFF16a34a);
 
-  // --- WIZARD STATE ---
-  int _currentStep = 0; // 0=Info, 1=Kto, 2=Termin, 3=Pakiet, 4=Finał
+  int _currentStep = 0;
 
-  // Step 1 — employees
   List<EmployeeDto> _employees = [];
   bool _isLoadingEmployees = false;
   EmployeeDto? _selectedEmployee;
 
-  // Step 2 — date & time
   DateTime _selectedDate = DateTime.now();
   String? _selectedTime;
   List<String> _availableSlots = [];
@@ -55,12 +50,10 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
   String _activeGroup = 'Rano';
   bool _isLoadingSlots = false;
 
-  // Step 4 — payment
   String _paymentMethod = 'Cash';
   int _loyaltyPointsBalance = 0;
   int _loyaltyPointsToUse = 0;
 
-  // Overlays
   bool _isReserving = false;
   bool _isProcessingPayment = false;
 
@@ -69,12 +62,10 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
     super.initState();
   }
 
-  // --- DATA LOADING ---
 
   Future<void> _loadEmployees() async {
     setState(() => _isLoadingEmployees = true);
     final clientService = Provider.of<ClientService>(context, listen: false);
-    // For bundles, get all employees of this business
     final emps = await clientService.getEmployees(widget.business.id);
     if (!mounted) return;
     setState(() {
@@ -177,12 +168,9 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
     }
   }
 
-  // --- BOOKING ---
-
   Future<void> _confirmBooking() async {
     if (_selectedEmployee == null || _selectedTime == null) return;
 
-    // Online payment simulation
     if (_paymentMethod == 'Online' && !_isProcessingPayment) {
       setState(() => _isProcessingPayment = true);
       await Future.delayed(const Duration(seconds: 2));
@@ -192,7 +180,6 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
 
     setState(() => _isReserving = true);
 
-    // Build startTime
     String timeStr = _selectedTime!;
     if (timeStr.contains('T')) {
       timeStr = timeStr.split('T').last.substring(0, 5);
@@ -241,19 +228,14 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
     }
   }
 
-  // --- NAVIGATION ---
-
   void _nextStep() {
     if (_currentStep < 4) {
-      // Load employees when entering step 1
       if (_currentStep == 0) {
         _loadEmployees();
       }
-      // Load slots when entering step 2
       if (_currentStep == 1) {
         _loadSlots();
       }
-      // Load loyalty when entering step 4
       if (_currentStep == 3) {
         _loadLoyaltyBalance();
       }
@@ -270,15 +252,15 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
   bool get _canAdvance {
     switch (_currentStep) {
       case 0:
-        return true; // Info → always
+        return true;
       case 1:
         return _selectedEmployee != null;
       case 2:
         return _selectedTime != null;
       case 3:
-        return true; // Package review → always
+        return true; 
       case 4:
-        return true; // Final → submit button
+        return true;
       default:
         return false;
     }
@@ -288,8 +270,6 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
     final price = widget.bundle.totalPrice - _loyaltyPointsToUse;
     return price < 1 ? 1 : price;
   }
-
-  // --- BUILD ---
 
   @override
   Widget build(BuildContext context) {
@@ -350,7 +330,7 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
 
   Widget _buildStepIndicator() {
     final steps = ['Kto', 'Termin', 'Pakiet', 'Finał'];
-    final adjustedStep = _currentStep; // 1-based aligned with display
+    final adjustedStep = _currentStep;
 
     return Container(
       color: Colors.white,
@@ -567,7 +547,6 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
           child: Row(
             children: [
-              // Price display (visible from step 1 onwards)
               if (_currentStep >= 1) ...[
                 Column(
                   mainAxisSize: MainAxisSize.min,
@@ -606,7 +585,6 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
                 const SizedBox(width: 8),
               ],
 
-              // Back button
               if (_currentStep > 0) ...[
                 const Spacer(),
                 TextButton(

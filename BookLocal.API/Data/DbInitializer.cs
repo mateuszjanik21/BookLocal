@@ -378,7 +378,6 @@ public static class DbInitializer
 
 
         // Rezerwacje
-        Console.WriteLine("Generowanie rezerwacji (to może chwilę potrwać)...");
         var reservations = new List<Reservation>();
 
         var allBusinesses = await context.Businesses
@@ -394,9 +393,24 @@ public static class DbInitializer
 
         var schedules = await context.WorkSchedules.ToListAsync();
 
+        var employeeOccupied = new Dictionary<int, List<(DateTime Start, DateTime End)>>();
+
+        bool HasCollision(int employeeId, DateTime start, DateTime end)
+        {
+            if (!employeeOccupied.TryGetValue(employeeId, out var slots)) return false;
+            return slots.Any(s => start < s.End && end > s.Start);
+        }
+
+        void MarkOccupied(int employeeId, DateTime start, DateTime end)
+        {
+            if (!employeeOccupied.ContainsKey(employeeId))
+                employeeOccupied[employeeId] = new List<(DateTime, DateTime)>();
+            employeeOccupied[employeeId].Add((start, end));
+        }
+
         foreach (var customer in customers)
         {
-            int reservationCount = faker.Random.Number(20, 50);
+            int reservationCount = faker.Random.Number(8, 20);
 
             for (int i = 0; i < reservationCount; i++)
             {
@@ -414,9 +428,11 @@ public static class DbInitializer
                 if (!randomService.Variants.Any()) continue;
                 var randomVariant = faker.PickRandom(randomService.Variants);
 
+                var totalDuration = randomVariant.DurationMinutes + randomVariant.CleanupTimeMinutes;
+
                 DateTime? validStartTime = null;
                 int attempts = 0;
-                while (validStartTime == null && attempts < 10)
+                while (validStartTime == null && attempts < 20)
                 {
                     var baseDate = faker.Date.Between(startDate, endDate).Date;
                     var daySchedule = schedules.FirstOrDefault(s => s.EmployeeId == randomEmployee.EmployeeId && s.DayOfWeek == baseDate.DayOfWeek);
@@ -425,12 +441,20 @@ public static class DbInitializer
                     {
                         var startTs = daySchedule.StartTime.Value;
                         var endTs = daySchedule.EndTime.Value;
-                        var maxMinutes = (endTs - startTs).TotalMinutes - randomVariant.DurationMinutes - 15;
+                        var maxMinutes = (endTs - startTs).TotalMinutes - totalDuration;
 
                         if (maxMinutes > 0)
                         {
-                            var offsetMinutes = faker.Random.Int(0, (int)maxMinutes);
-                            validStartTime = baseDate.Add(startTs).AddMinutes(offsetMinutes);
+                            var slotCount = (int)(maxMinutes / 15);
+                            if (slotCount <= 0) { attempts++; continue; }
+                            var slotIndex = faker.Random.Int(0, slotCount);
+                            var candidate = baseDate.Add(startTs).AddMinutes(slotIndex * 15);
+                            var candidateEnd = candidate.AddMinutes(totalDuration);
+
+                            if (!HasCollision(randomEmployee.EmployeeId, candidate, candidateEnd))
+                            {
+                                validStartTime = candidate;
+                            }
                         }
                     }
                     attempts++;
@@ -438,11 +462,12 @@ public static class DbInitializer
 
                 if (validStartTime == null) continue;
 
-                var startTime = validStartTime.Value;
-                var duration = randomVariant.DurationMinutes + randomVariant.CleanupTimeMinutes;
-                var endTime = startTime.AddMinutes(duration);
+                var resStart = validStartTime.Value;
+                var resEnd = resStart.AddMinutes(totalDuration);
 
-                var status = startTime < DateTime.UtcNow
+                MarkOccupied(randomEmployee.EmployeeId, resStart, resEnd);
+
+                var status = resStart < DateTime.UtcNow
                     ? faker.Random.Bool(0.9f) ? ReservationStatus.Completed : ReservationStatus.Cancelled
                     : ReservationStatus.Confirmed;
 
@@ -455,8 +480,8 @@ public static class DbInitializer
                     EmployeeId = randomEmployee.EmployeeId,
                     ServiceVariantId = randomVariant.ServiceVariantId,
                     AgreedPrice = randomVariant.Price,
-                    StartTime = startTime,
-                    EndTime = endTime,
+                    StartTime = resStart,
+                    EndTime = resEnd,
                     Status = status,
                     PaymentMethod = paymentMethod
                 };
@@ -499,7 +524,7 @@ public static class DbInitializer
                 context.Invoices.Add(new Invoice
                 {
                     BusinessId = res.BusinessId,
-                    CustomerId = res.Customer.Id,
+                    CustomerId = res.Customer!.Id,
                     ReservationId = res.ReservationId,
                     InvoiceNumber = $"FV/{res.EndTime.Year}/{res.EndTime.Month}/{res.ReservationId}",
                     IssueDate = res.EndTime.AddDays(1),
@@ -528,9 +553,9 @@ public static class DbInitializer
                 Rating = faker.Random.Int(4, 5),
                 Comment = faker.Rant.Review(),
                 CreatedAt = r.EndTime.AddHours(2),
-                ReviewerName = r.Customer.FirstName,
+                ReviewerName = r.Customer!.FirstName,
                 BusinessId = r.BusinessId,
-                UserId = r.Customer.Id,
+                UserId = r.Customer!.Id,
                 ReservationId = r.ReservationId
             });
         }
@@ -650,7 +675,7 @@ public static class DbInitializer
         var noteTemplates = new[] { "Lubi mocną kawę", "Ostatnio narzekał na ból karku", "Preferuje cichą wizytę", "Zwraca uwagę na detale", "Stały klient, poleca nas znajomym" };
 
         var profiles = reservations
-            .GroupBy(r => new { r.BusinessId, CustomerId = r.Customer.Id })
+            .GroupBy(r => new { r.BusinessId, CustomerId = r.Customer!.Id })
             .Select(g => new CustomerBusinessProfile
             {
                 BusinessId = g.Key.BusinessId,

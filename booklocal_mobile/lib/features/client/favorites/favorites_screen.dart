@@ -140,7 +140,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             color: const Color(0xFF16a34a),
             child: Column(
               children: [
-                // Wyszukiwarka
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                   child: Container(
@@ -184,7 +183,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     ),
                   ),
                 ),
-                // Lista
                 Expanded(
                   child: filteredFavorites.isEmpty && _searchQuery.isNotEmpty
                       ? Center(

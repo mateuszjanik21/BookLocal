@@ -22,7 +22,6 @@ class HomeTopBar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Powitanie i Profil
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -93,7 +92,6 @@ class HomeTopBar extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           
-          // Pasek wyszukiwania natywny (bez cieni)
           Container(
             decoration: BoxDecoration(
               color: const Color(0xFFF3F4F6),

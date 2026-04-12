@@ -11,18 +11,15 @@ class StepSummary extends StatelessWidget {
   final String selectedTime;
   final String businessName;
 
-  // Payment
   final String paymentMethod;
   final ValueChanged<String> onPaymentMethodChanged;
 
-  // Discount
   final TextEditingController discountController;
   final Map<String, dynamic>? verifiedDiscount;
   final bool isVerifyingDiscount;
   final VoidCallback onVerifyDiscount;
   final VoidCallback onRemoveDiscount;
 
-  // Loyalty
   final int loyaltyPointsBalance;
   final int loyaltyPointsToUse;
   final ValueChanged<int> onLoyaltyPointsChanged;
@@ -79,11 +76,9 @@ class StepSummary extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Visit summary card
           _buildSummaryCard(dateStr),
           const SizedBox(height: 20),
 
-          // Payment method
           const Text("Forma płatności",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
           const SizedBox(height: 12),
@@ -105,17 +100,15 @@ class StepSummary extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Discount code
           _buildDiscountSection(),
           const SizedBox(height: 16),
 
-          // Loyalty points
           if (loyaltyPointsBalance > 0) ...[
             _buildLoyaltySection(),
             const SizedBox(height: 16),
           ],
 
-          const SizedBox(height: 80), // space for bottom bar
+          const SizedBox(height: 80),
         ],
       ),
     );
@@ -132,7 +125,6 @@ class StepSummary extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Employee + Service
           Row(
             children: [
               CircleAvatar(
@@ -162,7 +154,6 @@ class StepSummary extends StatelessWidget {
             ],
           ),
           const Divider(height: 28),
-          // Date + Time
           Row(
             children: [
               Container(

@@ -161,7 +161,6 @@ class _BundleCard extends StatelessWidget {
             ),
           ),
 
-          // Items list
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 14, 18, 10),
             child: Column(
@@ -215,13 +214,11 @@ class _BundleCard extends StatelessWidget {
             ),
           ),
 
-          // Divider
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
             child: Divider(color: Colors.grey.shade200, height: 1),
           ),
 
-          // Footer: price + booking button
           Padding(
             padding: const EdgeInsets.all(18),
             child: Row(
@@ -266,7 +263,6 @@ class _BundleCard extends StatelessWidget {
             ),
           ),
 
-          // Booking button
           Padding(
             padding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
             child: SizedBox(

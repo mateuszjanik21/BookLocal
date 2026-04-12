@@ -33,13 +33,11 @@ void main() async {
             Provider.of<AuthService>(context, listen: false),
           ),
         ),
-        // PresenceService — SINGLETON ChangeNotifier, tworzony RAZ
         ChangeNotifierProvider<PresenceService>(
           create: (context) => PresenceService(
             Provider.of<AuthService>(context, listen: false),
           ),
         ),
-        // ChatProvider — SINGLETON ChangeNotifier, tworzony RAZ
         ChangeNotifierProvider<ChatProvider>(
           create: (context) => ChatProvider(
             Provider.of<ChatService>(context, listen: false),
@@ -108,7 +106,6 @@ class BookLocalApp extends StatelessWidget {
   }
 }
 
-/// Brama po zalogowaniu — uruchamia PresenceHub RAZ.
 class _AuthenticatedGate extends StatefulWidget {
   const _AuthenticatedGate();
 
@@ -126,18 +123,13 @@ class _AuthenticatedGateState extends State<_AuthenticatedGate> {
       if (!_initialized) {
         _initialized = true;
 
-        // Celowe opóźnienie wywołania Hub'a SignalR oraz wiadomości,
-        // Zapobiega to "wąskiemu gardłu" sieci podczas logowania,
-        // dając najwyższy priorytet na wyrenderowanie i pobranie ekranu Home.
         await Future.delayed(const Duration(milliseconds: 800));
 
         if (!mounted) return;
 
-        // Uruchom PresenceHub — dokładnie jak Angular createHubConnection() przy starcie
         final presence = Provider.of<PresenceService>(context, listen: false);
         presence.createHubConnection();
 
-        // Załaduj listę konwersacji dla badge'a
         final chatProvider = Provider.of<ChatProvider>(context, listen: false);
         chatProvider.loadMyConversations();
 

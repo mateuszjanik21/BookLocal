@@ -17,8 +17,6 @@ class ChatProvider extends ChangeNotifier {
 
   ChatProvider(this._chatService);
 
-  /// Ustawiane z zewnątrz z poziomu UI (ConversationScreen), 
-  /// aby powiązać z PresenceService do odświeżania badge'a.
   void setPresenceService(PresenceService ps) {
     _presenceService = ps;
   }
@@ -62,33 +60,24 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  /// Wzór Angular: Otwieramy ChatHub, rejestrujemy listenery, 
-  /// POTEM markujemy jako przeczytane.
   Future<void> startListening(int conversationId) async {
     await _chatService.startHubConnection(conversationId);
 
-    // Rejestruj handlery PRZED markAsRead
     _chatService.onMessageReceived = (newMessage) async {
-      // Szukaj tymczasowej wiadomości (id=0) o tej samej treści i nadawcy
-      // — to echo naszej własnej wiadomości wracające z serwera
       final tempIndex = _currentMessages.indexWhere(
         (m) => m.id == 0 && m.senderId == newMessage.senderId && m.content == newMessage.content,
       );
 
       if (tempIndex != -1) {
-        // Zastąp tymczasową prawdziwą wersją z serwera
         _currentMessages[tempIndex] = newMessage;
       } else if (newMessage.id == 0 || !_currentMessages.any((m) => m.id == newMessage.id)) {
-        // Nowa wiadomość od drugiej strony
         _currentMessages.add(newMessage);
       } else {
-        // Duplikat, ignoruj
         return;
       }
 
       notifyListeners();
 
-      // Automatycznie oznacz jako przeczytane jeśli jesteśmy w tej konwersacji
       if (_activeConversationId == conversationId) {
         await _chatService.markMessagesAsRead(conversationId);
       }
@@ -102,21 +91,17 @@ class ChatProvider extends ChangeNotifier {
         }
         notifyListeners();
       }
-      // Odśwież badge globalny
       _presenceService?.refreshUnreadCount();
     };
 
-    // TERAZ oznacz jako przeczytane (Angular wzór: listenery zarejestrowane PRZED)
     await _chatService.markMessagesAsRead(conversationId);
 
-    // Lokalnie zeruj w UI
     final idx = _conversations.indexWhere((c) => c.conversationId == conversationId);
     if (idx != -1) {
       _conversations[idx].unreadCount = 0;
       notifyListeners();
     }
 
-    // Odśwież badge globalny
     _presenceService?.refreshUnreadCount();
   }
 

@@ -38,7 +38,6 @@ class StepBundleReview extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Summary chips
           Row(
             children: [
               Expanded(child: _infoChip("Specjalista", employee.firstName)),
@@ -48,7 +47,6 @@ class StepBundleReview extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Timeline
           Text(
             "Usługi w pakiecie",
             style: TextStyle(
@@ -108,7 +106,6 @@ class StepBundleReview extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Timeline indicator
               SizedBox(
                 width: 32,
                 child: Column(
@@ -137,7 +134,6 @@ class StepBundleReview extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 14),
-              // Content
               Expanded(
                 child: Container(
                   margin: EdgeInsets.only(bottom: isLast ? 0 : 16),

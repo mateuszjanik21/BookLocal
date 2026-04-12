@@ -52,8 +52,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
     _scrollController = ScrollController()..addListener(_onScroll);
     _tabController = TabController(length: 5, vsync: this);
     
-    // Optymalizacja płynności (Anti-Jank): Opóźniamy pobieranie danych zewnętrznych 
-    // aż do momentu zakończenia natywnej animacji przejścia ekranu (z reguły ~300ms).
     Future.delayed(const Duration(milliseconds: 350), () {
       if (mounted) {
         _loadBusinessDetails();
@@ -87,7 +85,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
     final page = loadMore ? _reviewPage + 1 : 1;
 
     if (loadMore) {
-      // Sztuczne opóźnienie, żeby animacja ładowania była widoczna na dole
       await Future.delayed(const Duration(milliseconds: 800));
     }
 
@@ -98,7 +95,7 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
         pageSize: 10,
         sortBy: _sortBy,
       ),
-      if (!loadMore) Future.delayed(const Duration(milliseconds: 400)), // Wymuszenie szkieletu przy pierwszym wejściu
+      if (!loadMore) Future.delayed(const Duration(milliseconds: 400)),
     ]);
     
     final result = results[0] as PagedReviewsResult;
@@ -161,11 +158,10 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
     ]);
 
     if (mounted) {
-      // Import FavoritesProvider to refresh it (added in next edit if needed, or already works if imported)
       try {
         Provider.of<FavoritesProvider>(context, listen: false).fetchFavorites(refresh: true);
       } catch (e) {
-        // Zignoruj jeśli provider nie jest dostępny
+        //
       }
     }
   }
@@ -321,7 +317,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
                 ),
               ),
 
-              // 2. STICKY TABBAR
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _SliverAppBarDelegate(
@@ -382,7 +377,6 @@ class _BusinessDetailsScreenState extends State<BusinessDetailsScreen>
               ),
               NotificationListener<ScrollNotification>(
                 onNotification: (ScrollNotification scrollInfo) {
-                  // Only listen to the inner scroll view (depth == 0) and when we reach the very bottom
                   if (scrollInfo.depth == 0 &&
                       scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 50 &&
                       scrollInfo.metrics.maxScrollExtent > 0 &&

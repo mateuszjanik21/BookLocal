@@ -7,8 +7,6 @@ import 'auth_service.dart';
 import '../../main.dart';
 import '../../features/client/chat/conversation_screen.dart';
 
-/// Singleton globalny — żyje cały czas, tak jak Angular PresenceService.
-/// NIE twórz nowych instancji! Użyj ChangeNotifierProvider z create.
 class PresenceService extends ChangeNotifier {
   final AuthService _authService;
   HubConnection? _hubConnection;
@@ -26,15 +24,11 @@ class PresenceService extends ChangeNotifier {
     _activeConversationId = id;
   }
 
-  /// Ustaw na true gdy użytkownik jest w zakładce Czat (lista lub konwersacja)
   void setChatScreenActive(bool active) {
     _isChatScreenActive = active;
   }
 
-  /// Łączenie z PresenceHub — wołane RAZ po zalogowaniu.
-  /// Wzorowane 1:1 na Angular `createHubConnection()`.
   Future<void> createHubConnection() async {
-    // Zabezpieczenie: nie łącz ponownie jeśli już działa
     if (_isConnected && _hubConnection != null) {
       return;
     }
@@ -42,7 +36,6 @@ class PresenceService extends ChangeNotifier {
     final token = _authService.token;
     if (token == null || token.isEmpty) return;
 
-    // Zamknij stare jeśli było
     await _stopInternal();
 
     final hubUrl = '${ApiConfig.baseUrl}/presenceHub';
@@ -55,7 +48,6 @@ class PresenceService extends ChangeNotifier {
         .withAutomaticReconnect()
         .build();
 
-    // Rejestruj handlery PRZED start()
     _hubConnection!.on('UpdateConversation', _onUpdateConversation);
     _hubConnection!.on('GetOnlineUsers', (args) {
       print('[PresenceService] Online users: $args');
@@ -84,7 +76,7 @@ class PresenceService extends ChangeNotifier {
   }
 
   void _onUpdateConversation(List<Object?>? arguments) {
-    print('[PresenceService] 📨 UpdateConversation otrzymane! args: $arguments');
+    print('[PresenceService] UpdateConversation otrzymane! args: $arguments');
     if (arguments == null || arguments.isEmpty) return;
 
     try {
@@ -100,16 +92,13 @@ class PresenceService extends ChangeNotifier {
       final dto = ConversationDto.fromJson(map);
       print('[PresenceService] Konwersacja: ${dto.conversationId}, od: ${dto.participantName}, treść: ${dto.lastMessage}');
 
-      // Odśwież badge
       refreshUnreadCount();
 
-      // Nie pokazuj toasta jeśli jesteśmy gdziekolwiek w zakładce Czat
       if (_isChatScreenActive || _activeConversationId == dto.conversationId) {
         print('[PresenceService] Jesteśmy w czacie, pomijam toast');
         return;
       }
 
-      // Pokaż toast
       _showToast(dto);
     } catch (e) {
       print('[PresenceService] Błąd parsowania UpdateConversation: $e');
@@ -184,7 +173,6 @@ class PresenceService extends ChangeNotifier {
     }
   }
 
-  /// Wzór Angular: `refreshUnreadCount()` — prosty GET do REST API
   Future<void> refreshUnreadCount() async {
     final token = _authService.token;
     if (token == null) return;

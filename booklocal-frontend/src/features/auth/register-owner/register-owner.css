@@ -63,4 +63,16 @@
 .divider {
   color: hsl(var(--bc) / 0.4);
   font-weight: 500;
+  margin-top: 0.5rem !important;
+  margin-bottom: 0.5rem !important;
+  gap: 0.5rem;
+}
+
+.form-control .label {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.form-control {
+  gap: 0;
 }

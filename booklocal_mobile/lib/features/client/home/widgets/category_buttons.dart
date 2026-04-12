@@ -19,7 +19,7 @@ class CategoryButtons extends StatelessWidget {
     } else if (lowerName.contains('barber')) {
       return Icons.face;
     }
-    return Icons.star_border; // Domyślna ikona
+    return Icons.star_border;
   }
 
   @override
@@ -38,7 +38,7 @@ class CategoryButtons extends StatelessWidget {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                itemCount: categories.length + 1, // Zawsze dodajemy przycisk "Wszystkie"
+                itemCount: categories.length + 1,
                 itemBuilder: (context, index) {
                   if (index == 0) {
                     final isSelected = homeProvider.activeMainCategoryId == null;

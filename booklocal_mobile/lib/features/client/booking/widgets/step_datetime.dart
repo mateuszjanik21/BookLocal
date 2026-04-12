@@ -47,11 +47,9 @@ class StepDatetime extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Date picker card
           _buildDatePicker(dateStr),
           const SizedBox(height: 28),
 
-          // Time slots
           const Text("Dostępne godziny",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
           const SizedBox(height: 16),
@@ -136,7 +134,6 @@ class StepDatetime extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Group filter chips
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -162,7 +159,6 @@ class StepDatetime extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Slot grid
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),

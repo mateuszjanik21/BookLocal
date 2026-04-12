@@ -67,7 +67,6 @@ class ReservationCard extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16.0),
-      // Minimalistyczna karta w stylu premium
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -85,10 +84,8 @@ class ReservationCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. Lewy pasek akcentujący
               Container(width: 5, color: accentColor),
               
-              // 2. Klikalna główna część karty
               Expanded(
                 child: Material(
                   color: Colors.transparent,
@@ -123,14 +120,12 @@ class ReservationCard extends StatelessWidget {
                             ),
                           ),
                           
-                          // Pionowa linia podziału
                           Container(
                             width: 1,
                             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             color: Colors.grey.shade100,
                           ),
                           
-                          // Sekcja informacji o salonie i usłudze
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +164,6 @@ class ReservationCard extends StatelessWidget {
                 ),
               ),
               
-              // 3. Strefa przycisków akcji
               if (isPast && isCompleted && !reservation.hasReview && onReview != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),

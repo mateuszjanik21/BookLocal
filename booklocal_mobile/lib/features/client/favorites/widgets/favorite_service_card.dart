@@ -104,7 +104,6 @@ class FavoriteServiceCard extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               child: Row(
                 children: [
-                  // Zdjęcie salonu
                   Container(
                     width: 64,
                     height: 64,
@@ -127,7 +126,6 @@ class FavoriteServiceCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 14),
-                  // Informacje o usłudze
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +177,6 @@ class FavoriteServiceCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // Cena + czas
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [

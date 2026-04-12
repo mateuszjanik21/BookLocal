@@ -19,39 +19,39 @@
 
     <div class="w-full md:w-3/5 overflow-y-auto">
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="card-body p-8 md:p-12">
-        <h1 class="text-3xl font-bold mb-4 text-center md:text-left">Rejestracja Firmy</h1>
+        <h1 class="text-3xl font-bold mb-2 text-center md:text-left">Rejestracja Firmy</h1>
 
-        <div class="divider text-sm my-2">Dane Właściciela</div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="divider text-xs font-bold uppercase opacity-60 my-1">Dane Właściciela</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-1">
           <div class="form-control">
-            <label class="label"><span class="label-text">Imię</span></label>
-            <input type="text" placeholder="Imię" class="input input-bordered" formControlName="firstName"
+            <label class="label py-1.5"><span class="label-text font-medium">Imię</span></label>
+            <input type="text" placeholder="Imię" class="input input-bordered w-full" formControlName="firstName"
               [class.input-error]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched" />
           </div>
           <div class="form-control">
-            <label class="label"><span class="label-text">Nazwisko</span></label>
-            <input type="text" placeholder="Nazwisko" class="input input-bordered" formControlName="lastName"
+            <label class="label py-1.5"><span class="label-text font-medium">Nazwisko</span></label>
+            <input type="text" placeholder="Nazwisko" class="input input-bordered w-full" formControlName="lastName"
               [class.input-error]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched" />
           </div>
           <div class="form-control">
-            <label class="label"><span class="label-text">Email</span></label>
-            <input type="email" placeholder="Email" class="input input-bordered" formControlName="email"
+            <label class="label py-1.5"><span class="label-text font-medium">Email</span></label>
+            <input type="email" placeholder="Email" class="input input-bordered w-full" formControlName="email"
               [class.input-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" />
             @if (registerForm.get('email')?.errors?.['email'] && registerForm.get('email')?.touched) {
               <label class="label"><span class="label-text-alt text-error">Podaj poprawny adres email</span></label>
             }
           </div>
           <div class="form-control">
-            <label class="label"><span class="label-text">Hasło</span></label>
-            <input type="password" placeholder="Min. 6 znaków" class="input input-bordered" formControlName="password"
+            <label class="label py-1.5"><span class="label-text font-medium">Hasło</span></label>
+            <input type="password" placeholder="Min. 6 znaków" class="input input-bordered w-full" formControlName="password"
               [class.input-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" />
             @if (registerForm.get('password')?.errors?.['minlength'] && registerForm.get('password')?.touched) {
               <label class="label"><span class="label-text-alt text-error">Hasło musi mieć min. 6 znaków</span></label>
             }
           </div>
           <div class="form-control md:col-span-1">
-            <label class="label"><span class="label-text">Numer telefonu</span></label>
-            <input type="tel" placeholder="np. 500600700" class="input input-bordered" formControlName="phoneNumber"
+            <label class="label py-1.5"><span class="label-text font-medium">Numer telefonu</span></label>
+            <input type="tel" placeholder="np. 500600700" class="input input-bordered w-full" formControlName="phoneNumber"
               [class.input-error]="registerForm.get('phoneNumber')?.invalid && registerForm.get('phoneNumber')?.touched" />
             @if (registerForm.get('phoneNumber')?.errors?.['pattern'] && registerForm.get('phoneNumber')?.touched) {
               <label class="label"><span class="label-text-alt text-error">Podaj 9 cyfr bez spacji</span></label>
@@ -59,16 +59,16 @@
           </div>
         </div>
 
-        <div class="divider text-sm my-4">Dane Firmy</div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="divider text-xs font-bold uppercase opacity-60 my-1">Dane Firmy</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-3 gap-y-1">
           <div class="form-control">
-            <label class="label"><span class="label-text">Nazwa firmy</span></label>
-            <input type="text" placeholder="Nazwa firmy" class="input input-bordered" formControlName="businessName"
+            <label class="label py-1.5"><span class="label-text font-medium">Nazwa firmy</span></label>
+            <input type="text" placeholder="Nazwa firmy" class="input input-bordered w-full" formControlName="businessName"
               [class.input-error]="registerForm.get('businessName')?.invalid && registerForm.get('businessName')?.touched" />
           </div>
           <div class="form-control">
-            <label class="label"><span class="label-text">NIP</span></label>
-            <input type="text" placeholder="10 cyfr" class="input input-bordered" formControlName="nip"
+            <label class="label py-1.5"><span class="label-text font-medium">NIP</span></label>
+            <input type="text" placeholder="10 cyfr" class="input input-bordered w-full" formControlName="nip"
               [class.input-error]="registerForm.get('nip')?.invalid && registerForm.get('nip')?.touched" />
             @if (registerForm.get('nip')?.errors?.['pattern'] && registerForm.get('nip')?.touched) {
               <label class="label"><span class="label-text-alt text-error">NIP musi zawierać dokładnie 10 cyfr</span></label>
@@ -76,40 +76,40 @@
           </div>
         </div>
 
-        <div class="divider text-sm my-4">Adres firmy</div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="form-control md:col-span-2">
-            <label class="label"><span class="label-text">Ulica</span></label>
-            <input type="text" placeholder="np. Kwiatowa" class="input input-bordered" formControlName="street"
+        <div class="divider text-xs font-bold uppercase opacity-60 my-1">Adres firmy</div>
+        <div class="grid grid-cols-12 gap-x-3 gap-y-1">
+          <div class="form-control col-span-12 md:col-span-9">
+            <label class="label py-1.5"><span class="label-text font-medium">Ulica</span></label>
+            <input type="text" placeholder="np. Kwiatowa" class="input input-bordered w-full" formControlName="street"
               [class.input-error]="registerForm.get('street')?.invalid && registerForm.get('street')?.touched" />
           </div>
-          <div class="form-control">
-            <label class="label"><span class="label-text">Numer</span></label>
-            <input type="text" placeholder="np. 12A" class="input input-bordered" formControlName="streetNumber"
+          <div class="form-control col-span-12 md:col-span-3">
+            <label class="label py-1.5"><span class="label-text font-medium">Numer</span></label>
+            <input type="text" placeholder="np. 12A" class="input input-bordered w-full" formControlName="streetNumber"
               [class.input-error]="registerForm.get('streetNumber')?.invalid && registerForm.get('streetNumber')?.touched" />
           </div>
-          <div class="form-control">
-            <label class="label"><span class="label-text">Kod pocztowy</span></label>
-            <input type="text" placeholder="00-000" class="input input-bordered" formControlName="postalCode"
+          <div class="form-control col-span-12 md:col-span-4">
+            <label class="label py-1.5"><span class="label-text font-medium">Kod pocztowy</span></label>
+            <input type="text" placeholder="00-000" class="input input-bordered w-full" formControlName="postalCode"
               [class.input-error]="registerForm.get('postalCode')?.invalid && registerForm.get('postalCode')?.touched" />
             @if (registerForm.get('postalCode')?.errors?.['pattern'] && registerForm.get('postalCode')?.touched) {
-              <label class="label"><span class="label-text-alt text-error">Format: XX-XXX (np. 00-001)</span></label>
+              <label class="label py-0"><span class="label-text-alt text-error pt-1">Format: XX-XXX</span></label>
             }
           </div>
-          <div class="form-control md:col-span-2">
-            <label class="label"><span class="label-text">Miasto</span></label>
-            <input type="text" placeholder="np. Warszawa" class="input input-bordered" formControlName="city"
+          <div class="form-control col-span-12 md:col-span-8">
+            <label class="label py-1.5"><span class="label-text font-medium">Miasto</span></label>
+            <input type="text" placeholder="np. Warszawa" class="input input-bordered w-full" formControlName="city"
               [class.input-error]="registerForm.get('city')?.invalid && registerForm.get('city')?.touched" />
           </div>
         </div>
 
-        <div class="form-control mt-4">
-          <label class="label"><span class="label-text">Opis (opcjonalnie)</span></label>
+        <div class="form-control mt-2">
+          <label class="label py-1.5"><span class="label-text font-medium">Opis (opcjonalnie)</span></label>
           <textarea class="textarea textarea-bordered w-full" placeholder="Krótki opis działalności"
             formControlName="description"></textarea>
         </div>
 
-        <div class="form-control mt-8">
+        <div class="form-control mt-6">
           <button class="btn btn-primary btn-lg w-full" type="submit" [disabled]="registerForm.invalid">Zarejestruj
             firmę</button>
         </div>

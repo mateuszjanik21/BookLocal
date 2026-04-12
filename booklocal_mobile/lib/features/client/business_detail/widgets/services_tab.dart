@@ -32,15 +32,12 @@ class ServicesTab extends StatefulWidget {
 }
 
 class _ServicesTabState extends State<ServicesTab> {
-  // ID usługi (rodzica), która ma być auto-rozwinięta
   int? _expandedServiceId;
   bool _didAutoExpand = false;
 
   @override
   void didUpdateWidget(covariant ServicesTab oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Gdy dane się załadują (fullBusiness zmieni się z null na wartość),
-    // znajdź usługę zawierającą highlightVariantId i rozwiń ją
     if (widget.highlightVariantId != null &&
         !_didAutoExpand &&
         widget.fullBusiness != null &&

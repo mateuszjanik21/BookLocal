@@ -21,7 +21,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
     _chatProvider = Provider.of<ChatProvider>(context, listen: false);
     _presenceService = Provider.of<PresenceService>(context, listen: false);
 
-    // Nasłuchuj zmian PresenceService (nowe wiadomości) → odśwież listę
     _presenceService.addListener(_onPresenceChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -30,8 +29,6 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   void _onPresenceChanged() {
-    // Gdy PresenceService zmieni unread count (nowa wiadomość),
-    // odśwież listę konwersacji by pokazać nowe dane
     _chatProvider.loadMyConversations();
   }
 

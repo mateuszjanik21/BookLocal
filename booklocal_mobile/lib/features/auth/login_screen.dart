@@ -72,15 +72,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
     if (success) {
       if (!mounted) return;
-
-      final user = authService.currentUser;
-      
-      if (user != null && user.isOwner) {
-        // Możesz dodać nawigację specjalnie dla profilu biznesowego w przyszłości
-      } else {
-        // NAVIGATOR USUNIĘTY. Przechwytywanie przeniesiono na poziom main.dart,
-        // Consumer sam zareaguje na zmianę stanu logowania odświeżając UI by nie kraszować drzewa.
-      }
     } else {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

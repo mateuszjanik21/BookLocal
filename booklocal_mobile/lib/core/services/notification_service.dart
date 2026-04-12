@@ -6,7 +6,6 @@ class NotificationService {
   final AuthService _authService;
   HubConnection? _hubConnection;
 
-  // Callback do powiadamiania UI o nowym powiadomieniu
   Function(Map<String, dynamic>)? onNotificationReceived;
 
   NotificationService(this._authService);
@@ -26,7 +25,6 @@ class NotificationService {
 
     _hubConnection?.onclose(((error) => print("NotificationHub Closed: $error")) as ClosedCallback);
 
-    // Nasłuchiwanie na powiadomienia od backendu (nazwa metody z ReservationsController)
     _hubConnection?.on('ReceiveClientNotification', (arguments) {
       if (arguments != null && arguments.isNotEmpty) {
         final map = arguments[0] as Map<String, dynamic>;

@@ -58,7 +58,6 @@ class ServiceCategoryGrid extends StatelessWidget {
 
     final items = homeProvider.pagedResult?.items ?? [];
     
-    // Obliczamy odpowiednią liczbę kolumn w zależności od szerokości ekranu
     int crossAxisCount = 1;
     double width = MediaQuery.of(context).size.width;
     if (width >= 1024) {
@@ -76,7 +75,7 @@ class ServiceCategoryGrid extends StatelessWidget {
               crossAxisCount: crossAxisCount,
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
-              childAspectRatio: crossAxisCount == 1 ? 2.2 : 0.75, // Zmiana proporcji dla mobile (pozioma karta)
+              childAspectRatio: crossAxisCount == 1 ? 2.2 : 0.75,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
@@ -157,7 +156,6 @@ class ServiceCategoryGrid extends StatelessWidget {
     );
   }
 
-  // Zaawansowany skeleton naśladujący prawdziwą kartę usługi
   Widget _buildSkeletonGrid(BuildContext context) {
     int crossAxisCount = MediaQuery.of(context).size.width >= 768 ? 2 : 1;
 

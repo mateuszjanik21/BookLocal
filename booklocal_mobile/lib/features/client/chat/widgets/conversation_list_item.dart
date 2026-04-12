@@ -111,7 +111,6 @@ class ConversationListItem extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Avatar Premium
                 Container(
                   width: 54,
                   height: 54,
@@ -148,7 +147,6 @@ class ConversationListItem extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
                 
-                // Informacje
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

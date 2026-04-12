@@ -188,12 +188,6 @@ class _UpcomingTab extends StatelessWidget {
         icon: Icons.calendar_today_outlined,
         actionLabel: "Znajdź salon",
         onAction: () {
-          // Najprostszy sposób zresetowania nawigacji na ekran startowy z BottomNavBar.
-          // Ponieważ rezerwacje są zakładką w MainScreen, powrót do roota i zmuszenie 
-          // MainScreen do zmiany zakładki byłoby trudne bez global state, więc po prostu wracamy.
-          // Otwarcie MainScreen na nowo byłoby złe dla stosu.
-          // W BottomNavyBar popularny hack to popUntil a z backendu przekierowanie.
-          // Tutaj nadamy hack polegający na popUntil i przeładowaniu.
           Navigator.of(context, rootNavigator: true).pushReplacementNamed('/');
         },
       );

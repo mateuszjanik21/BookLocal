@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../../core/models/business_detail_dto.dart';
 import '../../../core/models/business_list_item_dto.dart';
 import '../../../core/models/employee_models.dart';
@@ -10,8 +9,6 @@ import '../../../core/models/service_variant.dart';
 import '../../../core/services/client_service.dart';
 import 'booking_screen.dart';
 
-/// Screen that shows services for a pre-selected employee.
-/// User picks a service → navigates to BookingScreen with employee pre-set.
 class EmployeeBookingScreen extends StatefulWidget {
   final BusinessListItemDto business;
   final EmployeeDto employee;
@@ -110,10 +107,8 @@ class _EmployeeBookingScreenState extends State<EmployeeBookingScreen> {
 
     return Column(
       children: [
-        // Employee info card
         _buildEmployeeHeader(),
 
-        // Instruction
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
           child: Row(
@@ -132,7 +127,6 @@ class _EmployeeBookingScreenState extends State<EmployeeBookingScreen> {
           ),
         ),
 
-        // Services list
         Expanded(
           child: ListView.builder(
             physics: const BouncingScrollPhysics(),
