@@ -147,6 +147,10 @@ public class AppDbContext : IdentityDbContext<User>
             .HasIndex(b => b.City)
             .HasDatabaseName("IX_Businesses_City");
 
+        modelBuilder.Entity<Employee>()
+            .HasIndex(e => new { e.BusinessId, e.IsArchived })
+            .HasDatabaseName("IX_Employees_Business_IsArchived");
+
         modelBuilder.Entity<WorkSchedule>()
             .HasIndex(ws => new { ws.EmployeeId, ws.DayOfWeek })
             .HasDatabaseName("IX_WorkSchedules_Employee_Day");
