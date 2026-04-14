@@ -18,6 +18,16 @@ class CategoryButtons extends StatelessWidget {
       return Icons.color_lens;
     } else if (lowerName.contains('barber')) {
       return Icons.face;
+    } else if (lowerName.contains('joga')){
+      return Icons.self_improvement;
+    } else if (lowerName.contains('groomer')){
+      return Icons.pets;
+    } else if (lowerName.contains('trening')){
+      return Icons.fitness_center;
+    } else if (lowerName.contains('psycholog')){
+      return Icons.psychology;
+    } else if (lowerName.contains('pilates')){
+      return Icons.accessibility;
     }
     return Icons.star_border;
   }
@@ -33,7 +43,7 @@ class CategoryButtons extends StatelessWidget {
           ? _buildSkeleton(context)
           : Container(
               key: const ValueKey('category_loaded'),
-              height: 95,
+              height: 105,
               margin: const EdgeInsets.only(top: 16.0, bottom: 4.0),
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
