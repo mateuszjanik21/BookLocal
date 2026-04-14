@@ -114,6 +114,41 @@ public class AppDbContext : IdentityDbContext<User>
             .Property(r => r.TotalRevenue)
             .HasColumnType("decimal(12, 2)");
 
+        //Indexy
+        modelBuilder.Entity<Reservation>()
+            .HasIndex(r => new { r.EmployeeId, r.StartTime })
+            .HasDatabaseName("IX_Reservations_Employee_StartTime");
 
+        modelBuilder.Entity<Reservation>()
+            .HasIndex(r => new { r.BusinessId, r.StartTime })
+            .HasDatabaseName("IX_Reservations_Business_StartTime");
+
+        modelBuilder.Entity<Reservation>()
+            .HasIndex(r => new { r.CustomerId, r.Status })
+            .HasDatabaseName("IX_Reservations_Customer_Status");
+
+        modelBuilder.Entity<Reservation>()
+            .HasIndex(r => new { r.EndTime, r.Status })
+            .HasDatabaseName("IX_Reservations_EndTime_Status");
+
+        modelBuilder.Entity<Payment>()
+            .HasIndex(p => p.TransactionDate)
+            .HasDatabaseName("IX_Payments_TransactionDate");
+
+        modelBuilder.Entity<DailyFinancialReport>()
+            .HasIndex(r => new { r.BusinessId, r.ReportDate })
+            .HasDatabaseName("IX_DailyFinancialReports_Business_ReportDate");
+
+        modelBuilder.Entity<Review>()
+            .HasIndex(r => new { r.BusinessId, r.Rating })
+            .HasDatabaseName("IX_Reviews_Business_Rating");
+
+        modelBuilder.Entity<Business>()
+            .HasIndex(b => b.City)
+            .HasDatabaseName("IX_Businesses_City");
+
+        modelBuilder.Entity<WorkSchedule>()
+            .HasIndex(ws => new { ws.EmployeeId, ws.DayOfWeek })
+            .HasDatabaseName("IX_WorkSchedules_Employee_Day");
     }
 }
