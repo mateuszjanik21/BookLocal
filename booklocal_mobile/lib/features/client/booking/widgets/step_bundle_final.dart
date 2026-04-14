@@ -10,11 +10,9 @@ class StepBundleFinal extends StatelessWidget {
   final DateTime selectedDate;
   final String selectedTime;
 
-  // Payment
   final String paymentMethod;
   final ValueChanged<String> onPaymentMethodChanged;
 
-  // Loyalty
   final int loyaltyPointsBalance;
   final int loyaltyPointsToUse;
   final ValueChanged<int> onLoyaltyPointsChanged;

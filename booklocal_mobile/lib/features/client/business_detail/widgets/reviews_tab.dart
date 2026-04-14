@@ -51,7 +51,6 @@ class ReviewsTab extends StatelessWidget {
                   : Column(
                       key: const ValueKey('reviews_loaded'),
                       children: [
-                        // Opcje sortowania
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
                           child: Row(

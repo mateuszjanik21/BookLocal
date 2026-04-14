@@ -99,7 +99,7 @@ export class DiscountManagerComponent implements OnInit {
 
     this.discountService.createDiscount(this.businessId, payload).subscribe({
         next: (newDiscount) => {
-            this.discounts.unshift(newDiscount); // Add to top
+            this.discounts.unshift(newDiscount);
             this.toastr.success('Kupon utworzony.');
             this.isCreating = false;
             this.closeModal();

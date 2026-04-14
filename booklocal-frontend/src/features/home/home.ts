@@ -79,7 +79,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       if (this.isLoading) {
         this.isSkeletonVisible = true;
       }
-    }, 250); // Pokaż szkielet tylko jeśli ładowanie trwa dłużej niż 250ms
+    }, 250);
 
     const params = {
       searchTerm: this.searchInput?.nativeElement.value,
@@ -212,7 +212,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.authService.isLoggedIn() && this.authService.hasRole('customer')) {
       this.businessService.getRebookSuggestions().subscribe({
         next: (data) => this.rebookSuggestions = data,
-        error: () => {} // Silently ignore (e.g. 401)
+        error: () => {}
       });
     }
   }

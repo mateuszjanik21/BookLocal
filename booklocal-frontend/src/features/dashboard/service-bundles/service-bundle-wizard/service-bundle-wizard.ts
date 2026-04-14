@@ -124,7 +124,6 @@ export class ServiceBundleWizardComponent implements OnInit {
   }
 
   onServiceChange() {
-      //
   }
 
   addVariant(variant: ServiceVariant) {

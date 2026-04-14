@@ -107,7 +107,6 @@ export class EmployeeDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    // Read ?tab= query param to open the right tab when navigating from payroll/contract lists
     const tab = this.route.snapshot.queryParamMap.get('tab');
     if (tab) this.activeTab = tab;
     this.loadData();

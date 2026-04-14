@@ -221,10 +221,8 @@ export class ManageServicesComponent implements OnInit {
           );
           
           if (type === 'variant' && parentItem) {
-             // Optimistic update for variant
              const service = parentItem as Service;
              service.variants = service.variants.filter(v => v.serviceVariantId !== item.serviceVariantId);
-             // Or just reload
              this.loadData();
           } else {
              this.loadData();

@@ -105,7 +105,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           child: Column(
             children: [
-              // Top bar
               const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -120,7 +119,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 ],
               ),
               const SizedBox(height: 24),
-              // Avatar
               GestureDetector(
                 onTap: _isUploading ? null : () => _showImageSourceMenu(context),
                 child: Stack(

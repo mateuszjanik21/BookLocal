@@ -99,7 +99,7 @@ export class ContractWizardModalComponent implements OnInit, OnChanges {
         startDate: contract.startDate,
         endDate: contract.endDate || '',
         isIndefinite: !contract.endDate,
-        isStudent: false, // will let user re-check if needed, or backend preserves it
+        isStudent: false,
       };
     } else if (this.preselectedEmployeeId) {
       this.selectedEmployeeId = this.preselectedEmployeeId;

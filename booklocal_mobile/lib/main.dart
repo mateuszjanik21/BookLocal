@@ -27,7 +27,6 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthService()),
         Provider(create: (_) => ClientService()),
-        // ChatService — SINGLETON, tworzony RAZ
         Provider<ChatService>(
           create: (context) => ChatService(
             Provider.of<AuthService>(context, listen: false),

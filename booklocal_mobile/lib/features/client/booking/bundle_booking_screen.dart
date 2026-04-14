@@ -308,7 +308,6 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
             ],
           ),
 
-          // Bottom bar
           Positioned(
             left: 0,
             right: 0,
@@ -316,7 +315,6 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
             child: _buildBottomBar(),
           ),
 
-          // Overlays
           if (_isProcessingPayment)
             _buildOverlay(
               "Przetwarzanie płatności...",
@@ -605,7 +603,6 @@ class _BundleBookingScreenState extends State<BundleBookingScreen> {
                 const SizedBox(width: 6),
               ],
 
-              // Main action button
               if (_currentStep == 0) const Spacer(),
               Expanded(
                 child: ElevatedButton(

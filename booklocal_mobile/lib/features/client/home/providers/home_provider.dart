@@ -215,7 +215,6 @@ class HomeProvider extends ChangeNotifier {
     }
   }
 
-  // Get pagination pages
   List<dynamic> getPaginationPages() {
     if (pagedResult == null) return [];
 

@@ -78,7 +78,6 @@ class _BundleCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
@@ -223,7 +222,6 @@ class _BundleCard extends StatelessWidget {
             padding: const EdgeInsets.all(18),
             child: Row(
               children: [
-                // Duration
                 Icon(Icons.schedule, size: 15, color: Colors.grey[400]),
                 const SizedBox(width: 4),
                 Text(
@@ -235,7 +233,6 @@ class _BundleCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                // Price
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [

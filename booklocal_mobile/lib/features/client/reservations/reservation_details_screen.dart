@@ -76,7 +76,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
 
     try {
       final conversationId = await chatProvider.startConversation(widget.reservation.businessId);
-      if (mounted) Navigator.pop(context); // Close loading
+      if (mounted) Navigator.pop(context);
 
       if (conversationId != null && mounted) {
         navigator.push(
@@ -129,7 +129,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
         messenger.showSnackBar(
           const SnackBar(content: Text('Rezerwacja została anulowana.')),
         );
-        navigator.pop(); // Wróć do listy
+        navigator.pop();
       }
     }
   }

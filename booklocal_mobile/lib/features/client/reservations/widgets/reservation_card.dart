@@ -95,7 +95,6 @@ class ReservationCard extends StatelessWidget {
                       padding: const EdgeInsets.fromLTRB(12, 16, 8, 16),
                       child: Row(
                         children: [
-                          // Sekcja daty z relatywnym tekstem
                           SizedBox(
                             width: 74,
                             child: Column(

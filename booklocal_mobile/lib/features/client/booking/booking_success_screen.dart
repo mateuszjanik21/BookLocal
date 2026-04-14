@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../main_screen.dart'; // Upewnij się, że ścieżka do MainScreen jest poprawna
+import '../main_screen.dart';
 
 class BookingSuccessScreen extends StatelessWidget {
   const BookingSuccessScreen({super.key});
@@ -48,7 +48,6 @@ class BookingSuccessScreen extends StatelessWidget {
                       (route) => false,
                     );
                   },
-                  // ... styl przycisku bez zmian ...
                   child: const Text("Zobacz moje wizyty", style: TextStyle(fontSize: 16)),
                 ),
               ),

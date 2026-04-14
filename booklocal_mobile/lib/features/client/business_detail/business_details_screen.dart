@@ -1,4 +1,4 @@
-import 'dart:ui'; // Potrzebne do ImageFilter
+import 'dart:ui';
 import 'package:booklocal_mobile/core/services/chat_services.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

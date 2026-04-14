@@ -146,7 +146,6 @@ class RebookSection extends StatelessWidget {
                     placeholder: (context, url) => Container(color: Colors.grey.shade100),
                     errorWidget: (context, url, err) => Container(color: Colors.grey.shade100),
                   ),
-                  // Gradient na wyciemnienie dołu
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(

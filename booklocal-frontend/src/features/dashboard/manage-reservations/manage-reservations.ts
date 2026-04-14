@@ -222,7 +222,6 @@ export class ManageReservationsComponent implements OnInit {
         const customerName = first.customerFullName || first.guestName || 'Gość';
         const eventColor = this.statusColors[first.status] || { primary: '#a855f7', secondary: '#f3e8ff' };
         
-        // Use first ID for navigation
         groupedEvents.push({
           id: first.reservationId,
           start: new Date(first.startTime),

@@ -110,7 +110,6 @@ class ServiceCategoryCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ZDJĘCIE (góra)
         SizedBox(
           height: 160,
           width: double.infinity,
@@ -141,7 +140,6 @@ class ServiceCategoryCard extends StatelessWidget {
             ],
           ),
         ),
-        // TREŚĆ (dół)
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16.0),

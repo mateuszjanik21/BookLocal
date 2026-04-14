@@ -51,7 +51,7 @@ export class AdminBusinessApprovalComponent implements OnInit {
 
   reject(id: number) {
     const reason = prompt('Podaj powód odrzucenia:');
-    if (reason === null) return; // Cancelled
+    if (reason === null) return;
 
     const dto: VerifyBusinessDto = { isApproved: false, rejectionReason: reason };
     this.adminService.verifyBusiness(id, dto).subscribe({

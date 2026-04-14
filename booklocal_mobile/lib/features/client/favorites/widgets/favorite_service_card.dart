@@ -148,7 +148,6 @@ class FavoriteServiceCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 8),
-                        // Salon + Miasto
                         Row(
                           children: [
                             Icon(Icons.store_outlined, size: 14, color: Colors.grey[400]),
