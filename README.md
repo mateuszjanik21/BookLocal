@@ -1,4 +1,4 @@
-# 📖 BookLocal
+#  BookLocal
 
 **BookLocal** to rozbudowana, wielomodułowa aplikacja webowa do rezerwacji wizyt w lokalnych firmach usługowych. Projekt obejmuje pełen ekosystem: od aplikacji klienckiej (**Angular SPA**), przez serwer API (**ASP.NET Core**), aż po aplikację mobilną (**Flutter**). System obsługuje trzy role użytkowników – **Klient**, **Właściciel firmy** i **Super Administrator** – każda z dedykowanym zestawem funkcjonalności.
 
@@ -20,7 +20,7 @@
 
 | Rola | Login | Hasło |
 |---|---|---|
-| **Super Administrator** | `admin@booklocal.com` | `Admin123!` |
+| **Super Administrator** | `admin@test.com` | `Admin123!` |
 | **Właściciel firmy** | `owner@test.com` | `P@ssword1` |
 | **Klient** | `customer@test.com` | `P@ssword1` |
 
