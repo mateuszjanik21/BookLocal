@@ -20,7 +20,7 @@
 
 | Rola | Login | Hasło |
 |---|---|---|
-| **Super Administrator** | `admin@test.com` | `Admin123!` |
+| **Super Administrator** | `admin@test.com` | `P@ssword1` |
 | **Właściciel firmy** | `owner@test.com` | `P@ssword1` |
 | **Klient** | `customer@test.com` | `P@ssword1` |
 
