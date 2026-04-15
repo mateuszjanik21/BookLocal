@@ -89,7 +89,7 @@ export class ReservationModalComponent implements OnChanges {
     this.isLoadingSlots = true;
     this.reservationForm.get('startTime')?.reset();
     
-    this.reservationService.getAvailableSlots(+employeeId, this.service.id, date).subscribe({
+    this.reservationService.getAvailableSlots(+employeeId, this.service.variants?.[0]?.serviceVariantId ?? 0, date).subscribe({
       next: (slots) => {
         this.availableSlots = slots;
         this.groupSlots(slots);

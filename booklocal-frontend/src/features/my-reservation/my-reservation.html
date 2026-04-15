@@ -120,9 +120,8 @@
               }
               {{ res.employeeFullName }}
             </div>
-            <div class="w-1.5 h-1.5 rounded-full bg-base-300 hidden sm:block"></div>
             <p class="font-bold text-base-content flex items-center gap-1.5">
-              {{ res.agreedPrice }} zł
+              {{ res.agreedPrice | number:'1.2-2' }} zł
             </p>
           </div>
         </div>
@@ -241,9 +240,8 @@
               }
               {{ res.employeeFullName }}
             </div>
-            <div class="w-1 h-1 rounded-full bg-base-300 hidden sm:block"></div>
             <p class="font-semibold text-base-content/60 flex items-center gap-1">
-              {{ res.agreedPrice }} zł
+              {{ res.agreedPrice | number:'1.2-2' }} zł
             </p>
           </div>
         </div>

@@ -31,8 +31,6 @@
                [class.hover:shadow-md]="convo.conversationId !== activeConversationId"
                [class.bg-primary]="convo.conversationId === activeConversationId"
                [class.text-primary-content]="convo.conversationId === activeConversationId"
-               [class.shadow-lg]="convo.conversationId === activeConversationId"
-               [class.shadow-primary]="convo.conversationId === activeConversationId"
              (click)="selectConversation(convo.conversationId)">
              
             <div class="indicator shrink-0">

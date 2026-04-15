@@ -153,31 +153,39 @@
 
         @if(currentStep === 4) {
         <div class="animate-fade-in space-y-4 pb-10">
-          
+
           <div class="bg-base-200/50 rounded-3xl p-5 border border-base-300 space-y-4">
             <h4 class="text-xs font-black uppercase opacity-40 tracking-widest mb-2">Podsumowanie wizyty</h4>
             <div class="flex items-center gap-4">
               <div class="avatar shrink-0">
                 <div class="w-12 h-12 rounded-full ring-2 ring-primary/20 ring-offset-base-100 ring-offset-2">
-                  <img [src]="selectedEmployee?.photoUrl || 'assets/placeholder.svg'" (error)="$any($event.target).src='assets/placeholder.svg'" />
+                  <img [src]="selectedEmployee?.photoUrl || 'assets/placeholder.svg'"
+                    (error)="$any($event.target).src='assets/placeholder.svg'" />
                 </div>
               </div>
               <div class="flex-grow min-w-0">
                 <p class="font-bold text-sm truncate w-full">{{ service?.name }}</p>
-                <p class="text-[0.65rem] opacity-60 font-black uppercase truncate">{{ selectedEmployee?.firstName }} {{ selectedEmployee?.lastName }} • {{ service?.variants?.[0]?.name && service?.variants?.[0]?.name !== 'Standard' ? service?.variants?.[0]?.name + ' • ' : '' }}{{ service?.variants?.[0]?.durationMinutes }} min</p>
+                <p class="text-[0.65rem] opacity-60 font-black uppercase truncate">{{ selectedEmployee?.firstName }} {{
+                  selectedEmployee?.lastName }} • {{ service?.variants?.[0]?.name && service?.variants?.[0]?.name !==
+                  'Standard' ? service?.variants?.[0]?.name + ' • ' : '' }}{{ service?.variants?.[0]?.durationMinutes }}
+                  min</p>
               </div>
             </div>
-            
+
             <div class="flex items-center gap-3 bg-base-100 rounded-2xl p-3 border border-base-200 shadow-sm">
-               <div class="bg-primary/10 text-primary p-2 rounded-xl shrink-0">
-                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                   <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
-                 </svg>
-               </div>
-               <div>
-                 <p class="text-xs font-bold text-base-content/60 uppercase tracking-wider">Termin</p>
-                 <p class="font-black text-sm text-primary">{{ reservationForm.get('date')?.value | date:'dd.MM.yyyy' }} <span class="opacity-50 mx-1">•</span> {{ reservationForm.get('startTime')?.value }}</p>
-               </div>
+              <div class="bg-primary/10 text-primary p-2 rounded-xl shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                    clip-rule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-base-content/60 uppercase tracking-wider">Termin</p>
+                <p class="font-black text-sm text-primary">{{ reservationForm.get('date')?.value | date:'dd.MM.yyyy' }}
+                  <span class="opacity-50 mx-1">•</span> {{ reservationForm.get('startTime')?.value | date:'HH:mm' }}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -218,20 +226,22 @@
           @if (loyaltyPointsBalance > 0) {
           <div class="mt-4 p-4 rounded-2xl bg-warning/5 border border-warning/10">
             <div class="flex items-center gap-2 mb-3">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
               </svg>
               <span class="font-bold text-sm">Punkty lojalnościowe</span>
               <span class="badge badge-warning badge-sm ml-auto font-black">{{ loyaltyPointsBalance }} pkt</span>
             </div>
             <div class="flex items-center gap-3">
-              <input type="range" class="range range-warning range-xs flex-grow"
-                [min]="0" [max]="maxLoyaltyPoints" [step]="1"
-                [(ngModel)]="loyaltyPointsToUse" [ngModelOptions]="{standalone: true}" (ngModelChange)="onLoyaltyPointsChange()" />
+              <input type="range" class="range range-warning range-xs flex-grow" [min]="0" [max]="maxLoyaltyPoints"
+                [step]="1" [(ngModel)]="loyaltyPointsToUse" [ngModelOptions]="{standalone: true}"
+                (ngModelChange)="onLoyaltyPointsChange()" />
               <div class="flex items-center gap-1 shrink-0">
-                <input type="number" class="input input-bordered input-sm w-16 text-center font-bold"
-                  [min]="0" [max]="maxLoyaltyPoints"
-                  [(ngModel)]="loyaltyPointsToUse" [ngModelOptions]="{standalone: true}" (ngModelChange)="onLoyaltyPointsChange()" />
+                <input type="number" class="input input-bordered input-sm w-16 text-center font-bold" [min]="0"
+                  [max]="maxLoyaltyPoints" [(ngModel)]="loyaltyPointsToUse" [ngModelOptions]="{standalone: true}"
+                  (ngModelChange)="onLoyaltyPointsChange()" />
                 <span class="text-xs opacity-60">pkt</span>
               </div>
             </div>
@@ -246,8 +256,7 @@
           <p class="text-sm font-bold text-base-content/60">Wybierz formę płatności:</p>
 
           <div class="space-y-3">
-            <label
-              class="payment-card flex flex-row items-center p-4 cursor-pointer gap-4 rounded-2xl"
+            <label class="payment-card flex flex-row items-center p-4 cursor-pointer gap-4 rounded-2xl"
               [class.active]="reservationForm.get('paymentMethod')?.value === 'Cash'">
               <div class="w-12 h-12 rounded-2xl bg-success/10 text-success flex items-center justify-center shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -263,8 +272,7 @@
               <input type="radio" formControlName="paymentMethod" value="Cash" class="radio radio-primary radio-sm" />
             </label>
 
-            <label
-              class="payment-card flex flex-row items-center p-4 cursor-pointer gap-4 rounded-2xl"
+            <label class="payment-card flex flex-row items-center p-4 cursor-pointer gap-4 rounded-2xl"
               [class.active]="reservationForm.get('paymentMethod')?.value === 'Online'">
               <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"

@@ -54,6 +54,8 @@ export class BusinessDetailComponent implements OnInit {
   reviewsPageSize = 5;
   totalReviews = 0;
   isLoadingMoreReviews = false;
+  reviewsSortBy = 'newest';
+  isSortingReviews = false;
 
   bundles: ServiceBundle[] = [];
   selectedBundle: ServiceBundle | null = null;
@@ -138,22 +140,31 @@ export class BusinessDetailComponent implements OnInit {
       }
   }
 
-  loadReviews(businessId: number, loadMore = false): void {
+  loadReviews(businessId: number, loadMore = false, isSort = false): void {
     if (loadMore) {
       this.isLoadingMoreReviews = true;
+    } else if (isSort) {
+      this.isSortingReviews = true;
+      this.reviewsCurrentPage = 1;
     } else {
       this.isReviewsLoading = true;
       this.reviewsCurrentPage = 1;
       this.reviews = [];
     }
 
-    this.reviewService.getReviews(businessId, this.reviewsCurrentPage, this.reviewsPageSize).subscribe({
+    this.reviewService.getReviews(businessId, this.reviewsCurrentPage, this.reviewsPageSize, null, undefined, this.reviewsSortBy).subscribe({
       next: (data) => {
-        this.reviews = [...this.reviews, ...data.items];
+        if (loadMore) {
+          this.reviews = [...this.reviews, ...data.items];
+        } else {
+          this.reviews = data.items;
+        }
         this.totalReviews = data.totalCount;
 
         if (loadMore) {
           this.isLoadingMoreReviews = false;
+        } else if (isSort) {
+          this.isSortingReviews = false;
         } else {
           this.isReviewsLoading = false;
         }
@@ -161,6 +172,7 @@ export class BusinessDetailComponent implements OnInit {
       error: () => {
         this.isReviewsLoading = false;
         this.isLoadingMoreReviews = false;
+        this.isSortingReviews = false;
       }
     });
   }
@@ -169,6 +181,13 @@ export class BusinessDetailComponent implements OnInit {
     this.reviewsCurrentPage++;
     if (this.business) {
       this.loadReviews(this.business.id, true);
+    }
+  }
+
+  onSortReviewsChange(event: any): void {
+    this.reviewsSortBy = event.target.value;
+    if (this.business) {
+      this.loadReviews(this.business.id, false, true);
     }
   }
 

@@ -75,7 +75,8 @@
             </div>
             <div class="form-control mt-3">
               <label class="label pb-1"><span class="label-text font-medium text-sm">Numer telefonu</span></label>
-              <input type="tel" class="input input-bordered w-full" formControlName="phoneNumber" placeholder="np. 500 600 700" />
+              <input type="tel" class="input input-bordered w-full" formControlName="phoneNumber"
+                placeholder="np. 500 600 700" />
             </div>
             <div class="form-control mt-3">
               <label class="label pb-1"><span class="label-text font-medium text-sm">Email</span></label>
@@ -92,7 +93,7 @@
       </div>
 
       <div class="hidden lg:grid grid-cols-3 gap-6">
-        <div class="card bg-base-100 shadow-md">
+        <div class="card bg-base-100 shadow-md h-fit">
           <div class="card-body items-center text-center">
             <h2 class="card-title text-base">Zdjęcie profilowe</h2>
             <p class="text-xs text-base-content/50 mb-2">Kliknij, aby zmienić</p>
@@ -117,7 +118,8 @@
             </div>
             <div class="form-control mt-3">
               <label class="label"><span class="label-text font-medium">Numer telefonu</span></label>
-              <input type="tel" class="input input-bordered w-full" formControlName="phoneNumber" placeholder="np. 500 600 700" />
+              <input type="tel" class="input input-bordered w-full" formControlName="phoneNumber"
+                placeholder="np. 500 600 700" />
             </div>
             <div class="form-control mt-3">
               <label class="label"><span class="label-text font-medium">Email</span></label>
@@ -141,7 +143,7 @@
       <div class="max-w-lg mx-auto">
         <div class="card bg-base-100 shadow-md">
           <form [formGroup]="passwordForm" (ngSubmit)="onPasswordSubmit()" class="card-body">
-            <h2 class="card-title text-base mb-2">
+            <h2 class="card-title text-base mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -149,14 +151,14 @@
               </svg>
               Zmień hasło
             </h2>
-            <div class="form-control">
-              <label class="label"><span class="label-text font-medium">Obecne hasło</span></label>
-              <input type="password" class="input input-bordered" formControlName="currentPassword"
+            <div class="form-control mb-3">
+              <label class="label pb-1"><span class="label-text font-medium text-sm">Obecne hasło</span></label>
+              <input type="password" class="input input-bordered w-full" formControlName="currentPassword"
                 placeholder="••••••••" />
             </div>
-            <div class="form-control">
-              <label class="label"><span class="label-text font-medium">Nowe hasło</span></label>
-              <input type="password" class="input input-bordered" formControlName="newPassword"
+            <div class="form-control mb-2">
+              <label class="label pb-1"><span class="label-text font-medium text-sm">Nowe hasło</span></label>
+              <input type="password" class="input input-bordered w-full" formControlName="newPassword"
                 placeholder="Min. 6 znaków" />
               @if (passwordForm.get('newPassword')?.errors?.['minlength'] && passwordForm.get('newPassword')?.touched) {
               <label class="label"><span class="label-text-alt text-error">Hasło musi mieć minimum 6
@@ -224,28 +226,28 @@
         </div>
         }
       </div>
-      
+
       @if (totalPages > 1) {
       <div class="flex justify-center mt-8 pb-4">
         <div class="join bg-base-100 p-1 rounded-2xl border border-base-300 shadow-sm">
           <button class="join-item btn btn-ghost" [disabled]="currentPage === 1"
             (click)="pageChanged(currentPage - 1)">«</button>
           @for(page of paginationPages; track $index) {
-            @if(page === '...') {
-              <button class="join-item btn btn-disabled bg-transparent">...</button>
-            } @else {
-              <button class="join-item btn rounded-xl mx-0.5" [class.btn-primary]="page === currentPage"
-                [class.btn-ghost]="page !== currentPage" (click)="pageChanged($any(page))">
-                {{ page }}
-              </button>
-            }
+          @if(page === '...') {
+          <button class="join-item btn btn-disabled bg-transparent">...</button>
+          } @else {
+          <button class="join-item btn rounded-xl mx-0.5" [class.btn-primary]="page === currentPage"
+            [class.btn-ghost]="page !== currentPage" (click)="pageChanged($any(page))">
+            {{ page }}
+          </button>
+          }
           }
           <button class="join-item btn btn-ghost" [disabled]="currentPage === totalPages"
             (click)="pageChanged(currentPage + 1)">»</button>
         </div>
       </div>
       }
-      
+
       } @else {
       <div class="text-center py-16">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-base-content/20 mb-4" fill="none"
