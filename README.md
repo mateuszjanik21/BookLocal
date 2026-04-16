@@ -1,4 +1,4 @@
-# 📖 BookLocal
+#  BookLocal
 
 **BookLocal** to rozbudowana, wielomodułowa aplikacja webowa do rezerwacji wizyt w lokalnych firmach usługowych. Projekt obejmuje pełen ekosystem: od aplikacji klienckiej (**Angular SPA**), przez serwer API (**ASP.NET Core**), aż po aplikację mobilną (**Flutter**). System obsługuje trzy role użytkowników – **Klient**, **Właściciel firmy** i **Super Administrator** – każda z dedykowanym zestawem funkcjonalności.
 
@@ -20,7 +20,7 @@
 
 | Rola | Login | Hasło |
 |---|---|---|
-| **Super Administrator** | `admin@booklocal.com` | `Admin123!` |
+| **Super Administrator** | `admin@test.com` | `P@ssword1` |
 | **Właściciel firmy** | `owner@test.com` | `P@ssword1` |
 | **Klient** | `customer@test.com` | `P@ssword1` |
 
@@ -101,7 +101,7 @@ Możesz również samodzielnie przejść przez proces rejestracji jako klient lu
 ### Backend
 - **Framework:** ASP.NET Core (.NET 8) Web API
 - **ORM:** Entity Framework Core (Code-First)
-- **Kontrolery API:** 29 kontrolerów obsługujących pełen zakres operacji CRUD i logiki biznesowej
+- **Architektura:** Wzorzec warstwowy (Controllers + Services). Kontrolery obsługują żądania HTTP, a Serwisy realizują całą logikę biznesową.
 - **Uwierzytelnianie:** ASP.NET Core Identity + JWT (Bearer tokens) z 3 rolami (`customer`, `owner`, `superadmin`)
 - **Real-time:** SignalR – 3 huby:
   - `ChatHub` – czat między klientem a firmą
@@ -254,7 +254,9 @@ Projekt zawiera **3 workflow GitHub Actions**:
 ```
 BookLocal/
 ├── BookLocal.API/          # Backend – ASP.NET Core Web API
-│   ├── Controllers/        # 29 kontrolerów REST API
+│   ├── Controllers/        # 28 kontrolerów REST API (endpointy HTTP)
+│   ├── Services/           # 33 serwisy z logiką biznesową
+│   ├── Interfaces/         # Interfejsy dla serwisów (Dependency Injection)
 │   ├── DTOs/               # Data Transfer Objects
 │   ├── Data/               # DbContext, DbInitializer, Migracje
 │   ├── Hubs/               # SignalR (ChatHub, NotificationHub, PresenceHub)
