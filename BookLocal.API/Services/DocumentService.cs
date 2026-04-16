@@ -30,8 +30,8 @@ namespace BookLocal.API.Services
 
             var ownerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
             var business = await _context.Businesses.FirstOrDefaultAsync(b => b.OwnerId == ownerId);
-            
-            if (business == null) 
+
+            if (business == null)
                 return (false, null, "Nie znaleziono firmy dla tego użytkownika.");
 
             var templatesDir = Path.Combine(_env.WebRootPath, "templates", business.BusinessId.ToString());
@@ -53,7 +53,7 @@ namespace BookLocal.API.Services
         public async Task<(bool Success, byte[]? FileBytes, string? FileName, string? ContentType, string? ErrorMessage)> GenerateContractAsync(int employeeId, ClaimsPrincipal user)
         {
             var ownerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            
+
             var employee = await _context.Employees
                 .AsNoTracking()
                 .Include(e => e.Contracts)
@@ -101,7 +101,7 @@ namespace BookLocal.API.Services
                 { "{{Pracownik}}", $"{employee.FirstName} {employee.LastName}" },
                 { "{{Stanowisko}}", employee.Position ?? "Pracownik" },
                 { "{{DataUrodzenia}}", employee.DateOfBirth.ToString("dd.MM.yyyy") },
-                { "{{DataGenerowania}}", DateTime.Now.ToString("dd.MM.yyyy") },
+                { "{{DataGenerowania}}", DateTime.UtcNow.ToString("dd.MM.yyyy") },
 
                 { "{{Firma}}", business.Name ?? "BRAK NAZWY FIRMY" },
                 { "{{Reprezentant}}", business.Owner != null ? $"{business.Owner.FirstName} {business.Owner.LastName}" : "Właściciel" },

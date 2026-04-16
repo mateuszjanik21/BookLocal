@@ -52,7 +52,7 @@ namespace BookLocal.API.Services
 
             if (await _context.Discounts.AnyAsync(d => d.BusinessId == businessId && d.Code == dto.Code && d.IsActive))
             {
-                return (true, null, "Kod rabatowy o tej nazwie już istnieje.");
+                return (false, null, "Kod rabatowy o tej nazwie już istnieje.");
             }
 
             var discount = new Discount

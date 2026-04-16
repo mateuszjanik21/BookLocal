@@ -70,7 +70,7 @@ namespace BookLocal.API
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
                     ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? string.Empty))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new ArgumentException("Brak klucza JWT w konfiguracji! Uzupe³nij plik appsettings.json lub zmienne œrodowiskowe.")))
                 };
             });
 
@@ -175,8 +175,11 @@ namespace BookLocal.API
 
             var app = builder.Build();
 
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             if (app.Environment.IsDevelopment())
             {
@@ -226,3 +229,4 @@ namespace BookLocal.API
         }
     }
 }
+

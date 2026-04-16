@@ -66,30 +66,40 @@ namespace BookLocal.API.Hubs
 
             var recipientId = senderId == conversation.CustomerId ? conversation.Business.OwnerId : conversation.CustomerId;
 
-            await Clients.User(recipientId).SendAsync("ReceiveGlobalMessage", messageDto);
-
-            var recipient = await _userManager.FindByIdAsync(recipientId);
-
-            var unreadCountForRecipient = await _context.Messages
-                .CountAsync(m => m.ConversationId == conversationId && m.SenderId != recipientId && !m.IsRead);
-
-            var updatedConvoForRecipient = new ConversationDto
+            if (!string.IsNullOrEmpty(recipientId))
             {
-                ConversationId = conversation.ConversationId,
-                ParticipantId = senderId,
-                ParticipantName = sender.FirstName + " " + sender.LastName,
-                ParticipantPhotoUrl = sender.PhotoUrl,
-                LastMessage = message.Content,
-                LastMessageAt = message.SentAt,
-                UnreadCount = unreadCountForRecipient
-            };
+                await Clients.User(recipientId).SendAsync("ReceiveGlobalMessage", messageDto);
 
-            await _presenceHub.Clients.User(recipientId).SendAsync("UpdateConversation", updatedConvoForRecipient);
+                var unreadCountForRecipient = await _context.Messages
+                    .CountAsync(m => m.ConversationId == conversationId && m.SenderId != recipientId && !m.IsRead);
+
+                var updatedConvoForRecipient = new ConversationDto
+                {
+                    ConversationId = conversation.ConversationId,
+                    ParticipantId = senderId,
+                    ParticipantName = senderName,
+                    ParticipantPhotoUrl = sender.PhotoUrl,
+                    LastMessage = message.Content,
+                    LastMessageAt = message.SentAt,
+                    UnreadCount = unreadCountForRecipient
+                };
+
+                await _presenceHub.Clients.User(recipientId).SendAsync("UpdateConversation", updatedConvoForRecipient);
+            }
         }
 
         public async Task JoinConversation(int conversationId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, conversationId.ToString());
+            var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isParticipant = await _context.Conversations
+                .Include(c => c.Business)
+                .AnyAsync(c => c.ConversationId == conversationId &&
+                              (c.CustomerId == userId || c.Business.OwnerId == userId));
+
+            if (isParticipant)
+            {
+                await Groups.AddToGroupAsync(Context.ConnectionId, conversationId.ToString());
+            }
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
@@ -100,6 +110,13 @@ namespace BookLocal.API.Hubs
         public async Task MarkMessagesAsRead(int conversationId)
         {
             var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var isParticipant = await _context.Conversations
+                .Include(c => c.Business)
+                .AnyAsync(c => c.ConversationId == conversationId &&
+                              (c.CustomerId == userId || c.Business.OwnerId == userId));
+
+            if (!isParticipant) return;
 
             var messagesToUpdate = await _context.Messages
                 .Where(m => m.ConversationId == conversationId && m.SenderId != userId && !m.IsRead)
@@ -118,14 +135,22 @@ namespace BookLocal.API.Hubs
                 var conversation = await _context.Conversations
                     .Include(c => c.Business)
                     .Include(c => c.Customer)
-                    .Include(c => c.Messages)
                     .FirstOrDefaultAsync(c => c.ConversationId == conversationId);
 
                 if (conversation != null)
                 {
                     var ownerId = conversation.Business.OwnerId;
                     var customerId = conversation.CustomerId;
-                    var lastMessage = conversation.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault();
+                    var lastMessage = await _context.Messages
+                        .Where(m => m.ConversationId == conversationId)
+                        .OrderByDescending(m => m.SentAt)
+                        .FirstOrDefaultAsync();
+
+                    var unreadForOwner = await _context.Messages
+                        .CountAsync(m => m.ConversationId == conversationId && m.SenderId != ownerId && !m.IsRead);
+
+                    var unreadForCustomer = await _context.Messages
+                        .CountAsync(m => m.ConversationId == conversationId && m.SenderId != customerId && !m.IsRead);
 
                     var convoForOwner = new ConversationDto
                     {
@@ -134,8 +159,8 @@ namespace BookLocal.API.Hubs
                         ParticipantName = conversation.Customer.FirstName + " " + conversation.Customer.LastName,
                         ParticipantPhotoUrl = conversation.Customer.PhotoUrl,
                         LastMessage = lastMessage?.Content ?? "Brak wiadomości",
-                        LastMessageAt = lastMessage?.SentAt ?? DateTime.MinValue,
-                        UnreadCount = conversation.Messages.Count(m => m.SenderId != ownerId && !m.IsRead)
+                        LastMessageAt = lastMessage?.SentAt,
+                        UnreadCount = unreadForOwner
                     };
                     await _presenceHub.Clients.User(ownerId).SendAsync("UpdateConversation", convoForOwner);
 
@@ -146,8 +171,8 @@ namespace BookLocal.API.Hubs
                         ParticipantName = conversation.Business.Name,
                         ParticipantPhotoUrl = conversation.Business.PhotoUrl,
                         LastMessage = lastMessage?.Content ?? "Brak wiadomości",
-                        LastMessageAt = lastMessage?.SentAt ?? DateTime.MinValue,
-                        UnreadCount = conversation.Messages.Count(m => m.SenderId != customerId && !m.IsRead)
+                        LastMessageAt = lastMessage?.SentAt,
+                        UnreadCount = unreadForCustomer
                     };
                     await _presenceHub.Clients.User(customerId).SendAsync("UpdateConversation", convoForCustomer);
                 }

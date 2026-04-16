@@ -26,7 +26,8 @@ namespace BookLocal.API.Controllers
             if (!result.Success)
             {
                 if (result.ErrorMessage == "Nie można zidentyfikować użytkownika na podstawie tokenu.") return Unauthorized(result.ErrorMessage);
-                if (result.ErrorMessage!.Contains("nie istnieje") || result.ErrorMessage.Contains("nie pracuje")) return BadRequest(result.ErrorMessage);
+                if (result.ErrorMessage!.Contains("nie istnieje")) return NotFound(result.ErrorMessage);
+                if (result.ErrorMessage.Contains("nie pracuje")) return BadRequest(result.ErrorMessage);
                 if (result.ErrorMessage.Contains("już zajęty")) return Conflict(result.ErrorMessage);
                 return BadRequest(result.ErrorMessage);
             }
@@ -123,7 +124,7 @@ namespace BookLocal.API.Controllers
             {
                 if (result.ErrorMessage == "Unauthorized") return Unauthorized();
                 if (result.ErrorMessage!.Contains("już zajęty")) return Conflict(result.ErrorMessage);
-                if (result.ErrorMessage.Contains("błąd")) return StatusCode(500, result.ErrorMessage);
+                if (result.ErrorMessage.Contains("błąd")) return BadRequest(result.ErrorMessage);
                 return BadRequest(result.ErrorMessage);
             }
 
@@ -156,7 +157,7 @@ namespace BookLocal.API.Controllers
             {
                 if (result.ErrorMessage == "Brak uprawnień.") return Forbid();
                 if (result.ErrorMessage!.Contains("już zajęty")) return Conflict(result.ErrorMessage);
-                if (result.ErrorMessage.Contains("błąd")) return StatusCode(500, result.ErrorMessage);
+                if (result.ErrorMessage.Contains("błąd")) return BadRequest(result.ErrorMessage);
                 return BadRequest(result.ErrorMessage);
             }
 

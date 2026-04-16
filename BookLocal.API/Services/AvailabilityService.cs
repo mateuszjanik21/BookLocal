@@ -47,7 +47,7 @@ namespace BookLocal.API.Services
             var dayStart = date.Date + workSchedule.StartTime.Value;
             var dayEnd = date.Date + workSchedule.EndTime.Value;
 
-            var now = DateTime.UtcNow.AddHours(1);
+            var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw"));
             var firstPossibleMoment = (date.Date == now.Date && now > dayStart) ? RoundUpToNearestInterval(now, bookingInterval) : dayStart;
 
             for (var potentialStart = dayStart; potentialStart < dayEnd; potentialStart = potentialStart.AddMinutes(bookingInterval))
@@ -113,7 +113,7 @@ namespace BookLocal.API.Services
             var dayStart = date.Date + workSchedule.StartTime.Value;
             var dayEnd = date.Date + workSchedule.EndTime.Value;
 
-            var now = DateTime.UtcNow.AddHours(1);
+            var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Europe/Warsaw"));
             var firstPossibleMoment = (date.Date == now.Date && now > dayStart) ? RoundUpToNearestInterval(now, bookingInterval) : dayStart;
 
             for (var potentialStart = dayStart; potentialStart < dayEnd; potentialStart = potentialStart.AddMinutes(bookingInterval))

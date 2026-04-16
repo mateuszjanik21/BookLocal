@@ -273,7 +273,7 @@ namespace BookLocal.API.Services
                 .Where(c => c.EmployeeId == employeeId)
                 .ToListAsync();
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var weekEnd = now.AddDays(7);
             var upcomingReservations = await _context.Reservations
                 .AsNoTracking()
@@ -436,8 +436,12 @@ namespace BookLocal.API.Services
             var age = 0;
             if (employee.DateOfBirth != DateOnly.MinValue)
             {
-                age = DateTime.Now.Year - employee.DateOfBirth.Year;
-                if (DateTime.Now.DayOfYear < employee.DateOfBirth.DayOfYear) age--;
+                var today = DateTime.UtcNow;
+                age = today.Year - employee.DateOfBirth.Year;
+                if (today.Month < employee.DateOfBirth.Month || (today.Month == employee.DateOfBirth.Month && today.Day < employee.DateOfBirth.Day))
+                {
+                    age--;
+                }
             }
             bool isUnder26 = age < 26;
 
@@ -489,7 +493,7 @@ namespace BookLocal.API.Services
             var employee = await _context.Employees.FirstOrDefaultAsync(e => e.EmployeeId == employeeId && e.BusinessId == businessId);
             if (employee == null) return (false, null, "Nie znaleziono pracownika.");
 
-            if (dto.DateObtained > DateOnly.FromDateTime(DateTime.Now))
+            if (dto.DateObtained > DateOnly.FromDateTime(DateTime.UtcNow))
                 return (false, null, "Data uzyskania certyfikatu nie może być w przyszłości.");
 
             var certificate = new EmployeeCertificate

@@ -9,7 +9,7 @@ namespace BookLocal.API.DTOs
         public required string ParticipantName { get; set; }
         public string? ParticipantPhotoUrl { get; set; }
         public required string LastMessage { get; set; }
-        public DateTime LastMessageAt { get; set; }
+        public DateTime? LastMessageAt { get; set; }
         public int UnreadCount { get; set; }
     }
 

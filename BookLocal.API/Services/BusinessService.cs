@@ -206,7 +206,7 @@ namespace BookLocal.API.Services
             var isVerified = await _context.BusinessVerifications
                 .AnyAsync(v => v.BusinessId == business.BusinessId && v.Status == VerificationStatus.Approved);
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var currentMonthStart = new DateTime(now.Year, now.Month, 1);
             var currentMonthEnd = currentMonthStart.AddMonths(1);
 

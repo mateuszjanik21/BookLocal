@@ -59,7 +59,7 @@ namespace BookLocal.API.Services
                 return (false, null, "Brak uprawnień.");
             }
 
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var futureReservations = await _context.Reservations
                 .Where(r => r.EmployeeId == employeeId
                     && r.Status == ReservationStatus.Confirmed

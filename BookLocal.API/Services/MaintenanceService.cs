@@ -18,25 +18,25 @@ namespace BookLocal.API.Services
             var profiles = await _context.CustomerBusinessProfiles.ToListAsync();
             int count = 0;
 
+            var statsDict = await _context.Reservations
+                .Where(r => r.CustomerId != null)
+                .GroupBy(r => new { r.BusinessId, r.CustomerId })
+                .Select(g => new
+                {
+                    g.Key.BusinessId,
+                    g.Key.CustomerId,
+                    TotalSpent = g.Where(r => r.Status == ReservationStatus.Completed).Sum(r => r.AgreedPrice),
+                    NoShowCount = g.Count(r => r.Status == ReservationStatus.NoShow),
+                    LastVisit = g.Where(r => r.Status == ReservationStatus.Completed).Max(r => (DateTime?)r.StartTime),
+                    CancelledCount = g.Count(r => r.Status == ReservationStatus.Cancelled),
+                    NextVisit = g.Where(r => r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed).Min(r => (DateTime?)r.StartTime)
+                })
+                .ToDictionaryAsync(x => new { x.BusinessId, x.CustomerId });
+
             foreach (var profile in profiles)
             {
-                var stats = await _context.Reservations
-                    .Where(r => r.BusinessId == profile.BusinessId && r.CustomerId == profile.CustomerId)
-                    .GroupBy(r => 1)
-                    .Select(g => new
-                    {
-                        TotalSpent = g.Where(r => r.Status == ReservationStatus.Completed).Sum(r => r.AgreedPrice),
-                        NoShowCount = g.Count(r => r.Status == ReservationStatus.NoShow),
-                        LastVisit = g.Where(r => r.Status == ReservationStatus.Completed).Max(r => (DateTime?)r.StartTime),
-                        CancelledCount = g.Count(r => r.Status == ReservationStatus.Cancelled),
-                        NextVisit = g.Where(r => r.StartTime > DateTime.UtcNow && r.Status == ReservationStatus.Confirmed)
-                            .OrderBy(r => r.StartTime)
-                            .Select(r => (DateTime?)r.StartTime)
-                            .FirstOrDefault()
-                    })
-                    .FirstOrDefaultAsync();
-
-                if (stats != null)
+                var key = new { profile.BusinessId, profile.CustomerId };
+                if (statsDict.TryGetValue(key, out var stats))
                 {
                     profile.TotalSpent = stats.TotalSpent;
                     profile.NoShowCount = stats.NoShowCount;

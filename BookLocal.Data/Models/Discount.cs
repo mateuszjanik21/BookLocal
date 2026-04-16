@@ -21,7 +21,7 @@ namespace BookLocal.Data.Models
 
         [Required]
         [MaxLength(20)]
-        public string Code { get; set; } 
+        public string Code { get; set; }
 
         public DiscountType Type { get; set; }
 
@@ -29,6 +29,8 @@ namespace BookLocal.Data.Models
         public decimal Value { get; set; }
 
         public int? MaxUses { get; set; }
+
+        [ConcurrencyCheck]
         public int UsedCount { get; set; } = 0;
 
         public DateOnly? ValidFrom { get; set; }

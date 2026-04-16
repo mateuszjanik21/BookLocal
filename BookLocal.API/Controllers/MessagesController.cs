@@ -32,9 +32,9 @@ namespace BookLocal.API.Controllers
         }
 
         [HttpGet("{conversationId}")]
-        public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessages(int conversationId)
+        public async Task<ActionResult<IEnumerable<MessageDto>>> GetMessages(int conversationId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 50)
         {
-            var result = await _messagesService.GetMessagesAsync(conversationId, User);
+            var result = await _messagesService.GetMessagesAsync(conversationId, pageNumber, pageSize, User);
 
             if (!result.Success)
             {

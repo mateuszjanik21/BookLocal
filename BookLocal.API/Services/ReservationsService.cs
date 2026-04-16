@@ -48,92 +48,107 @@ namespace BookLocal.API.Services
             var totalDuration = variant.DurationMinutes + variant.CleanupTimeMinutes;
             var proposedEndTime = reservationDto.StartTime.AddMinutes(totalDuration);
 
-            var isSlotTaken = await _context.Reservations
-                .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
-                               r.Status != ReservationStatus.Cancelled &&
-                               r.StartTime < proposedEndTime &&
-                               r.EndTime > reservationDto.StartTime);
-
-            if (isSlotTaken)
-                return (false, null, "Wybrany termin u tego pracownika jest już zajęty.");
-
-            decimal discountAmount = 0;
-            int? discountId = null;
-
-            if (!string.IsNullOrEmpty(reservationDto.DiscountCode))
+            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            try
             {
-                var discountResult = await ApplyDiscount(service.BusinessId, reservationDto.DiscountCode, variant.Price, service.ServiceId, userId);
-                if (discountResult.error != null)
-                    return (false, null, discountResult.error);
-                discountAmount = discountResult.discountAmount;
-                discountId = discountResult.discountId;
-            }
+                var isSlotTaken = await _context.Reservations
+                    .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
+                                   r.Status != ReservationStatus.Cancelled &&
+                                   r.StartTime < proposedEndTime &&
+                                   r.EndTime > reservationDto.StartTime);
 
-            decimal loyaltyDiscount = 0;
-            if (reservationDto.LoyaltyPointsUsed > 0)
-            {
-                var loyaltyResult = await RedeemLoyaltyPoints(service.BusinessId, userId, reservationDto.LoyaltyPointsUsed, variant.Price - discountAmount);
-                if (loyaltyResult.error != null)
-                    return (false, null, loyaltyResult.error);
-                loyaltyDiscount = loyaltyResult.discount;
-            }
+                if (isSlotTaken)
+                    return (false, null, "Wybrany termin u tego pracownika jest już zajęty.");
 
-            var reservation = new Reservation
-            {
-                BusinessId = service.BusinessId,
-                CustomerId = userId,
-                ServiceVariantId = reservationDto.ServiceVariantId,
-                EmployeeId = reservationDto.EmployeeId,
-                StartTime = reservationDto.StartTime,
-                EndTime = proposedEndTime,
-                AgreedPrice = variant.Price - discountAmount - loyaltyDiscount,
-                DiscountAmount = discountAmount,
-                DiscountId = discountId,
-                LoyaltyPointsUsed = reservationDto.LoyaltyPointsUsed,
-                Status = ReservationStatus.Confirmed,
-                PaymentMethod = reservationDto.PaymentMethod
-            };
+                decimal discountAmount = 0;
+                int? discountId = null;
 
-            _context.Reservations.Add(reservation);
-            await _context.SaveChangesAsync();
-
-            if (reservation.PaymentMethod == PaymentMethod.Online && reservation.AgreedPrice > 0)
-            {
-                var payment = new Payment
+                if (!string.IsNullOrEmpty(reservationDto.DiscountCode))
                 {
-                    ReservationId = reservation.ReservationId,
-                    BusinessId = service.BusinessId,
-                    PaymentMethod = PaymentMethod.Online,
-                    Amount = reservation.AgreedPrice,
-                    Status = PaymentStatus.Completed,
-                    TransactionDate = DateTime.UtcNow
-                };
-
-                var activeSubscription = await _context.BusinessSubscriptions
-                    .Include(s => s.Plan)
-                    .FirstOrDefaultAsync(s => s.BusinessId == service.BusinessId && s.IsActive);
-
-                if (activeSubscription != null)
-                {
-                    var commissionRate = (decimal)activeSubscription.Plan.CommissionPercentage / 100m;
-                    payment.CommissionAmount = Math.Round(payment.Amount * commissionRate, 2);
+                    var discountResult = await ApplyDiscount(service.BusinessId, reservationDto.DiscountCode, variant.Price, service.ServiceId, userId);
+                    if (discountResult.error != null)
+                        return (false, null, discountResult.error);
+                    discountAmount = discountResult.discountAmount;
+                    discountId = discountResult.discountId;
                 }
 
-                _context.Payments.Add(payment);
+                decimal loyaltyDiscount = 0;
+                if (reservationDto.LoyaltyPointsUsed > 0)
+                {
+                    var loyaltyResult = await RedeemLoyaltyPoints(service.BusinessId, userId, reservationDto.LoyaltyPointsUsed, variant.Price - discountAmount);
+                    if (loyaltyResult.error != null)
+                        return (false, null, loyaltyResult.error);
+                    loyaltyDiscount = loyaltyResult.discount;
+                }
+
+                var reservation = new Reservation
+                {
+                    BusinessId = service.BusinessId,
+                    CustomerId = userId,
+                    ServiceVariantId = reservationDto.ServiceVariantId,
+                    EmployeeId = reservationDto.EmployeeId,
+                    StartTime = reservationDto.StartTime,
+                    EndTime = proposedEndTime,
+                    AgreedPrice = variant.Price - discountAmount - loyaltyDiscount,
+                    DiscountAmount = discountAmount,
+                    DiscountId = discountId,
+                    LoyaltyPointsUsed = reservationDto.LoyaltyPointsUsed,
+                    Status = ReservationStatus.Confirmed,
+                    PaymentMethod = reservationDto.PaymentMethod
+                };
+
+                _context.Reservations.Add(reservation);
                 await _context.SaveChangesAsync();
+
+                if (reservation.PaymentMethod == PaymentMethod.Online && reservation.AgreedPrice > 0)
+                {
+                    var payment = new Payment
+                    {
+                        ReservationId = reservation.ReservationId,
+                        BusinessId = service.BusinessId,
+                        PaymentMethod = PaymentMethod.Online,
+                        Amount = reservation.AgreedPrice,
+                        Status = PaymentStatus.Completed,
+                        TransactionDate = DateTime.UtcNow
+                    };
+
+                    var activeSubscription = await _context.BusinessSubscriptions
+                        .Include(s => s.Plan)
+                        .FirstOrDefaultAsync(s => s.BusinessId == service.BusinessId && s.IsActive);
+
+                    if (activeSubscription != null)
+                    {
+                        var commissionRate = (decimal)activeSubscription.Plan.CommissionPercentage / 100m;
+                        payment.CommissionAmount = Math.Round(payment.Amount * commissionRate, 2);
+                    }
+
+                    _context.Payments.Add(payment);
+                    await _context.SaveChangesAsync();
+                }
+
+                await EnsureCustomerProfile(service.BusinessId, userId);
+
+                await transaction.CommitAsync();
+
+                try
+                {
+                    var customer = await _userManager.FindByIdAsync(userId);
+                    var notificationPayload = new
+                    {
+                        Message = $"Nowa rezerwacja od {customer?.FirstName} na usługę '{service.Name}' ({variant.Name}).",
+                        ReservationId = reservation.ReservationId
+                    };
+
+                    await _hubContext.Clients.Group(service.BusinessId.ToString())
+                        .SendAsync("NewReservationNotification", notificationPayload);
+                }
+                catch { /* Ignore notification errors */ }
             }
-
-            var customer = await _userManager.FindByIdAsync(userId);
-            var notificationPayload = new
+            catch (Exception)
             {
-                Message = $"Nowa rezerwacja od {customer?.FirstName} na usługę '{service.Name}' ({variant.Name}).",
-                reservation.ReservationId
-            };
-
-            await _hubContext.Clients.Group(service.BusinessId.ToString())
-                .SendAsync("NewReservationNotification", notificationPayload);
-
-            await EnsureCustomerProfile(service.BusinessId, userId);
+                await transaction.RollbackAsync();
+                return (false, null, "Wystąpił błąd podczas tworzenia rezerwacji. Termin może być już zajęty.");
+            }
 
             return (true, "Rezerwacja została pomyślnie utworzona.", null);
         }
@@ -543,64 +558,64 @@ namespace BookLocal.API.Services
             if (reservationDto.StartTime.TimeOfDay < workSchedule.StartTime.Value || sequenceEndTime.TimeOfDay > workSchedule.EndTime.Value)
                 return (false, null, "Wybrany termin pakietu wykracza poza godziny pracy.");
 
-            var isTaken = await _context.Reservations
-                .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
-                               r.Status == ReservationStatus.Confirmed &&
-                               r.StartTime < sequenceEndTime &&
-                               r.EndTime > reservationDto.StartTime);
-
-            if (isTaken) return (false, null, "Jeden z terminów w ramach pakietu jest już zajęty.");
-
-            var currentStartTime = reservationDto.StartTime;
-            var reservationsToCreate = new List<Reservation>();
-
-            decimal sumOfVariantsPrice = bundleItems.Sum(i => i.ServiceVariant.Price);
-            decimal globalDiscountRatio = 1.0m;
-            if (sumOfVariantsPrice > 0)
-            {
-                globalDiscountRatio = bundle.TotalPrice / sumOfVariantsPrice;
-            }
-
-            decimal loyaltyDiscountTotal = 0;
-            if (reservationDto.LoyaltyPointsUsed > 0)
-            {
-                var loyaltyResult = await RedeemLoyaltyPoints(bundle.BusinessId, userId, reservationDto.LoyaltyPointsUsed, bundle.TotalPrice);
-                if (loyaltyResult.error != null)
-                    return (false, null, loyaltyResult.error);
-                loyaltyDiscountTotal = loyaltyResult.discount;
-            }
-
-            decimal loyaltyRatio = bundle.TotalPrice > 0 ? (bundle.TotalPrice - loyaltyDiscountTotal) / bundle.TotalPrice : 1.0m;
-
-            foreach (var item in bundleItems)
-            {
-                var variantDuration = item.ServiceVariant.DurationMinutes + item.ServiceVariant.CleanupTimeMinutes;
-                var currentEndTime = currentStartTime.AddMinutes(variantDuration);
-
-                var itemPrice = item.ServiceVariant.Price * globalDiscountRatio * loyaltyRatio;
-
-                var reservation = new Reservation
-                {
-                    BusinessId = bundle.BusinessId,
-                    CustomerId = userId,
-                    ServiceVariantId = item.ServiceVariantId,
-                    EmployeeId = reservationDto.EmployeeId,
-                    ServiceBundleId = bundle.ServiceBundleId,
-                    StartTime = currentStartTime,
-                    EndTime = currentEndTime,
-                    AgreedPrice = itemPrice,
-                    Status = ReservationStatus.Confirmed,
-                    LoyaltyPointsUsed = bundleItems.IndexOf(item) == 0 ? reservationDto.LoyaltyPointsUsed : 0,
-                    PaymentMethod = reservationDto.PaymentMethod
-                };
-
-                reservationsToCreate.Add(reservation);
-                currentStartTime = currentEndTime;
-            }
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
             try
             {
+                var isTaken = await _context.Reservations
+                    .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
+                                   r.Status == ReservationStatus.Confirmed &&
+                                   r.StartTime < sequenceEndTime &&
+                                   r.EndTime > reservationDto.StartTime);
+
+                if (isTaken) return (false, null, "Jeden z terminów w ramach pakietu jest już zajęty.");
+
+                var currentStartTime = reservationDto.StartTime;
+                var reservationsToCreate = new List<Reservation>();
+
+                decimal sumOfVariantsPrice = bundleItems.Sum(i => i.ServiceVariant.Price);
+                decimal globalDiscountRatio = 1.0m;
+                if (sumOfVariantsPrice > 0)
+                {
+                    globalDiscountRatio = bundle.TotalPrice / sumOfVariantsPrice;
+                }
+
+                decimal loyaltyDiscountTotal = 0;
+                if (reservationDto.LoyaltyPointsUsed > 0)
+                {
+                    var loyaltyResult = await RedeemLoyaltyPoints(bundle.BusinessId, userId, reservationDto.LoyaltyPointsUsed, bundle.TotalPrice);
+                    if (loyaltyResult.error != null)
+                        return (false, null, loyaltyResult.error);
+                    loyaltyDiscountTotal = loyaltyResult.discount;
+                }
+
+                decimal loyaltyRatio = bundle.TotalPrice > 0 ? (bundle.TotalPrice - loyaltyDiscountTotal) / bundle.TotalPrice : 1.0m;
+
+                foreach (var item in bundleItems)
+                {
+                    var variantDuration = item.ServiceVariant.DurationMinutes + item.ServiceVariant.CleanupTimeMinutes;
+                    var currentEndTime = currentStartTime.AddMinutes(variantDuration);
+
+                    var itemPrice = item.ServiceVariant.Price * globalDiscountRatio * loyaltyRatio;
+
+                    var reservation = new Reservation
+                    {
+                        BusinessId = bundle.BusinessId,
+                        CustomerId = userId,
+                        ServiceVariantId = item.ServiceVariantId,
+                        EmployeeId = reservationDto.EmployeeId,
+                        ServiceBundleId = bundle.ServiceBundleId,
+                        StartTime = currentStartTime,
+                        EndTime = currentEndTime,
+                        AgreedPrice = itemPrice,
+                        Status = ReservationStatus.Confirmed,
+                        LoyaltyPointsUsed = bundleItems.IndexOf(item) == 0 ? reservationDto.LoyaltyPointsUsed : 0,
+                        PaymentMethod = reservationDto.PaymentMethod
+                    };
+
+                    reservationsToCreate.Add(reservation);
+                    currentStartTime = currentEndTime;
+                }
+
                 _context.Reservations.AddRange(reservationsToCreate);
                 await _context.SaveChangesAsync();
 
@@ -634,19 +649,23 @@ namespace BookLocal.API.Services
                     }
                 }
 
-                var customer = await _userManager.FindByIdAsync(userId);
-                var notificationPayload = new
-                {
-                    Message = $"Nowa rezerwacja pakietowa od {customer?.FirstName} na '{bundle.Name}'.",
-                    reservationsToCreate.First().ReservationId
-                };
-
-                await _hubContext.Clients.Group(bundle.BusinessId.ToString())
-                    .SendAsync("NewReservationNotification", notificationPayload);
-
                 await EnsureCustomerProfile(bundle.BusinessId, userId);
 
                 await transaction.CommitAsync();
+
+                try
+                {
+                    var customer = await _userManager.FindByIdAsync(userId);
+                    var notificationPayload = new
+                    {
+                        Message = $"Nowa rezerwacja pakietowa od {customer?.FirstName} na '{bundle.Name}'.",
+                        ReservationId = reservationsToCreate.First().ReservationId
+                    };
+
+                    await _hubContext.Clients.Group(bundle.BusinessId.ToString())
+                        .SendAsync("NewReservationNotification", notificationPayload);
+                }
+                catch { /* Ignore notification errors */ }
             }
             catch (Exception)
             {
@@ -686,56 +705,66 @@ namespace BookLocal.API.Services
             if (requestedStartTimeOfDay < workSchedule.StartTime.Value || requestedEndTimeOfDay > workSchedule.EndTime.Value)
                 return (false, null, "Wybrany termin wykracza poza godziny pracy pracownika.");
 
-            var isSlotTaken = await _context.Reservations
-                .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
-                               r.Status == ReservationStatus.Confirmed &&
-                               r.StartTime < proposedEndTime &&
-                               r.EndTime > reservationDto.StartTime);
-
-            if (isSlotTaken)
-                return (false, null, "Ten termin u wybranego pracownika jest już zajęty.");
-
-            decimal discountAmount = 0;
-            int? discountId = null;
-
-            if (!string.IsNullOrEmpty(reservationDto.DiscountCode))
+            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            try
             {
-                var discountResult = await ApplyDiscount(variant.Service.BusinessId, reservationDto.DiscountCode, variant.Price, variant.Service.ServiceId, reservationDto.GuestPhoneNumber);
-                if (discountResult.error != null)
-                    return (false, null, discountResult.error);
-                discountAmount = discountResult.discountAmount;
-                discountId = discountResult.discountId;
+                var isSlotTaken = await _context.Reservations
+                    .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
+                                   r.Status == ReservationStatus.Confirmed &&
+                                   r.StartTime < proposedEndTime &&
+                                   r.EndTime > reservationDto.StartTime);
+
+                if (isSlotTaken)
+                    return (false, null, "Ten termin u wybranego pracownika jest już zajęty.");
+
+                decimal discountAmount = 0;
+                int? discountId = null;
+
+                if (!string.IsNullOrEmpty(reservationDto.DiscountCode))
+                {
+                    var discountResult = await ApplyDiscount(variant.Service.BusinessId, reservationDto.DiscountCode, variant.Price, variant.Service.ServiceId, reservationDto.GuestPhoneNumber);
+                    if (discountResult.error != null)
+                        return (false, null, discountResult.error);
+                    discountAmount = discountResult.discountAmount;
+                    discountId = discountResult.discountId;
+                }
+
+                decimal loyaltyDiscount = 0;
+                if (reservationDto.LoyaltyPointsUsed > 0 && !string.IsNullOrEmpty(reservationDto.CustomerId))
+                {
+                    var loyaltyResult = await RedeemLoyaltyPoints(variant.Service.BusinessId, reservationDto.CustomerId, reservationDto.LoyaltyPointsUsed, variant.Price - discountAmount);
+                    if (loyaltyResult.error != null)
+                        return (false, null, loyaltyResult.error);
+                    loyaltyDiscount = loyaltyResult.discount;
+                }
+
+                var reservation = new Reservation
+                {
+                    BusinessId = variant.Service.BusinessId,
+                    ServiceVariantId = reservationDto.ServiceVariantId,
+                    EmployeeId = reservationDto.EmployeeId,
+                    StartTime = reservationDto.StartTime,
+                    EndTime = proposedEndTime,
+                    AgreedPrice = variant.Price - discountAmount - loyaltyDiscount,
+                    DiscountAmount = discountAmount,
+                    DiscountId = discountId,
+                    LoyaltyPointsUsed = reservationDto.LoyaltyPointsUsed,
+                    GuestName = reservationDto.GuestName,
+                    GuestPhoneNumber = reservationDto.GuestPhoneNumber,
+                    CustomerId = reservationDto.CustomerId,
+                    Status = ReservationStatus.Confirmed,
+                    PaymentMethod = reservationDto.PaymentMethod
+                };
+
+                _context.Reservations.Add(reservation);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
-
-            decimal loyaltyDiscount = 0;
-            if (reservationDto.LoyaltyPointsUsed > 0 && !string.IsNullOrEmpty(reservationDto.CustomerId))
+            catch (Exception)
             {
-                var loyaltyResult = await RedeemLoyaltyPoints(variant.Service.BusinessId, reservationDto.CustomerId, reservationDto.LoyaltyPointsUsed, variant.Price - discountAmount);
-                if (loyaltyResult.error != null)
-                    return (false, null, loyaltyResult.error);
-                loyaltyDiscount = loyaltyResult.discount;
+                await transaction.RollbackAsync();
+                return (false, null, "Wystąpił błąd podczas tworzenia rezerwacji.");
             }
-
-            var reservation = new Reservation
-            {
-                BusinessId = variant.Service.BusinessId,
-                ServiceVariantId = reservationDto.ServiceVariantId,
-                EmployeeId = reservationDto.EmployeeId,
-                StartTime = reservationDto.StartTime,
-                EndTime = proposedEndTime,
-                AgreedPrice = variant.Price - discountAmount - loyaltyDiscount,
-                DiscountAmount = discountAmount,
-                DiscountId = discountId,
-                LoyaltyPointsUsed = reservationDto.LoyaltyPointsUsed,
-                GuestName = reservationDto.GuestName,
-                GuestPhoneNumber = reservationDto.GuestPhoneNumber,
-                CustomerId = reservationDto.CustomerId,
-                Status = ReservationStatus.Confirmed,
-                PaymentMethod = reservationDto.PaymentMethod
-            };
-
-            _context.Reservations.Add(reservation);
-            await _context.SaveChangesAsync();
 
             return (true, "Rezerwacja została pomyślnie utworzona.", null);
         }
@@ -771,53 +800,53 @@ namespace BookLocal.API.Services
             if (reservationDto.StartTime.TimeOfDay < workSchedule.StartTime.Value || sequenceEndTime.TimeOfDay > workSchedule.EndTime.Value)
                 return (false, null, "Wybrany termin pakietu wykracza poza godziny pracy.");
 
-            var isTaken = await _context.Reservations
-                .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
-                               r.Status == ReservationStatus.Confirmed &&
-                               r.StartTime < sequenceEndTime &&
-                               r.EndTime > reservationDto.StartTime);
-
-            if (isTaken) return (false, null, "Jeden z terminów w ramach pakietu jest już zajęty.");
-
-            var currentStartTime = reservationDto.StartTime;
-            var reservationsToCreate = new List<Reservation>();
-
-            decimal sumOfVariantsPrice = bundleItems.Sum(i => i.ServiceVariant.Price);
-            decimal globalDiscountRatio = 1.0m;
-            if (sumOfVariantsPrice > 0)
-            {
-                globalDiscountRatio = bundle.TotalPrice / sumOfVariantsPrice;
-            }
-
-            foreach (var item in bundleItems)
-            {
-                var variantDuration = item.ServiceVariant.DurationMinutes + item.ServiceVariant.CleanupTimeMinutes;
-                var currentEndTime = currentStartTime.AddMinutes(variantDuration);
-
-                var itemPrice = item.ServiceVariant.Price * globalDiscountRatio;
-
-                var reservation = new Reservation
-                {
-                    BusinessId = bundle.BusinessId,
-                    ServiceVariantId = item.ServiceVariantId,
-                    EmployeeId = reservationDto.EmployeeId,
-                    ServiceBundleId = bundle.ServiceBundleId,
-                    StartTime = currentStartTime,
-                    EndTime = currentEndTime,
-                    AgreedPrice = itemPrice,
-                    GuestName = reservationDto.GuestName,
-                    GuestPhoneNumber = reservationDto.GuestPhoneNumber,
-                    Status = ReservationStatus.Confirmed,
-                    PaymentMethod = reservationDto.PaymentMethod
-                };
-
-                reservationsToCreate.Add(reservation);
-                currentStartTime = currentEndTime;
-            }
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
             try
             {
+                var isTaken = await _context.Reservations
+                    .AnyAsync(r => r.EmployeeId == reservationDto.EmployeeId &&
+                                   r.Status == ReservationStatus.Confirmed &&
+                                   r.StartTime < sequenceEndTime &&
+                                   r.EndTime > reservationDto.StartTime);
+
+                if (isTaken) return (false, null, "Jeden z terminów w ramach pakietu jest już zajęty.");
+
+                var currentStartTime = reservationDto.StartTime;
+                var reservationsToCreate = new List<Reservation>();
+
+                decimal sumOfVariantsPrice = bundleItems.Sum(i => i.ServiceVariant.Price);
+                decimal globalDiscountRatio = 1.0m;
+                if (sumOfVariantsPrice > 0)
+                {
+                    globalDiscountRatio = bundle.TotalPrice / sumOfVariantsPrice;
+                }
+
+                foreach (var item in bundleItems)
+                {
+                    var variantDuration = item.ServiceVariant.DurationMinutes + item.ServiceVariant.CleanupTimeMinutes;
+                    var currentEndTime = currentStartTime.AddMinutes(variantDuration);
+
+                    var itemPrice = item.ServiceVariant.Price * globalDiscountRatio;
+
+                    var reservation = new Reservation
+                    {
+                        BusinessId = bundle.BusinessId,
+                        ServiceVariantId = item.ServiceVariantId,
+                        EmployeeId = reservationDto.EmployeeId,
+                        ServiceBundleId = bundle.ServiceBundleId,
+                        StartTime = currentStartTime,
+                        EndTime = currentEndTime,
+                        AgreedPrice = itemPrice,
+                        GuestName = reservationDto.GuestName,
+                        GuestPhoneNumber = reservationDto.GuestPhoneNumber,
+                        Status = ReservationStatus.Confirmed,
+                        PaymentMethod = reservationDto.PaymentMethod
+                    };
+
+                    reservationsToCreate.Add(reservation);
+                    currentStartTime = currentEndTime;
+                }
+
                 _context.Reservations.AddRange(reservationsToCreate);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -956,7 +985,6 @@ namespace BookLocal.API.Services
             if (amount > originalPrice) amount = originalPrice;
 
             discount.UsedCount++;
-            await _context.SaveChangesAsync();
 
             return (amount, discount.DiscountId, null);
         }
@@ -969,7 +997,7 @@ namespace BookLocal.API.Services
 
             if (config == null || !config.IsActive || config.SpendAmountForOnePoint <= 0) return;
 
-            int pointsToEarn = (int)(price / config.SpendAmountForOnePoint);
+            int pointsToEarn = (int)Math.Floor(price / config.SpendAmountForOnePoint);
             if (pointsToEarn <= 0) return;
 
             var loyaltyPoint = await _context.LoyaltyPoints
@@ -1039,7 +1067,6 @@ namespace BookLocal.API.Services
             };
 
             _context.LoyaltyTransactions.Add(loyaltyTransaction);
-            await _context.SaveChangesAsync();
 
             return (discount, null);
         }

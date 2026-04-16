@@ -27,6 +27,8 @@ namespace BookLocal.API.Services
 
             var dbUser = await _context.Users.FindAsync(userId);
             if (dbUser == null) return (false, null, "Nie znaleziono użytkownika.", 404);
+
+            await CleanupOldPhotoAsync(dbUser.PhotoUrl);
             dbUser.PhotoUrl = photoUrl;
 
             if (user.IsInRole("owner"))
@@ -54,6 +56,7 @@ namespace BookLocal.API.Services
             var uploadResult = await _photoService.UploadPhotoAsync(file);
             if (uploadResult.Error != null) return (false, null, uploadResult.Error.Message, 400);
 
+            await CleanupOldPhotoAsync(business.PhotoUrl);
             business.PhotoUrl = uploadResult.SecureUrl.AbsoluteUri;
             await _context.SaveChangesAsync();
 
@@ -72,6 +75,7 @@ namespace BookLocal.API.Services
             var uploadResult = await _photoService.UploadPhotoAsync(file);
             if (uploadResult.Error != null) return (false, null, uploadResult.Error.Message, 400);
 
+            await CleanupOldPhotoAsync(employee.PhotoUrl);
             employee.PhotoUrl = uploadResult.SecureUrl.AbsoluteUri;
             await _context.SaveChangesAsync();
 
@@ -90,6 +94,7 @@ namespace BookLocal.API.Services
             var uploadResult = await _photoService.UploadPhotoAsync(file);
             if (uploadResult.Error != null) return (false, null, uploadResult.Error.Message, 400);
 
+            await CleanupOldPhotoAsync(category.PhotoUrl);
             category.PhotoUrl = uploadResult.SecureUrl.AbsoluteUri;
             await _context.SaveChangesAsync();
 
@@ -108,10 +113,29 @@ namespace BookLocal.API.Services
             var uploadResult = await _photoService.UploadPhotoAsync(file);
             if (uploadResult.Error != null) return (false, null, uploadResult.Error.Message, 400);
 
+            await CleanupOldPhotoAsync(bundle.PhotoUrl);
             bundle.PhotoUrl = uploadResult.SecureUrl.AbsoluteUri;
             await _context.SaveChangesAsync();
 
             return (true, bundle.PhotoUrl, null, 200);
+        }
+
+        private async Task CleanupOldPhotoAsync(string? oldPhotoUrl)
+        {
+            if (string.IsNullOrEmpty(oldPhotoUrl)) return;
+
+            var uri = new Uri(oldPhotoUrl);
+            var pathGroups = uri.AbsolutePath.Split('/');
+
+            var folderIndex = Array.FindIndex(pathGroups, p => p == "booklocal");
+            if (folderIndex >= 0 && folderIndex < pathGroups.Length - 1)
+            {
+                var file = pathGroups[^1];
+                var nameWithoutExt = Path.GetFileNameWithoutExtension(file);
+                var publicId = $"booklocal/{nameWithoutExt}";
+
+                await _photoService.DeletePhotoAsync(publicId);
+            }
         }
     }
 }

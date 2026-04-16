@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 public interface IPhotoService
 {
     Task<ImageUploadResult> UploadPhotoAsync(IFormFile file);
+    Task<DeletionResult> DeletePhotoAsync(string publicId);
 }
 
 public class PhotoService : IPhotoService
@@ -39,5 +40,11 @@ public class PhotoService : IPhotoService
         }
 
         return uploadResult;
+    }
+
+    public async Task<DeletionResult> DeletePhotoAsync(string publicId)
+    {
+        var deleteParams = new DeletionParams(publicId);
+        return await _cloudinary.DestroyAsync(deleteParams);
     }
 }

@@ -1,46 +1,45 @@
-﻿public class PresenceTracker
+﻿using System.Collections.Concurrent;
+
+public class PresenceTracker
 {
-    private static readonly Dictionary<string, List<string>> OnlineUsers =
-        new Dictionary<string, List<string>>();
+    private readonly ConcurrentDictionary<string, List<string>> _onlineUsers = new();
 
     public Task UserConnected(string userId, string connectionId)
     {
-        lock (OnlineUsers)
-        {
-            if (OnlineUsers.ContainsKey(userId))
+        _onlineUsers.AddOrUpdate(
+            userId,
+            _ => new List<string> { connectionId },
+            (_, list) =>
             {
-                OnlineUsers[userId].Add(connectionId);
-            }
-            else
-            {
-                OnlineUsers.Add(userId, new List<string> { connectionId });
-            }
-        }
+                lock (list)
+                {
+                    list.Add(connectionId);
+                }
+                return list;
+            });
+
         return Task.CompletedTask;
     }
 
     public Task UserDisconnected(string userId, string connectionId)
     {
-        lock (OnlineUsers)
+        if (_onlineUsers.TryGetValue(userId, out var list))
         {
-            if (!OnlineUsers.ContainsKey(userId)) return Task.CompletedTask;
-
-            OnlineUsers[userId].Remove(connectionId);
-            if (OnlineUsers[userId].Count == 0)
+            lock (list)
             {
-                OnlineUsers.Remove(userId);
+                list.Remove(connectionId);
+                if (list.Count == 0)
+                {
+                    _onlineUsers.TryRemove(userId, out _);
+                }
             }
         }
+
         return Task.CompletedTask;
     }
 
     public Task<string[]> GetOnlineUsers()
     {
-        string[] onlineUsers;
-        lock (OnlineUsers)
-        {
-            onlineUsers = OnlineUsers.OrderBy(k => k.Key).Select(k => k.Key).ToArray();
-        }
-        return Task.FromResult(onlineUsers);
+        return Task.FromResult(_onlineUsers.Keys.OrderBy(k => k).ToArray());
     }
 }

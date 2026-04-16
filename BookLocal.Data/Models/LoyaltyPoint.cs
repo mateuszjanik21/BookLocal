@@ -18,6 +18,7 @@ namespace BookLocal.Data.Models
         [ForeignKey("CustomerId")]
         public virtual User Customer { get; set; }
 
+        [ConcurrencyCheck]
         public int PointsBalance { get; set; } = 0;
         public int TotalPointsEarned { get; set; } = 0;
 

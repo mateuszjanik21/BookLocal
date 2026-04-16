@@ -19,21 +19,31 @@ namespace BookLocal.API.Services
         {
             var customerId = user.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var conversation = await _context.Conversations
-                .FirstOrDefaultAsync(c => c.BusinessId == businessId && c.CustomerId == customerId);
-
-            if (conversation == null)
+            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            try
             {
-                conversation = new Conversation
-                {
-                    BusinessId = businessId,
-                    CustomerId = customerId ?? ""
-                };
-                _context.Conversations.Add(conversation);
-                await _context.SaveChangesAsync();
-            }
+                var conversation = await _context.Conversations
+                    .FirstOrDefaultAsync(c => c.BusinessId == businessId && c.CustomerId == customerId);
 
-            return (true, new { conversationId = conversation.ConversationId }, null);
+                if (conversation == null)
+                {
+                    conversation = new Conversation
+                    {
+                        BusinessId = businessId,
+                        CustomerId = customerId ?? ""
+                    };
+                    _context.Conversations.Add(conversation);
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+                return (true, new { conversationId = conversation.ConversationId }, null);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<(bool Success, IEnumerable<ConversationDto>? Data)> GetMyConversationsAsync(ClaimsPrincipal user)
@@ -53,7 +63,6 @@ namespace BookLocal.API.Services
             }
 
             var conversations = await query
-                .Include(c => c.Messages)
                 .Include(c => c.Business)
                 .Include(c => c.Customer)
                 .Select(c => new ConversationDto
@@ -64,11 +73,11 @@ namespace BookLocal.API.Services
                     ParticipantPhotoUrl = userRoles.Contains("owner") ? (c.Customer != null ? c.Customer.PhotoUrl : null) : c.Business.PhotoUrl,
 
                     LastMessage = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault() != null
-                        ? c.Messages.OrderByDescending(m => m.SentAt).First().Content
+                        ? c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault()!.Content
                         : "Brak wiadomości",
                     LastMessageAt = c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault() != null
-                        ? c.Messages.OrderByDescending(m => m.SentAt).First().SentAt
-                        : DateTime.MinValue,
+                        ? (DateTime?)c.Messages.OrderByDescending(m => m.SentAt).FirstOrDefault()!.SentAt
+                        : null,
 
                     UnreadCount = c.Messages.Count(m => m.SenderId != userId && !m.IsRead)
                 })
@@ -78,7 +87,7 @@ namespace BookLocal.API.Services
             return (true, conversations);
         }
 
-        public async Task<(bool Success, IEnumerable<MessageDto>? Data, string? ErrorMessage, int StatusCode)> GetMessagesAsync(int conversationId, ClaimsPrincipal user)
+        public async Task<(bool Success, IEnumerable<MessageDto>? Data, string? ErrorMessage, int StatusCode)> GetMessagesAsync(int conversationId, int pageNumber, int pageSize, ClaimsPrincipal user)
         {
             var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -94,11 +103,13 @@ namespace BookLocal.API.Services
                 return (false, null, "Brak uprawnień.", 403);
             }
 
-            var messages = await _context.Messages
+            var messagesQuery = await _context.Messages
                 .AsNoTracking()
                 .Where(m => m.ConversationId == conversationId)
                 .Include(m => m.Sender)
-                .OrderBy(m => m.SentAt)
+                .OrderByDescending(m => m.SentAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .Select(m => new MessageDto
                 {
                     MessageId = m.MessageId,
@@ -119,6 +130,9 @@ namespace BookLocal.API.Services
                 })
                 .ToListAsync();
 
+            // Reverse the order back to chronological for correct display in the chat window
+            var messages = messagesQuery.OrderBy(m => m.SentAt).ToList();
+
             return (true, messages, null, 200);
         }
 
@@ -132,21 +146,31 @@ namespace BookLocal.API.Services
                 return (false, null, "Brak uprawnień.");
             }
 
-            var conversation = await _context.Conversations
-                .FirstOrDefaultAsync(c => c.BusinessId == business.BusinessId && c.CustomerId == customerId);
-
-            if (conversation == null)
+            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            try
             {
-                conversation = new Conversation
-                {
-                    BusinessId = business.BusinessId,
-                    CustomerId = customerId
-                };
-                _context.Conversations.Add(conversation);
-                await _context.SaveChangesAsync();
-            }
+                var conversation = await _context.Conversations
+                    .FirstOrDefaultAsync(c => c.BusinessId == business.BusinessId && c.CustomerId == customerId);
 
-            return (true, new { conversationId = conversation.ConversationId }, null);
+                if (conversation == null)
+                {
+                    conversation = new Conversation
+                    {
+                        BusinessId = business.BusinessId,
+                        CustomerId = customerId
+                    };
+                    _context.Conversations.Add(conversation);
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+                return (true, new { conversationId = conversation.ConversationId }, null);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<(bool Success, int Count, string? ErrorMessage)> GetTotalUnreadCountAsync(ClaimsPrincipal user)

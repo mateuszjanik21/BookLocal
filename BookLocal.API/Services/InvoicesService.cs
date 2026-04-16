@@ -38,60 +38,70 @@ namespace BookLocal.API.Services
                 return (false, null, "Faktury są obecnie dostępne tylko dla zarejestrowanych klientów (wymagane konto klienta).", 400);
             }
 
-            var now = DateTime.Now;
-            var startOfMonth = new DateTime(now.Year, now.Month, 1);
-            var endOfMonth = startOfMonth.AddMonths(1).AddTicks(-1);
-
-            var countThisMonth = await _context.Invoices
-                .CountAsync(i => i.BusinessId == businessId && i.IssueDate >= startOfMonth && i.IssueDate <= endOfMonth);
-
-            var seqNumber = countThisMonth + 1;
-            var invoiceNumber = $"FV/{now.Year}/{now.Month:D2}/{seqNumber:D3}";
-
-            while (await _context.Invoices.AnyAsync(i => i.BusinessId == businessId && i.InvoiceNumber == invoiceNumber))
+            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+            try
             {
-                seqNumber++;
-                invoiceNumber = $"FV/{now.Year}/{now.Month:D2}/{seqNumber:D3}";
-            }
+                var now = DateTime.UtcNow;
+                var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                var endOfMonth = startOfMonth.AddMonths(1).AddTicks(-1);
 
-            decimal vatRate = 0.23m;
-            decimal grossAmount = reservation.AgreedPrice;
+                var countThisMonth = await _context.Invoices
+                    .CountAsync(i => i.BusinessId == businessId && i.IssueDate >= startOfMonth && i.IssueDate <= endOfMonth);
 
-            decimal netAmount = Math.Round(grossAmount / (1 + vatRate), 2);
-            decimal vatAmount = grossAmount - netAmount;
+                var seqNumber = countThisMonth + 1;
+                var invoiceNumber = $"FV/{now.Year}/{now.Month:D2}/{seqNumber:D3}";
 
-            var invoice = new Invoice
-            {
-                BusinessId = businessId,
-                ReservationId = reservation.ReservationId,
-                CustomerId = reservation.CustomerId,
-                InvoiceNumber = invoiceNumber,
-                IssueDate = now,
-                SaleDate = reservation.EndTime,
-                PaymentMethod = reservation.PaymentMethod,
-                TotalNet = netAmount,
-                TotalTax = vatAmount,
-                TotalGross = grossAmount,
-                Items = new List<InvoiceItem>
+                while (await _context.Invoices.AnyAsync(i => i.BusinessId == businessId && i.InvoiceNumber == invoiceNumber))
                 {
-                    new InvoiceItem
-                    {
-                        Name = $"{reservation.ServiceVariant.Service.Name} - {reservation.ServiceVariant.Name}",
-                        Quantity = 1,
-                        UnitPriceNet = netAmount,
-                        VatRate = vatRate,
-                        NetValue = netAmount,
-                        TaxValue = vatAmount,
-                        GrossValue = grossAmount
-                    }
+                    seqNumber++;
+                    invoiceNumber = $"FV/{now.Year}/{now.Month:D2}/{seqNumber:D3}";
                 }
-            };
 
-            _context.Invoices.Add(invoice);
-            await _context.SaveChangesAsync();
+                decimal vatRate = 0.23m;
+                decimal grossAmount = reservation.AgreedPrice;
 
-            var customerName = reservation.Customer != null ? $"{reservation.Customer.FirstName} {reservation.Customer.LastName}" : "";
-            return (true, MapToDto(invoice, customerName), null, 200);
+                decimal netAmount = Math.Round(grossAmount / (1 + vatRate), 2);
+                decimal vatAmount = grossAmount - netAmount;
+
+                var invoice = new Invoice
+                {
+                    BusinessId = businessId,
+                    ReservationId = reservation.ReservationId,
+                    CustomerId = reservation.CustomerId,
+                    InvoiceNumber = invoiceNumber,
+                    IssueDate = now,
+                    SaleDate = reservation.EndTime,
+                    PaymentMethod = reservation.PaymentMethod,
+                    TotalNet = netAmount,
+                    TotalTax = vatAmount,
+                    TotalGross = grossAmount,
+                    Items = new List<InvoiceItem>
+                    {
+                        new InvoiceItem
+                        {
+                            Name = $"{reservation.ServiceVariant.Service.Name} - {reservation.ServiceVariant.Name}",
+                            Quantity = 1,
+                            UnitPriceNet = netAmount,
+                            VatRate = vatRate,
+                            NetValue = netAmount,
+                            TaxValue = vatAmount,
+                            GrossValue = grossAmount
+                        }
+                    }
+                };
+
+                _context.Invoices.Add(invoice);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                var customerName = reservation.Customer != null ? $"{reservation.Customer.FirstName} {reservation.Customer.LastName}" : "";
+                return (true, MapToDto(invoice, customerName), null, 200);
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                return (false, null, "Wystąpił błąd podczas generowania faktury. Spróbuj ponownie.", 500);
+            }
         }
 
         public async Task<(bool Success, object? Data, string? ErrorMessage)> GetInvoicesAsync(int businessId, int page, int pageSize, string? search, string? month, ClaimsPrincipal user)

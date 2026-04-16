@@ -1,7 +1,10 @@
 ﻿using BookLocal.API.DTOs;
 using BookLocal.API.Interfaces;
+using BookLocal.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace BookLocal.API.Controllers
 {
@@ -41,8 +44,12 @@ namespace BookLocal.API.Controllers
         }
 
         [HttpGet("customer/{customerId}")]
-        public async Task<ActionResult<object>> GetCustomerLoyalty(int businessId, string customerId)
+        public async Task<ActionResult<object>> GetCustomerLoyalty([FromServices] AppDbContext context, int businessId, string customerId)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId != customerId && !await context.Businesses.AnyAsync(b => b.BusinessId == businessId && b.OwnerId == userId))
+                return Forbid();
+
             var result = await _loyaltyService.GetCustomerLoyaltyAsync(businessId, customerId);
             return Ok(result.Data);
         }
