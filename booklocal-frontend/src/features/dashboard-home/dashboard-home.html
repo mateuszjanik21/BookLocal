@@ -173,7 +173,9 @@
                     <div class="text-xs opacity-50">Stały klient</div>
                   </td>
                   <td class="hidden sm:table-cell">
-                    <div class="badge badge-outline">{{ res.serviceName }}</div>
+                    <div class="badge badge-outline h-auto py-1 px-3 text-center text-xs leading-normal">
+                      {{ res.serviceName }}
+                    </div>
                   </td>
                   <td class="text-right pr-4 sm:pr-6">
                     <a [routerLink]="['/dashboard/reservations', res.reservationId]"
