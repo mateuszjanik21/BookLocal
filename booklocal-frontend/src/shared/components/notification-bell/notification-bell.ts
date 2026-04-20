@@ -6,6 +6,10 @@ import { NotificationPayload } from '../../../types/notification.model';
 import { RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
+interface AppNotification extends NotificationPayload {
+  isRead: boolean;
+}
+
 @Component({
   selector: 'app-notification-bell',
   standalone: true,
@@ -17,16 +21,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
   private notificationSub?: Subscription;
   private toastr = inject(ToastrService);
 
-  notifications: NotificationPayload[] = [];
+  notifications: AppNotification[] = [];
   unreadCount = 0;
 
   ngOnInit(): void {
     this.notificationSub = this.notificationService.notification$.subscribe(payload => {
-      this.notifications.unshift(payload);
+      this.notifications.unshift({ ...payload, isRead: false });
       this.unreadCount++;
-      this.toastr.info(payload.message, 'Nowa Rezerwacja!');
 
-      if (payload.message.toLowerCase().includes('anulował')) {
+      if (payload.message.toLowerCase().includes('anulowa')) {
         this.toastr.warning(payload.message, 'Rezerwacja Anulowana!');
       } else {
         this.toastr.info(payload.message, 'Nowa Rezerwacja!');
@@ -34,7 +37,15 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     });
   }
 
-  clearNotifications(): void {
+  markAsRead(notification: AppNotification): void {
+    if (!notification.isRead) {
+      notification.isRead = true;
+      this.unreadCount = Math.max(0, this.unreadCount - 1);
+    }
+  }
+
+  clearAll(): void {
+    this.notifications = [];
     this.unreadCount = 0;
   }
 
