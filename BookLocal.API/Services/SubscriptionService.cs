@@ -48,8 +48,8 @@ namespace BookLocal.API.Services
             var plan = await _context.SubscriptionPlans.FindAsync(planId);
             if (plan == null || !plan.IsActive) return (false, null, "Nieprawidłowy plan.");
 
-            var currentEmployeeCount = await _context.Employees.CountAsync(e => e.BusinessId == business.BusinessId);
-            var currentServiceCount = await _context.Services.CountAsync(s => s.BusinessId == business.BusinessId);
+            var currentEmployeeCount = await _context.Employees.CountAsync(e => e.BusinessId == business.BusinessId && !e.IsArchived);
+            var currentServiceCount = await _context.Services.CountAsync(s => s.BusinessId == business.BusinessId && !s.IsArchived);
 
             if (currentEmployeeCount > plan.MaxEmployees)
             {

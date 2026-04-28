@@ -84,6 +84,14 @@ namespace BookLocal.API.Services
                 .OrderByDescending(c => c.LastMessageAt)
                 .ToListAsync();
 
+            foreach (var c in conversations)
+            {
+                if (c.LastMessageAt.HasValue)
+                {
+                    c.LastMessageAt = DateTime.SpecifyKind(c.LastMessageAt.Value, DateTimeKind.Utc);
+                }
+            }
+
             return (true, conversations);
         }
 
@@ -132,6 +140,11 @@ namespace BookLocal.API.Services
 
             // Reverse the order back to chronological for correct display in the chat window
             var messages = messagesQuery.OrderBy(m => m.SentAt).ToList();
+
+            foreach (var m in messages)
+            {
+                m.SentAt = DateTime.SpecifyKind(m.SentAt, DateTimeKind.Utc);
+            }
 
             return (true, messages, null, 200);
         }

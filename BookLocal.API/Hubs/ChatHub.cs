@@ -152,6 +152,10 @@ namespace BookLocal.API.Hubs
                     var unreadForCustomer = await _context.Messages
                         .CountAsync(m => m.ConversationId == conversationId && m.SenderId != customerId && !m.IsRead);
 
+                    var lastMessageAtUtc = lastMessage != null
+                        ? DateTime.SpecifyKind(lastMessage.SentAt, DateTimeKind.Utc)
+                        : (DateTime?)null;
+
                     var convoForOwner = new ConversationDto
                     {
                         ConversationId = conversation.ConversationId,
@@ -159,7 +163,7 @@ namespace BookLocal.API.Hubs
                         ParticipantName = conversation.Customer.FirstName + " " + conversation.Customer.LastName,
                         ParticipantPhotoUrl = conversation.Customer.PhotoUrl,
                         LastMessage = lastMessage?.Content ?? "Brak wiadomości",
-                        LastMessageAt = lastMessage?.SentAt,
+                        LastMessageAt = lastMessageAtUtc,
                         UnreadCount = unreadForOwner
                     };
                     await _presenceHub.Clients.User(ownerId).SendAsync("UpdateConversation", convoForOwner);
@@ -171,7 +175,7 @@ namespace BookLocal.API.Hubs
                         ParticipantName = conversation.Business.Name,
                         ParticipantPhotoUrl = conversation.Business.PhotoUrl,
                         LastMessage = lastMessage?.Content ?? "Brak wiadomości",
-                        LastMessageAt = lastMessage?.SentAt,
+                        LastMessageAt = lastMessageAtUtc,
                         UnreadCount = unreadForCustomer
                     };
                     await _presenceHub.Clients.User(customerId).SendAsync("UpdateConversation", convoForCustomer);
