@@ -24,11 +24,6 @@
 | **Właściciel firmy** | `owner@test.com` | `P@ssword1` |
 | **Klient** | `customer@test.com` | `P@ssword1` |
 
-Możesz również samodzielnie przejść przez proces rejestracji jako klient lub właściciel.
-
-> [!WARNING]
-> To publiczna aplikacja demonstracyjna – **nie rejestruj się prawdziwymi danymi osobowymi**. Używaj fikcyjnych informacji do testów.
-
 ---
 
 ##  Funkcjonalności
